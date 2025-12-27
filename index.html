@@ -3,16 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Figure-Level Human Evaluation (Vertical Layout)</title>
+    <title>Figure-Level Human Evaluation (Detailed Schema)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="data.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
         .hidden { display: none; }
-        /* 이미지 높이를 조금 더 키워서 상단 배치에 최적화 */
         .image-container img { max-height: 550px; border: 1px solid #e5e7eb; }
         input[type="radio"] { accent-color: #4f46e5; }
-        /* 제목 카드 스타일 */
         .paper-card:hover { border-color: #6366f1; transform: translateY(-2px); }
     </style>
 </head>
@@ -42,9 +40,7 @@
                 <h2 class="text-lg font-bold text-gray-700">Evaluation Target List</h2>
                 <input type="text" id="search-input" oninput="renderIndex()" placeholder="Search by title..." class="px-4 py-2 border rounded-lg text-sm w-64 focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm">
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="paper-grid">
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="paper-grid"></div>
         </div>
 
         <div id="view-eval" class="hidden p-6 flex-1">
@@ -65,7 +61,7 @@
             <div class="bg-slate-50 p-5 rounded-xl mb-6 border border-slate-200 flex justify-between items-center shadow-sm">
                 <div class="max-w-2xl">
                     <h3 class="font-bold text-slate-900 text-lg leading-tight mb-1" id="paper-title">Paper Title</h3>
-                    <p class="text-xs text-slate-500 italic">Click the button on the right to view the full paper context.</p>
+                    <p class="text-xs text-slate-500 italic">Open the PDF to compare the figure with the original context.</p>
                 </div>
                 <a id="local-pdf-link" href="#" target="_blank" class="flex-shrink-0 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition shadow-md text-sm flex items-center gap-2">
                     <span>📄 Open PDF</span>
@@ -84,83 +80,81 @@
             </div>
 
             <div class="bg-white p-8 rounded-2xl border shadow-lg relative">
-    <div class="absolute -top-5 left-6 bg-indigo-600 text-white text-sm font-bold px-4 py-2 rounded-full shadow-md flex items-center gap-2">
-        📊 Evaluation Form
-    </div>
-    
-    <form id="eval-form" class="space-y-10 mt-6">
-        <div id="criteria-container" class="space-y-10">
-            </div>
+                <div class="absolute -top-5 left-6 bg-indigo-600 text-white text-sm font-bold px-4 py-2 rounded-full shadow-md flex items-center gap-2">
+                    📊 Evaluation Form
+                </div>
+                
+                <form id="eval-form" class="space-y-10 mt-6">
+                    <div id="criteria-container" class="space-y-10"></div>
 
-        <div class="pt-10 border-t border-gray-100 mt-10 sticky bottom-6">
-            <button type="button" onclick="saveAndNext()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-black text-lg shadow-xl hover:bg-indigo-700 transition transform active:scale-[0.98] flex justify-center items-center gap-2">
-                SAVE & NEXT FIGURE →
-            </button>
-        </div>
-    </form>
-</div>
+                    <div class="pt-10 border-t border-gray-100 mt-10">
+                        <button type="button" onclick="saveAndNext()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-black text-lg shadow-xl hover:bg-indigo-700 transition transform active:scale-[0.98] flex justify-center items-center gap-2">
+                            SAVE & NEXT FIGURE →
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
     <script>
         let currentPaperIdx = 0;
         let currentFigIdx = 0;
-        // Key: folder_name/image_name
-        let evalResults = JSON.parse(localStorage.getItem('figureEvalResults_v6')) || {};
+        let evalResults = JSON.parse(localStorage.getItem('figureEvalResults_v7')) || {};
 
-        // LLM Schema - Copy & Pasted Sub-questions
-        const CRITERIA = [
-            { 
-                id: 'q1', 
-                label: '1. Informativeness', 
-                desc: 'Does the figure include key components and can it be understood standalone?',
-                points: [
-                    "1.1. Content Coverage: 주요 컴포넌트/수식 누락 여부",
-                    "1.2. Standalone Intelligibility: 그림만으로 작동 원리 파악 가능 여부",
-                    "1.3. Completeness: 논문의 전체 흐름 요약 여부"
+        // Detailed Evaluation Schema
+        const EVAL_SCHEMA = {
+            "Informativeness": {
+                "id": "q1",
+                "questions": [
+                    "1.1. Content Coverage: Does it include all major components or formulas mentioned in the paper without omission?",
+                    "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+                    "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?"
                 ]
             },
-            { 
-                id: 'q2', 
-                label: '2. Fidelity', 
-                desc: 'Accuracy of the information and relationships compared to the paper.',
-                points: [
-                    "2.1. Hallucination: 본문에 없는 내용 포함 여부",
-                    "2.2. Relation Correctness: 컴포넌트 간 관계의 정확성",
-                    "2.3. Label Accuracy: 명칭/라벨의 정확성"
+            "Fidelity": {
+                "id": "q2",
+                "questions": [
+                    "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+                    "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper accurately represented?",
+                    "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper accurately labeled?"
                 ]
             },
-            { 
-                id: 'q3', 
-                label: '3. Overall Readability', 
-                desc: 'Focus on main contributions and contextual matching.',
-                points: [
-                    "3.1. Summarization: 핵심 기여도 중심 도식화 여부",
-                    "3.2. Contextual Match: 본문/캡션과의 보조 역할 적절성",
-                    "3.3. Redundancy: 불필요한 장식이나 정보 포함 여부"
+            "Overall Readability": {
+                "id": "q3",
+                "questions": [
+                    "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+                    "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+                    "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?"
                 ]
             },
-            { 
-                id: 'q4', 
-                label: '4. Design Quality', 
-                desc: 'Visual flow, alignment, hierarchy, and consistency.',
-                points: [
-                    "4.1~2. Direction/Crossing: 흐름의 방향성 및 선 교차 여부",
-                    "4.3~4. Proximity/Alignment: 모듈 배치 및 정렬 상태",
-                    "4.5~7. Hierarchy/Margin/Consistency: 강조, 여백, 일관성"
+            "Design Quality": {
+                "id": "q4",
+                "questions": [
+                    "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+                    "4.2. Crossing: Do the connection lines avoid crossing each other?",
+                    "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+                    "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+                    "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+                    "4.6. Margin: Is there sufficient margin between elements?",
+                    "4.7. Consistency: Are components with similar roles represented with the same shape and color?"
                 ]
             },
-            { 
-                id: 'q5', 
-                label: '5. Creativity', 
-                desc: 'Metaphors, novelty, and layout adaptability.',
-                points: [
-                    "5.1. Metaphor: 추상적 개념의 구체적 심볼화",
-                    "5.2. Novelty: 일반 템플릿과의 차별성",
-                    "5.3. Adaptability: 논문 특성에 맞는 레이아웃 적용"
+            "Creativity": {
+                "id": "q5",
+                "questions": [
+                    "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+                    "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+                    "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?"
                 ]
             }
-        ];
+        };
+
+        const CRITERIA = Object.entries(EVAL_SCHEMA).map(([key, value], index) => ({
+            id: value.id,
+            label: `${index + 1}. ${key}`,
+            points: value.questions
+        }));
 
         window.onload = () => { if(window.PAPER_DATA) renderIndex(); updateProgress(); };
 
@@ -170,10 +164,7 @@
             grid.innerHTML = '';
 
             window.PAPER_DATA.forEach((paper, idx) => {
-                const cleanTitle = paper.title.toLowerCase();
-                const cleanFolder = paper.folder_name.toLowerCase();
-                
-                if(cleanTitle.includes(search) || cleanFolder.includes(search)) {
+                if(paper.title.toLowerCase().includes(search) || paper.folder_name.toLowerCase().includes(search)) {
                     const doneCount = paper.images.filter(img => evalResults[`${paper.folder_name}/${img.filename}`]).length;
                     const isPaperDone = doneCount === paper.images.length && paper.images.length > 0;
                     
@@ -188,14 +179,43 @@
                                 <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded-md font-bold tracking-wider">ID: ${idx + 1}</span>
                                 <span class="text-xs font-bold ${isPaperDone ? 'text-green-600' : 'text-indigo-500'} bg-white px-2 py-1 rounded-full shadow-sm border">${doneCount} / ${paper.images.length} Done</span>
                             </div>
-                            <h3 class="font-bold text-sm leading-snug text-gray-800 line-clamp-2 mb-2" title="${paper.title}">${paper.title}</h3>
+                            <h3 class="font-bold text-sm leading-snug text-gray-800 line-clamp-2 mb-2">${paper.title}</h3>
                         </div>
-                        <div class="text-[10px] text-gray-400 truncate font-mono" title="${paper.folder_name}">${paper.folder_name}</div>
+                        <div class="text-[10px] text-gray-400 truncate font-mono">${paper.folder_name}</div>
                     `;
                     card.onclick = () => { currentPaperIdx = idx; currentFigIdx = 0; loadFigure(); };
                     grid.appendChild(card);
                 }
             });
+        }
+
+        function renderCriteria() {
+            const container = document.getElementById('criteria-container');
+            container.innerHTML = CRITERIA.map(c => `
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                    <label class="font-black text-slate-800 text-xl tracking-tight block mb-4">${c.label}</label>
+                    <div class="bg-white p-4 rounded-lg border border-indigo-100 mb-6 shadow-sm">
+                        <p class="text-[11px] text-indigo-600 font-bold mb-2 uppercase tracking-wider flex items-center gap-1">
+                            Checklist Details
+                        </p>
+                        <ul class="text-[13px] text-slate-600 space-y-2 pl-1 leading-relaxed">
+                            ${c.points.map(p => `<li class="flex items-start gap-2"><span class="text-indigo-400 mt-1">•</span><span>${p}</span></li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-inner border border-slate-100">
+                        <span class="text-xs font-bold text-red-500 uppercase tracking-wider">Poor (1)</span>
+                        <div class="flex gap-4 md:gap-8">
+                            ${[1,2,3,4,5].map(v => `
+                                <label class="flex flex-col items-center gap-2 cursor-pointer group relative">
+                                    <input type="radio" name="${c.id}" value="${v}" required class="w-6 h-6 text-indigo-600">
+                                    <span class="text-xs font-bold text-slate-400 absolute -bottom-5">${v}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                        <span class="text-xs font-bold text-blue-500 uppercase tracking-wider">Excellent (5)</span>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function loadFigure() {
@@ -205,7 +225,6 @@
 
             document.getElementById('paper-title').innerText = paper.title;
             document.getElementById('folder-display').innerText = paper.folder_name;
-            // document.getElementById('current-fig-name').innerText = fig.filename;
             document.getElementById('figure-counter').innerText = `FIG ${currentFigIdx + 1}/${paper.images.length}`;
             document.getElementById('main-figure').src = fig.path;
             document.getElementById('figure-caption').innerText = fig.caption;
@@ -223,45 +242,10 @@
             window.scrollTo(0, 0);
         }
 
-        function renderCriteria() {
-            const container = document.getElementById('criteria-container');
-            container.innerHTML = CRITERIA.map(c => `
-                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 relative">
-                    <div class="flex justify-between items-start mb-4">
-                        <label class="font-black text-slate-800 text-xl tracking-tight">${c.label}</label>
-                    </div>
-                    
-                    <div class="bg-white p-4 rounded-lg border border-indigo-100 mb-6 shadow-sm">
-                        <p class="text-xs text-indigo-600 font-bold mb-2 uppercase tracking-wider flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                            Evaluation Criteria Checklist
-                        </p>
-                        <ul class="text-xs text-slate-600 space-y-1.5 pl-1">
-                            ${c.points.map(p => `<li class="flex items-start gap-2"><span class="text-indigo-400">•</span><span>${p}</span></li>`).join('')}
-                        </ul>
-                    </div>
-                    
-                    <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-inner border border-slate-100">
-                        <span class="text-xs font-bold text-red-500 uppercase tracking-wider">Poor (1)</span>
-                        <div class="flex gap-4 md:gap-8">
-                            ${[1,2,3,4,5].map(v => `
-                                <label class="flex flex-col items-center gap-2 cursor-pointer group relative">
-                                    <input type="radio" name="${c.id}" value="${v}" required class="w-6 h-6 text-indigo-600 focus:ring-indigo-500 border-gray-300">
-                                    <span class="text-xs font-bold text-slate-400 group-hover:text-indigo-600 transition-colors absolute -bottom-5">${v}</span>
-                                </label>
-                            `).join('')}
-                        </div>
-                        <span class="text-xs font-bold text-blue-500 uppercase tracking-wider">Excellent (5)</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
         function saveAndNext() {
             const paper = window.PAPER_DATA[currentPaperIdx];
             const fig = paper.images[currentFigIdx];
-            const form = document.getElementById('eval-form');
-            const formData = new FormData(form);
+            const formData = new FormData(document.getElementById('eval-form'));
             const data = {};
             let complete = true;
 
@@ -271,18 +255,16 @@
                 data[c.id] = val;
             });
 
-            if(!complete) { alert("Please score all criteria before proceeding."); return; }
+            if(!complete) { alert("Please score all criteria."); return; }
 
             evalResults[`${paper.folder_name}/${fig.filename}`] = data;
-            localStorage.setItem('figureEvalResults_v6', JSON.stringify(evalResults));
+            localStorage.setItem('figureEvalResults_v7', JSON.stringify(evalResults));
             updateProgress();
 
             if (currentFigIdx < paper.images.length - 1) {
-                currentFigIdx++;
-                loadFigure();
+                currentFigIdx++; loadFigure();
             } else {
-                alert("All figures in this paper have been evaluated!");
-                goHome();
+                alert("Paper complete!"); goHome();
             }
         }
 
@@ -299,18 +281,17 @@
         }
 
         function downloadResultsCSV() {
-            if(Object.keys(evalResults).length === 0) return alert("No data to download.");
-            let csv = "\uFEFFPaperTitle,Folder,Figure,Informativeness(Q1),Fidelity(Q2),Readability(Q3),Design(Q4),Creativity(Q5)\n";
+            if(Object.keys(evalResults).length === 0) return alert("No data.");
+            let csv = "\uFEFFPaperTitle,Folder,Figure,Informativeness,Fidelity,Readability,Design,Creativity\n";
             window.PAPER_DATA.forEach(p => {
                 p.images.forEach(img => {
                     const res = evalResults[`${p.folder_name}/${img.filename}`] || {};
                     csv += `"${p.title}","${p.folder_name}","${img.filename}",${res.q1||""},${res.q2||""},${res.q3||""},${res.q4||""},${res.q5||""}\n`;
                 });
             });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "figure_eval_results_v6.csv";
+            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = "figure_eval_results_v7.csv";
             link.click();
         }
     </script>
