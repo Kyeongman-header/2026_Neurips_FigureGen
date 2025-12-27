@@ -1,2107 +1,1261 @@
 window.PAPER_DATA = [
   {
-    "id": 1,
-    "folder_name": "AIMSCheck_Leveraging_LLMs_for_AI-Assisted_Review_of_Modern_Slavery_Statements_Across_Jurisdictions_2025.acl-long.446",
-    "title": "AIMSCheck Leveraging LLMs for AI-Assisted Review of Modern Slavery Statements Across Jurisdictions",
+    "title": "AGrail A Lifelong Agent Guardrail with Effective and Adaptive Safety Detection",
+    "folder_name": "AGrail_A_Lifelong_Agent_Guardrail_with_Effective_and_Adaptive_Safety_Detection",
     "images": [
       {
-        "filename": "AIMSCheck_Leveraging_LLMs_for_AI-Assisted_Review_of_Modern_Slavery_Statements_Across_Jurisdictions_2025.acl-long.446__p0__score1.00.png",
-        "path": "./AIMSCheck_Leveraging_LLMs_for_AI-Assisted_Review_of_Modern_Slavery_Statements_Across_Jurisdictions_2025.acl-long.446/AIMSCheck_Leveraging_LLMs_for_AI-Assisted_Review_of_Modern_Slavery_Statements_Across_Jurisdictions_2025.acl-long.446__p0__score1.00.png",
-        "caption": "Figure 1: The common and unique mandatory reporting criteria associated with the Modern Slavery Acts in Australia, the United Kingdom, and Canada. The three datasets (AIMS.au, AIMS.uk, AIMS.ca) allow for crossjurisdictional evaluation of compliance checking tools."
+        "filename": "AGrail_A_Lifelong_Agent_Guardrail_with_Effective_and_Adaptive_Safety_Detection__p0__score0.95.png",
+        "path": "figs_human_eval_papers/AGrail_A_Lifelong_Agent_Guardrail_with_Effective_and_Adaptive_Safety_Detection/AGrail_A_Lifelong_Agent_Guardrail_with_Effective_and_Adaptive_Safety_Detection__p0__score0.95.png",
+        "caption": "Figure 1: Risk on Computer-use Agents. Our framework can defend against systemic and task-specific risks and prevent them before agent actions are executed in environment."
       },
       {
-        "filename": "AIMSCheck_Leveraging_LLMs_for_AI-Assisted_Review_of_Modern_Slavery_Statements_Across_Jurisdictions_2025.acl-long.446__p1__score1.00.png",
-        "path": "./AIMSCheck_Leveraging_LLMs_for_AI-Assisted_Review_of_Modern_Slavery_Statements_Across_Jurisdictions_2025.acl-long.446/AIMSCheck_Leveraging_LLMs_for_AI-Assisted_Review_of_Modern_Slavery_Statements_Across_Jurisdictions_2025.acl-long.446__p1__score1.00.png",
-        "caption": "Figure 2: The AIMSCheck pipeline is designed to process modern slavery statements mandated by the Modern Slavery Acts of Australia, the United Kingdom and Canada. It generates predictions at sentence-level across multiple reporting criteria, complemented by token-level explainability techniques and evidence tracking. These outputs enable human analysts to efficiently and thoroughly review company compliance."
-      },
-      {
-        "filename": "AIMSCheck_Leveraging_LLMs_for_AI-Assisted_Review_of_Modern_Slavery_Statements_Across_Jurisdictions_2025.acl-long.446__p3__score1.00.png",
-        "path": "./AIMSCheck_Leveraging_LLMs_for_AI-Assisted_Review_of_Modern_Slavery_Statements_Across_Jurisdictions_2025.acl-long.446/AIMSCheck_Leveraging_LLMs_for_AI-Assisted_Review_of_Modern_Slavery_Statements_Across_Jurisdictions_2025.acl-long.446__p3__score1.00.png",
-        "caption": "Figure 3: Mapping the AU MSA mandatory criteria, UK MSA reporting suggestions, and Canadian Act reporting obligations based on their common criteria."
-      }
-    ],
-    "acl_id": "2025.acl-long.446"
-  },
-  {
-    "id": 2,
-    "folder_name": "AMPS_ASR_with_Multimodal_Paraphrase_Supervision_2025.naacl-short.35",
-    "title": "AMPS ASR with Multimodal Paraphrase Supervision",
-    "images": [
-      {
-        "filename": "AMPS_ASR_with_Multimodal_Paraphrase_Supervision_2025.naacl-short.35__p1__score1.00.png",
-        "path": "./AMPS_ASR_with_Multimodal_Paraphrase_Supervision_2025.naacl-short.35/AMPS_ASR_with_Multimodal_Paraphrase_Supervision_2025.naacl-short.35__p1__score1.00.png",
-        "caption": "Figure 1: Multimodal AMPSτ Pipeline. AMPSτ applies a dual pass through the S2T pipeline with an ASR objective and the T2T pipeline with a paraphrasing objective. The paraphrasing loss is only incorporated when the ASR loss exceeds a predefined threshold."
+        "filename": "AGrail_A_Lifelong_Agent_Guardrail_with_Effective_and_Adaptive_Safety_Detection__p3__score1.00.png",
+        "path": "figs_human_eval_papers/AGrail_A_Lifelong_Agent_Guardrail_with_Effective_and_Adaptive_Safety_Detection/AGrail_A_Lifelong_Agent_Guardrail_with_Effective_and_Adaptive_Safety_Detection__p3__score1.00.png",
+        "caption": "Figure 2: Workflow of AGrail. When the OS agent moves a file as requested, it may accidently overwrite an existing file in the target path. Our framework, guided by safety criteria, prevents this by generating and performing safety checks to invoke the corresponding tool that verifies if the file already exists, ensuring the action does not cause damage."
       }
-    ],
-    "acl_id": "2025.naacl-short.35"
+    ]
   },
   {
-    "id": 3,
-    "folder_name": "A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887",
-    "title": "A Law Reasoning Benchmark for LLM with Tree-Organized Structures including Factum Probandum, Evidence and Experiences",
+    "title": "AKE Assessing Knowledge Editing in Language Models via Multi-Hop Questions",
+    "folder_name": "AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions",
     "images": [
-      {
-        "filename": "A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887__p0__score1.00.png",
-        "path": "./A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887/A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887__p0__score1.00.png",
-        "caption": "Figure 1: Case “Rex v. Bywaters and Thompson” that demonstrates different experiences have impacted different results (LEFT vs. RIGHT). The case description and evidence are shared, but the experiences of both sides are different, which leads to different ultimate probandum."
-      },
-      {
-        "filename": "A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887__p1__score0.95.png",
-        "path": "./A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887/A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887__p1__score0.95.png",
-        "caption": "Figure 2: Illustration of the schema."
-      },
-      {
-        "filename": "A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887__p2__score1.00.png",
-        "path": "./A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887/A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887__p2__score1.00.png",
-        "caption": "Figure 3: Illustration of the task. For convenience, we showcase examples for each sub-task. The output of the 3 sub-tasks is collected to form the complete law reasoning structure."
-      },
-      {
-        "filename": "A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887__p3__score0.70.png",
-        "path": "./A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887/A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887__p3__score0.70.png",
-        "caption": "Figure 4: Illustration of the factum probandum generation."
-      },
       {
-        "filename": "A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887__p3__score0.80.png",
-        "path": "./A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887/A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887__p3__score0.80.png",
-        "caption": "Figure 6: Illustration of the evidence reasoning in subtask2."
+        "filename": "AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p0__score0.70.png",
+        "path": "figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p0__score0.70.png",
+        "caption": "Figure 1: An example of our benchmark MQUAKE. Existing knowledge-editing methods often perform well at answering paraphrased questions of the edited fact but fail on multi-hop questions that are entailed consequences of the edited fact."
       },
-      {
-        "filename": "A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887__p5__score1.00.png",
-        "path": "./A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887/A_Law_Reasoning_Benchmark_for_LLM_with_Tree-Organized_Structures_including_Factum_Probandum_Evidence_and_Experiences_2025.findings-acl.887__p5__score1.00.png",
-        "caption": "Figure 8: Illustration of our approach."
-      }
-    ],
-    "acl_id": "2025.findings-acl.887"
-  },
-  {
-    "id": 4,
-    "folder_name": "A_Mechanistic_Interpretation_of_Arithmetic_Reasoning_in_Language_Models_using_Causal_Mediation_Analysis_2023.emnlp-main.435",
-    "title": "A Mechanistic Interpretation of Arithmetic Reasoning in Language Models using Causal Mediation Analysis",
-    "images": [
       {
-        "filename": "A_Mechanistic_Interpretation_of_Arithmetic_Reasoning_in_Language_Models_using_Causal_Mediation_Analysis_2023.emnlp-main.435__p0__score0.95.png",
-        "path": "./A_Mechanistic_Interpretation_of_Arithmetic_Reasoning_in_Language_Models_using_Causal_Mediation_Analysis_2023.emnlp-main.435/A_Mechanistic_Interpretation_of_Arithmetic_Reasoning_in_Language_Models_using_Causal_Mediation_Analysis_2023.emnlp-main.435__p0__score0.95.png",
-        "caption": "Figure 1: Visualization of our findings. We trace the flow of numerical information within Transformerbased LMs: given an input query, the model processes the representations of numbers and operators with early layers (A). Then, the relevant information is conveyed by the attention mechanism to the end of the input sequence (B). Here, it is processed by late MLP modules, which output result-related information into the residual stream (C)."
+        "filename": "AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p3__score0.80.png",
+        "path": "figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p3__score0.80.png",
+        "caption": "Table 1: An instance in the MQUAKE-CF dataset, which consists of an edit set E , a set of three multi-hop questions Q, the desirable answer pre- and post-editing a, a∗, and the chain of facts pre- and post-editing C,C∗. The edited facts are marked as :: (s, :: r, :::"
       },
       {
-        "filename": "A_Mechanistic_Interpretation_of_Arithmetic_Reasoning_in_Language_Models_using_Causal_Mediation_Analysis_2023.emnlp-main.435__p2__score0.98.png",
-        "path": "./A_Mechanistic_Interpretation_of_Arithmetic_Reasoning_in_Language_Models_using_Causal_Mediation_Analysis_2023.emnlp-main.435/A_Mechanistic_Interpretation_of_Arithmetic_Reasoning_in_Language_Models_using_Causal_Mediation_Analysis_2023.emnlp-main.435__p2__score0.98.png",
-        "caption": "Figure 2: By intervening on the activation values of specific components within a language model and computing the corresponding effects, we identify the subset of parameters responsible for specific predictions."
+        "filename": "AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+        "path": "figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+        "caption": "Figure 3: The illustration of our proposed method MeLLo. MeLLo decompose a multi-hop question into subquestions iteratively. When a subquestion is generated, the base model generates a tentative answer to the subquestion. Then, the subquestion is used to retrieve a most relevant fact from the edited fact memory. The model checks if the retrieved fact contradicts the generated answer and updates the prediction accordingly. The concrete prompts used in MeLLo are shown in Appedix F."
       }
-    ],
-    "acl_id": "2023.emnlp-main.435"
+    ]
   },
   {
-    "id": 5,
-    "folder_name": "Adapters_Selector_Cross-domains_and_Multi-tasks_LoRA_Modules_Integration_Usage_Method_2025.coling-main.40",
-    "title": "Adapters Selector Cross-domains and Multi-tasks LoRA Modules Integration Usage Method",
+    "title": "A Theory of Response Sampling in LLMs Part Descriptive and Part Prescriptive",
+    "folder_name": "A_Theory_of_Response_Sampling_in_LLMs_Part_Descriptive_and_Part_Prescriptive",
     "images": [
       {
-        "filename": "Adapters_Selector_Cross-domains_and_Multi-tasks_LoRA_Modules_Integration_Usage_Method_2025.coling-main.40__p2__score1.00.png",
-        "path": "./Adapters_Selector_Cross-domains_and_Multi-tasks_LoRA_Modules_Integration_Usage_Method_2025.coling-main.40/Adapters_Selector_Cross-domains_and_Multi-tasks_LoRA_Modules_Integration_Usage_Method_2025.coling-main.40__p2__score1.00.png",
-        "caption": "Figure 1: The overall architecture of our proposed AS. The framework involves three processes. Firstly, every domain-specific task-specific dataset is used to fine-tune the model and obtain the adapters index. Secondly, each dataset should undergo data selection and the resulting subsets should then be randomly mixed with shuffling in order to train the selector. Finally, the adapter and selector are integrated into the base model for inference."
+        "filename": "A_Theory_of_Response_Sampling_in_LLMs_Part_Descriptive_and_Part_Prescriptive__p1__score1.00.png",
+        "path": "figs_human_eval_papers/A_Theory_of_Response_Sampling_in_LLMs_Part_Descriptive_and_Part_Prescriptive/A_Theory_of_Response_Sampling_in_LLMs_Part_Descriptive_and_Part_Prescriptive__p1__score1.00.png",
+        "caption": "Figure 1: From left to right: when sampling on a concept, the LLM appears to account for the statistical likelihood (A(C)) and prescriptive norm (I(C)) of the concept. Consequently, the sample distribution exhibits a shift (shown as α) away from the true distribution in the direction of the ideal (right most plot)."
       },
-      {
-        "filename": "Adapters_Selector_Cross-domains_and_Multi-tasks_LoRA_Modules_Integration_Usage_Method_2025.coling-main.40__p3__score1.00.png",
-        "path": "./Adapters_Selector_Cross-domains_and_Multi-tasks_LoRA_Modules_Integration_Usage_Method_2025.coling-main.40/Adapters_Selector_Cross-domains_and_Multi-tasks_LoRA_Modules_Integration_Usage_Method_2025.coling-main.40__p3__score1.00.png",
-        "caption": "Figure 3: The specific steps of selection, switching, and inference using the inference flow of the AS framework simulate involve separating the model from the selector and combining it with the adapter selected by the selector to generate an output from an input with a domain-task-specific template or instruction."
-      }
-    ],
-    "acl_id": "2025.coling-main.40"
-  },
-  {
-    "id": 6,
-    "folder_name": "Advancing_MoE_Efficiency_A_Collaboration-Constrained_Routing_C2R_Strategy_for_Better_Expert_Parallelism_Design_2025.naacl-long.347",
-    "title": "Advancing MoE Efficiency A Collaboration-Constrained Routing (C2R) Strategy for Better Expert Parallelism Design",
-    "images": [
-      {
-        "filename": "Advancing_MoE_Efficiency_A_Collaboration-Constrained_Routing_C2R_Strategy_for_Better_Expert_Parallelism_Design_2025.naacl-long.347__p3__score1.00.png",
-        "path": "./Advancing_MoE_Efficiency_A_Collaboration-Constrained_Routing_C2R_Strategy_for_Better_Expert_Parallelism_Design_2025.naacl-long.347/Advancing_MoE_Efficiency_A_Collaboration-Constrained_Routing_C2R_Strategy_for_Better_Expert_Parallelism_Design_2025.naacl-long.347__p3__score1.00.png",
-        "caption": "Figure 1: Overview of C2R. (a) shows the process of expert profiling where we obtain the expert collaboration matrix for each layer of the MoE model; (b) describes the mechanism of our C2R strategy. It first selects the top-1 expert for a given token (Expert i here) and then selects the remaining K− 1 experts from list Top-T(Expert i); (c) shows our efficient expert parallelism design."
-      }
-    ],
-    "acl_id": "2025.naacl-long.347"
-  },
-  {
-    "id": 7,
-    "folder_name": "Aggregating_Multiple_Heuristic_Signals_as_Supervision_for_Unsupervised_Automated_Essay_Scoring_2023.acl-long.782",
-    "title": "Aggregating Multiple Heuristic Signals as Supervision for Unsupervised Automated Essay Scoring",
-    "images": [
       {
-        "filename": "Aggregating_Multiple_Heuristic_Signals_as_Supervision_for_Unsupervised_Automated_Essay_Scoring_2023.acl-long.782__p2__score1.00.png",
-        "path": "./Aggregating_Multiple_Heuristic_Signals_as_Supervision_for_Unsupervised_Automated_Essay_Scoring_2023.acl-long.782/Aggregating_Multiple_Heuristic_Signals_as_Supervision_for_Unsupervised_Automated_Essay_Scoring_2023.acl-long.782__p2__score1.00.png",
-        "caption": "Figure 1: Illustration of the proposed ULRA framework for unsupervised AES task."
+        "filename": "A_Theory_of_Response_Sampling_in_LLMs_Part_Descriptive_and_Part_Prescriptive__p4__score0.80.png",
+        "path": "figs_human_eval_papers/A_Theory_of_Response_Sampling_in_LLMs_Part_Descriptive_and_Part_Prescriptive/A_Theory_of_Response_Sampling_in_LLMs_Part_Descriptive_and_Part_Prescriptive__p4__score0.80.png",
+        "caption": "Figure 2: The figure shows the average, ideal, and sample values reported by the LLM for three different concepts. Positive α shows the deviation in the direction of the ideal."
       }
-    ],
-    "acl_id": "2023.acl-long.782"
+    ]
   },
   {
-    "id": 8,
-    "folder_name": "Analyzing_register_variation_in_web_texts_through_automatic_segmentation_2025.nlp4dh-1.2",
-    "title": "Analyzing register variation in web texts through automatic segmentation",
+    "title": "AdaRewriter Unleashing the Power of Prompting-based Conversational Query Reformulation via Test-Time Adaptation",
+    "folder_name": "AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation",
     "images": [
       {
-        "filename": "Analyzing_register_variation_in_web_texts_through_automatic_segmentation_2025.nlp4dh-1.2__p3__score1.00.png",
-        "path": "./Analyzing_register_variation_in_web_texts_through_automatic_segmentation_2025.nlp4dh-1.2/Analyzing_register_variation_in_web_texts_through_automatic_segmentation_2025.nlp4dh-1.2__p3__score1.00.png",
-        "caption": "Figure 2: The recursive segmentation process."
+        "filename": "AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+        "path": "figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+        "caption": "Figure 2: Overview of AdaRewriter."
       }
-    ],
-    "acl_id": "2025.nlp4dh-1.2"
+    ]
   },
   {
-    "id": 9,
-    "folder_name": "Are_Fairy_Tales_Fair_Analyzing_Gender_Bias_in_Temporal_Narrative_Event_Chains_of_Childrens_Fairy_Tales_2023.acl-long.359",
-    "title": "Are Fairy Tales Fair Analyzing Gender Bias in Temporal Narrative Event Chains of Childrens Fairy Tales",
-    "images": [
-      {
-        "filename": "Are_Fairy_Tales_Fair_Analyzing_Gender_Bias_in_Temporal_Narrative_Event_Chains_of_Childrens_Fairy_Tales_2023.acl-long.359__p3__score1.00.png",
-        "path": "./Are_Fairy_Tales_Fair_Analyzing_Gender_Bias_in_Temporal_Narrative_Event_Chains_of_Childrens_Fairy_Tales_2023.acl-long.359/Are_Fairy_Tales_Fair_Analyzing_Gender_Bias_in_Temporal_Narrative_Event_Chains_of_Childrens_Fairy_Tales_2023.acl-long.359__p3__score1.00.png",
-        "caption": "Figure 1: Character and Event Extraction Pipeline"
-      }
-    ],
-    "acl_id": "2023.acl-long.359"
+    "title": "Adaptive Retrieval without Self-Knowledge Bringing Uncertainty Back Home",
+    "folder_name": "Adaptive_Retrieval_without_Self-Knowledge_Bringing_Uncertainty_Back_Home",
+    "images": []
   },
   {
-    "id": 10,
-    "folder_name": "Automated_Progressive_Red_Teaming_2025.coling-main.260",
-    "title": "Automated Progressive Red Teaming",
+    "title": "Are LLM-Judges Robust to Expressions of Uncertainty Investigating the effect of Epistemic Markers on LLM-based Evaluation",
+    "folder_name": "Are_LLM-Judges_Robust_to_Expressions_of_Uncertainty_Investigating_the_effect_of_Epistemic_Markers_on_LLM-based_Evaluation",
     "images": [
       {
-        "filename": "Automated_Progressive_Red_Teaming_2025.coling-main.260__p1__score1.00.png",
-        "path": "./Automated_Progressive_Red_Teaming_2025.coling-main.260/Automated_Progressive_Red_Teaming_2025.coling-main.260__p1__score1.00.png",
-        "caption": "Figure 1: Illustration of APRT. In the training process, the Intention Expanding LLM first generates diverse samples that are relatively easy to jailbreak the Target LLM after intention concealment. For each prompt generated by the Intention Expanding LLM, the Intention Hiding LLM transforms it into multiple effective samples with deceptive behavior towards the Target LLM, without changing the original intention of the prompt. The Target LLM dedicates to generating safe responses to resist the attacks from the Intention Hiding LLM. Two Reward LLMs provide a bias to select new incremental training samples for the Intention Hiding LLM. To swiftly enhance the capability of concealing the intentions within input prompts, the Intention Hiding LLM employs an active learning strategy to prioritize selecting samples that can successfully elicit unsafe yet helpful responses from the Target LLM with intentions that are difficult to perceive."
+        "filename": "Are_LLM-Judges_Robust_to_Expressions_of_Uncertainty_Investigating_the_effect_of_Epistemic_Markers_on_LLM-based_Evaluation__p4__score1.00.png",
+        "path": "figs_human_eval_papers/Are_LLM-Judges_Robust_to_Expressions_of_Uncertainty_Investigating_the_effect_of_Epistemic_Markers_on_LLM-based_Evaluation/Are_LLM-Judges_Robust_to_Expressions_of_Uncertainty_Investigating_the_effect_of_Epistemic_Markers_on_LLM-based_Evaluation__p4__score1.00.png",
+        "caption": "Figure 2: Metrics for measuring LLM-judges’ robustness against epistemic markers. Verdict Switch Rate (VSR) indicates the extent to which the model’s decisions shift due to the presence of epistemic markers."
       }
-    ],
-    "acl_id": "2025.coling-main.260"
+    ]
   },
   {
-    "id": 11,
-    "folder_name": "Automated_Scoring_of_a_German_Written_Elicited_Imitation_Test_2025.bea-1.18",
-    "title": "Automated Scoring of a German Written Elicited Imitation Test",
+    "title": "Blinded by Generated Contexts How Language Models Merge Generated and Retrieved Contexts When Knowledge Conflicts",
+    "folder_name": "Blinded_by_Generated_Contexts_How_Language_Models_Merge_Generated_and_Retrieved_Contexts_When_Knowledge_Conflicts",
     "images": [
       {
-        "filename": "Automated_Scoring_of_a_German_Written_Elicited_Imitation_Test_2025.bea-1.18__p4__score0.80.png",
-        "path": "./Automated_Scoring_of_a_German_Written_Elicited_Imitation_Test_2025.bea-1.18/Automated_Scoring_of_a_German_Written_Elicited_Imitation_Test_2025.bea-1.18__p4__score0.80.png",
-        "caption": "Figure 2: Token mapping by the aligner function for an example sentence. Tokens in red are misspelled and tokens in orange are missing or additional. Green arrows denote aligned tokens and blue arrows transpositions."
+        "filename": "Blinded_by_Generated_Contexts_How_Language_Models_Merge_Generated_and_Retrieved_Contexts_When_Knowledge_Conflicts__p2__score0.95.png",
+        "path": "figs_human_eval_papers/Blinded_by_Generated_Contexts_How_Language_Models_Merge_Generated_and_Retrieved_Contexts_When_Knowledge_Conflicts/Blinded_by_Generated_Contexts_How_Language_Models_Merge_Generated_and_Retrieved_Contexts_When_Knowledge_Conflicts__p2__score0.95.png",
+        "caption": "Figure 3: The task to study LLMs’ merging mechanisms by tracing the sources of the answers."
       },
-      {
-        "filename": "Automated_Scoring_of_a_German_Written_Elicited_Imitation_Test_2025.bea-1.18__p4__score1.00.png",
-        "path": "./Automated_Scoring_of_a_German_Written_Elicited_Imitation_Test_2025.bea-1.18/Automated_Scoring_of_a_German_Written_Elicited_Imitation_Test_2025.bea-1.18__p4__score1.00.png",
-        "caption": "Figure 1: Flow diagram illustrating the rule-based model’s data processing pipeline."
-      }
-    ],
-    "acl_id": "2025.bea-1.18"
-  },
-  {
-    "id": 12,
-    "folder_name": "Automatic_Generation_of_Inference_Making_Questions_for_Reading_Comprehension_Assessments_2025.bea-1.31",
-    "title": "Automatic Generation of Inference Making Questions for Reading Comprehension Assessments",
-    "images": [
       {
-        "filename": "Automatic_Generation_of_Inference_Making_Questions_for_Reading_Comprehension_Assessments_2025.bea-1.31__p1__score1.00.png",
-        "path": "./Automatic_Generation_of_Inference_Making_Questions_for_Reading_Comprehension_Assessments_2025.bea-1.31/Automatic_Generation_of_Inference_Making_Questions_for_Reading_Comprehension_Assessments_2025.bea-1.31__p1__score1.00.png",
-        "caption": "Figure 1: Overview of automatic item generation and human evaluation. We use GPT-4o to generate bridginginference RC items for given reading passages via few-shot prompting, comparing conditions with and without chain-of-thought prompts. We prompt each inference type separately: pronominal bridging, text-connecting, and gap-filling inferences. Human evaluation focuses on general item quality, inference type appropriateness, and LLM rationales."
+        "filename": "Blinded_by_Generated_Contexts_How_Language_Models_Merge_Generated_and_Retrieved_Contexts_When_Knowledge_Conflicts__p2__score1.00.png",
+        "path": "figs_human_eval_papers/Blinded_by_Generated_Contexts_How_Language_Models_Merge_Generated_and_Retrieved_Contexts_When_Knowledge_Conflicts/Blinded_by_Generated_Contexts_How_Language_Models_Merge_Generated_and_Retrieved_Contexts_When_Knowledge_Conflicts__p2__score1.00.png",
+        "caption": "Figure 2: The frameworks of retrieval-augmented approach, generation-augmented approach, and hybrid approach."
       },
       {
-        "filename": "Automatic_Generation_of_Inference_Making_Questions_for_Reading_Comprehension_Assessments_2025.bea-1.31__p4__score0.90.png",
-        "path": "./Automatic_Generation_of_Inference_Making_Questions_for_Reading_Comprehension_Assessments_2025.bea-1.31/Automatic_Generation_of_Inference_Making_Questions_for_Reading_Comprehension_Assessments_2025.bea-1.31__p4__score0.90.png",
-        "caption": "Figure 3: Few-shot prompt for generating pronominal bridging inference questions. The system prompt (beige background) defines the inference type and outlines expert-inspired steps. Training examples (provided in the prompt) follow. In the standard condition, only the question and answer key (green) are shown; in the CoT condition, text hints and reasoning (blue) are also included. A new passage is provided in the user prompt (orange background) to generate new questions."
+        "filename": "Blinded_by_Generated_Contexts_How_Language_Models_Merge_Generated_and_Retrieved_Contexts_When_Knowledge_Conflicts__p3__score1.00.png",
+        "path": "figs_human_eval_papers/Blinded_by_Generated_Contexts_How_Language_Models_Merge_Generated_and_Retrieved_Contexts_When_Knowledge_Conflicts/Blinded_by_Generated_Contexts_How_Language_Models_Merge_Generated_and_Retrieved_Contexts_When_Knowledge_Conflicts__p3__score1.00.png",
+        "caption": "Figure 4: The framework of constructing context-conflicting datasets."
       }
-    ],
-    "acl_id": "2025.bea-1.31"
+    ]
   },
   {
-    "id": 13,
-    "folder_name": "Best_of_Both_Worlds_Towards_Improving_Temporal_Knowledge_Base_Question_Answering_via_Targeted_Fact_Extraction_2023.emnlp-main.287",
-    "title": "Best of Both Worlds Towards Improving Temporal Knowledge Base Question Answering via Targeted Fact Extraction",
+    "title": "Bridging the Visual Gap Fine-Tuning Multimodal Models with Knowledge-Adapted Captions",
+    "folder_name": "Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions",
     "images": [
-      {
-        "filename": "Best_of_Both_Worlds_Towards_Improving_Temporal_Knowledge_Base_Question_Answering_via_Targeted_Fact_Extraction_2023.emnlp-main.287__p0__score0.90.png",
-        "path": "./Best_of_Both_Worlds_Towards_Improving_Temporal_Knowledge_Base_Question_Answering_via_Targeted_Fact_Extraction_2023.emnlp-main.287/Best_of_Both_Worlds_Towards_Improving_Temporal_Knowledge_Base_Question_Answering_via_Targeted_Fact_Extraction_2023.emnlp-main.287__p0__score0.90.png",
-        "caption": "Figure 1: Example question, its AMR and λ-expressions"
-      },
       {
-        "filename": "Best_of_Both_Worlds_Towards_Improving_Temporal_Knowledge_Base_Question_Answering_via_Targeted_Fact_Extraction_2023.emnlp-main.287__p2__score1.00.png",
-        "path": "./Best_of_Both_Worlds_Towards_Improving_Temporal_Knowledge_Base_Question_Answering_via_Targeted_Fact_Extraction_2023.emnlp-main.287/Best_of_Both_Worlds_Towards_Improving_Temporal_Knowledge_Base_Question_Answering_via_Targeted_Fact_Extraction_2023.emnlp-main.287__p2__score1.00.png",
-        "caption": "Figure 2: An illustration of the proposed approach. Upper line of modules correspond to the KBQA pipeline, while lower line of modules are related to targeted fact extraction from textual resources."
+        "filename": "Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p0__score1.00.png",
+        "path": "figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p0__score1.00.png",
+        "caption": "Figure 1: KnowAda identifies knowledge gaps of a VLM and adapts the dense caption accordingly. The KnowAda dense captions are better suited for downstream fine-tuning of the VLM."
       },
-      {
-        "filename": "Best_of_Both_Worlds_Towards_Improving_Temporal_Knowledge_Base_Question_Answering_via_Targeted_Fact_Extraction_2023.emnlp-main.287__p4__score0.80.png",
-        "path": "./Best_of_Both_Worlds_Towards_Improving_Temporal_Knowledge_Base_Question_Answering_via_Targeted_Fact_Extraction_2023.emnlp-main.287/Best_of_Both_Worlds_Towards_Improving_Temporal_Knowledge_Base_Question_Answering_via_Targeted_Fact_Extraction_2023.emnlp-main.287__p4__score0.80.png",
-        "caption": "Figure 3: Illustration of a working example showing the KBQA failure occurring due to missing auxiliary fact that is substituted by temporal fact extraction and finally reforming the lambda expression by hard-coding the missing fact."
-      }
-    ],
-    "acl_id": "2023.emnlp-main.287"
-  },
-  {
-    "id": 14,
-    "folder_name": "Bridging_the_Gap_between_Expert_and_Language_Models_Concept-guided_Chess_Commentary_Generation_and_Evaluation_2025.naacl-long.481",
-    "title": "Bridging the Gap between Expert and Language Models Concept-guided Chess Commentary Generation and Evaluation",
-    "images": [
       {
-        "filename": "Bridging_the_Gap_between_Expert_and_Language_Models_Concept-guided_Chess_Commentary_Generation_and_Evaluation_2025.naacl-long.481__p0__score0.95.png",
-        "path": "./Bridging_the_Gap_between_Expert_and_Language_Models_Concept-guided_Chess_Commentary_Generation_and_Evaluation_2025.naacl-long.481/Bridging_the_Gap_between_Expert_and_Language_Models_Concept-guided_Chess_Commentary_Generation_and_Evaluation_2025.naacl-long.481__p0__score0.95.png",
-        "caption": "Figure 1: Comparison of chess commentary generation methods. The red color indicates incorrect information."
+        "filename": "Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+        "path": "figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+        "caption": "Figure 2: Our proposed KnowAda pipeline. We first probe the knowledge of the VLM, identifying the known and unknown parts of the image description, by generating questions about the visual content of the image mentioned in the caption. Then, KnowAda identifies the knowledge gaps by judging the VLM answers to these questions. Finally, KnowAda adapt the description to match these gaps (e.g., removing the number of limousines mentioned in the caption, which relates to a question the model failed to answer)."
       },
       {
-        "filename": "Bridging_the_Gap_between_Expert_and_Language_Models_Concept-guided_Chess_Commentary_Generation_and_Evaluation_2025.naacl-long.481__p3__score1.00.png",
-        "path": "./Bridging_the_Gap_between_Expert_and_Language_Models_Concept-guided_Chess_Commentary_Generation_and_Evaluation_2025.naacl-long.481/Bridging_the_Gap_between_Expert_and_Language_Models_Concept-guided_Chess_Commentary_Generation_and_Evaluation_2025.naacl-long.481__p3__score1.00.png",
-        "caption": "Figure 2: Overview of CCC, consists of (a) extracting concept vectors and (b) generating concept-guided commentary."
+        "filename": "Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p3__score1.00.png",
+        "path": "figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p3__score1.00.png",
+        "caption": "Figure 4: DNLI Evaluation. Given a generated description by a VLM, we decompose it to atomic propositions. Then, we classify each proposition to either entailed, contradicted or neutral, conditioned on the ground-truth description. Finally, we calculate the descriptiveness and contradiction based on the number of entailed and contradicted propositions."
       }
-    ],
-    "acl_id": "2025.naacl-long.481"
+    ]
   },
   {
-    "id": 15,
-    "folder_name": "Bring_Your_Own_Knowledge_A_Survey_of_Methods_for_LLM_Knowledge_Expansion_2025.l2m2-1.12",
-    "title": "Bring Your Own Knowledge A Survey of Methods for LLM Knowledge Expansion",
+    "title": "Con dence Improves Self-Consistency in LLMs",
+    "folder_name": "Con_dence_Improves_Self-Consistency_in_LLMs",
     "images": [
       {
-        "filename": "Bring_Your_Own_Knowledge_A_Survey_of_Methods_for_LLM_Knowledge_Expansion_2025.l2m2-1.12__p1__score0.95.png",
-        "path": "./Bring_Your_Own_Knowledge_A_Survey_of_Methods_for_LLM_Knowledge_Expansion_2025.l2m2-1.12/Bring_Your_Own_Knowledge_A_Survey_of_Methods_for_LLM_Knowledge_Expansion_2025.l2m2-1.12__p1__score0.95.png",
-        "caption": "Figure 1: Taxonomy of current methods for expanding LLM knowledge. Due to space constraints, please refer to Appendix A.1 for a comprehensive review of methods and their corresponding citations."
+        "filename": "Con_dence_Improves_Self-Consistency_in_LLMs__p1__score0.90.png",
+        "path": "figs_human_eval_papers/Con_dence_Improves_Self-Consistency_in_LLMs/Con_dence_Improves_Self-Consistency_in_LLMs__p1__score0.90.png",
+        "caption": "Figure 2: A simplified example comparing self-consistency vs CISC. (1) Given an input question, (2) both methods first sample multiple reasoning paths. (4, top) Self-consistency then simply selects the most frequent answer. Conversely, (3) CISC adds a self-assessment step, where a confidence score is assigned to each path (see §4.1 for more advanced methods). Then, (4, bottom) it selects the final answer via a weighted majority vote."
       }
-    ],
-    "acl_id": "2025.l2m2-1.12"
+    ]
   },
   {
-    "id": 16,
-    "folder_name": "COVE_COntext_and_VEracity_prediction_for_out-of-context_images_2025.naacl-long.102",
-    "title": "COVE COntext and VEracity prediction for out-of-context images",
+    "title": "Conditional MASK Discrete Diffusion Language Model",
+    "folder_name": "Conditional_MASK_Discrete_Diffusion_Language_Model",
     "images": [
-      {
-        "filename": "COVE_COntext_and_VEracity_prediction_for_out-of-context_images_2025.naacl-long.102__p0__score0.95.png",
-        "path": "./COVE_COntext_and_VEracity_prediction_for_out-of-context_images_2025.naacl-long.102/COVE_COntext_and_VEracity_prediction_for_out-of-context_images_2025.naacl-long.102__p0__score0.95.png",
-        "caption": "Figure 1: The two steps of COVE: (1) Generating the true context of the image. (2) Predicting the veracity of a caption by comparing it with the generated context."
-      },
-      {
-        "filename": "COVE_COntext_and_VEracity_prediction_for_out-of-context_images_2025.naacl-long.102__p2__score1.00.png",
-        "path": "./COVE_COntext_and_VEracity_prediction_for_out-of-context_images_2025.naacl-long.102/COVE_COntext_and_VEracity_prediction_for_out-of-context_images_2025.naacl-long.102__p2__score1.00.png",
-        "caption": "Figure 2: The architecture of COVE consists of six steps. The first three are performed in parallel and consist of retrieving evidence. Step 4 predicts the context items in a QA setting. Step 5 updates missing items based on the existing ones and Wikipedia knowledge. Step 6 predicts the veracity of the caption based on the predicted context."
-      },
       {
-        "filename": "COVE_COntext_and_VEracity_prediction_for_out-of-context_images_2025.naacl-long.102__p3__score0.95.png",
-        "path": "./COVE_COntext_and_VEracity_prediction_for_out-of-context_images_2025.naacl-long.102/COVE_COntext_and_VEracity_prediction_for_out-of-context_images_2025.naacl-long.102__p3__score0.95.png",
-        "caption": "Figure 3: Wikipedia entities collection. The candidate set is composed of the entities in the caption and those that are most similar to the image. Candidates are retained if the similarity between the image and their name or their Wikipedia images passes a threshold."
+        "filename": "Conditional_MASK_Discrete_Diffusion_Language_Model__p0__score1.00.png",
+        "path": "figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p0__score1.00.png",
+        "caption": "Figure 1: Overview of how our approach (DiffusionEAGS) combines the strengths of MLM and diffusionbased models to overcome the limitations of AR models, achieving a better diversity-quality tradeoff and finegrained controllability"
       },
       {
-        "filename": "COVE_COntext_and_VEracity_prediction_for_out-of-context_images_2025.naacl-long.102__p3__score0.95__1.png",
-        "path": "./COVE_COntext_and_VEracity_prediction_for_out-of-context_images_2025.naacl-long.102/COVE_COntext_and_VEracity_prediction_for_out-of-context_images_2025.naacl-long.102__p3__score0.95__1.png",
-        "caption": "Figure 4: Knowledge gap completion. Questions are generated based on the predicted context and answered with Wikipedia passages. If the answers are relevant, the context is updated."
+        "filename": "Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+        "path": "figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+        "caption": "Figure 2: Overview of the training (forward) and inference (backward) processes in Diffusion-EAGS. Training (left): Entropy-based Noise Scheduling (ENS) determines which tokens in the masked sequence, denoted by [M ], should be denoised at each timestep based on the position entropy H(xi). These tokens are then generated using the diffusion model with parameters θ, and the loss is computed using a cross-entropy (C.E.) diffusion loss. Inference (right): Starting from a fully masked sequence conditioned on Y , Entropy-Adaptive Gibbs Sampling (EAGS) iteratively refines the sequence by focusing on high-entropy tokens, denoted as Mt, based on a threshold τt, yielding stable and coherent text generation."
       }
-    ],
-    "acl_id": "2025.naacl-long.102"
+    ]
   },
   {
-    "id": 17,
-    "folder_name": "CRaSh_Clustering_Removing_and_Sharing_Enhance_Fine-tuning_without_Full_Large_Language_Model_2023.emnlp-main.597",
-    "title": "CRaSh Clustering, Removing, and Sharing Enhance Fine-tuning without Full Large Language Model",
+    "title": "Cross-Lingual Retrieval Augmented Prompt for Low-Resource Languages",
+    "folder_name": "Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages",
     "images": [
       {
-        "filename": "CRaSh_Clustering_Removing_and_Sharing_Enhance_Fine-tuning_without_Full_Large_Language_Model_2023.emnlp-main.597__p4__score0.95.png",
-        "path": "./CRaSh_Clustering_Removing_and_Sharing_Enhance_Fine-tuning_without_Full_Large_Language_Model_2023.emnlp-main.597/CRaSh_Clustering_Removing_and_Sharing_Enhance_Fine-tuning_without_Full_Large_Language_Model_2023.emnlp-main.597__p4__score0.95.png",
-        "caption": "Figure 4: Overview of Offsite-Tuning and CRaSh strategy."
+        "filename": "Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+        "path": "figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+        "caption": "Figure 1: Main idea of PARC: we enhance zero-shot learning for low-resource languages (LRLs) by crosslingual retrieval from labeled/unlabeled high-resource languages (HRLs). (a) An LRL input sample is taken as query by the cross-lingual retriever to retrieve the semantically most similar HRL sample from the HRL corpus. The label of the retrieved HRL sample is obtained either from the corpus (labeled setting) or by self-prediction (unlabeled setting). (b) The retrieved HRL sample together with its label and the input sample are reformulated as prompts. The cross-lingual retrievalaugmented prompt is created by concatenation and taken by the MPLM for prediction. Our experiments show that PARC outperforms other zero-shot methods and even finetuning."
       }
-    ],
-    "acl_id": "2023.emnlp-main.597"
+    ]
   },
   {
-    "id": 18,
-    "folder_name": "CVE-Bench_Benchmarking_LLM-based_Software_Engineering_Agents_Ability_to_Repair_Real-World_CVE_Vulnerabilities_2025.naacl-long.212",
-    "title": "CVE-Bench Benchmarking LLM-based Software Engineering Agents Ability to Repair Real-World CVE Vulnerabilities",
+    "title": "DRAGIN Dynamic Retrieval Augmented Generation based on the Information Needs of Large Language Models",
+    "folder_name": "DRAGIN_Dynamic_Retrieval_Augmented_Generation_based_on_the_Information_Needs_of_Large_Language_Models",
     "images": [
       {
-        "filename": "CVE-Bench_Benchmarking_LLM-based_Software_Engineering_Agents_Ability_to_Repair_Real-World_CVE_Vulnerabilities_2025.naacl-long.212__p3__score1.00.png",
-        "path": "./CVE-Bench_Benchmarking_LLM-based_Software_Engineering_Agents_Ability_to_Repair_Real-World_CVE_Vulnerabilities_2025.naacl-long.212/CVE-Bench_Benchmarking_LLM-based_Software_Engineering_Agents_Ability_to_Repair_Real-World_CVE_Vulnerabilities_2025.naacl-long.212__p3__score1.00.png",
-        "caption": "Figure 2: There are four steps in CVE-Bench: (1) Environment construction: CVE-Bench uses the three-level information to generate a vulnerability issue as the input to the agent. CVE-Bench clones the CVEs’ corresponding repositories and checks out the repository to the parent commits. (2) Repair patch generation: Next, CVE-Bench sends the queried information divided into multiple levels to the agents for patch generation. (3) Repair validation: At last, CVE-Bench performs execution-based repair patch validation using the unit tests. CVE-Bench also considers comparing the generated patches with the ground truth repair code crafted by the man."
+        "filename": "DRAGIN_Dynamic_Retrieval_Augmented_Generation_based_on_the_Information_Needs_of_Large_Language_Models__p2__score1.00.png",
+        "path": "figs_human_eval_papers/DRAGIN_Dynamic_Retrieval_Augmented_Generation_based_on_the_Information_Needs_of_Large_Language_Models/DRAGIN_Dynamic_Retrieval_Augmented_Generation_based_on_the_Information_Needs_of_Large_Language_Models__p2__score1.00.png",
+        "caption": "Figure 1: An illustration of our DRAGIN framework."
       },
-      {
-        "filename": "CVE-Bench_Benchmarking_LLM-based_Software_Engineering_Agents_Ability_to_Repair_Real-World_CVE_Vulnerabilities_2025.naacl-long.212__p7__score0.95.png",
-        "path": "./CVE-Bench_Benchmarking_LLM-based_Software_Engineering_Agents_Ability_to_Repair_Real-World_CVE_Vulnerabilities_2025.naacl-long.212/CVE-Bench_Benchmarking_LLM-based_Software_Engineering_Agents_Ability_to_Repair_Real-World_CVE_Vulnerabilities_2025.naacl-long.212__p7__score0.95.png",
-        "caption": "Figure 8: We show an example of a formatted task instance, the original code, ground-truth repair code (extracted from the database, made by the developers), the 3-level information, generated issue, and the agent-generated code. In the code blocks, grey highlights are additions."
-      }
-    ],
-    "acl_id": "2025.naacl-long.212"
-  },
-  {
-    "id": 19,
-    "folder_name": "Can_Automatic_Metrics_Assess_High-Quality_Translations_2024.emnlp-main.802",
-    "title": "Can Automatic Metrics Assess High-Quality Translations",
-    "images": [
       {
-        "filename": "Can_Automatic_Metrics_Assess_High-Quality_Translations_2024.emnlp-main.802__p2__score0.95.png",
-        "path": "./Can_Automatic_Metrics_Assess_High-Quality_Translations_2024.emnlp-main.802/Can_Automatic_Metrics_Assess_High-Quality_Translations_2024.emnlp-main.802__p2__score0.95.png",
-        "caption": "Figure 1: Ranking analysis configurations. ρ: Spearman correlation."
+        "filename": "DRAGIN_Dynamic_Retrieval_Augmented_Generation_based_on_the_Information_Needs_of_Large_Language_Models__p5__score0.60.png",
+        "path": "figs_human_eval_papers/DRAGIN_Dynamic_Retrieval_Augmented_Generation_based_on_the_Information_Needs_of_Large_Language_Models/DRAGIN_Dynamic_Retrieval_Augmented_Generation_based_on_the_Information_Needs_of_Large_Language_Models__p5__score0.60.png",
+        "caption": "Table 1: A comparative overview of our selected Retrieval-Augmented Generation baselines."
       }
-    ],
-    "acl_id": "2024.emnlp-main.802"
+    ]
   },
   {
-    "id": 20,
-    "folder_name": "ChronoSense_Exploring_Temporal_Understanding_in_Large_Language_Models_with_Time_Intervals_of_Events_2025.acl-short.46",
-    "title": "ChronoSense Exploring Temporal Understanding in Large Language Models with Time Intervals of Events",
+    "title": "DiffusionBERT Improving Generative Masked Language Models with Diffusion Models",
+    "folder_name": "DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models",
     "images": [
       {
-        "filename": "ChronoSense_Exploring_Temporal_Understanding_in_Large_Language_Models_with_Time_Intervals_of_Events_2025.acl-short.46__p0__score0.90.png",
-        "path": "./ChronoSense_Exploring_Temporal_Understanding_in_Large_Language_Models_with_Time_Intervals_of_Events_2025.acl-short.46/ChronoSense_Exploring_Temporal_Understanding_in_Large_Language_Models_with_Time_Intervals_of_Events_2025.acl-short.46__p0__score0.90.png",
-        "caption": "Figure 1: 13 Allen relations between two intervals, covering all combinations."
+        "filename": "DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+        "path": "figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+        "caption": "Figure 1: In contrast to conventional discrete diffusion models, DiffusionBERT uses BERT as its backbone to perform text generation. The main differences are highlighted in color: (1) DiffusionBERT performs decoding without knowing the current time step while canonical diffusion models are conditioned on time step. (2) The diffusion process of DiffusionBERT is non-Markovian in that it generates noise samples xt conditioning not only on xt−1 but also on x0. Such a non-Markov process is due to our proposed noise schedule."
       },
       {
-        "filename": "ChronoSense_Exploring_Temporal_Understanding_in_Large_Language_Models_with_Time_Intervals_of_Events_2025.acl-short.46__p1__score1.00.png",
-        "path": "./ChronoSense_Exploring_Temporal_Understanding_in_Large_Language_Models_with_Time_Intervals_of_Events_2025.acl-short.46/ChronoSense_Exploring_Temporal_Understanding_in_Large_Language_Models_with_Time_Intervals_of_Events_2025.acl-short.46__p1__score1.00.png",
-        "caption": "Figure 2: An example for comparing two temporal events with LLMs."
+        "filename": "DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+        "path": "figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+        "caption": "Figure 1: In contrast to conventional discrete diffusion models, DiffusionBERT uses BERT as its backbone to perform text generation. The main differences are highlighted in color: (1) DiffusionBERT performs decoding without knowing the current time step while canonical diffusion models are conditioned on time step. (2) The diffusion process of DiffusionBERT is non-Markovian in that it generates noise samples xt conditioning not only on xt−1 but also on x0. Such a non-Markov process is due to our proposed noise schedule."
       }
-    ],
-    "acl_id": "2025.acl-short.46"
+    ]
   },
   {
-    "id": 21,
-    "folder_name": "ConsistencyChecker_Tree-based_Evaluation_of_LLM_Generalization_Capabilities_2025.acl-long.1585",
-    "title": "ConsistencyChecker Tree-based Evaluation of LLM Generalization Capabilities",
+    "title": "Distilling Step-by-Step Outperforming Larger Language Models with Less Training Data and Smaller Model Sizes",
+    "folder_name": "Distilling_Step-by-Step_Outperforming_Larger_Language_Models_with_Less_Training_Data_and_Smaller_Model_Sizes",
     "images": [
-      {
-        "filename": "ConsistencyChecker_Tree-based_Evaluation_of_LLM_Generalization_Capabilities_2025.acl-long.1585__p0__score1.00.png",
-        "path": "./ConsistencyChecker_Tree-based_Evaluation_of_LLM_Generalization_Capabilities_2025.acl-long.1585/ConsistencyChecker_Tree-based_Evaluation_of_LLM_Generalization_Capabilities_2025.acl-long.1585__p0__score1.00.png",
-        "caption": "Figure 1: Overview of the ConsistencyChecker. It shows a self-consistency tree for evaluating LLMs on machine translations. The root node (r) is the initial English sentence generated by the evaluator. Subsequent nodes (vi) are produced by the evaluatee using transformation pairs, such as English→Spanish→English (f1, f ′ 1) and English→German→English (f2, f ′ 2). The evaluation framework supports multilingual translations (e.g., French, Czech, Japanese) and can be extended to programming tasks."
-      },
       {
-        "filename": "ConsistencyChecker_Tree-based_Evaluation_of_LLM_Generalization_Capabilities_2025.acl-long.1585__p2__score1.00.png",
-        "path": "./ConsistencyChecker_Tree-based_Evaluation_of_LLM_Generalization_Capabilities_2025.acl-long.1585/ConsistencyChecker_Tree-based_Evaluation_of_LLM_Generalization_Capabilities_2025.acl-long.1585__p2__score1.00.png",
-        "caption": "Figure 2: Key concepts in the self-consistency tree (operation, node, and edge). It provides a concrete example of the self-consistency tree in the AI-assisted programming task. The node v contains a function that returns the product of two positive integers, and I is its set of inputs. The prompt p asks the evaluatee LLM to rewrite the code in node v to use a looped sum instead of just multiplying, while p′ asks the same LLM to alter it back to simply multiplying."
+        "filename": "Distilling_Step-by-Step_Outperforming_Larger_Language_Models_with_Less_Training_Data_and_Smaller_Model_Sizes__p0__score0.60.png",
+        "path": "figs_human_eval_papers/Distilling_Step-by-Step_Outperforming_Larger_Language_Models_with_Less_Training_Data_and_Smaller_Model_Sizes/Distilling_Step-by-Step_Outperforming_Larger_Language_Models_with_Less_Training_Data_and_Smaller_Model_Sizes__p0__score0.60.png",
+        "caption": "Figure 1: While large language models (LLMs) offer strong zero/few-shot performance, they are challenging to serve in practice. Traditional ways of training small task-specific models, on the other hand, requires large amount of training data. We propose Distilling step-by-step, a new paradigm that extracts rationales from LLMs as informative task knowledge into training small models, which reduces both the deployed model size as well as the data required for training."
       },
       {
-        "filename": "ConsistencyChecker_Tree-based_Evaluation_of_LLM_Generalization_Capabilities_2025.acl-long.1585__p7__score0.90.png",
-        "path": "./ConsistencyChecker_Tree-based_Evaluation_of_LLM_Generalization_Capabilities_2025.acl-long.1585/ConsistencyChecker_Tree-based_Evaluation_of_LLM_Generalization_Capabilities_2025.acl-long.1585__p7__score0.90.png",
-        "caption": "Table 4: Ablation study on evaluator models. (Top) machine translation consistency scores (%) at complexity level C3(F) for model scales (7B–72B). (Bottom) AI-assisted programming consistency scores (%) at complexity level C3(F) for code transformations."
+        "filename": "Distilling_Step-by-Step_Outperforming_Larger_Language_Models_with_Less_Training_Data_and_Smaller_Model_Sizes__p2__score0.95.png",
+        "path": "figs_human_eval_papers/Distilling_Step-by-Step_Outperforming_Larger_Language_Models_with_Less_Training_Data_and_Smaller_Model_Sizes/Distilling_Step-by-Step_Outperforming_Larger_Language_Models_with_Less_Training_Data_and_Smaller_Model_Sizes__p2__score0.95.png",
+        "caption": "Figure 2: Overview on Distilling step-by-step. We first utilize CoT prompting to extract rationales from an LLM (Section 3.1). We then use the generated rationales to train small task-specific models within a multi-task learning framework where we prepend task prefixes to the input examples and train the model to output differently based on the given task prefix (Section 3.2)."
       }
-    ],
-    "acl_id": "2025.acl-long.1585"
+    ]
   },
   {
-    "id": 22,
-    "folder_name": "Consultant_Decoding_Yet_Another_Synergistic_Mechanism_2025.findings-acl.797",
-    "title": "Consultant Decoding Yet Another Synergistic Mechanism",
+    "title": "Error-driven Data-efficient Large Multimodal Model Tuning",
+    "folder_name": "Error-driven_Data-efficient_Large_Multimodal_Model_Tuning",
     "images": [
       {
-        "filename": "Consultant_Decoding_Yet_Another_Synergistic_Mechanism_2025.findings-acl.797__p0__score0.95.png",
-        "path": "./Consultant_Decoding_Yet_Another_Synergistic_Mechanism_2025.findings-acl.797/Consultant_Decoding_Yet_Another_Synergistic_Mechanism_2025.findings-acl.797__p0__score0.95.png",
-        "caption": "Figure 1: (a) A visual description of the sub-optimal problem of distribution-based method, where the blue box is high-quality nucleus of Top-P sampling and the xd is the draft token. (b) The CD verification algorithm. q(x) and p(x) denote distribution of draft model and target model, respectively. The ε is the approximate convergence loss in the training phase of target model."
+        "filename": "Error-driven_Data-efficient_Large_Multimodal_Model_Tuning__p2__score1.00.png",
+        "path": "figs_human_eval_papers/Error-driven_Data-efficient_Large_Multimodal_Model_Tuning/Error-driven_Data-efficient_Large_Multimodal_Model_Tuning__p2__score1.00.png",
+        "caption": "Figure 1: Overview of the error-driven data-efficient tuning paradigm."
       },
       {
-        "filename": "Consultant_Decoding_Yet_Another_Synergistic_Mechanism_2025.findings-acl.797__p3__score0.95.png",
-        "path": "./Consultant_Decoding_Yet_Another_Synergistic_Mechanism_2025.findings-acl.797/Consultant_Decoding_Yet_Another_Synergistic_Mechanism_2025.findings-acl.797__p3__score0.95.png",
-        "caption": "Figure 2: The comparison between Consultant Decoding and Top-P sampling. xi, x′ i, and x̂i denote draft token, resample token by CD, and sample token by TopP, respectively."
+        "filename": "Error-driven_Data-efficient_Large_Multimodal_Model_Tuning__p3__score0.95.png",
+        "path": "figs_human_eval_papers/Error-driven_Data-efficient_Large_Multimodal_Model_Tuning/Error-driven_Data-efficient_Large_Multimodal_Model_Tuning__p3__score0.95.png",
+        "caption": "Figure 2: Example for illustrating the process of mistake identification. At each iteration, we append one more reasoning step into the prompt to ask the teacher model to answer the question and track the probability changes of all the candidate option tokens."
       }
-    ],
-    "acl_id": "2025.findings-acl.797"
+    ]
   },
   {
-    "id": 23,
-    "folder_name": "Controllable_Mixed-Initiative_Dialogue_Generation_through_Prompting_2023.acl-short.82",
-    "title": "Controllable Mixed-Initiative Dialogue Generation through Prompting",
+    "title": "Establishing Trustworthy LLM Evaluation via Shortcut Neuron Analysis",
+    "folder_name": "Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis",
     "images": [
       {
-        "filename": "Controllable_Mixed-Initiative_Dialogue_Generation_through_Prompting_2023.acl-short.82__p0__score0.90.png",
-        "path": "./Controllable_Mixed-Initiative_Dialogue_Generation_through_Prompting_2023.acl-short.82/Controllable_Mixed-Initiative_Dialogue_Generation_through_Prompting_2023.acl-short.82__p0__score0.90.png",
-        "caption": "Figure 1: Excerpt of a conversation between an emotional help-seeker and a supporter about a breakup, with candidate responses attempting to use the support strategy “Restatement or Paraphrasing.”"
+        "filename": "Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p0__score0.95.png",
+        "path": "figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p0__score0.95.png",
+        "caption": "Figure 1: An example illustrating the core principle of our approach: we prevent the model from relying on shortcuts in contaminated regions to generate answers. This process restores the model’s true capabilities."
       },
       {
-        "filename": "Controllable_Mixed-Initiative_Dialogue_Generation_through_Prompting_2023.acl-short.82__p2__score0.80.png",
-        "path": "./Controllable_Mixed-Initiative_Dialogue_Generation_through_Prompting_2023.acl-short.82/Controllable_Mixed-Initiative_Dialogue_Generation_through_Prompting_2023.acl-short.82__p2__score0.80.png",
-        "caption": "Figure 2: Parts of an example prompt for ESC (yellow background). Task Background: ground truth annotations describing the conversation. Conversation History: dialogue context with natural language forms of annotated dialogue intents. Full situation in Appendix B.1."
+        "filename": "Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+        "path": "figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+        "caption": "Figure 2: The overview of our method. We employ neuron analysis to identify regions within the model that may be overestimating its capabilities due to shortcuts. We calculate comparative and causal scores to find shortcut neurons. The former highlights the areas where there is the greatest divergence between parameters of contaminated and uncontaminated models. The latter is derived from neuron patching analysis to assess its causal impact. Subsequently, we use the located shortcut neurons to patch various models under test to obtain trustworthy evaluation results."
       }
-    ],
-    "acl_id": "2023.acl-short.82"
+    ]
   },
   {
-    "id": 24,
-    "folder_name": "Creating_Hierarchical_Relations_in_a_Multilingual_Event-type_Ontology_2025.law-1.19",
-    "title": "Creating Hierarchical Relations in a Multilingual Event-type Ontology",
+    "title": "Exploring Precision and Recall to assess the quality and diversity of LLMs",
+    "folder_name": "Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs",
     "images": [
       {
-        "filename": "Creating_Hierarchical_Relations_in_a_Multilingual_Event-type_Ontology_2025.law-1.19__p3__score0.70.png",
-        "path": "./Creating_Hierarchical_Relations_in_a_Multilingual_Event-type_Ontology_2025.law-1.19/Creating_Hierarchical_Relations_in_a_Multilingual_Event-type_Ontology_2025.law-1.19__p3__score0.70.png",
-        "caption": "Figure 2: The hierarchical concept Ownership Transfer (abbreviated; shown in the editing tool)"
+        "filename": "Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p3__score0.80.png",
+        "path": "figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p3__score0.80.png",
+        "caption": "Figure 4: Precision and Recall for distribution-based metrics. (a) Distributions P and Q. (b) Precision is the proportion of the support of Q that generates P . (c) Recall is the proportion of the support P generated by Q."
       },
       {
-        "filename": "Creating_Hierarchical_Relations_in_a_Multilingual_Event-type_Ontology_2025.law-1.19__p4__score0.85.png",
-        "path": "./Creating_Hierarchical_Relations_in_a_Multilingual_Event-type_Ontology_2025.law-1.19/Creating_Hierarchical_Relations_in_a_Multilingual_Event-type_Ontology_2025.law-1.19__p4__score0.85.png",
-        "caption": "Figure 3: The tree w/path to Possession or Ownership"
+        "filename": "Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+        "path": "figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+        "caption": "Figure 5: Our pipeline to compute the Precision and Recall metrics. Texts are projected into a latent space of a pre-trained model, where a k-NN estimation is performed to estimate the relative overlaps of P and Q."
       }
-    ],
-    "acl_id": "2025.law-1.19"
+    ]
   },
   {
-    "id": 25,
-    "folder_name": "CritiQ_Mining_Data_Quality_Criteria_from_Human_Preferences_2025.acl-long.792",
-    "title": "CritiQ Mining Data Quality Criteria from Human Preferences",
+    "title": "FaST Feature-aware Sampling and Tuning for Personalized Preference Alignment with Limited Data",
+    "folder_name": "FaST_Feature-aware_Sampling_and_Tuning_for_Personalized_Preference_Alignment_with_Limited_Data",
     "images": [
       {
-        "filename": "CritiQ_Mining_Data_Quality_Criteria_from_Human_Preferences_2025.acl-long.792__p2__score1.00.png",
-        "path": "./CritiQ_Mining_Data_Quality_Criteria_from_Human_Preferences_2025.acl-long.792/CritiQ_Mining_Data_Quality_Criteria_from_Human_Preferences_2025.acl-long.792__p2__score1.00.png",
-        "caption": "Figure 2: CRITIQ Flow comprises two major components: multi-criteria pairwise judgment and the criteria evolution process. The multi-criteria pairwise judgment process employs a series of worker agents to make quality comparisons under a certain criterion. The criteria evolution process aims to obtain data quality criteria that highly align with human judgment through an iterative evolution. The initial criteria are retrieved from the knowledge base. After evolution, we select the final criteria to annotate the dataset for training CRITIQ Scorer."
+        "filename": "FaST_Feature-aware_Sampling_and_Tuning_for_Personalized_Preference_Alignment_with_Limited_Data__p2__score1.00.png",
+        "path": "figs_human_eval_papers/FaST_Feature-aware_Sampling_and_Tuning_for_Personalized_Preference_Alignment_with_Limited_Data/FaST_Feature-aware_Sampling_and_Tuning_for_Personalized_Preference_Alignment_with_Limited_Data__p2__score1.00.png",
+        "caption": "Figure 1: Overview of the proposed FaST approach. The red-dashed box highlights the user-specific steps."
       }
-    ],
-    "acl_id": "2025.acl-long.792"
+    ]
   },
   {
-    "id": 26,
-    "folder_name": "Croppable_Knowledge_Graph_Embedding_2025.acl-long.579",
-    "title": "Croppable Knowledge Graph Embedding",
+    "title": "Fooling the LVLM Judges Visual Biases in LVLM-Based Evaluation 3.5 4.1",
+    "folder_name": "Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1",
     "images": [
       {
-        "filename": "Croppable_Knowledge_Graph_Embedding_2025.acl-long.579__p0__score1.00.png",
-        "path": "./Croppable_Knowledge_Graph_Embedding_2025.acl-long.579/Croppable_Knowledge_Graph_Embedding_2025.acl-long.579__p0__score1.00.png",
-        "caption": "Figure 1: Diverse KGE dimensions for a KG."
+        "filename": "Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1__p0__score0.95.png",
+        "path": "figs_human_eval_papers/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1__p0__score0.95.png",
+        "caption": "Figure 1: The LVLM judge is influenced by visual manipulations, resulting in an unfairly inflated evaluation score. Embedding the image generation instruction in the image (left) produces a manipulated image (right), leading to unfair assessment."
       },
-      {
-        "filename": "Croppable_Knowledge_Graph_Embedding_2025.acl-long.579__p2__score0.95.png",
-        "path": "./Croppable_Knowledge_Graph_Embedding_2025.acl-long.579/Croppable_Knowledge_Graph_Embedding_2025.acl-long.579__p2__score0.95.png",
-        "caption": "Figure 2: Overview of MED."
-      }
-    ],
-    "acl_id": "2025.acl-long.579"
-  },
-  {
-    "id": 27,
-    "folder_name": "CulturalBench_A_Robust_Diverse_and_Challenging_Benchmark_for_Measuring_LMs_Cultural_Knowledge_Through_Human-AI_Red-Team_2025.acl-long.1247",
-    "title": "CulturalBench A Robust, Diverse and Challenging Benchmark for Measuring LMs Cultural Knowledge Through Human-AI Red-Team",
-    "images": [
       {
-        "filename": "CulturalBench_A_Robust_Diverse_and_Challenging_Benchmark_for_Measuring_LMs_Cultural_Knowledge_Through_Human-AI_Red-Team_2025.acl-long.1247__p1__score1.00.png",
-        "path": "./CulturalBench_A_Robust_Diverse_and_Challenging_Benchmark_for_Measuring_LMs_Cultural_Knowledge_Through_Human-AI_Red-Team_2025.acl-long.1247/CulturalBench_A_Robust_Diverse_and_Challenging_Benchmark_for_Measuring_LMs_Cultural_Knowledge_Through_Human-AI_Red-Team_2025.acl-long.1247__p1__score1.00.png",
-        "caption": "Figure 1: The human-AI collaborative data collection pipeline of CULTURALBENCH."
+        "filename": "Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1__p2__score0.60.png",
+        "path": "figs_human_eval_papers/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1__p2__score0.60.png",
+        "caption": "Table 1: Taxonomy of visual biases illustrated through comparisons between original and biased images."
       }
-    ],
-    "acl_id": "2025.acl-long.1247"
+    ]
   },
   {
-    "id": 28,
-    "folder_name": "Customizing_In-context_Learning_for_Dynamic_Interest_Adaption_in_LLM-based_Recommendation_2025.findings-acl.735",
-    "title": "Customizing In-context Learning for Dynamic Interest Adaption in LLM-based Recommendation",
+    "title": "Generating Diverse Hypotheses for Inductive Reasoning",
+    "folder_name": "Generating_Diverse_Hypotheses_for_Inductive_Reasoning",
     "images": [
       {
-        "filename": "Customizing_In-context_Learning_for_Dynamic_Interest_Adaption_in_LLM-based_Recommendation_2025.findings-acl.735__p0__score0.95.png",
-        "path": "./Customizing_In-context_Learning_for_Dynamic_Interest_Adaption_in_LLM-based_Recommendation_2025.findings-acl.735/Customizing_In-context_Learning_for_Dynamic_Interest_Adaption_in_LLM-based_Recommendation_2025.findings-acl.735__p0__score0.95.png",
-        "caption": "Figure 1: An illustration of user interest shift in realworld scenarios."
+        "filename": "Generating_Diverse_Hypotheses_for_Inductive_Reasoning__p1__score1.00.png",
+        "path": "figs_human_eval_papers/Generating_Diverse_Hypotheses_for_Inductive_Reasoning/Generating_Diverse_Hypotheses_for_Inductive_Reasoning__p1__score1.00.png",
+        "caption": "Figure 1: A motivation for MoC approach. IID sampling frequently generates redundant hypotheses (top). Increasing the temperature leads to frequent occurrences of text degeneration (middle). MoC allows for the generation of diverse hypotheses without a decline in hypothesis quality (bottom)."
       },
       {
-        "filename": "Customizing_In-context_Learning_for_Dynamic_Interest_Adaption_in_LLM-based_Recommendation_2025.findings-acl.735__p3__score1.00.png",
-        "path": "./Customizing_In-context_Learning_for_Dynamic_Interest_Adaption_in_LLM-based_Recommendation_2025.findings-acl.735/Customizing_In-context_Learning_for_Dynamic_Interest_Adaption_in_LLM-based_Recommendation_2025.findings-acl.735__p3__score1.00.png",
-        "caption": "Figure 4: Overview of our RecICL pipeline, primarily consists of three stages: Data Construction, Model Training, and Dynamic Interest Adaption. Here we define the few-shot number as 4."
-      }
-    ],
-    "acl_id": "2025.findings-acl.735"
-  },
-  {
-    "id": 29,
-    "folder_name": "DEPN_Detecting_and_Editing_Privacy_Neurons_in_Pretrained_Language_Models_2023.emnlp-main.174",
-    "title": "DEPN Detecting and Editing Privacy Neurons in Pretrained Language Models",
-    "images": [
+        "filename": "Generating_Diverse_Hypotheses_for_Inductive_Reasoning__p3__score1.00.png",
+        "path": "figs_human_eval_papers/Generating_Diverse_Hypotheses_for_Inductive_Reasoning/Generating_Diverse_Hypotheses_for_Inductive_Reasoning__p3__score1.00.png",
+        "caption": "Figure 5: An overview of our Mixture of Concepts approach. We generate K distinct concepts (left) and feed them into the LLM separately for hypothesis generation (right)."
+      },
       {
-        "filename": "DEPN_Detecting_and_Editing_Privacy_Neurons_in_Pretrained_Language_Models_2023.emnlp-main.174__p2__score1.00.png",
-        "path": "./DEPN_Detecting_and_Editing_Privacy_Neurons_in_Pretrained_Language_Models_2023.emnlp-main.174/DEPN_Detecting_and_Editing_Privacy_Neurons_in_Pretrained_Language_Models_2023.emnlp-main.174__p2__score1.00.png",
-        "caption": "Figure 1: The diagram of DEPN. When a language model leaks privacy information, DEPN calculates privacy attribution scores using the Privacy Neuron Detector. It then selects the top z privacy neurons with the Privacy Neuron Aggregator and eliminates the model memorization of privacy information using the Privacy Editor."
-      }
-    ],
-    "acl_id": "2023.emnlp-main.174"
-  },
-  {
-    "id": 30,
-    "folder_name": "DaCoM_Strategies_to_Construct_Domain-specific_Low-resource_Language_Machine_Translation_Dataset_2025.coling-industry.53",
-    "title": "DaCoM Strategies to Construct Domain-specific Low-resource Language Machine Translation Dataset",
-    "images": [
+        "filename": "Generating_Diverse_Hypotheses_for_Inductive_Reasoning__p4__score0.95.png",
+        "path": "figs_human_eval_papers/Generating_Diverse_Hypotheses_for_Inductive_Reasoning/Generating_Diverse_Hypotheses_for_Inductive_Reasoning__p4__score0.95.png",
+        "caption": "Figure 6: Example problems in each of four datasets we study. We graphically display the MiniARC examples to help the reader understand."
+      },
       {
-        "filename": "DaCoM_Strategies_to_Construct_Domain-specific_Low-resource_Language_Machine_Translation_Dataset_2025.coling-industry.53__p2__score1.00.png",
-        "path": "./DaCoM_Strategies_to_Construct_Domain-specific_Low-resource_Language_Machine_Translation_Dataset_2025.coling-industry.53/DaCoM_Strategies_to_Construct_Domain-specific_Low-resource_Language_Machine_Translation_Dataset_2025.coling-industry.53__p2__score1.00.png",
-        "caption": "Figure 1: Pipeline of DaCoM. In phase 1, PaLM2-unicorn and GNMT are used as LLM and NMT model. In phase 2, LaBSE is used as a sentence-transformer."
+        "filename": "Generating_Diverse_Hypotheses_for_Inductive_Reasoning__p7__score0.70.png",
+        "path": "figs_human_eval_papers/Generating_Diverse_Hypotheses_for_Inductive_Reasoning/Generating_Diverse_Hypotheses_for_Inductive_Reasoning__p7__score0.70.png",
+        "caption": "Table 6: Two challenging examples from MiniARC and MBPP+, where the IID baseline fails to generate a valid hypothesis from over 500 hypothesis samples. MoC solves these problems correctly with only 64 hypotheses. The concepts in boldface formulate the correct hypothesis."
       }
-    ],
-    "acl_id": "2025.coling-industry.53"
+    ]
   },
   {
-    "id": 31,
-    "folder_name": "Deciphering_Cognitive_Distortions_in_Patient-Doctor_Mental_Health_Conversations_A_Multimodal_LLM-Based_Detection_and_Rea_2024.emnlp-main.1256",
-    "title": "Deciphering Cognitive Distortions in Patient-Doctor Mental Health Conversations A Multimodal LLM-Based Detection and Rea",
+    "title": "How Johnny Can Persuade LLMs to Jailbreak Them Rethinking Persuasion to Challenge AI Safety by Humanizing LLMs",
+    "folder_name": "How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs",
     "images": [
       {
-        "filename": "Deciphering_Cognitive_Distortions_in_Patient-Doctor_Mental_Health_Conversations_A_Multimodal_LLM-Based_Detection_and_Rea_2024.emnlp-main.1256__p1__score0.90.png",
-        "path": "./Deciphering_Cognitive_Distortions_in_Patient-Doctor_Mental_Health_Conversations_A_Multimodal_LLM-Based_Detection_and_Rea_2024.emnlp-main.1256/Deciphering_Cognitive_Distortions_in_Patient-Doctor_Mental_Health_Conversations_A_Multimodal_LLM-Based_Detection_and_Rea_2024.emnlp-main.1256__p1__score0.90.png",
-        "caption": "Figure 1: A conversation between Doctor and Patient, from our dataset with corresponding Emotion and Cognitive Distortion (CoD) Labels and Reasoning."
+        "filename": "How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs__p0__score0.95.png",
+        "path": "figs_human_eval_papers/How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs/How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs__p0__score0.95.png",
+        "caption": "Figure 1: We propose a persuasion taxonomy with persuasion techniques, and apply it to automatically paraphrase plain harmful queries into human-readable persuasive adversarial prompts (PAPs). This method achieves an attack success rate of over 92% on Llama-2, GPT-3.5, and GPT-4 without specialized optimization."
       },
       {
-        "filename": "Deciphering_Cognitive_Distortions_in_Patient-Doctor_Mental_Health_Conversations_A_Multimodal_LLM-Based_Detection_and_Rea_2024.emnlp-main.1256__p3__score1.00.png",
-        "path": "./Deciphering_Cognitive_Distortions_in_Patient-Doctor_Mental_Health_Conversations_A_Multimodal_LLM-Based_Detection_and_Rea_2024.emnlp-main.1256/Deciphering_Cognitive_Distortions_in_Patient-Doctor_Mental_Health_Conversations_A_Multimodal_LLM-Based_Detection_and_Rea_2024.emnlp-main.1256__p3__score1.00.png",
-        "caption": "Figure 2: Architectural diagram of our proposed framework, ZS-CoDR"
+        "filename": "How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs__p1__score1.00.png",
+        "path": "figs_human_eval_papers/How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs/How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs__p1__score1.00.png",
+        "caption": "Figure 2: Comparison of previous adversarial prompts and PAP, ordered by three levels of humanizing. The first level treats LLMs as algorithmic systems: for instance, GCG (Zou et al., 2023) generates prompts with gibberish suffix via gradient synthesis; Deng et al. (2023b) exploits “side-channels” like low-resource languages. The second level progresses to treat LLMs as instruction followers: they usually rely on unconventional instruction patterns to jailbreak (e.g., virtualization or role-play), e.g., Yu et al. (2023) learn the distribution of virtualization-based jailbreak templates to produce jailbreak variants, while PAIR (Chao et al., 2023) asks LLMs to improve instructions as an “assistant” and often leads to prompts that employ virtualization or persona. We introduce the highest level to humanize and persuade LLMs as human-like communicators, and propose PAP. PAP seamlessly weaves persuasive techniques into jailbreak prompt construction, which highlights the risks associated with more complex and nuanced human-like communication to advance AI safety."
       },
       {
-        "filename": "Deciphering_Cognitive_Distortions_in_Patient-Doctor_Mental_Health_Conversations_A_Multimodal_LLM-Based_Detection_and_Rea_2024.emnlp-main.1256__p7__score0.95.png",
-        "path": "./Deciphering_Cognitive_Distortions_in_Patient-Doctor_Mental_Health_Conversations_A_Multimodal_LLM-Based_Detection_and_Rea_2024.emnlp-main.1256/Deciphering_Cognitive_Distortions_in_Patient-Doctor_Mental_Health_Conversations_A_Multimodal_LLM-Based_Detection_and_Rea_2024.emnlp-main.1256__p7__score0.95.png",
-        "caption": "Figure 4: Comparisons among ground truth reasoning and reasoning generated by our model ZS-CoDR and zero-shot baseline ZERONLG. Additionally, we also generate resasoning using ZS-CoDR with only Tect modality. ZS-CoDR’s(multimodal) response is better aligned with the ground truth as it mentions the patient’s remark on the arrangement of letters and links it with cognitive distortion.ZS-CoDR’s( only Text) response falls short in comparison to the multimodal in terms of coherence with ground truth and clarity.While ZeroNLG’s response is more generic and not very informative."
-      }
-    ],
-    "acl_id": "2024.emnlp-main.1256"
-  },
-  {
-    "id": 32,
-    "folder_name": "Distill-C_Enhanced_NL2SQL_via_Distilled_Customization_with_LLMs_2025.naacl-industry.64",
-    "title": "Distill-C Enhanced NL2SQL via Distilled Customization with LLMs",
-    "images": [
+        "filename": "How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs__p2__score0.95.png",
+        "path": "figs_human_eval_papers/How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs/How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs__p2__score0.95.png",
+        "caption": "Table 1: A systematic taxonomy of persuasion techniques. This table outlines 15 high-level persuasion strategies and 40 fine-grained persuasion techniques drawing from decades of social science research."
+      },
       {
-        "filename": "Distill-C_Enhanced_NL2SQL_via_Distilled_Customization_with_LLMs_2025.naacl-industry.64__p1__score1.00.png",
-        "path": "./Distill-C_Enhanced_NL2SQL_via_Distilled_Customization_with_LLMs_2025.naacl-industry.64/Distill-C_Enhanced_NL2SQL_via_Distilled_Customization_with_LLMs_2025.naacl-industry.64__p1__score1.00.png",
-        "caption": "Figure 1: The Proposed Distill-C Framework."
+        "filename": "How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs__p3__score0.70.png",
+        "path": "figs_human_eval_papers/How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs/How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs__p3__score0.70.png",
+        "caption": "Figure 5: Fine-tuning template with 3 main components."
       },
       {
-        "filename": "Distill-C_Enhanced_NL2SQL_via_Distilled_Customization_with_LLMs_2025.naacl-industry.64__p2__score1.00.png",
-        "path": "./Distill-C_Enhanced_NL2SQL_via_Distilled_Customization_with_LLMs_2025.naacl-industry.64/Distill-C_Enhanced_NL2SQL_via_Distilled_Customization_with_LLMs_2025.naacl-industry.64__p2__score1.00.png",
-        "caption": "Figure 2: The Multi-Step Filtering Pipeline in our Distill-C Framework."
-      }
-    ],
-    "acl_id": "2025.naacl-industry.64"
-  },
-  {
-    "id": 33,
-    "folder_name": "Do_Vision-Language_Models_Have_Internal_World_Models_Towards_an_Atomic_Evaluation_2025.findings-acl.1342",
-    "title": "Do Vision-Language Models Have Internal World Models Towards an Atomic Evaluation",
-    "images": [
+        "filename": "How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs__p3__score1.00.png",
+        "path": "figs_human_eval_papers/How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs/How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs__p3__score1.00.png",
+        "caption": "Figure 3: Overview of our taxonomy-guided scaled study. A. Persuasive Paraphraser Training: Step 1 gathers training data by paraphrasing harmful queries into PAPs. Step 2 fine-tunes a persuasive paraphraser with this data for stable paraphrasing. B. Persuasive Paraphraser Deployment: Step 1 leverages the persuasive paraphraser to generate PAPs from new harmful queries. Step 2 assesses the harmfulness of outputs from the target model."
+      },
       {
-        "filename": "Do_Vision-Language_Models_Have_Internal_World_Models_Towards_an_Atomic_Evaluation_2025.findings-acl.1342__p3__score1.00.png",
-        "path": "./Do_Vision-Language_Models_Have_Internal_World_Models_Towards_an_Atomic_Evaluation_2025.findings-acl.1342/Do_Vision-Language_Models_Have_Internal_World_Models_Towards_an_Atomic_Evaluation_2025.findings-acl.1342__p3__score1.00.png",
-        "caption": "Figure 2: Overview of WM-ABench tasks. The Perception stage (top) covers Spatial, Temporal, Visual, Quantity, and Motion dimensions, each shown with example questions and outputs. The Prediction stage (bottom) includes Mechanistic Simulation, which covers Intuitive Physics (e.g., drop), Agent Navigation (e.g., turn left), and Agent Manipulation (e.g., push), plus Transitivity and Compositionality tasks that build on these transitions."
+        "filename": "How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs__p4__score0.80.png",
+        "path": "figs_human_eval_papers/How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs/How_Johnny_Can_Persuade_LLMs_to_Jailbreak_Them_Rethinking_Persuasion_to_Challenge_AI_Safety_by_Humanizing_LLMs__p4__score0.80.png",
+        "caption": "Figure 6: Qualitative example: a PAP using the “non-expert testimonial” technique to paraphrase a harmful query from risk category #8 (adult content). In the top, we see GPT-3.5’s guardrail blocks the original query. Meanwhile, at the bottom, the PAP elicits harmful content with links to real websites. We redact the sensitive information."
       }
-    ],
-    "acl_id": "2025.findings-acl.1342"
+    ]
   },
   {
-    "id": 34,
-    "folder_name": "EMS-SD_Efficient_Multi-sample_Speculative_Decoding_for_Accelerating_Large_Language_Models_2025.naacl-long.471",
-    "title": "EMS-SD Efficient Multi-sample Speculative Decoding for Accelerating Large Language Models",
+    "title": "IHEval Evaluating Language Models on Following the Instruction Hierarchy",
+    "folder_name": "IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy",
     "images": [
       {
-        "filename": "EMS-SD_Efficient_Multi-sample_Speculative_Decoding_for_Accelerating_Large_Language_Models_2025.naacl-long.471__p2__score1.00.png",
-        "path": "./EMS-SD_Efficient_Multi-sample_Speculative_Decoding_for_Accelerating_Large_Language_Models_2025.naacl-long.471/EMS-SD_Efficient_Multi-sample_Speculative_Decoding_for_Accelerating_Large_Language_Models_2025.naacl-long.471__p2__score1.00.png",
-        "caption": "Figure 2: Our Method v.s. Vanilla Method. We specify the location of the KV cache for each sample individually, thus eliminating the necessity for the addition of padding to the KV cache. And we concatenate all input tokens of each sample into a single sequence without padding tokens when the number of prediction tokens differs between samples. Our method demonstrates superior performance than the vanilla method, without the need for additional computational and memory access overhead."
+        "filename": "IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+        "path": "figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+        "caption": "Figure 1: Four categories of the instruction hierarchy and the corresponding priority orders of instructions. Conflict instructions are shown in red. Models are expected to follow the instruction with the higher priority."
       },
-      {
-        "filename": "EMS-SD_Efficient_Multi-sample_Speculative_Decoding_for_Accelerating_Large_Language_Models_2025.naacl-long.471__p3__score0.92.png",
-        "path": "./EMS-SD_Efficient_Multi-sample_Speculative_Decoding_for_Accelerating_Large_Language_Models_2025.naacl-long.471/EMS-SD_Efficient_Multi-sample_Speculative_Decoding_for_Accelerating_Large_Language_Models_2025.naacl-long.471__p3__score0.92.png",
-        "caption": "Figure 3: The detailed processing of unpad input tokens of decoding step 1 in Figure 2. Sample 0 predicted 5 tokens, while sample 1 predicted 2 tokens. All tokens are concatenated before inference, and the sample/sequence index is restored when attention is computed within the CUDA kernels. Consequently, each token is aware of the specific KV caches to which it can utilize for parallel computation."
-      }
-    ],
-    "acl_id": "2025.naacl-long.471"
-  },
-  {
-    "id": 35,
-    "folder_name": "Efficient_Domain_Adaptation_for_Non-Autoregressive_Machine_Translation_2024.findings-acl.810",
-    "title": "Efficient Domain Adaptation for Non-Autoregressive Machine Translation",
-    "images": [
       {
-        "filename": "Efficient_Domain_Adaptation_for_Non-Autoregressive_Machine_Translation_2024.findings-acl.810__p3__score1.00.png",
-        "path": "./Efficient_Domain_Adaptation_for_Non-Autoregressive_Machine_Translation_2024.findings-acl.810/Efficient_Domain_Adaptation_for_Non-Autoregressive_Machine_Translation_2024.findings-acl.810__p3__score1.00.png",
-        "caption": "Figure 1: Overview of our proposed Bi-kNN. ⇑ represents the process of bidirectional datastore construction and Meta-network training, while ↑ represents the process of iterative decoding with kNN."
-      }
-    ],
-    "acl_id": "2024.findings-acl.810"
-  },
-  {
-    "id": 36,
-    "folder_name": "EmoCharacter_Evaluating_the_Emotional_Fidelity_of_Role-Playing_Agents_in_Dialogues_2025.naacl-long.316",
-    "title": "EmoCharacter Evaluating the Emotional Fidelity of Role-Playing Agents in Dialogues",
-    "images": [
+        "filename": "IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+        "path": "figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+        "caption": "Figure 3: IHEval covers four categories and nine tasks. Detailed examples and instructions are in Figures 8~16."
+      },
       {
-        "filename": "EmoCharacter_Evaluating_the_Emotional_Fidelity_of_Role-Playing_Agents_in_Dialogues_2025.naacl-long.316__p1__score1.00.png",
-        "path": "./EmoCharacter_Evaluating_the_Emotional_Fidelity_of_Role-Playing_Agents_in_Dialogues_2025.naacl-long.316/EmoCharacter_Evaluating_the_Emotional_Fidelity_of_Role-Playing_Agents_in_Dialogues_2025.naacl-long.316__p1__score1.00.png",
-        "caption": "Figure 1: Framework of EmoCharacter. Left: format of evaluation tasks for assessing emotional fidelity in RPAs. Upper right: three evaluation settings. Lower right: metrics designed from both micro and macro perspectives."
+        "filename": "IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p4__score0.80.png",
+        "path": "figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p4__score0.80.png",
+        "caption": "Figure 4: The original data source, the evaluation metric, and the data size of each task."
       }
-    ],
-    "acl_id": "2025.naacl-long.316"
+    ]
   },
   {
-    "id": 37,
-    "folder_name": "Empowering_Oneida_Language_Revitalization_Development_of_an_Oneida_Verb_Conjugator_2024.lrec-main.511",
-    "title": "Empowering Oneida Language Revitalization Development of an Oneida Verb Conjugator",
+    "title": "ImageInWords Unlocking Hyper-Detailed Image Descriptions",
+    "folder_name": "ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions",
     "images": [
       {
-        "filename": "Empowering_Oneida_Language_Revitalization_Development_of_an_Oneida_Verb_Conjugator_2024.lrec-main.511__p0__score0.70.png",
-        "path": "./Empowering_Oneida_Language_Revitalization_Development_of_an_Oneida_Verb_Conjugator_2024.lrec-main.511/Empowering_Oneida_Language_Revitalization_Development_of_an_Oneida_Verb_Conjugator_2024.lrec-main.511__p0__score0.70.png",
-        "caption": "Figure 1: User interface of the Oneida verb conjugator (pilot version)"
+        "filename": "ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p1__score0.98.png",
+        "path": "figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p1__score0.98.png",
+        "caption": "Figure 1: ImageInWords Seeded Annotation Framework. Humans enrich and refine outputs sequentially, building on prior human or machine inputs. Human annotation starts with fine-grained object captions in Task 1, which are used to compose image-level descriptions in Task 2. VLMs are updated in an active learning loop to produce better object and image-level seeds as annotated data becomes available. UI screenshots are in Appendix B.4."
       },
       {
-        "filename": "Empowering_Oneida_Language_Revitalization_Development_of_an_Oneida_Verb_Conjugator_2024.lrec-main.511__p1__score1.00.png",
-        "path": "./Empowering_Oneida_Language_Revitalization_Development_of_an_Oneida_Verb_Conjugator_2024.lrec-main.511/Empowering_Oneida_Language_Revitalization_Development_of_an_Oneida_Verb_Conjugator_2024.lrec-main.511__p1__score1.00.png",
-        "caption": "Figure 2: Positions of elements that form Oneida verbs (Michelson and Doxtator, 2002, p. 14)"
+        "filename": "ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+        "path": "figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+        "caption": "Figure 3: IIW Annotation Tasks. Objects and their attributes are first individually annotated to note the salient objects and focus on coverage of their attributes in Task 1. These outputs, along with a seed VLM caption, are passed to humans to build the initial image-level description. The initial caption is then human augmented and refined in N sequential rounds to attain the final hyper-detailed description in Task 2."
       }
-    ],
-    "acl_id": "2024.lrec-main.511"
+    ]
   },
   {
-    "id": 38,
-    "folder_name": "Enhancing_Rhetorical_Figure_Annotation_An_Ontology-Based_Web_Application_with_RAG_Integration_2025.coling-main.587",
-    "title": "Enhancing Rhetorical Figure Annotation An Ontology-Based Web Application with RAG Integration",
+    "title": "Improve Vision Language Model Chain-of-thought Reasoning",
+    "folder_name": "Improve_Vision_Language_Model_Chain-of-thought_Reasoning",
     "images": [
       {
-        "filename": "Enhancing_Rhetorical_Figure_Annotation_An_Ontology-Based_Web_Application_with_RAG_Integration_2025.coling-main.587__p4__score0.90.png",
-        "path": "./Enhancing_Rhetorical_Figure_Annotation_An_Ontology-Based_Web_Application_with_RAG_Integration_2025.coling-main.587/Enhancing_Rhetorical_Figure_Annotation_An_Ontology-Based_Web_Application_with_RAG_Integration_2025.coling-main.587__p4__score0.90.png",
-        "caption": "Figure 2: Scheme of the SQL Lite Database. The arrows indicate foreign key (FK) relations. PK denotes primary keys."
+        "filename": "Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+        "path": "figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+        "caption": "Figure 1: The upper figure questions whether training exclusively on direct-answer prediction can effectively teach CoT prediction. In the lower figure, we leverage short annotation as outcome reward for reasoning alignment, allowing the model to improve with self-generated data."
       },
       {
-        "filename": "Enhancing_Rhetorical_Figure_Annotation_An_Ontology-Based_Web_Application_with_RAG_Integration_2025.coling-main.587__p5__score0.60.png",
-        "path": "./Enhancing_Rhetorical_Figure_Annotation_An_Ontology-Based_Web_Application_with_RAG_Integration_2025.coling-main.587/Enhancing_Rhetorical_Figure_Annotation_An_Ontology-Based_Web_Application_with_RAG_Integration_2025.coling-main.587__p5__score0.60.png",
-        "caption": "Figure 3: The page FyF.html helps users to find the name of a rhetorical figure hidden in a text. Properties can be selected from the dropdown lists."
+        "filename": "Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+        "path": "figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+        "caption": "Figure 2: Distillation of examples from various VLM task domains, highlighting the specific reasoning capabilities."
       },
       {
-        "filename": "Enhancing_Rhetorical_Figure_Annotation_An_Ontology-Based_Web_Application_with_RAG_Integration_2025.coling-main.587__p6__score1.00.png",
-        "path": "./Enhancing_Rhetorical_Figure_Annotation_An_Ontology-Based_Web_Application_with_RAG_Integration_2025.coling-main.587/Enhancing_Rhetorical_Figure_Annotation_An_Ontology-Based_Web_Application_with_RAG_Integration_2025.coling-main.587__p6__score1.00.png",
-        "caption": "Figure 5: Overview of the integrated RAG Pipeline for the GRhOOT ontology."
+        "filename": "Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p3__score0.95.png",
+        "path": "figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p3__score0.95.png",
+        "caption": "Figure 4: The upper section displays the data sources used for the SFT experiments, while the lower section illustrates the data composition for model training."
       }
-    ],
-    "acl_id": "2025.coling-main.587"
+    ]
   },
   {
-    "id": 39,
-    "folder_name": "Entity_Pair-guided_Relation_Summarization_and_Retrieval_in_LLMs_for_Document-level_Relation_Extraction_2025.findings-naacl.224",
-    "title": "Entity Pair-guided Relation Summarization and Retrieval in LLMs for Document-level Relation Extraction",
+    "title": "In Prospect and Retrospect Re ective Memory Management for Long-term Personalized Dialogue Agents",
+    "folder_name": "In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents",
     "images": [
       {
-        "filename": "Entity_Pair-guided_Relation_Summarization_and_Retrieval_in_LLMs_for_Document-level_Relation_Extraction_2025.findings-naacl.224__p0__score0.95.png",
-        "path": "./Entity_Pair-guided_Relation_Summarization_and_Retrieval_in_LLMs_for_Document-level_Relation_Extraction_2025.findings-naacl.224/Entity_Pair-guided_Relation_Summarization_and_Retrieval_in_LLMs_for_Document-level_Relation_Extraction_2025.findings-naacl.224__p0__score0.95.png",
-        "caption": "Figure 1: Differences between traditional approach and our approach in LLM-based document-level relation extraction. Additionally, we provide a preliminary comparison of the F1 scores between the document-level and entity-pair-level candidate relation filtering methods."
+        "filename": "In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents__p0__score0.95.png",
+        "path": "figs_human_eval_papers/In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents/In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents__p0__score0.95.png",
+        "caption": "Figure 1: An illustration of a personalized healthcare dialog agent. Key information about a user’s allergy and previous symptoms mentioned in the past sessions is needed to provide a more informed response in the current session."
       },
-      {
-        "filename": "Entity_Pair-guided_Relation_Summarization_and_Retrieval_in_LLMs_for_Document-level_Relation_Extraction_2025.findings-naacl.224__p3__score1.00.png",
-        "path": "./Entity_Pair-guided_Relation_Summarization_and_Retrieval_in_LLMs_for_Document-level_Relation_Extraction_2025.findings-naacl.224/Entity_Pair-guided_Relation_Summarization_and_Retrieval_in_LLMs_for_Document-level_Relation_Extraction_2025.findings-naacl.224__p3__score1.00.png",
-        "caption": "Figure 2: The overview of our model EP-RSR. It contains three key parts: (1) Select potential entity pairs in a document and obtain enhanced relation summarization for each entity pair. (2) Retrieve entity-pair-level candidate relations using the relation summarizations based on double filtering mechanisms. (3) Judge and extract triplet facts based on the candidate relations and their descriptions."
-      }
-    ],
-    "acl_id": "2025.findings-naacl.224"
-  },
-  {
-    "id": 40,
-    "folder_name": "Estimation_of_Text_Difficulty_in_the_Context_of_Language_Learning_2025.bea-1.43",
-    "title": "Estimation of Text Difficulty in the Context of Language Learning",
-    "images": [
-      {
-        "filename": "Estimation_of_Text_Difficulty_in_the_Context_of_Language_Learning_2025.bea-1.43__p0__score1.00.png",
-        "path": "./Estimation_of_Text_Difficulty_in_the_Context_of_Language_Learning_2025.bea-1.43/Estimation_of_Text_Difficulty_in_the_Context_of_Language_Learning_2025.bea-1.43__p0__score1.00.png",
-        "caption": "Figure 1: Text simplification using GPT-4o guided by level-aware feedback from a difficulty classifier as critic."
-      }
-    ],
-    "acl_id": "2025.bea-1.43"
-  },
-  {
-    "id": 41,
-    "folder_name": "Evaluating_Defeasible_Reasoning_in_LLMs_with_DEFREASING_2025.naacl-long.529",
-    "title": "Evaluating Defeasible Reasoning in LLMs with DEFREASING",
-    "images": [
       {
-        "filename": "Evaluating_Defeasible_Reasoning_in_LLMs_with_DEFREASING_2025.naacl-long.529__p0__score0.95.png",
-        "path": "./Evaluating_Defeasible_Reasoning_in_LLMs_with_DEFREASING_2025.naacl-long.529/Evaluating_Defeasible_Reasoning_in_LLMs_with_DEFREASING_2025.naacl-long.529__p0__score0.95.png",
-        "caption": "Figure 1: Overview of the defeasible reasoning task."
+        "filename": "In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents__p3__score0.95.png",
+        "path": "figs_human_eval_papers/In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents/In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents__p3__score0.95.png",
+        "caption": "Figure 2: Illustration of Prospective Reflection. After each session, the agent decomposes and summarizes the session into specific topics. These newly generated memories are compared with existing memories in the"
       },
-      {
-        "filename": "Evaluating_Defeasible_Reasoning_in_LLMs_with_DEFREASING_2025.naacl-long.529__p6__score0.80.png",
-        "path": "./Evaluating_Defeasible_Reasoning_in_LLMs_with_DEFREASING_2025.naacl-long.529/Evaluating_Defeasible_Reasoning_in_LLMs_with_DEFREASING_2025.naacl-long.529__p6__score0.80.png",
-        "caption": "Table 2: Example prompt format. The system instruction is in italics above the dashed line."
-      }
-    ],
-    "acl_id": "2025.naacl-long.529"
-  },
-  {
-    "id": 42,
-    "folder_name": "Evaluating_Numeracy_of_Language_Models_as_a_Natural_Language_Inference_Task_2025.findings-naacl.467",
-    "title": "Evaluating Numeracy of Language Models as a Natural Language Inference Task",
-    "images": [
       {
-        "filename": "Evaluating_Numeracy_of_Language_Models_as_a_Natural_Language_Inference_Task_2025.findings-naacl.467__p5__score0.60.png",
-        "path": "./Evaluating_Numeracy_of_Language_Models_as_a_Natural_Language_Inference_Task_2025.findings-naacl.467/Evaluating_Numeracy_of_Language_Models_as_a_Natural_Language_Inference_Task_2025.findings-naacl.467__p5__score0.60.png",
-        "caption": "Table 3: Template and formula in arithmetic task. Instances I1 and I2 use the same template (T1). Instances I3 and I4 share the same formula (F1), while I2 and I4 have F2"
+        "filename": "In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents__p4__score1.00.png",
+        "path": "figs_human_eval_papers/In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents/In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents__p4__score1.00.png",
+        "caption": "Figure 3: Illustration of Retrospective Reflection. The Retriever fetches Top-K memory entries from the memory bank, which are refined by the learnable Reranker to select the Top-M most relevant entries. These entries are passed to the LLM along with the query to generate the final response. The LLM assigns binary citation scores (+1 for useful and −1 for not useful) to the retrieved memory entries based on their utility in the response. These scores are used as reward signals to update the reranker via an RL update, adapting the selection of relevant memory over time."
       }
-    ],
-    "acl_id": "2025.findings-naacl.467"
+    ]
   },
   {
-    "id": 43,
-    "folder_name": "Evaluating_and_Enhancing_Large_Language_Models_for_Novelty_Assessment_in_Scholarly_Publications_2025.aisd-main.5",
-    "title": "Evaluating and Enhancing Large Language Models for Novelty Assessment in Scholarly Publications",
+    "title": "Interpretable Preferences via Multi-Objective Reward Modeling and Mixture-of-Experts",
+    "folder_name": "Interpretable_Preferences_via_Multi-Objective_Reward_Modeling_and_Mixture-of-Experts",
     "images": [
       {
-        "filename": "Evaluating_and_Enhancing_Large_Language_Models_for_Novelty_Assessment_in_Scholarly_Publications_2025.aisd-main.5__p3__score1.00.png",
-        "path": "./Evaluating_and_Enhancing_Large_Language_Models_for_Novelty_Assessment_in_Scholarly_Publications_2025.aisd-main.5/Evaluating_and_Enhancing_Large_Language_Models_for_Novelty_Assessment_in_Scholarly_Publications_2025.aisd-main.5__p3__score1.00.png",
-        "caption": "Figure 1: The overview of RAG-Novelty"
+        "filename": "Interpretable_Preferences_via_Multi-Objective_Reward_Modeling_and_Mixture-of-Experts__p1__score1.00.png",
+        "path": "figs_human_eval_papers/Interpretable_Preferences_via_Multi-Objective_Reward_Modeling_and_Mixture-of-Experts/Interpretable_Preferences_via_Multi-Objective_Reward_Modeling_and_Mixture-of-Experts__p1__score1.00.png",
+        "caption": "Figure 1: Architecture of our reward model. It consists of an LLM backbone, a regression layer for multi-objective reward modeling, and a gating layer that outputs coefficients to scalarize the reward objectives into a scalar score."
       }
-    ],
-    "acl_id": "2025.aisd-main.5"
+    ]
   },
   {
-    "id": 44,
-    "folder_name": "Exploring_the_Integration_of_Eye_Movement_Data_on_Word_Embeddings_2025.cmcl-1.9",
-    "title": "Exploring the Integration of Eye Movement Data on Word Embeddings",
+    "title": "Know When To Stop A Study of Semantic Drift in Text Generation",
+    "folder_name": "Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation",
     "images": [
       {
-        "filename": "Exploring_the_Integration_of_Eye_Movement_Data_on_Word_Embeddings_2025.cmcl-1.9__p1__score1.00.png",
-        "path": "./Exploring_the_Integration_of_Eye_Movement_Data_on_Word_Embeddings_2025.cmcl-1.9/Exploring_the_Integration_of_Eye_Movement_Data_on_Word_Embeddings_2025.cmcl-1.9__p1__score1.00.png",
-        "caption": "Figure 1: Gaze embedding pipeline. The stories read during the eye-tracking experiment were reconstructed following the reading order of the participants (Scanpaths). Gaze measures were extracted from all trials, discretized in ten bins for each individual, and a global average for each word was computed. These values were then predicted from the word embeddings as the output of a fully connected layer."
+        "filename": "Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+        "path": "figs_human_eval_papers/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+        "caption": "Figure 1: A visual example of calculating semantic drift (SD) score for paragraph P . The position which best splits the paragraph is k = 8. The proportion of supported facts to the left is 0.88 and the proportion of not-supported facts to the right is 0.78, giving an average of 0.83. The other positions all have lower SD scores, therefore the SD score of paragraph P is 0.83."
       }
-    ],
-    "acl_id": "2025.cmcl-1.9"
+    ]
   },
   {
-    "id": 45,
-    "folder_name": "FGDGNN_Fine-Grained_Dynamic_Graph_Neural_Network_for_Rumor_Detection_on_Social_Media_2025.findings-acl.296",
-    "title": "FGDGNN Fine-Grained Dynamic Graph Neural Network for Rumor Detection on Social Media",
+    "title": "Knowledge Unlearning for Mitigating Privacy Risks in Language Models",
+    "folder_name": "Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models",
     "images": [
       {
-        "filename": "FGDGNN_Fine-Grained_Dynamic_Graph_Neural_Network_for_Rumor_Detection_on_Social_Media_2025.findings-acl.296__p0__score0.90.png",
-        "path": "./FGDGNN_Fine-Grained_Dynamic_Graph_Neural_Network_for_Rumor_Detection_on_Social_Media_2025.findings-acl.296/FGDGNN_Fine-Grained_Dynamic_Graph_Neural_Network_for_Rumor_Detection_on_Social_Media_2025.findings-acl.296__p0__score0.90.png",
-        "caption": "Figure 1: An example of event propagation graph on social media. (a) Static graph. Each node represents a post and each edge represents the response relationship without temporal information. (b) Dynamic graph. Each node represents a post and each edge represents the response relationship with an associated temporal information. The dynamic propagation process in the example is divided into S snapshots."
+        "filename": "Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+        "path": "figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+        "caption": "Figure 1: Comparison of previous approaches and knowledge unlearning when an individual practices his/her Right-To-Be-Forgotten (RTBF)."
       },
       {
-        "filename": "FGDGNN_Fine-Grained_Dynamic_Graph_Neural_Network_for_Rumor_Detection_on_Social_Media_2025.findings-acl.296__p3__score1.00.png",
-        "path": "./FGDGNN_Fine-Grained_Dynamic_Graph_Neural_Network_for_Rumor_Detection_on_Social_Media_2025.findings-acl.296/FGDGNN_Fine-Grained_Dynamic_Graph_Neural_Network_for_Rumor_Detection_on_Social_Media_2025.findings-acl.296__p3__score1.00.png",
-        "caption": "Figure 2: Overview of the proposed FGDGNN framework. The Embedding Transformation (ET) Layer represents the transformation of the node embedding dimensions."
+        "filename": "Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00__1.png",
+        "path": "figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00__1.png",
+        "caption": "Figure 1: Comparison of previous approaches and knowledge unlearning when an individual practices his/her Right-To-Be-Forgotten (RTBF)."
       }
-    ],
-    "acl_id": "2025.findings-acl.296"
+    ]
   },
   {
-    "id": 46,
-    "folder_name": "FLEURS-ASL_Including_American_Sign_Language_in_Massively_Multilingual_Multitask_Evaluation_2025.naacl-long.314",
-    "title": "FLEURS-ASL Including American Sign Language in Massively Multilingual Multitask Evaluation",
+    "title": "LINC A Neurosymbolic Approach for Logical Reasoning by Combining Language Models with First-Order Logic Provers",
+    "folder_name": "LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers",
     "images": [
       {
-        "filename": "FLEURS-ASL_Including_American_Sign_Language_in_Massively_Multilingual_Multitask_Evaluation_2025.naacl-long.314__p3__score0.90.png",
-        "path": "./FLEURS-ASL_Including_American_Sign_Language_in_Massively_Multilingual_Multitask_Evaluation_2025.naacl-long.314/FLEURS-ASL_Including_American_Sign_Language_in_Massively_Multilingual_Multitask_Evaluation_2025.naacl-long.314__p3__score0.90.png",
-        "caption": "Figure 1: FLEURS-ASL dataset splits. The sentences are divided among 5 interpreters, and 3 sets of splits: zeroshot (“zs”), signer-independent finetuning (“si”), and signer-dependent finetuning (“sd”). We blur the interpreters’ faces in this paper for privacy, but the underlying dataset is unblurred because facial expressions are an essential component of the grammar of sign languages."
+        "filename": "LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p1__score1.00.png",
+        "path": "figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p1__score1.00.png",
+        "caption": "Figure 1: This figure showcases the essence of our approach. Starting from a problem in natural language, in Step 1, the LLM semantic parser samples logic formulas expressing estimates of the semantics. It is possible that some of these might contain errors, e.g., the second example shows a syntax error involving an extra parenthesis, whereas the fourth example highlights a semantic error caused by mismatched predicates. In Step 2, these are then each offloaded to an automated theorem prover, filtering out syntax errors, and producing labels for the remaining samples. In Step 3, the remaining candidate outputs are passed through a majority-vote sieve to arrive at the best estimate for a single output label."
       },
-      {
-        "filename": "FLEURS-ASL_Including_American_Sign_Language_in_Massively_Multilingual_Multitask_Evaluation_2025.naacl-long.314__p5__score1.00.png",
-        "path": "./FLEURS-ASL_Including_American_Sign_Language_in_Massively_Multilingual_Multitask_Evaluation_2025.naacl-long.314/FLEURS-ASL_Including_American_Sign_Language_in_Massively_Multilingual_Multitask_Evaluation_2025.naacl-long.314__p5__score1.00.png",
-        "caption": "Figure 2: Unified multitask document-level sign to text training; see Figure 3 in Appendix D for a complete exposition. Our baselines train on YouTube-ASL and evaluate on FLEURS-ASL."
-      }
-    ],
-    "acl_id": "2025.naacl-long.314"
-  },
-  {
-    "id": 47,
-    "folder_name": "FinDABench_Benchmarking_Financial_Data_Analysis_Ability_of_Large_Language_Models_2025.coling-main.48",
-    "title": "FinDABench Benchmarking Financial Data Analysis Ability of Large Language Models",
-    "images": [
       {
-        "filename": "FinDABench_Benchmarking_Financial_Data_Analysis_Ability_of_Large_Language_Models_2025.coling-main.48__p0__score0.95.png",
-        "path": "./FinDABench_Benchmarking_Financial_Data_Analysis_Ability_of_Large_Language_Models_2025.coling-main.48/FinDABench_Benchmarking_Financial_Data_Analysis_Ability_of_Large_Language_Models_2025.coling-main.48__p0__score0.95.png",
-        "caption": "Figure 1: The job skills and their corresponding task names required for financial analysts to manage daily work. Text highlighted in green denotes the standard capabilities of financial analysts."
+        "filename": "LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p1__score1.00__1.png",
+        "path": "figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p1__score1.00__1.png",
+        "caption": "Figure 1: This figure showcases the essence of our approach. Starting from a problem in natural language, in Step 1, the LLM semantic parser samples logic formulas expressing estimates of the semantics. It is possible that some of these might contain errors, e.g., the second example shows a syntax error involving an extra parenthesis, whereas the fourth example highlights a semantic error caused by mismatched predicates. In Step 2, these are then each offloaded to an automated theorem prover, filtering out syntax errors, and producing labels for the remaining samples. In Step 3, the remaining candidate outputs are passed through a majority-vote sieve to arrive at the best estimate for a single output label."
       },
       {
-        "filename": "FinDABench_Benchmarking_Financial_Data_Analysis_Ability_of_Large_Language_Models_2025.coling-main.48__p1__score0.95.png",
-        "path": "./FinDABench_Benchmarking_Financial_Data_Analysis_Ability_of_Large_Language_Models_2025.coling-main.48/FinDABench_Benchmarking_Financial_Data_Analysis_Ability_of_Large_Language_Models_2025.coling-main.48__p1__score0.95.png",
-        "caption": "Figure 2: FinDABench aims to provide a multi-faceted evaluation framework that mirrors the multifarious nature of financial data analysis tasks."
+        "filename": "LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+        "path": "figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+        "caption": "Figure 2: This figure outlines the string concatenation workflow for each of our conditions. We start with the original problem, provide ICL examples through an intermediate markup language, and finally append the problem to evaluate. At this stage, we allow the model to autoregressively sample until producing a stop token."
       },
       {
-        "filename": "FinDABench_Benchmarking_Financial_Data_Analysis_Ability_of_Large_Language_Models_2025.coling-main.48__p3__score0.90.png",
-        "path": "./FinDABench_Benchmarking_Financial_Data_Analysis_Ability_of_Large_Language_Models_2025.coling-main.48/FinDABench_Benchmarking_Financial_Data_Analysis_Ability_of_Large_Language_Models_2025.coling-main.48__p3__score0.90.png",
-        "caption": "Figure 3: Data examples for the six sub-tasks of FinDABench, each including questions and answers with a unique identifier to facilitate differentiation. For the Chinese version, please see the Appendix A."
+        "filename": "LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score1.00.png",
+        "path": "figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score1.00.png",
+        "caption": "Figure 2: This figure outlines the string concatenation workflow for each of our conditions. We start with the original problem, provide ICL examples through an intermediate markup language, and finally append the problem to evaluate. At this stage, we allow the model to autoregressively sample until producing a stop token."
       }
-    ],
-    "acl_id": "2025.coling-main.48"
+    ]
   },
   {
-    "id": 48,
-    "folder_name": "Find_the_Intention_of_Instruction_Comprehensive_Evaluation_of_Instruction_Understanding_for_Large_Language_Models_2025.findings-naacl.330",
-    "title": "Find the Intention of Instruction Comprehensive Evaluation of Instruction Understanding for Large Language Models",
+    "title": "LLMs Trust Humans More That s a Problem Unveiling and Mitigating the Authority Bias in Retrieval-Augmented Generation",
+    "folder_name": "LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation",
     "images": [
       {
-        "filename": "Find_the_Intention_of_Instruction_Comprehensive_Evaluation_of_Instruction_Understanding_for_Large_Language_Models_2025.findings-naacl.330__p0__score0.90.png",
-        "path": "./Find_the_Intention_of_Instruction_Comprehensive_Evaluation_of_Instruction_Understanding_for_Large_Language_Models_2025.findings-naacl.330/Find_the_Intention_of_Instruction_Comprehensive_Evaluation_of_Instruction_Understanding_for_Large_Language_Models_2025.findings-naacl.330__p0__score0.90.png",
-        "caption": "Figure 1: Simplified example of IOINST. We compose a benchmark designed to comprehend and select the appropriate instruction that derives given response. Potential error cases include misunderstanding prerequisites of context and responding to any candidate instruction."
+        "filename": "LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+        "path": "figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+        "caption": "Figure 1: Illustration of Authority Bias in RAG systems. In simple queries, the LLM relies solely on database knowledge for the answer. However, in more complex scenarios with conflicting user-provided and database knowledge, the LLM tends to favor the user’s input, even if incorrect. We characterize this phenomenon of LLMs in RAG as Authority Bias."
       },
       {
-        "filename": "Find_the_Intention_of_Instruction_Comprehensive_Evaluation_of_Instruction_Understanding_for_Large_Language_Models_2025.findings-naacl.330__p3__score1.00.png",
-        "path": "./Find_the_Intention_of_Instruction_Comprehensive_Evaluation_of_Instruction_Understanding_for_Large_Language_Models_2025.findings-naacl.330/Find_the_Intention_of_Instruction_Comprehensive_Evaluation_of_Instruction_Understanding_for_Large_Language_Models_2025.findings-naacl.330__p3__score1.00.png",
-        "caption": "Figure 2: Construction of pool-based contrastive instructions. From the pre-processed data point obtained by the data curation, we establish our instruction candidates."
-      },
-      {
-        "filename": "Find_the_Intention_of_Instruction_Comprehensive_Evaluation_of_Instruction_Understanding_for_Large_Language_Models_2025.findings-naacl.330__p4__score1.00.png",
-        "path": "./Find_the_Intention_of_Instruction_Comprehensive_Evaluation_of_Instruction_Understanding_for_Large_Language_Models_2025.findings-naacl.330/Find_the_Intention_of_Instruction_Comprehensive_Evaluation_of_Instruction_Understanding_for_Large_Language_Models_2025.findings-naacl.330__p4__score1.00.png",
-        "caption": "Figure 3: Construction of Anti-Attribute contrastive instructions. From the pre-processed data point obtained by the data curation, we establish our instruction candidates."
+        "filename": "LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p4__score1.00.png",
+        "path": "figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p4__score1.00.png",
+        "caption": "Figure 2: A step-by-step illustration of constructing the ABDD."
       }
-    ],
-    "acl_id": "2025.findings-naacl.330"
+    ]
   },
   {
-    "id": 49,
-    "folder_name": "FlagEvalMM_A_Flexible_Framework_for_Comprehensive_Multimodal_Model_Evaluation_2025.acl-demo.6",
-    "title": "FlagEvalMM A Flexible Framework for Comprehensive Multimodal Model Evaluation",
+    "title": "Language Models as Inductive Reasoners",
+    "folder_name": "Language_Models_as_Inductive_Reasoners",
     "images": [
       {
-        "filename": "FlagEvalMM_A_Flexible_Framework_for_Comprehensive_Multimodal_Model_Evaluation_2025.acl-demo.6__p0__score1.00.png",
-        "path": "./FlagEvalMM_A_Flexible_Framework_for_Comprehensive_Multimodal_Model_Evaluation_2025.acl-demo.6/FlagEvalMM_A_Flexible_Framework_for_Comprehensive_Multimodal_Model_Evaluation_2025.acl-demo.6__p0__score1.00.png",
-        "caption": "Figure 1: Framework of FlagEvalMM"
+        "filename": "Language_Models_as_Inductive_Reasoners__p1__score0.70.png",
+        "path": "figs_human_eval_papers/Language_Models_as_Inductive_Reasoners/Language_Models_as_Inductive_Reasoners__p1__score0.70.png",
+        "caption": "Table 1: An example of inductive reasoning in DEER dataset. We embolden the words in facts that contain the key information to induce this rule (just to explain the relation between facts and rule, in DEER there’s no special word annotations for fact)."
       },
       {
-        "filename": "FlagEvalMM_A_Flexible_Framework_for_Comprehensive_Multimodal_Model_Evaluation_2025.acl-demo.6__p2__score1.00.png",
-        "path": "./FlagEvalMM_A_Flexible_Framework_for_Comprehensive_Multimodal_Model_Evaluation_2025.acl-demo.6/FlagEvalMM_A_Flexible_Framework_for_Comprehensive_Multimodal_Model_Evaluation_2025.acl-demo.6__p2__score1.00.png",
-        "caption": "Figure 2: Components and workflow of the evaluation server"
-      },
-      {
-        "filename": "FlagEvalMM_A_Flexible_Framework_for_Comprehensive_Multimodal_Model_Evaluation_2025.acl-demo.6__p3__score1.00.png",
-        "path": "./FlagEvalMM_A_Flexible_Framework_for_Comprehensive_Multimodal_Model_Evaluation_2025.acl-demo.6/FlagEvalMM_A_Flexible_Framework_for_Comprehensive_Multimodal_Model_Evaluation_2025.acl-demo.6__p3__score1.00.png",
-        "caption": "Figure 3: Communication protocol between evaluation server and model runner"
+        "filename": "Language_Models_as_Inductive_Reasoners__p4__score1.00.png",
+        "path": "figs_human_eval_papers/Language_Models_as_Inductive_Reasoners/Language_Models_as_Inductive_Reasoners__p4__score1.00.png",
+        "caption": "Figure 1: Our proposed framework (CoLM) for inductive reasoning with natural language representation task. Rule Proposer is a generative model based on input facts and desired rule template, aiming at generating (a large number of) rule candidates. Deductive consistency evaluator, indiscriminate confirmation handler, generalization checker, and triviality detector are classification models that filter improper rules according to four requirements of the induced rules in inductive reasoning. Texts with ✗ are representative filtered rules for each module."
       }
-    ],
-    "acl_id": "2025.acl-demo.6"
+    ]
   },
   {
-    "id": 50,
-    "folder_name": "From_English_to_Second_Language_Mastery_Enhancing_LLMs_with_Cross-Lingual_Continued_Instruction_Tuning_2025.acl-long.1121",
-    "title": "From English to Second Language Mastery Enhancing LLMs with Cross-Lingual Continued Instruction Tuning",
+    "title": "Learning from Diverse Reasoning Paths with Routing and Collaboration",
+    "folder_name": "Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration",
     "images": [
       {
-        "filename": "From_English_to_Second_Language_Mastery_Enhancing_LLMs_with_Cross-Lingual_Continued_Instruction_Tuning_2025.acl-long.1121__p2__score1.00.png",
-        "path": "./From_English_to_Second_Language_Mastery_Enhancing_LLMs_with_Cross-Lingual_Continued_Instruction_Tuning_2025.acl-long.1121/From_English_to_Second_Language_Mastery_Enhancing_LLMs_with_Cross-Lingual_Continued_Instruction_Tuning_2025.acl-long.1121__p2__score1.00.png",
-        "caption": "Figure 1: The pipeline of our Cross-lingual Continued Instruction Tuning (X-CIT) method. Guided by Chomsky’s Principles: 1⃝ SFT the base LLM with English instruction data to establish foundational capabilities; 2⃝ continue training with the target language and customized chat-instruction data to adjust language-specific parameters. Self-paced learning (SPL) is introduced to further mimic the human learning process, moving from simple to complex tasks. For clarity, the method using SPL is referred to as X-CIT+spl."
-      }
-    ],
-    "acl_id": "2025.acl-long.1121"
-  },
-  {
-    "id": 51,
-    "folder_name": "From_Priest_to_Doctor_Domain_Adaptation_for_Low-Resource_Neural_Machine_Translation_2025.coling-main.472",
-    "title": "From Priest to Doctor Domain Adaptation for Low-Resource Neural Machine Translation",
-    "images": [
+        "filename": "Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+        "path": "figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+        "caption": "Figure 1: Distillation effectiveness of teacher-generated reasoning paths are path-, task-, and student-dependent."
+      },
       {
-        "filename": "From_Priest_to_Doctor_Domain_Adaptation_for_Low-Resource_Neural_Machine_Translation_2025.coling-main.472__p0__score0.95.png",
-        "path": "./From_Priest_to_Doctor_Domain_Adaptation_for_Low-Resource_Neural_Machine_Translation_2025.coling-main.472/From_Priest_to_Doctor_Domain_Adaptation_for_Low-Resource_Neural_Machine_Translation_2025.coling-main.472__p0__score0.95.png",
-        "caption": "Figure 1: In our work, which looks at the (previously neglected) intersection of low-Resource NMT and domain adaptation in NMT, we consider only these commonly accessible resources."
+        "filename": "Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p2__score0.95.png",
+        "path": "figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p2__score0.95.png",
+        "caption": "Figure 2: Prompt templates of different reasoning paths."
+      },
+      {
+        "filename": "Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+        "path": "figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+        "caption": "Figure 3: Overview of our framework, including (1) Quality Filtering that drops flawed chains-of-thought; (2) Conditional Routing that sends each reasoning path to the most suitable students for fine-tuning; (3) MutualStudent Distillation that shares and refines learned insights of different students."
       }
-    ],
-    "acl_id": "2025.coling-main.472"
+    ]
   },
   {
-    "id": 52,
-    "folder_name": "GEMINI_Controlling_The_Sentence-Level_Summary_Style_in_Abstractive_Text_Summarization_2023.emnlp-main.53",
-    "title": "GEMINI Controlling The Sentence-Level Summary Style in Abstractive Text Summarization",
+    "title": "Less is More Mitigating Multimodal Hallucination from an EOS Decision Perspective",
+    "folder_name": "Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective",
     "images": [
       {
-        "filename": "GEMINI_Controlling_The_Sentence-Level_Summary_Style_in_Abstractive_Text_Summarization_2023.emnlp-main.53__p0__score0.90.png",
-        "path": "./GEMINI_Controlling_The_Sentence-Level_Summary_Style_in_Abstractive_Text_Summarization_2023.emnlp-main.53/GEMINI_Controlling_The_Sentence-Level_Summary_Style_in_Abstractive_Text_Summarization_2023.emnlp-main.53__p0__score0.90.png",
-        "caption": "Figure 1: Example of human summary from CNN/DM."
+        "filename": "Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective__p0__score0.60.png",
+        "path": "figs_human_eval_papers/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective__p0__score0.60.png",
+        "caption": "Figure 1: Top: An example from the LLaVA instruction data. The training data can be overly detailed to exceed the model’s visual perception limits. Bottom: Average log-likelihood of the LLaVA (7b) model predicting EOS at positions labeled as EOS during instruction tuning. Training the model with overly detailed data leads to a decrease in its tendency to stop generation."
       },
       {
-        "filename": "GEMINI_Controlling_The_Sentence-Level_Summary_Style_in_Abstractive_Text_Summarization_2023.emnlp-main.53__p3__score1.00.png",
-        "path": "./GEMINI_Controlling_The_Sentence-Level_Summary_Style_in_Abstractive_Text_Summarization_2023.emnlp-main.53/GEMINI_Controlling_The_Sentence-Level_Summary_Style_in_Abstractive_Text_Summarization_2023.emnlp-main.53__p3__score1.00.png",
-        "caption": "Figure 2: GEMINI uses a controller to decide ext/abs styles, and further switch the decoder accordingly between a rewriter and a generator. We express the identifier tokens “<S>” and “<Sk>” in the concise form “S” and “Sk”, and we use “w1 w2” to represent the tokens in the first sentence and “w3 w4” the tokens in the second sentence. Group tags are converted into embeddings and added to the input token embeddings for both the encoder and decoder. The decoder predicts an identifier token to determine the group tag of the following timesteps, for example “<S2>” to start the group tag “2” until the end of the sentence “</S>”."
+        "filename": "Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective__p4__score0.70.png",
+        "path": "figs_human_eval_papers/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective__p4__score0.70.png",
+        "caption": "Figure 4: Illustration of the probability distribution derived from our proposed Selective EOS Supervision. Arrows indicate the maximizing and minimizing effects of the training objective on the probability of each word. When the label is not EOS, the EOS token is excluded from the probability distribution."
       }
-    ],
-    "acl_id": "2023.emnlp-main.53"
+    ]
   },
   {
-    "id": 53,
-    "folder_name": "Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458",
-    "title": "Gradient-guided Attention Map Editing Towards Efficient Contextual Hallucination Mitigation",
+    "title": "Lost in the Middle How Language Models Use Long Contexts",
+    "folder_name": "Lost_in_the_Middle_How_Language_Models_Use_Long_Contexts",
     "images": [
-      {
-        "filename": "Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458__p1__score1.00.png",
-        "path": "./Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458/Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458__p1__score1.00.png",
-        "caption": "Figure 1: Illustration of a decoder-only Transformer featuring a multi-head attention mechanism. Each row in an attention map represents a weight vector that sums to one, reflecting the current token’s relationship with preceding tokens. A deeper color indicates a higher attention weight."
-      },
-      {
-        "filename": "Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458__p2__score0.95.png",
-        "path": "./Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458/Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458__p2__score0.95.png",
-        "caption": "Figure 2: Derivation of the LR at the tth decoding step."
-      },
-      {
-        "filename": "Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458__p3__score0.92.png",
-        "path": "./Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458/Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458__p3__score0.92.png",
-        "caption": "Figure 3: Utilization of the positional-based decay prior attention bias."
-      },
-      {
-        "filename": "Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458__p4__score0.80.png",
-        "path": "./Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458/Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458__p4__score0.80.png",
-        "caption": "Figure 6: Illustrated example for the combination of prior attention bias and edit direction to perform attention editing."
-      },
-      {
-        "filename": "Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458__p4__score1.00.png",
-        "path": "./Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458/Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458__p4__score1.00.png",
-        "caption": "Figure 4: Illustrated example on the generation of one chunk of output in GAME. Step ①: the LLM predicts the next chunk (Y2) and calculates the chunk attention feature (v̄2) without any attention editing. Step ②: the classifier (F ) predicts the hallucination score (c) for the generated chunk with the corresponding feature. If the score exceeds a predefined threshold, the chunk will be accepted. Otherwise, attention editing will be applied to regenerate the chunk. Step ③: the attention edit signal for each head is computed with the prior bias and the edit direction ∆ derived from the gradient of the score. Step ④: a new chunk is generated with the calculated attention editing signal and re-evaluated with the classifier. If no qualified chunk is accepted with number of regeneration attempts, the chunk with the highest score during the generation process will be accepted."
-      },
       {
-        "filename": "Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458__p4__score1.00__1.png",
-        "path": "./Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458/Gradient-guided_Attention_Map_Editing_Towards_Efficient_Contextual_Hallucination_Mitigation_2025.findings-naacl.458__p4__score1.00__1.png",
-        "caption": "Figure 5: The training data construction and training process of lookback lens."
+        "filename": "Lost_in_the_Middle_How_Language_Models_Use_Long_Contexts__p3__score0.60.png",
+        "path": "figs_human_eval_papers/Lost_in_the_Middle_How_Language_Models_Use_Long_Contexts/Lost_in_the_Middle_How_Language_Models_Use_Long_Contexts__p3__score0.60.png",
+        "caption": "Figure 3: Modulating the position of relevant information within the input context for the multi-document question answering example presented in Figure 2. Re-ordering the documents in the input context does not affect the desired output."
       }
-    ],
-    "acl_id": "2025.findings-naacl.458"
+    ]
   },
   {
-    "id": 54,
-    "folder_name": "HaluEval_A_Large-Scale_Hallucination_Evaluation_Benchmark_for_Large_Language_Models_2023.emnlp-main.397",
-    "title": "HaluEval A Large-Scale Hallucination Evaluation Benchmark for Large Language Models",
+    "title": "MARVEL Unlocking the Multi-Modal Capability of Dense Retrieval via Visual Module Plugin",
+    "folder_name": "MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin",
     "images": [
       {
-        "filename": "HaluEval_A_Large-Scale_Hallucination_Evaluation_Benchmark_for_Large_Language_Models_2023.emnlp-main.397__p1__score1.00.png",
-        "path": "./HaluEval_A_Large-Scale_Hallucination_Evaluation_Benchmark_for_Large_Language_Models_2023.emnlp-main.397/HaluEval_A_Large-Scale_Hallucination_Evaluation_Benchmark_for_Large_Language_Models_2023.emnlp-main.397__p1__score1.00.png",
-        "caption": "Figure 1: Construction pipeline of HaluEval, including automatic generation (top) and human annotation (bottom)."
+        "filename": "MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+        "path": "figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+        "caption": "Figure 1: Retrieval Pipeline with Our MARVEL Model. MARVEL incorporates the visual module plugin, aiming to unlock the multi-modal capabilities of well trained dense retrieval model."
       },
       {
-        "filename": "HaluEval_A_Large-Scale_Hallucination_Evaluation_Benchmark_for_Large_Language_Models_2023.emnlp-main.397__p3__score0.90.png",
-        "path": "./HaluEval_A_Large-Scale_Hallucination_Evaluation_Benchmark_for_Large_Language_Models_2023.emnlp-main.397/HaluEval_A_Large-Scale_Hallucination_Evaluation_Benchmark_for_Large_Language_Models_2023.emnlp-main.397__p3__score0.90.png",
-        "caption": "Table 3: Instruction of hallucination filtering for question answering."
+        "filename": "MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+        "path": "figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+        "caption": "Figure 2: The Architecture of Multi-modAl Retrieval model via Visual modulE pLugin (MARVEL). We first pretrain the visual modules using the image-caption alignment task (Figure 2(a)) and then finetune the language model to conduct multi-modal retrieval (Figure 2(b))."
       }
-    ],
-    "acl_id": "2023.emnlp-main.397"
+    ]
   },
   {
-    "id": 55,
-    "folder_name": "Harnessing_NLP_for_Indigenous_Language_Education_Fine-Tuning_Large_Language_Models_for_Sentence_Transformation_2025.americasnlp-1.14",
-    "title": "Harnessing NLP for Indigenous Language Education Fine-Tuning Large Language Models for Sentence Transformation",
+    "title": "MASTER A Multi-Agent System with LLM Specialized MCTS",
+    "folder_name": "MASTER_A_Multi-Agent_System_with_LLM_Specialized_MCTS",
     "images": [
       {
-        "filename": "Harnessing_NLP_for_Indigenous_Language_Education_Fine-Tuning_Large_Language_Models_for_Sentence_Transformation_2025.americasnlp-1.14__p3__score1.00.png",
-        "path": "./Harnessing_NLP_for_Indigenous_Language_Education_Fine-Tuning_Large_Language_Models_for_Sentence_Transformation_2025.americasnlp-1.14/Harnessing_NLP_for_Indigenous_Language_Education_Fine-Tuning_Large_Language_Models_for_Sentence_Transformation_2025.americasnlp-1.14__p3__score1.00.png",
-        "caption": "Figure 1: Methodological Workflow for Sentence Transformation in Indigenous Language Education Using Large Language Models"
+        "filename": "MASTER_A_Multi-Agent_System_with_LLM_Specialized_MCTS__p2__score1.00.png",
+        "path": "figs_human_eval_papers/MASTER_A_Multi-Agent_System_with_LLM_Specialized_MCTS/MASTER_A_Multi-Agent_System_with_LLM_Specialized_MCTS__p2__score1.00.png",
+        "caption": "Figure 1: Reasoning Tree of MASTER. Starting from Agent0, Agent1 and Agent2 are created in the first expansion. Then the system first selects Agent1 for expansion due to its higher UCT. Its child agent Agent3 is a terminal agent that failed evaluation which triggers a backpropagation and lowers the UCT of Agent1. Now Agent2 has the highest UCT and is selected for next expansion. Its child agent, Agent6 is a terminal agent and passes evaluation. The answer in it is the final answer."
       }
-    ],
-    "acl_id": "2025.americasnlp-1.14"
+    ]
   },
   {
-    "id": 56,
-    "folder_name": "Health_Sentinel_An_AI_Pipeline_For_Real-time_Disease_Outbreak_Detection_2025.nlp4pi-1.3",
-    "title": "Health Sentinel An AI Pipeline For Real-time Disease Outbreak Detection",
+    "title": "Machine Unlearning of Pre-trained Large Language Models",
+    "folder_name": "Machine_Unlearning_of_Pre-trained_Large_Language_Models",
     "images": [
-      {
-        "filename": "Health_Sentinel_An_AI_Pipeline_For_Real-time_Disease_Outbreak_Detection_2025.nlp4pi-1.3__p0__score0.95.png",
-        "path": "./Health_Sentinel_An_AI_Pipeline_For_Real-time_Disease_Outbreak_Detection_2025.nlp4pi-1.3/Health_Sentinel_An_AI_Pipeline_For_Real-time_Disease_Outbreak_Detection_2025.nlp4pi-1.3__p0__score0.95.png",
-        "caption": "Figure 1: Health Sentinel extracts structured information from online articles reporting unusual health events. The given example shows how our pipeline extracts multiple events from a single news article."
-      },
       {
-        "filename": "Health_Sentinel_An_AI_Pipeline_For_Real-time_Disease_Outbreak_Detection_2025.nlp4pi-1.3__p3__score1.00.png",
-        "path": "./Health_Sentinel_An_AI_Pipeline_For_Real-time_Disease_Outbreak_Detection_2025.nlp4pi-1.3/Health_Sentinel_An_AI_Pipeline_For_Real-time_Disease_Outbreak_Detection_2025.nlp4pi-1.3__p3__score1.00.png",
-        "caption": "Figure 2: System Overview of Health Sentinel. Health Sentinel combines rule based and ML techniques alongside a human-in-the-loop system to ensure a high level of reliance and efficiency. Its data ingestion pipeline continuously collects news articles from the web and stores them in a database. The article processing pipeline retrieves these articles, filters out irrelevant data, and extracts health events. The extracted events are then sent for expert review before publication for ground-level action."
-      },
-      {
-        "filename": "Health_Sentinel_An_AI_Pipeline_For_Real-time_Disease_Outbreak_Detection_2025.nlp4pi-1.3__p6__score0.80.png",
-        "path": "./Health_Sentinel_An_AI_Pipeline_For_Real-time_Disease_Outbreak_Detection_2025.nlp4pi-1.3/Health_Sentinel_An_AI_Pipeline_For_Real-time_Disease_Outbreak_Detection_2025.nlp4pi-1.3__p6__score0.80.png",
-        "caption": "Table 3: Qualitative comparison of event extraction by GPT-4o-Mini and QA+NLI pipelines. In example 1, the LLM-based pipeline identifies a disease missed by QA+NLI. In Example 2, it filters out an irrelevant international event mistakenly extracted by QA+NLI. Example 3 shows the LLM capturing an illness caused by contaminated water, which QA+NLI misses. In the final example, it excludes the article lacking an infectious disease component, unlike QA+NLI. Overall, LLM’s inherent knowledge enables more accurate event extraction and contextual filtering of articles."
+        "filename": "Machine_Unlearning_of_Pre-trained_Large_Language_Models__p1__score1.00.png",
+        "path": "figs_human_eval_papers/Machine_Unlearning_of_Pre-trained_Large_Language_Models/Machine_Unlearning_of_Pre-trained_Large_Language_Models__p1__score1.00.png",
+        "caption": "Figure 1: Overview of unlearning pre-trained LLMs to address user removal requests."
       }
-    ],
-    "acl_id": "2025.nlp4pi-1.3"
+    ]
   },
   {
-    "id": 57,
-    "folder_name": "Howard_University-AI4PC_at_SemEval-2025_Task_9_Using_Open-weight_BART-MNLI_for_Zero_Shot_Classification_of_Food_Recall_D_2025.semeval-1.250",
-    "title": "Howard University-AI4PC at SemEval-2025 Task 9 Using Open-weight BART-MNLI for Zero Shot Classification of Food Recall D",
+    "title": "Make Every Penny Count Difficulty-Adaptive Self-Consistency for Cost-Efficient Reasoning",
+    "folder_name": "Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning",
     "images": [
       {
-        "filename": "Howard_University-AI4PC_at_SemEval-2025_Task_9_Using_Open-weight_BART-MNLI_for_Zero_Shot_Classification_of_Food_Recall_D_2025.semeval-1.250__p1__score0.80.png",
-        "path": "./Howard_University-AI4PC_at_SemEval-2025_Task_9_Using_Open-weight_BART-MNLI_for_Zero_Shot_Classification_of_Food_Recall_D_2025.semeval-1.250/Howard_University-AI4PC_at_SemEval-2025_Task_9_Using_Open-weight_BART-MNLI_for_Zero_Shot_Classification_of_Food_Recall_D_2025.semeval-1.250__p1__score0.80.png",
-        "caption": "Figure 1: Model inputs in Blue and ground truth in Orange."
+        "filename": "Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+        "path": "figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+        "caption": "Figure 2: Leveraging their prior knowledge, humans assess the difficulty level of a problem before solving it, and allocate appropriate time for its resolution based on the difficulty."
       },
       {
-        "filename": "Howard_University-AI4PC_at_SemEval-2025_Task_9_Using_Open-weight_BART-MNLI_for_Zero_Shot_Classification_of_Food_Recall_D_2025.semeval-1.250__p2__score1.00.png",
-        "path": "./Howard_University-AI4PC_at_SemEval-2025_Task_9_Using_Open-weight_BART-MNLI_for_Zero_Shot_Classification_of_Food_Recall_D_2025.semeval-1.250/Howard_University-AI4PC_at_SemEval-2025_Task_9_Using_Open-weight_BART-MNLI_for_Zero_Shot_Classification_of_Food_Recall_D_2025.semeval-1.250__p2__score1.00.png",
-        "caption": "Figure 2: Proposed model approach"
+        "filename": "Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+        "path": "figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+        "caption": "Figure 3: Overall workflow of proposed Difficulty-Adaptive Self-Consistency. DSC first ranks problem difficulty using LLM itself (step 1), then partitions problems into easy and hard to save sampling cost for easy ones (step 2), and finally pre-allocates sample sizes to reduce resampling costs for hard problems (step 3)."
       }
-    ],
-    "acl_id": "2025.semeval-1.250"
+    ]
   },
   {
-    "id": 58,
-    "folder_name": "In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109",
-    "title": "In-Context Analogical Reasoning with Pre-Trained Language Models",
+    "title": "Measuring Chain of Thought Faithfulness by Unlearning Reasoning Steps",
+    "folder_name": "Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps",
     "images": [
-      {
-        "filename": "In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109__p0__score1.00.png",
-        "path": "./In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109/In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109__p0__score1.00.png",
-        "caption": "Figure 1: Raven’s Progressive Matrices (Raven and Court, 1938; Zhang et al., 2019a) are an analogy-making task where one must infer the missing matrix item based on abstract rules instantiated in the first two rows. To demonstrate the potential analogical reasoning skills in pre-trained language models, we develop languagebased abstractions over their key perceptual features, then prompt them to select the completion of the matrix."
-      },
       {
-        "filename": "In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109__p2__score1.00.png",
-        "path": "./In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109/In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109__p2__score1.00.png",
-        "caption": "Figure 2: Illustration of the compositional nature of entities, layouts, and component structures in RAVEN, and their unique attributes. We provide example items from sub-tasks each item type appears in."
+        "filename": "Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps__p0__score0.95.png",
+        "path": "figs_human_eval_papers/Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps/Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps__p0__score0.95.png",
+        "caption": "Figure 1: An illustration of PFF and FUR. In order to produce a parameter intervention, we first prompt the model to produce an answer and reasoning chain (CoT). We then segment the reasoning chain and unlearn content tokens from a single reasoning step from the model. The unlearned model is then prompted to produce an answer. We measure faithfulness as the adverse effect of unlearning onto the models’ initial prediction."
       },
       {
-        "filename": "In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109__p3__score0.95.png",
-        "path": "./In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109/In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109__p3__score0.95.png",
-        "caption": "Figure 4: Example of generated entity layout encodings when abstracting position and number, and summarizing redundant entity attributes within the layout."
+        "filename": "Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps__p3__score1.00.png",
+        "path": "figs_human_eval_papers/Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps/Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps__p3__score1.00.png",
+        "caption": "Figure 2: A high level overview of the two stages of PFF: (1) parameter intervention and (2) evaluation. We instantiate PFF with FUR by using NPO+KL, controls to assure precision of unlearning and faithfulness metrics."
       },
       {
-        "filename": "In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109__p3__score1.00.png",
-        "path": "./In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109/In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109__p3__score1.00.png",
-        "caption": "Figure 3: Example generated prompts for a complete RPM under entity attribute naming (left) and decomposition (right) abstractions in the Center sub-task."
-      },
-      {
-        "filename": "In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109__p5__score0.98.png",
-        "path": "./In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109/In-Context_Analogical_Reasoning_with_Pre-Trained_Language_Models_2023.acl-long.109__p5__score0.98.png",
-        "caption": "Figure 5: Quasi-image abstractions for a triangle and pentagon of different size and color."
+        "filename": "Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps__p7__score0.80.png",
+        "path": "figs_human_eval_papers/Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps/Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps__p7__score0.80.png",
+        "caption": "Figure 4: Heatmap produced by unlearning reasoning steps. ∆p denotes FF-SOFT: the change in initial answer probability. Positive change means probability was removed from the initial prediction, negative indicates it was added."
       }
-    ],
-    "acl_id": "2023.acl-long.109"
+    ]
   },
   {
-    "id": 59,
-    "folder_name": "Interpreting_Conversational_Dense_Retrieval_by_Rewriting-Enhanced_Inversion_of_Session_Embedding_2024.acl-long.159",
-    "title": "Interpreting Conversational Dense Retrieval by Rewriting-Enhanced Inversion of Session Embedding",
+    "title": "Mind the Value-Action Gap Do LLMs Act in Alignment with Their Values",
+    "folder_name": "Mind_the_Value-Action_Gap_Do_LLMs_Act_in_Alignment_with_Their_Values",
     "images": [
       {
-        "filename": "Interpreting_Conversational_Dense_Retrieval_by_Rewriting-Enhanced_Inversion_of_Session_Embedding_2024.acl-long.159__p0__score1.00.png",
-        "path": "./Interpreting_Conversational_Dense_Retrieval_by_Rewriting-Enhanced_Inversion_of_Session_Embedding_2024.acl-long.159/Interpreting_Conversational_Dense_Retrieval_by_Rewriting-Enhanced_Inversion_of_Session_Embedding_2024.acl-long.159__p0__score1.00.png",
-        "caption": "Figure 1: The blue section on the left signifies the conversational dense retrieval, and the green section on the right provides an overview of CONVINV."
+        "filename": "Mind_the_Value-Action_Gap_Do_LLMs_Act_in_Alignment_with_Their_Values__p0__score0.95.png",
+        "path": "figs_human_eval_papers/Mind_the_Value-Action_Gap_Do_LLMs_Act_in_Alignment_with_Their_Values/Mind_the_Value-Action_Gap_Do_LLMs_Act_in_Alignment_with_Their_Values__p0__score0.95.png",
+        "caption": "Figure 1: An illustrative example of a “Value-Action Gap” in LLM. We observed a misalignment when prompting LLM to 1) state their inclination (i.e., Disagree) and 2) select their value-informed action (i.e., Agree), indicating 3) value-action gap towards the value of ‘Social Power’ in a scenario of Health in Nigeria."
       },
       {
-        "filename": "Interpreting_Conversational_Dense_Retrieval_by_Rewriting-Enhanced_Inversion_of_Session_Embedding_2024.acl-long.159__p3__score1.00.png",
-        "path": "./Interpreting_Conversational_Dense_Retrieval_by_Rewriting-Enhanced_Inversion_of_Session_Embedding_2024.acl-long.159/Interpreting_Conversational_Dense_Retrieval_by_Rewriting-Enhanced_Inversion_of_Session_Embedding_2024.acl-long.159__p3__score1.00.png",
-        "caption": "Figure 2: Architecture of our proposed CONVINV."
+        "filename": "Mind_the_Value-Action_Gap_Do_LLMs_Act_in_Alignment_with_Their_Values__p1__score1.00.png",
+        "path": "figs_human_eval_papers/Mind_the_Value-Action_Gap_Do_LLMs_Act_in_Alignment_with_Their_Values/Mind_the_Value-Action_Gap_Do_LLMs_Act_in_Alignment_with_Their_Values__p1__score1.00.png",
+        "caption": "Figure 2: We introduce the ValueActionLens framework to assess the alignment between LLMs’ stated values and their actions informed by those values. The framework encompasses (1) the data generation of value-informed actions across diverse cultural and social contexts; (2) two tasks for evaluating LLMs’ stated values (i.e., Task1) and value-informed actions (i.e., Task2); and (3) three measures to evaluate their value-action alignment, including value-action alignment rate, alignment distance, and alignment ranking."
       },
-      {
-        "filename": "Interpreting_Conversational_Dense_Retrieval_by_Rewriting-Enhanced_Inversion_of_Session_Embedding_2024.acl-long.159__p4__score1.00.png",
-        "path": "./Interpreting_Conversational_Dense_Retrieval_by_Rewriting-Enhanced_Inversion_of_Session_Embedding_2024.acl-long.159/Interpreting_Conversational_Dense_Retrieval_by_Rewriting-Enhanced_Inversion_of_Session_Embedding_2024.acl-long.159__p4__score1.00.png",
-        "caption": "Figure 3: The workflow of UniCRR (Unifying Conversational Dense Retrieval and Query Rewriting)."
-      }
-    ],
-    "acl_id": "2024.acl-long.159"
-  },
-  {
-    "id": 60,
-    "folder_name": "Investigating_Bias_in_Multilingual_Language_Models_Cross-Lingual_Transfer_of_Debiasing_Techniques_2023.emnlp-main.175",
-    "title": "Investigating Bias in Multilingual Language Models Cross-Lingual Transfer of Debiasing Techniques",
-    "images": [
       {
-        "filename": "Investigating_Bias_in_Multilingual_Language_Models_Cross-Lingual_Transfer_of_Debiasing_Techniques_2023.emnlp-main.175__p0__score0.95.png",
-        "path": "./Investigating_Bias_in_Multilingual_Language_Models_Cross-Lingual_Transfer_of_Debiasing_Techniques_2023.emnlp-main.175/Investigating_Bias_in_Multilingual_Language_Models_Cross-Lingual_Transfer_of_Debiasing_Techniques_2023.emnlp-main.175__p0__score0.95.png",
-        "caption": "Figure 1: The example of the English CrowS-Pairs dataset illustrates sentence probabilities after debiasing mBERT with SentenceDebias in English, French, German, and Dutch."
+        "filename": "Mind_the_Value-Action_Gap_Do_LLMs_Act_in_Alignment_with_Their_Values__p3__score1.00.png",
+        "path": "figs_human_eval_papers/Mind_the_Value-Action_Gap_Do_LLMs_Act_in_Alignment_with_Their_Values/Mind_the_Value-Action_Gap_Do_LLMs_Act_in_Alignment_with_Their_Values__p3__score1.00.png",
+        "caption": "Figure 3: The human-in-the-loop process of generating value-informed actions with three steps: (1) build prompt variants; (2) optimal prompt selection by AI experts; and (3) assessment of data quality by humans with diverse cultures. We show the optimal prompt and example of generated data format in Figure 6."
       }
-    ],
-    "acl_id": "2023.emnlp-main.175"
+    ]
   },
   {
-    "id": 61,
-    "folder_name": "Iterative_Document-level_Information_Extraction_via_Imitation_Learning_2023.eacl-main.136",
-    "title": "Iterative Document-level Information Extraction via Imitation Learning",
+    "title": "Mission Impossible Language Models",
+    "folder_name": "Mission_Impossible_Language_Models",
     "images": [
-      {
-        "filename": "Iterative_Document-level_Information_Extraction_via_Imitation_Learning_2023.eacl-main.136__p0__score0.80.png",
-        "path": "./Iterative_Document-level_Information_Extraction_via_Imitation_Learning_2023.eacl-main.136/Iterative_Document-level_Information_Extraction_via_Imitation_Learning_2023.eacl-main.136__p0__score0.80.png",
-        "caption": "Figure 1: An example of multi-template extraction on a document (an NLP paper; Lei et al. (2018)) from the SCIREX dataset. An agent reads the entire paper and iteratively generates templates, each consisting of slots for Task, Method, Dataset, and Metric."
-      },
       {
-        "filename": "Iterative_Document-level_Information_Extraction_via_Imitation_Learning_2023.eacl-main.136__p1__score0.95.png",
-        "path": "./Iterative_Document-level_Information_Extraction_via_Imitation_Learning_2023.eacl-main.136/Iterative_Document-level_Information_Extraction_via_Imitation_Learning_2023.eacl-main.136__p1__score0.95.png",
-        "caption": "Figure 2: Template examples from MUC-4 (left) and BETTER Granular (right) datasets. Event triggers (e.g. burned above) are not annotated in MUC-4 and are highlighted here only for clarity."
+        "filename": "Mission_Impossible_Language_Models__p0__score0.95.png",
+        "path": "figs_human_eval_papers/Mission_Impossible_Language_Models/Mission_Impossible_Language_Models__p0__score0.95.png",
+        "caption": "Figure 1: Partial impossibility continuum of languages based on complexity. We assess the learnability of languages at different points in the continuum and push the (currently unclear) boundary between possible and impossible."
       },
       {
-        "filename": "Iterative_Document-level_Information_Extraction_via_Imitation_Learning_2023.eacl-main.136__p2__score1.00.png",
-        "path": "./Iterative_Document-level_Information_Extraction_via_Imitation_Learning_2023.eacl-main.136/Iterative_Document-level_Information_Extraction_via_Imitation_Learning_2023.eacl-main.136__p2__score1.00.png",
-        "caption": "Figure 3: The basic iteration step of ITERX (left box), and an unrolled version on SCIREX 4-ary relation extraction (extraction of templates in the form {Task, Method, Dataset, Metric}) executed on the NLP paper Bidirectional Attention Flow for Machine Comprehension (Seo et al., 2017). Span embeddings (X(0) ) are passed as input to the first step, where the model extracts the template {Task: Machine comprehension, Question answering; Method: BiDAF; Dataset: SQuAD; Metric: Exact match}. This information is propagated via our memory mechanism to the second step, and informs prediction of the next template: {Task: Machine comprehension; Method: BiDAF; Dataset: CNN/DailyMail; Metric: Accuracy}. The third step assigns the null slot type Y to all spans, indicating that the model is unable to find any further templates, thus stopping the generation process."
-      },
-      {
-        "filename": "Iterative_Document-level_Information_Extraction_via_Imitation_Learning_2023.eacl-main.136__p5__score0.60.png",
-        "path": "./Iterative_Document-level_Information_Extraction_via_Imitation_Learning_2023.eacl-main.136/Iterative_Document-level_Information_Extraction_via_Imitation_Learning_2023.eacl-main.136__p5__score0.60.png",
-        "caption": "Figure 4: A comparison of the metrics discussed. Features in blue are “desired” for the evaluation of our task."
+        "filename": "Mission_Impossible_Language_Models__p7__score0.95.png",
+        "path": "figs_human_eval_papers/Mission_Impossible_Language_Models/Mission_Impossible_Language_Models__p7__score0.95.png",
+        "caption": "Figure 4: An interchange intervention on the NOHOP model with base input b = The man be and source input s = The men be. The intervention is performed at the second layer and second token position, causing a"
       }
-    ],
-    "acl_id": "2023.eacl-main.136"
+    ]
   },
   {
-    "id": 62,
-    "folder_name": "JU-CSE-NLPs_Cascaded_Speech_to_Text_Translation_Systems_for_IWSLT_2025_in_Indic_Track_2025.iwslt-1.18",
-    "title": "JU-CSE-NLPs Cascaded Speech to Text Translation Systems for IWSLT 2025 in Indic Track",
+    "title": "Mitigating Biases for Instruction-following Language Models via Bias Neurons Elimination",
+    "folder_name": "Mitigating_Biases_for_Instruction-following_Language_Models_via_Bias_Neurons_Elimination",
     "images": [
       {
-        "filename": "JU-CSE-NLPs_Cascaded_Speech_to_Text_Translation_Systems_for_IWSLT_2025_in_Indic_Track_2025.iwslt-1.18__p2__score1.00.png",
-        "path": "./JU-CSE-NLPs_Cascaded_Speech_to_Text_Translation_Systems_for_IWSLT_2025_in_Indic_Track_2025.iwslt-1.18/JU-CSE-NLPs_Cascaded_Speech_to_Text_Translation_Systems_for_IWSLT_2025_in_Indic_Track_2025.iwslt-1.18__p2__score1.00.png",
-        "caption": "Figure 1: Overview of the proposed Multilingual Speech Translation Pipeline: (a) English-to-Indic flow using Whisper and finetuned NLLB-200; (b) Indic-to-English flow using IndicConformer and finetuned IndicTrans2."
+        "filename": "Mitigating_Biases_for_Instruction-following_Language_Models_via_Bias_Neurons_Elimination__p0__score0.95.png",
+        "path": "figs_human_eval_papers/Mitigating_Biases_for_Instruction-following_Language_Models_via_Bias_Neurons_Elimination/Mitigating_Biases_for_Instruction-following_Language_Models_via_Bias_Neurons_Elimination__p0__score0.95.png",
+        "caption": "Figure 1: The example contains an ambiguous context; thus, the correct answer is \"can’t answer\" since it is impossible to judge which group corresponds to the answer for a given negative question (e.g., \"What group of people uses drugs?\"). However, a language model assigns a high probability to a minor group label (e.g., \"poor people\"). Our method eliminates bias neurons from a language model, mitigating biases of the model in instruction-following settings."
       }
-    ],
-    "acl_id": "2025.iwslt-1.18"
+    ]
   },
   {
-    "id": 63,
-    "folder_name": "KEC_AI_DATA_DRIFTERSDravidianLangTech_2025_Fake_News_Detection_in_Dravidian_Languages_2025.dravidianlangtech-1.29",
-    "title": "KEC AI DATA DRIFTERSDravidianLangTech 2025 Fake News Detection in Dravidian Languages",
+    "title": "Mitigating Hallucinations in Large Vision-Language Models with Instruction Contrastive Decoding",
+    "folder_name": "Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding",
     "images": [
       {
-        "filename": "KEC_AI_DATA_DRIFTERSDravidianLangTech_2025_Fake_News_Detection_in_Dravidian_Languages_2025.dravidianlangtech-1.29__p2__score1.00.png",
-        "path": "./KEC_AI_DATA_DRIFTERSDravidianLangTech_2025_Fake_News_Detection_in_Dravidian_Languages_2025.dravidianlangtech-1.29/KEC_AI_DATA_DRIFTERSDravidianLangTech_2025_Fake_News_Detection_in_Dravidian_Languages_2025.dravidianlangtech-1.29__p2__score1.00.png",
-        "caption": "Figure 1: Proposed System Workflow"
+        "filename": "Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+        "path": "figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+        "caption": "Figure 1: An illustration on inference framework and contrastive decoding process of ICD method. At the core (middle orange box), the framework integrates a frozen image encoder, LLM, and query vectors (gray box) within the Q-Former, focusing solely on adjusting the standard and disturbance instructions. The latter, exemplified by adding role prefixes like ‘You are a confused object detector,’ aims to increase multimodal alignment uncertainty. This results in two distinct distributions: one from the standard instruction and another influenced by the disturbance. The contrastive decoding method (right orange box) highlights how disturbance instructions amplify hallucinated concepts (‘person and fork’), which are then corrected by subtracting probabilities derived from the standard instruction, ensuring accurate recognition of the correct concept ‘dog’."
       }
-    ],
-    "acl_id": "2025.dravidianlangtech-1.29"
+    ]
   },
   {
-    "id": 64,
-    "folder_name": "LLM-Assisted_Iterative_Curriculum_Writing_A_Human-Centered_AI_Approach_in_Finnish_Higher_Education_2025.bea-1.76",
-    "title": "LLM-Assisted, Iterative Curriculum Writing A Human-Centered AI Approach in Finnish Higher Education",
+    "title": "Mitigating Hallucinations in Vision-Language Models through Image-Guided Head Suppression",
+    "folder_name": "Mitigating_Hallucinations_in_Vision-Language_Models_through_Image-Guided_Head_Suppression",
     "images": [
       {
-        "filename": "LLM-Assisted_Iterative_Curriculum_Writing_A_Human-Centered_AI_Approach_in_Finnish_Higher_Education_2025.bea-1.76__p4__score0.80.png",
-        "path": "./LLM-Assisted_Iterative_Curriculum_Writing_A_Human-Centered_AI_Approach_in_Finnish_Higher_Education_2025.bea-1.76/LLM-Assisted_Iterative_Curriculum_Writing_A_Human-Centered_AI_Approach_in_Finnish_Higher_Education_2025.bea-1.76__p4__score0.80.png",
-        "caption": "Figure 2: Screenshot of the prototype interface. The left panel shows course topics and learning outcomes; colour highlights indicate segments automatically matched by the LLM. The right panel lists the UN Sustainable Development Goals (SDGs) with the corresponding curriculum fragments, illustrating the tool’s alignment-analysis feature."
+        "filename": "Mitigating_Hallucinations_in_Vision-Language_Models_through_Image-Guided_Head_Suppression__p0__score0.95.png",
+        "path": "figs_human_eval_papers/Mitigating_Hallucinations_in_Vision-Language_Models_through_Image-Guided_Head_Suppression/Mitigating_Hallucinations_in_Vision-Language_Models_through_Image-Guided_Head_Suppression__p0__score0.95.png",
+        "caption": "Figure 1: Caption generation using LLaVA-1.5 and SPIN. LLaVA-1.5’s generated text description mentions a “chair” in the background, which is clearly a hallucinated object. SPIN mitigates hallucination while successfully identifying the objects present in the image."
       }
-    ],
-    "acl_id": "2025.bea-1.76"
+    ]
   },
   {
-    "id": 65,
-    "folder_name": "LLMCrit_Teaching_Large_Language_Models_to_Use_Criteria_2024.findings-acl.472",
-    "title": "LLMCrit Teaching Large Language Models to Use Criteria",
+    "title": "Mitigating Visual Forgetting via Take-along Visual Conditioning for Multi-modal Long CoT Reasoning",
+    "folder_name": "Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning",
     "images": [
       {
-        "filename": "LLMCrit_Teaching_Large_Language_Models_to_Use_Criteria_2024.findings-acl.472__p0__score0.95.png",
-        "path": "./LLMCrit_Teaching_Large_Language_Models_to_Use_Criteria_2024.findings-acl.472/LLMCrit_Teaching_Large_Language_Models_to_Use_Criteria_2024.findings-acl.472__p0__score0.95.png",
-        "caption": "Figure 1: Illustration of teaching LLMs to use criteria."
-      }
-    ],
-    "acl_id": "2024.findings-acl.472"
-  },
-  {
-    "id": 66,
-    "folder_name": "LLMs_know_their_vulnerabilities_Uncover_Safety_Gaps_through_Natural_Distribution_Shifts_2025.acl-long.1207",
-    "title": "LLMs know their vulnerabilities Uncover Safety Gaps through Natural Distribution Shifts",
-    "images": [
+        "filename": "Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+        "path": "figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+        "caption": "Figure 2: Illustration of layer-level and token-level attention weights. (a) The layer-level attention weights of image tokens across different response token positions. (b) The token-level attention weights at the middle layer. It shows that the model’s attention to the image gradually decreases during the reasoning process."
+      },
       {
-        "filename": "LLMs_know_their_vulnerabilities_Uncover_Safety_Gaps_through_Natural_Distribution_Shifts_2025.acl-long.1207__p1__score1.00.png",
-        "path": "./LLMs_know_their_vulnerabilities_Uncover_Safety_Gaps_through_Natural_Distribution_Shifts_2025.acl-long.1207/LLMs_know_their_vulnerabilities_Uncover_Safety_Gaps_through_Natural_Distribution_Shifts_2025.acl-long.1207__p1__score1.00.png",
-        "caption": "Figure 1: (a): A real-world example of our multi-turn attack compared with the single-turn toxic query. (b): the schematic description of our method. Each triangle box represents an actor, semantically related to the harmful target, as a hint for our multi-turn attack. The series of white circles represent a sequence of thoughts about how to finish our multi-turn attack step by step."
+        "filename": "Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+        "path": "figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+        "caption": "Figure 3: Overview of TVC System Design. We enable the model to have take-along visual conditioning capabilities through two stages: training and inference."
       },
       {
-        "filename": "LLMs_know_their_vulnerabilities_Uncover_Safety_Gaps_through_Natural_Distribution_Shifts_2025.acl-long.1207__p3__score1.00.png",
-        "path": "./LLMs_know_their_vulnerabilities_Uncover_Safety_Gaps_through_Natural_Distribution_Shifts_2025.acl-long.1207/LLMs_know_their_vulnerabilities_Uncover_Safety_Gaps_through_Natural_Distribution_Shifts_2025.acl-long.1207__p3__score1.00.png",
-        "caption": "Figure 2: Druing the pre-attack stage, ActorBreaker first leverages the knowledge of LLMs to instantiate our conceptual network Gconcept as Ginst as a two-layer tree. The leaf nodes of Ginst are specific actor names. ActorBreaker then samples actors and their relationships with the harmful target as our attack clues."
+        "filename": "Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p4__score1.00.png",
+        "path": "figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p4__score1.00.png",
+        "caption": "Figure 4: Data Generation Pipeline of TVC. We use iterative distillation to collect long-chain reasoning data, followed by a comprehensive response filtering process to ensure high-quality reasoning."
       },
       {
-        "filename": "LLMs_know_their_vulnerabilities_Uncover_Safety_Gaps_through_Natural_Distribution_Shifts_2025.acl-long.1207__p4__score1.00.png",
-        "path": "./LLMs_know_their_vulnerabilities_Uncover_Safety_Gaps_through_Natural_Distribution_Shifts_2025.acl-long.1207/LLMs_know_their_vulnerabilities_Uncover_Safety_Gaps_through_Natural_Distribution_Shifts_2025.acl-long.1207__p4__score1.00.png",
-        "caption": "Figure 3: Our in-attack process consists of three steps: (a) infer the attack chain about how to perform our attack step by step, based on the attack clue; (b) follow the attack chain to generate the initial attack path via self-talk, i.e., self-ask and self-answer; (c) dynamic modify the initial attack path by exploiting responses from the victim model, using a GPT4-Judge, to enhance effectiveness."
+        "filename": "Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+        "path": "figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+        "caption": "Figure 6: Case Study of TVC. TVC effectively re-examines the image during the reflection process to correct mistakes, guiding the model to the correct answer."
       }
-    ],
-    "acl_id": "2025.acl-long.1207"
+    ]
   },
   {
-    "id": 67,
-    "folder_name": "Language_Pivoting_from_Parallel_Corpora_for_Word_Sense_Disambiguation_of_Historical_Languages_A_Case_Study_on_Latin_2024.lrec-main.880",
-    "title": "Language Pivoting from Parallel Corpora for Word Sense Disambiguation of Historical Languages A Case Study on Latin",
+    "title": "OVM utcome-supervised alue odels for Planning in Mathematical Reasoning",
+    "folder_name": "OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning",
     "images": [
       {
-        "filename": "Language_Pivoting_from_Parallel_Corpora_for_Word_Sense_Disambiguation_of_Historical_Languages_A_Case_Study_on_Latin_2024.lrec-main.880__p3__score1.00.png",
-        "path": "./Language_Pivoting_from_Parallel_Corpora_for_Word_Sense_Disambiguation_of_Historical_Languages_A_Case_Study_on_Latin_2024.lrec-main.880/Language_Pivoting_from_Parallel_Corpora_for_Word_Sense_Disambiguation_of_Historical_Languages_A_Case_Study_on_Latin_2024.lrec-main.880__p3__score1.00.png",
-        "caption": "Figure 1: An example of the two annotation propagation methods described. Two parallel Latin-English sentences are used so that the English sentence is disambiguated by a state-of-the-art WSD system, which obtains the WordNet synset identifiers for each lemma in the English sentence. At this point the synset for the target Latin word (i.e. sanctam) is chosen in one of the two methods: a) Propagationw/inter: we take the union of the English synsets w and the possible synsets for sanctam v. b) Propagationw/align: we use a word alignment module to obtain the English word associated with the target word sanctam (i.e. holy) and we assign the English synset w6 as the synset of the target word."
+        "filename": "OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+        "path": "figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+        "caption": "Figure 1: (a): When evaluating partial paths (here for the first two steps), reward focuses on the current states, while value focuses on the unseen future outcomes. (b): Given a question q and a solution path [s1, · · · , sm, a], models are trained to predict path correctness (circled output scalar on the last token). Outcome supervision replicates the final answer’s correctness label across all steps (indicated by shaded labels), causing the model to implicitly learn to foresee the future, predicting values for partial paths. By contrast, process supervision details per-step correctness labels, causing the model to learn to predict step-level correctness, i.e. reward. Correct steps and answers are colored in yellow and incorrect ones in grey."
       }
-    ],
-    "acl_id": "2024.lrec-main.880"
+    ]
   },
   {
-    "id": 68,
-    "folder_name": "Large_Language_Models_Can_Solve_Real-World_Planning_Rigorously_with_Formal_Verification_Tools_2025.naacl-long.176",
-    "title": "Large Language Models Can Solve Real-World Planning Rigorously with Formal Verification Tools",
+    "title": "On LLM-Based Scientific Inductive Reasoning Beyond Equations",
+    "folder_name": "On_LLM-Based_Scientific_Inductive_Reasoning_Beyond_Equations",
     "images": [
-      {
-        "filename": "Large_Language_Models_Can_Solve_Real-World_Planning_Rigorously_with_Formal_Verification_Tools_2025.naacl-long.176__p2__score1.00.png",
-        "path": "./Large_Language_Models_Can_Solve_Real-World_Planning_Rigorously_with_Formal_Verification_Tools_2025.naacl-long.176/Large_Language_Models_Can_Solve_Real-World_Planning_Rigorously_with_Formal_Verification_Tools_2025.naacl-long.176__p2__score1.00.png",
-        "caption": "Figure 1: An overview of the framework. The blue region represents LLM. Given a natural language query, LLM 1) generates steps to formulate it as an SMT problem, 2) generates corresponding codes that encode the problem and call the solver. If the solver is not able to find the solution, LLM receives unsatisfiable reasons from the solver, collects information, analyzes the current situation, and offers suggestions to modify the query interactively. LLM then updates the code based on suggestions and calls the solver again to find a feasible plan."
-      },
       {
-        "filename": "Large_Language_Models_Can_Solve_Real-World_Planning_Rigorously_with_Formal_Verification_Tools_2025.naacl-long.176__p3__score0.70.png",
-        "path": "./Large_Language_Models_Can_Solve_Real-World_Planning_Rigorously_with_Formal_Verification_Tools_2025.naacl-long.176/Large_Language_Models_Can_Solve_Real-World_Planning_Rigorously_with_Formal_Verification_Tools_2025.naacl-long.176__p3__score0.70.png",
-        "caption": "Figure 2: Step to Code translation example."
+        "filename": "On_LLM-Based_Scientific_Inductive_Reasoning_Beyond_Equations__p0__score1.00.png",
+        "path": "figs_human_eval_papers/On_LLM-Based_Scientific_Inductive_Reasoning_Beyond_Equations/On_LLM-Based_Scientific_Inductive_Reasoning_Beyond_Equations__p0__score1.00.png",
+        "caption": "Figure 1: Illustrative comparison of scientific inductive reasoning: on the left, tasks focused on equation discovery (Shojaee et al., 2025), and on the right, tasks representing broader forms of scientific induction beyond equation generation."
       },
-      {
-        "filename": "Large_Language_Models_Can_Solve_Real-World_Planning_Rigorously_with_Formal_Verification_Tools_2025.naacl-long.176__p5__score0.70.png",
-        "path": "./Large_Language_Models_Can_Solve_Real-World_Planning_Rigorously_with_Formal_Verification_Tools_2025.naacl-long.176/Large_Language_Models_Can_Solve_Real-World_Planning_Rigorously_with_Formal_Verification_Tools_2025.naacl-long.176__p5__score0.70.png",
-        "caption": "Figure 3: Example of how JSON-Step prompt generalizes to unseen constraints. Yellow: unseen constraint types. Green: corresponding generated steps."
-      }
-    ],
-    "acl_id": "2025.naacl-long.176"
-  },
-  {
-    "id": 69,
-    "folder_name": "Leveraging_Domain_Knowledge_at_Inference_Time_for_LLM_Translation_Retrieval_versus_Generation_2025.knowledgenlp-1.7",
-    "title": "Leveraging Domain Knowledge at Inference Time for LLM Translation Retrieval versus Generation",
-    "images": [
       {
-        "filename": "Leveraging_Domain_Knowledge_at_Inference_Time_for_LLM_Translation_Retrieval_versus_Generation_2025.knowledgenlp-1.7__p1__score0.98.png",
-        "path": "./Leveraging_Domain_Knowledge_at_Inference_Time_for_LLM_Translation_Retrieval_versus_Generation_2025.knowledgenlp-1.7/Leveraging_Domain_Knowledge_at_Inference_Time_for_LLM_Translation_Retrieval_versus_Generation_2025.knowledgenlp-1.7__p1__score0.98.png",
-        "caption": "Figure 1: Illustration of the main MT settings, for an example source text in German. The two knowledge strategies are demonstrations vs. terminology; the two sources are retrieval vs. generation. This gives 4 settings for comparison. Within a strategy, we use the same prompts, varying only the provided information."
+        "filename": "On_LLM-Based_Scientific_Inductive_Reasoning_Beyond_Equations__p4__score1.00.png",
+        "path": "figs_human_eval_papers/On_LLM-Based_Scientific_Inductive_Reasoning_Beyond_Equations/On_LLM-Based_Scientific_Inductive_Reasoning_Beyond_Equations__p4__score1.00.png",
+        "caption": "Figure 2: Our benchmark includes 7 tasks spanning two scientific disciplines: biology and chemistry. denotes"
       },
       {
-        "filename": "Leveraging_Domain_Knowledge_at_Inference_Time_for_LLM_Translation_Retrieval_versus_Generation_2025.knowledgenlp-1.7__p5__score1.00.png",
-        "path": "./Leveraging_Domain_Knowledge_at_Inference_Time_for_LLM_Translation_Retrieval_versus_Generation_2025.knowledgenlp-1.7/Leveraging_Domain_Knowledge_at_Inference_Time_for_LLM_Translation_Retrieval_versus_Generation_2025.knowledgenlp-1.7__p5__score1.00.png",
-        "caption": "Figure 2: Illustration of our process to decompose the contributions of retrieved demonstrations into style and terminology. We first extract the source-target term pairs using a simple function, and aggregate them into a local terminology. Then, the remaining tokens are the style templates, with the terms masked. Note that in the actual data, we use <MASK> instead of []."
+        "filename": "On_LLM-Based_Scientific_Inductive_Reasoning_Beyond_Equations__p6__score1.00.png",
+        "path": "figs_human_eval_papers/On_LLM-Based_Scientific_Inductive_Reasoning_Beyond_Equations/On_LLM-Based_Scientific_Inductive_Reasoning_Beyond_Equations__p6__score1.00.png",
+        "caption": "Figure 3: Comparison of four inference strategies: (1) Implicit induction - directly providing output; (2) Explicit induction - formulating clear hypotheses explicitly; (3) Self-consistency - using multiple reasoning paths to reach consensus; and (4) Hypothesis refinement - iteratively improving hypothesis on feedback."
       }
-    ],
-    "acl_id": "2025.knowledgenlp-1.7"
+    ]
   },
   {
-    "id": 70,
-    "folder_name": "Leveraging_LLM_For_Synchronizing_Information_Across_Multilingual_Tables_2025.naacl-long.329",
-    "title": "Leveraging LLM For Synchronizing Information Across Multilingual Tables",
+    "title": "PopAlign Diversifying Contrasting Patterns for a More Comprehensive Alignment",
+    "folder_name": "PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment",
     "images": [
       {
-        "filename": "Leveraging_LLM_For_Synchronizing_Information_Across_Multilingual_Tables_2025.naacl-long.329__p1__score0.95.png",
-        "path": "./Leveraging_LLM_For_Synchronizing_Information_Across_Multilingual_Tables_2025.naacl-long.329/Leveraging_LLM_For_Synchronizing_Information_Across_Multilingual_Tables_2025.naacl-long.329__p1__score0.95.png",
-        "caption": "Figure 1: Example of information synchronization across multilingual tables. A reference table in a high-resource language is used to update outdated input tables in a low-resource language, resulting in an updated output table in the low-resource language."
+        "filename": "PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+        "path": "figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+        "caption": "Figure 1: Illustration of the effects of alignment considering the contrasting patterns. πi ref denotes the distribution of the reference model under pattern i. πdpoi denotes the overall distribution of the model after DPO alignment on pattern i."
       },
       {
-        "filename": "Leveraging_LLM_For_Synchronizing_Information_Across_Multilingual_Tables_2025.naacl-long.329__p3__score0.95.png",
-        "path": "./Leveraging_LLM_For_Synchronizing_Information_Across_Multilingual_Tables_2025.naacl-long.329/Leveraging_LLM_For_Synchronizing_Information_Across_Multilingual_Tables_2025.naacl-long.329__p3__score0.95.png",
-        "caption": "Figure 2: Alignment Groups For Information Alignment. All rows highlighted in blue and connected by blue lines in the Source, Gold, and Output tables are tri-aligned, meaning they contain the same information across all three tables. Rows highlighted in red or green are bi-aligned, indicating that the information is consistent either between the Input and Gold tables or the Gold and Output tables. The remaining rows are unaligned, containing differing information."
+        "filename": "PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+        "path": "figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+        "caption": "Figure 2: The workflow of PopAlign. PopAlign involves three kinds of contrasting strategies: (1) Prompt Contrast such as Prefix Contrast, Demon Contrast (i.e., Demonstration Contrast, and Elicitive Contrast), (2) Model Contrast such as NParam (number of parameters) Contrast and Leaderboard Contrast, as well as (3) Pipeline Contrast such as Refinement Contrast. By mixing the preference data synthesized with diverse contrasting strategies and conducting DPO alignment training on it, we can easily align the LLM without either human annotation or reward labeling."
       }
-    ],
-    "acl_id": "2025.naacl-long.329"
+    ]
   },
   {
-    "id": 71,
-    "folder_name": "Linguistically_Informed_Transformers_for_Text_to_American_Sign_Language_Translation_2024.loresmt-1.5",
-    "title": "Linguistically Informed Transformers for Text to American Sign Language Translation",
+    "title": "Progressive Multimodal Reasoning via Active Retrieval",
+    "folder_name": "Progressive_Multimodal_Reasoning_via_Active_Retrieval",
     "images": [
       {
-        "filename": "Linguistically_Informed_Transformers_for_Text_to_American_Sign_Language_Translation_2024.loresmt-1.5__p0__score0.95.png",
-        "path": "./Linguistically_Informed_Transformers_for_Text_to_American_Sign_Language_Translation_2024.loresmt-1.5/Linguistically_Informed_Transformers_for_Text_to_American_Sign_Language_Translation_2024.loresmt-1.5__p0__score0.95.png",
-        "caption": "Figure 1: Illustration of text to American Sign Language (ASL) translation using glosses as intermediate step."
+        "filename": "Progressive_Multimodal_Reasoning_via_Active_Retrieval__p2__score0.95.png",
+        "path": "figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p2__score0.95.png",
+        "caption": "Figure 1: The statistics of our hybrid retrieval corpus."
       },
       {
-        "filename": "Linguistically_Informed_Transformers_for_Text_to_American_Sign_Language_Translation_2024.loresmt-1.5__p1__score0.80.png",
-        "path": "./Linguistically_Informed_Transformers_for_Text_to_American_Sign_Language_Translation_2024.loresmt-1.5/Linguistically_Informed_Transformers_for_Text_to_American_Sign_Language_Translation_2024.loresmt-1.5__p1__score0.80.png",
-        "caption": "Figure 2: Classification of signing space into horizontal, vertical, and lateral regions."
+        "filename": "Progressive_Multimodal_Reasoning_via_Active_Retrieval__p3__score1.00.png",
+        "path": "figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p3__score1.00.png",
+        "caption": "Figure 2: The pipeline of our unified multimodal retrieval module."
       },
-      {
-        "filename": "Linguistically_Informed_Transformers_for_Text_to_American_Sign_Language_Translation_2024.loresmt-1.5__p1__score0.90.png",
-        "path": "./Linguistically_Informed_Transformers_for_Text_to_American_Sign_Language_Translation_2024.loresmt-1.5/Linguistically_Informed_Transformers_for_Text_to_American_Sign_Language_Translation_2024.loresmt-1.5__p1__score0.90.png",
-        "caption": "Figure 3: Illustration of Topic-Comment Structure"
-      },
-      {
-        "filename": "Linguistically_Informed_Transformers_for_Text_to_American_Sign_Language_Translation_2024.loresmt-1.5__p5__score1.00.png",
-        "path": "./Linguistically_Informed_Transformers_for_Text_to_American_Sign_Language_Translation_2024.loresmt-1.5/Linguistically_Informed_Transformers_for_Text_to_American_Sign_Language_Translation_2024.loresmt-1.5__p5__score1.00.png",
-        "caption": "Figure 4: Video Retrieval Process flow"
-      }
-    ],
-    "acl_id": "2024.loresmt-1.5"
-  },
-  {
-    "id": 72,
-    "folder_name": "MISGENDERED_Limits_of_Large_Language_Models_in_Understanding_Pronouns_2023.acl-long.293",
-    "title": "MISGENDERED Limits of Large Language Models in Understanding Pronouns",
-    "images": [
-      {
-        "filename": "MISGENDERED_Limits_of_Large_Language_Models_in_Understanding_Pronouns_2023.acl-long.293__p2__score1.00.png",
-        "path": "./MISGENDERED_Limits_of_Large_Language_Models_in_Understanding_Pronouns_2023.acl-long.293/MISGENDERED_Limits_of_Large_Language_Models_in_Understanding_Pronouns_2023.acl-long.293__p2__score1.00.png",
-        "caption": "Figure 2: MISGENDERED Framework: We create a dataset to evaluate the ability of large language models to correctly ‘gender’ individuals. We manually write templates, each referring to an individual and containing a blank space for a pronoun to be filled-in. We populate the templates with names (unisex, female, and male) and pronouns (binary, gender-neutral, and non-binary), and declare two to five pronoun forms are for each individual either explicitly or parenthetically. We then use masked and auto-regressive LMs to predict missing pronouns in each instance utilizing a unified constrained decoding method."
-      }
-    ],
-    "acl_id": "2023.acl-long.293"
-  },
-  {
-    "id": 73,
-    "folder_name": "Merging_Generated_and_Retrieved_Knowledge_for_Open-Domain_QA_2023.emnlp-main.286",
-    "title": "Merging Generated and Retrieved Knowledge for Open-Domain QA",
-    "images": [
-      {
-        "filename": "Merging_Generated_and_Retrieved_Knowledge_for_Open-Domain_QA_2023.emnlp-main.286__p3__score0.95.png",
-        "path": "./Merging_Generated_and_Retrieved_Knowledge_for_Open-Domain_QA_2023.emnlp-main.286/Merging_Generated_and_Retrieved_Knowledge_for_Open-Domain_QA_2023.emnlp-main.286__p3__score0.95.png",
-        "caption": "Figure 3: Example for demonstrating the construction of silver consistent labels to train the consistency discriminator DC ."
-      },
-      {
-        "filename": "Merging_Generated_and_Retrieved_Knowledge_for_Open-Domain_QA_2023.emnlp-main.286__p6__score1.00.png",
-        "path": "./Merging_Generated_and_Retrieved_Knowledge_for_Open-Domain_QA_2023.emnlp-main.286/Merging_Generated_and_Retrieved_Knowledge_for_Open-Domain_QA_2023.emnlp-main.286__p6__score1.00.png",
-        "caption": "Figure 4: Illustrations of the input formats for two of the ablation experiments in Table 2."
-      }
-    ],
-    "acl_id": "2023.emnlp-main.286"
-  },
-  {
-    "id": 74,
-    "folder_name": "Movie101v2_Improved_Movie_Narration_Benchmark_2025.acl-long.836",
-    "title": "Movie101v2 Improved Movie Narration Benchmark",
-    "images": [
-      {
-        "filename": "Movie101v2_Improved_Movie_Narration_Benchmark_2025.acl-long.836__p1__score0.85.png",
-        "path": "./Movie101v2_Improved_Movie_Narration_Benchmark_2025.acl-long.836/Movie101v2_Improved_Movie_Narration_Benchmark_2025.acl-long.836__p1__score0.85.png",
-        "caption": "Figure 1: Examples from other datasets (left) and Movie101v2 (right) where cases are from Goodbye Mr. Loser."
-      }
-    ],
-    "acl_id": "2025.acl-long.836"
-  },
-  {
-    "id": 75,
-    "folder_name": "Multi-Strategy_Named_Entity_Recognition_System_for_Ancient_Chinese_2025.alp-1.28",
-    "title": "Multi-Strategy Named Entity Recognition System for Ancient Chinese",
-    "images": [
       {
-        "filename": "Multi-Strategy_Named_Entity_Recognition_System_for_Ancient_Chinese_2025.alp-1.28__p1__score1.00.png",
-        "path": "./Multi-Strategy_Named_Entity_Recognition_System_for_Ancient_Chinese_2025.alp-1.28/Multi-Strategy_Named_Entity_Recognition_System_for_Ancient_Chinese_2025.alp-1.28__p1__score1.00.png",
-        "caption": "Figure 1: Architecture of the Multi-Strategy NER System. The system employs GujiRoBERTa_jian_fan as the PLM, paired with CRF for Tasks A and C (six entity types) and Softmax for Task B (three entity types)."
+        "filename": "Progressive_Multimodal_Reasoning_via_Active_Retrieval__p5__score1.00.png",
+        "path": "figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p5__score1.00.png",
+        "caption": "Figure 3: Our AR-MCTS: The retrieval module actively retrieves key insights at each step of the MCTS process"
       }
-    ],
-    "acl_id": "2025.alp-1.28"
+    ]
   },
   {
-    "id": 76,
-    "folder_name": "NACL_A_General_and_Effective_KV_Cache_Eviction_Framework_for_LLM_at_Inference_Time_2024.acl-long.428",
-    "title": "NACL A General and Effective KV Cache Eviction Framework for LLM at Inference Time",
+    "title": "R-VLM Region-Aware Vision Language Model for Precise GUI Grounding",
+    "folder_name": "R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding",
     "images": [
       {
-        "filename": "NACL_A_General_and_Effective_KV_Cache_Eviction_Framework_for_LLM_at_Inference_Time_2024.acl-long.428__p0__score0.95.png",
-        "path": "./NACL_A_General_and_Effective_KV_Cache_Eviction_Framework_for_LLM_at_Inference_Time_2024.acl-long.428/NACL_A_General_and_Effective_KV_Cache_Eviction_Framework_for_LLM_at_Inference_Time_2024.acl-long.428__p0__score0.95.png",
-        "caption": "Figure 1: Traditional eviction algorithms perform stepby-step greedy search for tokens for eviction. Our framework searches globally for tokens within a chunk and then performs one single eviction."
+        "filename": "R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+        "path": "figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+        "caption": "Figure 1: Illustration of the Region-Aware Vision Language Model (R-VLM). Our approach consists of two modules for precise GUI grounding: (a) A two-stage zoom-in grounding process that refines predictions via a zoomed-in view of region proposal. After obtaining an initial prediction from the model using GUI screenshot and user instruction, which serves as a region proposal, we zoom-in around this region and pass it through the model again for second-stage grounding. (b) An IoU-aware weighted cross-entropy loss that provides a smooth learning signal based on the IoU value rather than strictly fitting to ground-truth bounding box. This loss assigns weights to pseudo bounding boxes according to their IoU value with ground-truth to emphasize high IoU grounding predictions."
       },
-      {
-        "filename": "NACL_A_General_and_Effective_KV_Cache_Eviction_Framework_for_LLM_at_Inference_Time_2024.acl-long.428__p4__score0.95.png",
-        "path": "./NACL_A_General_and_Effective_KV_Cache_Eviction_Framework_for_LLM_at_Inference_Time_2024.acl-long.428/NACL_A_General_and_Effective_KV_Cache_Eviction_Framework_for_LLM_at_Inference_Time_2024.acl-long.428__p4__score0.95.png",
-        "caption": "Figure 3: NACL consists of a hybrid eviction policy by incorporating RANDOM EVICTION into PROXY-TOKENS EVICTION. PROXY-TOKENS EVICTION utilizes proxy tokens for more accurate eviction, while RANDOM EVICTION performs head-wise sampling from the scoring function of PROXY-TOKENS EVICTION to enhance the robustness."
-      }
-    ],
-    "acl_id": "2024.acl-long.428"
-  },
-  {
-    "id": 77,
-    "folder_name": "No_Train_but_Gain_Language_Arithmetic_for_training-free_Language_Adapters_enhancement_2025.coling-main.737",
-    "title": "No Train but Gain Language Arithmetic for training-free Language Adapters enhancement",
-    "images": [
       {
-        "filename": "No_Train_but_Gain_Language_Arithmetic_for_training-free_Language_Adapters_enhancement_2025.coling-main.737__p3__score1.00.png",
-        "path": "./No_Train_but_Gain_Language_Arithmetic_for_training-free_Language_Adapters_enhancement_2025.coling-main.737/No_Train_but_Gain_Language_Arithmetic_for_training-free_Language_Adapters_enhancement_2025.coling-main.737__p3__score1.00.png",
-        "caption": "Figure 1: Language arithmetic as an extension of the MAD-X framework. Given language and task adapters (left), language arithmetic (right) enables post-processing, training-free improvement in two use-cases: (i) zero-shot where a language adapter for a target language was not trained (presented in the figure as Spanish, which was not part of existing language adapters pool, LAes(en, fr)) or (ii) to improve existing language adapters via arithmetic with either related language or a language on which task adapter was trained (e.g. LAfr(en, fr))."
+        "filename": "R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+        "path": "figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+        "caption": "Figure 4: Efficient IoU-aware weighted cross-entropy computation. (a) M pseudo boxes are generated from the ground-truth box using a GIoU threshold (here, M=3), and concatenated with the original label, enabling a single forward pass for M+1 predictions. (b) The attention map is masked to prevent pseudo boxes from attending to each other. (c) The positional embedding of the ground-truth box is assigned to all pseudo boxes, ensuring a single prediction at inference. Crossentropy is weighted by GIoU relative to ground-truth."
       }
-    ],
-    "acl_id": "2025.coling-main.737"
+    ]
   },
   {
-    "id": 78,
-    "folder_name": "Non-autoregressive_Streaming_Transformer_for_Simultaneous_Translation_2023.emnlp-main.314",
-    "title": "Non-autoregressive Streaming Transformer for Simultaneous Translation",
+    "title": "RAG-Instruct Boosting LLMs with Diverse Retrieval-Augmented Instructions",
+    "folder_name": "RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions",
     "images": [
-      {
-        "filename": "Non-autoregressive_Streaming_Transformer_for_Simultaneous_Translation_2023.emnlp-main.314__p1__score0.98.png",
-        "path": "./Non-autoregressive_Streaming_Transformer_for_Simultaneous_Translation_2023.emnlp-main.314/Non-autoregressive_Streaming_Transformer_for_Simultaneous_Translation_2023.emnlp-main.314__p1__score0.98.png",
-        "caption": "Figure 1: Illustration of the non-monotonicity problem and the source-info leakage bias in the training of autoregressive SiMT models. In this case, the AR SiMT model learns to predict at the third time step based on the source contexts \"布什 (Bush)\", \"与 (and)\", \"沙龙 (Sharon)\", and the ground truth contexts \"Bush\", \"held\". Although the source token \"举行 (hold)\" has not been read yet, it is exposed to the AR SiMT model through its corresponding token \"held\" in the ground truth context."
-      },
       {
-        "filename": "Non-autoregressive_Streaming_Transformer_for_Simultaneous_Translation_2023.emnlp-main.314__p3__score1.00.png",
-        "path": "./Non-autoregressive_Streaming_Transformer_for_Simultaneous_Translation_2023.emnlp-main.314/Non-autoregressive_Streaming_Transformer_for_Simultaneous_Translation_2023.emnlp-main.314__p3__score1.00.png",
-        "caption": "Figure 2: Overview of the proposed non-autoregressive streaming Transformer (NAST). Upon receiving a source token, NAST upsamples it λ times and feeds them to the decoder as a chunk. NAST can generate blank token ϵ or repetitive tokens (both highlighted in gray) to find reasonable READ/WRITE paths adaptively. We train NAST using the non-monotonic latent alignment loss (Shao and Feng, 2022) with the alignment-based latency loss to achieve translation of high quality while maintaining low latency."
+        "filename": "RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p3__score0.95.png",
+        "path": "figs_human_eval_papers/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p3__score0.95.png",
+        "caption": "Figure 1: The process of synthesizing data with RAG-Instruct involves ensuring instruction data diversity through five RAG paradigms and Instruction Simulation. The visualization of the question topic is generated using Atlas."
       },
       {
-        "filename": "Non-autoregressive_Streaming_Transformer_for_Simultaneous_Translation_2023.emnlp-main.314__p4__score0.70.png",
-        "path": "./Non-autoregressive_Streaming_Transformer_for_Simultaneous_Translation_2023.emnlp-main.314/Non-autoregressive_Streaming_Transformer_for_Simultaneous_Translation_2023.emnlp-main.314__p4__score0.70.png",
-        "caption": "Figure 3: Illustration of cross-attention with different chunk wait-k strategies."
+        "filename": "RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p4__score0.95.png",
+        "path": "figs_human_eval_papers/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p4__score0.95.png",
+        "caption": "Figure 3: The prompt of RAG-Instruct. <document> and <Simulated Instruction> represent input variables for the document and simulated instruction, respectively. (Blue text) indicates RAG Paradigms, illustrating the prompt for r4; other paradigms are shown in Appendix C.2. (Red text) represents Instruction Simulation."
       }
-    ],
-    "acl_id": "2023.emnlp-main.314"
+    ]
   },
   {
-    "id": 79,
-    "folder_name": "ORMind_A_Cognitive-Inspired_End-to-End_Reasoning_Framework_for_Operations_Research_2025.acl-industry.10",
-    "title": "ORMind A Cognitive-Inspired End-to-End Reasoning Framework for Operations Research",
+    "title": "RAG Overcoming Imperfect Retrieval Augmentation and Knowledge Conflicts for Large Language Models",
+    "folder_name": "RAG_Overcoming_Imperfect_Retrieval_Augmentation_and_Knowledge_Conflicts_for_Large_Language_Models",
     "images": [
       {
-        "filename": "ORMind_A_Cognitive-Inspired_End-to-End_Reasoning_Framework_for_Operations_Research_2025.acl-industry.10__p1__score1.00.png",
-        "path": "./ORMind_A_Cognitive-Inspired_End-to-End_Reasoning_Framework_for_Operations_Research_2025.acl-industry.10/ORMind_A_Cognitive-Inspired_End-to-End_Reasoning_Framework_for_Operations_Research_2025.acl-industry.10__p1__score1.00.png",
-        "caption": "Figure 1: Current frameworks rely on complex agent orchestration with unpredictable execution paths, dramatically increasing API calls and computation time. Their focus on code syntax rather than mathematical accuracy results in costly errors that can propagate through business operations undetected. This excessive coordination overhead makes these systems impractical for time-sensitive business applications. Compared to traditional methods, ORMind employs a streamlined end-to-end workflow with counterfactual reasoning, significantly enhancing solution reliability."
+        "filename": "RAG_Overcoming_Imperfect_Retrieval_Augmentation_and_Knowledge_Conflicts_for_Large_Language_Models__p1__score0.95.png",
+        "path": "figs_human_eval_papers/RAG_Overcoming_Imperfect_Retrieval_Augmentation_and_Knowledge_Conflicts_for_Large_Language_Models/RAG_Overcoming_Imperfect_Retrieval_Augmentation_and_Knowledge_Conflicts_for_Large_Language_Models__p1__score0.95.png",
+        "caption": "Figure 1: Knowledge conflicts between the LLMs’ internal knowledge and retrieved knowledge from external sources. We report the overall results with Claude under the setting in Sec. 5.1."
       },
       {
-        "filename": "ORMind_A_Cognitive-Inspired_End-to-End_Reasoning_Framework_for_Operations_Research_2025.acl-industry.10__p2__score1.00.png",
-        "path": "./ORMind_A_Cognitive-Inspired_End-to-End_Reasoning_Framework_for_Operations_Research_2025.acl-industry.10/ORMind_A_Cognitive-Inspired_End-to-End_Reasoning_Framework_for_Operations_Research_2025.acl-industry.10__p2__score1.00.png",
-        "caption": "Figure 2: Our approach is grounded in established cognitive science theories, particularly dual-process framework(Kahneman, 2011) and tripartite model of cognition(Stanovich, 2009). The Semantic Encoder and Formalization Thinking modules correspond to Type 1 (intuitive) processing, while the System 2 Reasoner implements Type 2 (analytical) processing. The Metacognitive Supervisor embodies the reflective mind, monitoring and coordinating between these systems."
+        "filename": "RAG_Overcoming_Imperfect_Retrieval_Augmentation_and_Knowledge_Conflicts_for_Large_Language_Models__p3__score1.00.png",
+        "path": "figs_human_eval_papers/RAG_Overcoming_Imperfect_Retrieval_Augmentation_and_Knowledge_Conflicts_for_Large_Language_Models/RAG_Overcoming_Imperfect_Retrieval_Augmentation_and_Knowledge_Conflicts_for_Large_Language_Models__p3__score1.00.png",
+        "caption": "Figure 4: Overview of the ASTUTE RAG framework. ASTUTE RAG is designed to better combine the information from the external sources (e.g. web, domain-specific corpora) and internal knowledge of the LLMs by employing a consolidation mechanism to address the conflicts, which eventually leads to superior generation quality."
       }
-    ],
-    "acl_id": "2025.acl-industry.10"
+    ]
   },
   {
-    "id": 80,
-    "folder_name": "On_Behalf_of_the_Stakeholders_Trends_in_NLP_Model_Interpretability_in_the_Era_of_LLMs_2025.naacl-long.29",
-    "title": "On Behalf of the Stakeholders Trends in NLP Model Interpretability in the Era of LLMs",
+    "title": "Retrieval-Augmented Black-Box Language Models",
+    "folder_name": "Retrieval-Augmented_Black-Box_Language_Models",
     "images": [
       {
-        "filename": "On_Behalf_of_the_Stakeholders_Trends_in_NLP_Model_Interpretability_in_the_Era_of_LLMs_2025.naacl-long.29__p2__score0.95.png",
-        "path": "./On_Behalf_of_the_Stakeholders_Trends_in_NLP_Model_Interpretability_in_the_Era_of_LLMs_2025.naacl-long.29/On_Behalf_of_the_Stakeholders_Trends_in_NLP_Model_Interpretability_in_the_Era_of_LLMs_2025.naacl-long.29__p2__score0.95.png",
-        "caption": "Figure 2: Overview of four perspectives on the need for interpretability proposed in this paper."
+        "filename": "Retrieval-Augmented_Black-Box_Language_Models__p0__score1.00.png",
+        "path": "figs_human_eval_papers/Retrieval-Augmented_Black-Box_Language_Models/Retrieval-Augmented_Black-Box_Language_Models__p0__score1.00.png",
+        "caption": "Figure 1: Different from previous retrieval-augmented approaches (Borgeaud et al., 2022) that enhance a language model with retrieval by updating the LM’s parameters, REPLUG treats the LM as a black box and augments it with a frozen or tunable retriever. This black-box assumption makes REPLUG applicable to large LMs, which are often served via APIs."
       },
       {
-        "filename": "On_Behalf_of_the_Stakeholders_Trends_in_NLP_Model_Interpretability_in_the_Era_of_LLMs_2025.naacl-long.29__p4__score0.70.png",
-        "path": "./On_Behalf_of_the_Stakeholders_Trends_in_NLP_Model_Interpretability_in_the_Era_of_LLMs_2025.naacl-long.29/On_Behalf_of_the_Stakeholders_Trends_in_NLP_Model_Interpretability_in_the_Era_of_LLMs_2025.naacl-long.29__p4__score0.70.png",
-        "caption": "Table 1: Overview of the interpretability paradigms discussed in this paper, categorised by their what and how properties (§4). A detailed survey of these paradigms is provided in §B. In bold, methods (SHAP, LIME, Clustering, Adversarial Attacks, Classic ML) that were analyzed separately of their paradigm in our trend analysis in §5."
+        "filename": "Retrieval-Augmented_Black-Box_Language_Models__p2__score1.00.png",
+        "path": "figs_human_eval_papers/Retrieval-Augmented_Black-Box_Language_Models/Retrieval-Augmented_Black-Box_Language_Models__p2__score1.00.png",
+        "caption": "Figure 2: REPLUG at inference (§3). Given an input context, REPLUG first retrieves a small set of relevant documents from an external corpus using a retriever (§3.1 Document Retrieval). Then it prepends each document separately to the input context and ensembles output probabilities from different passes (§3.2 Input Reformulation)."
       },
-      {
-        "filename": "On_Behalf_of_the_Stakeholders_Trends_in_NLP_Model_Interpretability_in_the_Era_of_LLMs_2025.naacl-long.29__p5__score0.98.png",
-        "path": "./On_Behalf_of_the_Stakeholders_Trends_in_NLP_Model_Interpretability_in_the_Era_of_LLMs_2025.naacl-long.29/On_Behalf_of_the_Stakeholders_Trends_in_NLP_Model_Interpretability_in_the_Era_of_LLMs_2025.naacl-long.29__p5__score0.98.png",
-        "caption": "Figure 3: An illustration of our five-stage procedure for annotating NLP interpretability papers, with the stages fully detailed in Appendix §D."
-      }
-    ],
-    "acl_id": "2025.naacl-long.29"
-  },
-  {
-    "id": 81,
-    "folder_name": "On_the_Fragility_of_Active_Learners_for_Text_Classification_2024.emnlp-main.1240",
-    "title": "On the Fragility of Active Learners for Text Classification",
-    "images": [
       {
-        "filename": "On_the_Fragility_of_Active_Learners_for_Text_Classification_2024.emnlp-main.1240__p2__score1.00.png",
-        "path": "./On_the_Fragility_of_Active_Learners_for_Text_Classification_2024.emnlp-main.1240/On_the_Fragility_of_Active_Learners_for_Text_Classification_2024.emnlp-main.1240__p2__score1.00.png",
-        "caption": "Figure 1: The space of experiments is shown. See §4.1 for description. All representations are produced by pre-trained models, which are ubiquitous in practice today. The lines between the boxes “Representation” and “Classifier” denote combinations that constitute our prediction pipelines. Note that RoBERTa is an end-to-end predictor, where there are no separate representation and classification steps. Also note that the popular Transformer architecture (Vaswani et al., 2017) is represented by RoBERTa and MPNet here."
+        "filename": "Retrieval-Augmented_Black-Box_Language_Models__p4__score1.00.png",
+        "path": "figs_human_eval_papers/Retrieval-Augmented_Black-Box_Language_Models/Retrieval-Augmented_Black-Box_Language_Models__p4__score1.00.png",
+        "caption": "Figure 3: REPLUG LSR training process (§4). The retriever is trained using the output of a frozen language model as supervision signals."
       }
-    ],
-    "acl_id": "2024.emnlp-main.1240"
+    ]
   },
   {
-    "id": 82,
-    "folder_name": "One_by_zero_NLU_of_Devanagari_Script_Languages_2025_Target_Identification_for_Hate_Speech_Leveraging_Transformer-based_A_2025.chipsal-1.38",
-    "title": "One by zero NLU of Devanagari Script Languages 2025 Target Identification for Hate Speech Leveraging Transformer-based A",
+    "title": "Reverse Thinking Makes LLMs Stronger Reasoners",
+    "folder_name": "Reverse_Thinking_Makes_LLMs_Stronger_Reasoners",
     "images": [
       {
-        "filename": "One_by_zero_NLU_of_Devanagari_Script_Languages_2025_Target_Identification_for_Hate_Speech_Leveraging_Transformer-based_A_2025.chipsal-1.38__p2__score1.00.png",
-        "path": "./One_by_zero_NLU_of_Devanagari_Script_Languages_2025_Target_Identification_for_Hate_Speech_Leveraging_Transformer-based_A_2025.chipsal-1.38/One_by_zero_NLU_of_Devanagari_Script_Languages_2025_Target_Identification_for_Hate_Speech_Leveraging_Transformer-based_A_2025.chipsal-1.38__p2__score1.00.png",
-        "caption": "Figure 1: Schematic process of the target identification for hate speech."
-      }
-    ],
-    "acl_id": "2025.chipsal-1.38"
-  },
-  {
-    "id": 83,
-    "folder_name": "PeerQA_A_Scientific_Question_Answering_Dataset_from_Peer_Reviews_2025.naacl-long.22",
-    "title": "PeerQA A Scientific Question Answering Dataset from Peer Reviews",
-    "images": [
-      {
-        "filename": "PeerQA_A_Scientific_Question_Answering_Dataset_from_Peer_Reviews_2025.naacl-long.22__p0__score1.00.png",
-        "path": "./PeerQA_A_Scientific_Question_Answering_Dataset_from_Peer_Reviews_2025.naacl-long.22/PeerQA_A_Scientific_Question_Answering_Dataset_from_Peer_Reviews_2025.naacl-long.22__p0__score1.00.png",
-        "caption": "Figure 1: Overview of the PeerQA data collection process. From the peer review process (in green), we extract and process questions from the reviews. Given the published version of the article and a question, an expert (in our case, the original paper authors) (1) checks the question and modifies or discards it, (2) annotates whether it is answerable or not (i.e. if there is sufficient information in the paper), and if so (3) highlights the evidence to answer the question and finally (4) provides a free-form answer to the question."
-      }
-    ],
-    "acl_id": "2025.naacl-long.22"
-  },
-  {
-    "id": 84,
-    "folder_name": "Pluggable_Neural_Machine_Translation_Models_via_Memory-augmented_Adapters_2024.lrec-main.1120",
-    "title": "Pluggable Neural Machine Translation Models via Memory-augmented Adapters",
-    "images": [
-      {
-        "filename": "Pluggable_Neural_Machine_Translation_Models_via_Memory-augmented_Adapters_2024.lrec-main.1120__p0__score0.95.png",
-        "path": "./Pluggable_Neural_Machine_Translation_Models_via_Memory-augmented_Adapters_2024.lrec-main.1120/Pluggable_Neural_Machine_Translation_Models_via_Memory-augmented_Adapters_2024.lrec-main.1120__p0__score0.95.png",
-        "caption": "Figure 1: A frozen and pluggable NMT model using memory-augmented plugins. For each user group with special requirements, we can develop a plugin for them without affecting other users."
-      },
-      {
-        "filename": "Pluggable_Neural_Machine_Translation_Models_via_Memory-augmented_Adapters_2024.lrec-main.1120__p3__score1.00.png",
-        "path": "./Pluggable_Neural_Machine_Translation_Models_via_Memory-augmented_Adapters_2024.lrec-main.1120/Pluggable_Neural_Machine_Translation_Models_via_Memory-augmented_Adapters_2024.lrec-main.1120__p3__score1.00.png",
-        "caption": "Figure 2: Construct and integrate memories. (a) We leverage parse trees to obtain multi-granular phrases. Each monolingual phrase is then translated by NMT models. (b) For each phrase pair, we perform a forward computation in the teacher-forcing manner and record some intermediate representations into the memory. (c) Illustration of adapter integration. The adapter retrieve and leverage the memories."
+        "filename": "Reverse_Thinking_Makes_LLMs_Stronger_Reasoners__p0__score0.98.png",
+        "path": "figs_human_eval_papers/Reverse_Thinking_Makes_LLMs_Stronger_Reasoners/Reverse_Thinking_Makes_LLMs_Stronger_Reasoners__p0__score0.98.png",
+        "caption": "Figure 1: Comparison between symbolic knowledge distillation (SKD) and our method. (1) the teacher model generates multiple reasoning chains for a given question, (2) SKD supervised fine-tunes on the correct reasoning chains, and (3) our method incorporates bidirectional reasoning, learning from both Q-to-A and Ato-Q using our multi-task objectives."
       },
-      {
-        "filename": "Pluggable_Neural_Machine_Translation_Models_via_Memory-augmented_Adapters_2024.lrec-main.1120__p3__score1.00__1.png",
-        "path": "./Pluggable_Neural_Machine_Translation_Models_via_Memory-augmented_Adapters_2024.lrec-main.1120/Pluggable_Neural_Machine_Translation_Models_via_Memory-augmented_Adapters_2024.lrec-main.1120__p3__score1.00__1.png",
-        "caption": "Figure 3: Memory-augmented adapter architecture."
-      }
-    ],
-    "acl_id": "2024.lrec-main.1120"
-  },
-  {
-    "id": 85,
-    "folder_name": "PostMark_A_Robust_Blackbox_Watermark_for_Large_Language_Models_2024.emnlp-main.506",
-    "title": "PostMark A Robust Blackbox Watermark for Large Language Models",
-    "images": [
       {
-        "filename": "PostMark_A_Robust_Blackbox_Watermark_for_Large_Language_Models_2024.emnlp-main.506__p1__score1.00.png",
-        "path": "./PostMark_A_Robust_Blackbox_Watermark_for_Large_Language_Models_2024.emnlp-main.506/PostMark_A_Robust_Blackbox_Watermark_for_Large_Language_Models_2024.emnlp-main.506__p1__score1.00.png",
-        "caption": "Figure 1: The POSTMARK watermarking and detection procedure. Given some unwatermarked input text, we generate its embedding using the EMBEDDER and compute its cosine similarity with all word embeddings in the SECTABLE, performing top-k selection and additional semantic similarity filtering to choose a list of words. Then, we instruct the INSERTER to watermark the text by rewriting it to incorporate all selected words. During detection, we similarly obtain a watermark word list and check how many of these words are present in the input text."
+        "filename": "Reverse_Thinking_Makes_LLMs_Stronger_Reasoners__p3__score1.00.png",
+        "path": "figs_human_eval_papers/Reverse_Thinking_Makes_LLMs_Stronger_Reasoners/Reverse_Thinking_Makes_LLMs_Stronger_Reasoners__p3__score1.00.png",
+        "caption": "Figure 2: REVTHINK consists of two stages: (1) Data augmentation and (2) Student model learning. First, given a dataset D = {(Q(i), A(i))}ni=1, we augment it by prompting the teacher model to generate forward reasoning, backward question, and backward reasoning. We keep instances only with correct forward reasoning (validated by the ground truth) and consistent forward-backward reasoning (validated by the teacher model). This yields an augmented dataset Daug = (Q(i), R (i) f , Q (i) b , R (i) b )ni=1. Next, we train the student model with three objectives: Q → Rf , Q → Qb and Qb → Rb, enabling the student to reason in both directions during training. At test time, the student model performs only forward reasoning, making test-time compute as efficient as zero-shot prompting."
       }
-    ],
-    "acl_id": "2024.emnlp-main.506"
+    ]
   },
   {
-    "id": 86,
-    "folder_name": "Pre-Trained_Language_Models_Augmented_with_Synthetic_Scanpaths_for_Natural_Language_Understanding_2023.emnlp-main.400",
-    "title": "Pre-Trained Language Models Augmented with Synthetic Scanpaths for Natural Language Understanding",
+    "title": "Rewarding the Unlikely Lifting GRPO Beyond Distribution Sharpening",
+    "folder_name": "Rewarding_the_Unlikely_Lifting_GRPO_Beyond_Distribution_Sharpening",
     "images": [
       {
-        "filename": "Pre-Trained_Language_Models_Augmented_with_Synthetic_Scanpaths_for_Natural_Language_Understanding_2023.emnlp-main.400__p0__score1.00.png",
-        "path": "./Pre-Trained_Language_Models_Augmented_with_Synthetic_Scanpaths_for_Natural_Language_Understanding_2023.emnlp-main.400/Pre-Trained_Language_Models_Augmented_with_Synthetic_Scanpaths_for_Natural_Language_Understanding_2023.emnlp-main.400__p0__score1.00.png",
-        "caption": "Figure 1: Synthetic scanpath-augmented language model: the Scanpath Generation Model predicts a sequence of fixations for an input sentence; token embeddings are rearranged according to the order of fixations."
+        "filename": "Rewarding_the_Unlikely_Lifting_GRPO_Beyond_Distribution_Sharpening__p0__score0.90.png",
+        "path": "figs_human_eval_papers/Rewarding_the_Unlikely_Lifting_GRPO_Beyond_Distribution_Sharpening/Rewarding_the_Unlikely_Lifting_GRPO_Beyond_Distribution_Sharpening__p0__score0.90.png",
+        "caption": "Figure 1: We identify a rank bias in GRPO in which model updates only reinforce already probable solutions and fail to surface new ones. This sharpens the distribution and impairs pass@N performance for large N. Our unlikeliness reward addresses rank bias by explicitly encouraging uplifting low-probability correct solutions."
       }
-    ],
-    "acl_id": "2023.emnlp-main.400"
+    ]
   },
   {
-    "id": 87,
-    "folder_name": "ProBench_Judging_Multimodal_Foundation_Models_on_Open-ended_Multi-domain_Expert_Tasks_2025.findings-acl.568",
-    "title": "ProBench Judging Multimodal Foundation Models on Open-ended Multi-domain Expert Tasks",
+    "title": "SafeDecoding Defending against Jailbreak Attacks via Safety-Aware Decoding",
+    "folder_name": "SafeDecoding_Defending_against_Jailbreak_Attacks_via_Safety-Aware_Decoding",
     "images": [
       {
-        "filename": "ProBench_Judging_Multimodal_Foundation_Models_on_Open-ended_Multi-domain_Expert_Tasks_2025.findings-acl.568__p1__score0.80.png",
-        "path": "./ProBench_Judging_Multimodal_Foundation_Models_on_Open-ended_Multi-domain_Expert_Tasks_2025.findings-acl.568/ProBench_Judging_Multimodal_Foundation_Models_on_Open-ended_Multi-domain_Expert_Tasks_2025.findings-acl.568__p1__score0.80.png",
-        "caption": "Figure 3: ProBench overview. Distributions of (a) task fields on the single-round track, (b) languages on the multi-linguistic track, and (c) conversation rounds on the multi-round tracks."
+        "filename": "SafeDecoding_Defending_against_Jailbreak_Attacks_via_Safety-Aware_Decoding__p0__score0.95.png",
+        "path": "figs_human_eval_papers/SafeDecoding_Defending_against_Jailbreak_Attacks_via_Safety-Aware_Decoding/SafeDecoding_Defending_against_Jailbreak_Attacks_via_Safety-Aware_Decoding__p0__score0.95.png",
+        "caption": "Figure 1: This example illustrates the token probabilities of Vicuna-7B model under GCG attack (Zou et al., 2023). The words in red are GCG suffixes. We note that although the token representing the word \"Sure\" has a dominant probability, safety disclaimers such as \"I\", \"Sorry\", and \"As\" are still present in the sample space, which is sorted in descending order in token probabilities. When a safety disclaimer token is sampled, the model would reject the attacker’s harmful query."
       },
       {
-        "filename": "ProBench_Judging_Multimodal_Foundation_Models_on_Open-ended_Multi-domain_Expert_Tasks_2025.findings-acl.568__p2__score1.00.png",
-        "path": "./ProBench_Judging_Multimodal_Foundation_Models_on_Open-ended_Multi-domain_Expert_Tasks_2025.findings-acl.568/ProBench_Judging_Multimodal_Foundation_Models_on_Open-ended_Multi-domain_Expert_Tasks_2025.findings-acl.568__p2__score1.00.png",
-        "caption": "Figure 4: Framework of ProBench. Starting with 100K crowdsourced conversations, we identify high-quality user queries to curate single-round, multi-linguistic, and multi-round tracks. Using MLLM-as-a-Judge, we benchmark and rank 24 state-of-theart MLLMs with ELO ratings. To ensure fairness, the ELO ratings are de-biased to remove confounder effects (e.g., MLLM response formats), resulting in the final ProBench leaderboard. Icons in the figure are sourced from (Freepik et al., 2025)."
+        "filename": "SafeDecoding_Defending_against_Jailbreak_Attacks_via_Safety-Aware_Decoding__p4__score1.00.png",
+        "path": "figs_human_eval_papers/SafeDecoding_Defending_against_Jailbreak_Attacks_via_Safety-Aware_Decoding/SafeDecoding_Defending_against_Jailbreak_Attacks_via_Safety-Aware_Decoding__p4__score1.00.png",
+        "caption": "Figure 2: This figure illustrates the detail of SafeDecoding. During the training phase, we fine-tune the original LLM to construct an expert model with strengthened safety. In the inference phase, a user query is passed to both the original and expert models. Based on their outputs, SafeDecoding constructs a new token probability distribution. This constructed probability distribution attenuates the probabilities of tokens that are aligned with the attacker’s goal, and amplifies the probabilities of tokens that are aligned with human values. In this example, SafeDecoding is applied only to the first 2 tokens, while the remaining tokens are generated through normal decoding."
       }
-    ],
-    "acl_id": "2025.findings-acl.568"
+    ]
   },
   {
-    "id": 88,
-    "folder_name": "Prompting_LLMs_Length_Control_for_Isometric_Machine_Translation_2025.iwslt-1.11",
-    "title": "Prompting LLMs Length Control for Isometric Machine Translation",
+    "title": "Spiral of Silence How is Large Language Model Killing Information Retrieval A Case Study on Open Domain Question Answering",
+    "folder_name": "Spiral_of_Silence_How_is_Large_Language_Model_Killing_Information_Retrieval_A_Case_Study_on_Open_Domain_Question_Answering",
     "images": [
       {
-        "filename": "Prompting_LLMs_Length_Control_for_Isometric_Machine_Translation_2025.iwslt-1.11__p0__score0.95.png",
-        "path": "./Prompting_LLMs_Length_Control_for_Isometric_Machine_Translation_2025.iwslt-1.11/Prompting_LLMs_Length_Control_for_Isometric_Machine_Translation_2025.iwslt-1.11__p0__score0.95.png",
-        "caption": "Figure 1: Overview of our experiment with prompts asking for different length constraints for the desired translation, complemented with few-shot examples demonstrating the given constraint (match) or not (no-match). Strong enough control to reach isometric translation needs matching instructions and preferably Tiny or Short demonstrations. The construction of demonstration sets is described in Section 3 and the prompt content is presented in Table 6 in Appendix B.2."
+        "filename": "Spiral_of_Silence_How_is_Large_Language_Model_Killing_Information_Retrieval_A_Case_Study_on_Open_Domain_Question_Answering__p0__score1.00.png",
+        "path": "figs_human_eval_papers/Spiral_of_Silence_How_is_Large_Language_Model_Killing_Information_Retrieval_A_Case_Study_on_Open_Domain_Question_Answering/Spiral_of_Silence_How_is_Large_Language_Model_Killing_Information_Retrieval_A_Case_Study_on_Open_Domain_Question_Answering__p0__score1.00.png",
+        "caption": "Figure 1: The evolution of RAG systems after introducing LLM-generated texts, where the “Spiral of Silence” effect gradually emerges."
       }
-    ],
-    "acl_id": "2025.iwslt-1.11"
+    ]
   },
   {
-    "id": 89,
-    "folder_name": "Prompting_Large_Language_Models_for_Italian_Clinical_Reports_A_Benchmark_Study_2025.bionlp-1.17",
-    "title": "Prompting Large Language Models for Italian Clinical Reports A Benchmark Study",
+    "title": "Step-level Value Preference Optimization for Mathematical Reasoning",
+    "folder_name": "Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning",
     "images": [
       {
-        "filename": "Prompting_Large_Language_Models_for_Italian_Clinical_Reports_A_Benchmark_Study_2025.bionlp-1.17__p1__score1.00.png",
-        "path": "./Prompting_Large_Language_Models_for_Italian_Clinical_Reports_A_Benchmark_Study_2025.bionlp-1.17/Prompting_Large_Language_Models_for_Italian_Clinical_Reports_A_Benchmark_Study_2025.bionlp-1.17__p1__score1.00.png",
-        "caption": "Figure 1: Study Framework: task-specific benchmark analysis comparing LLMs using zero-shot and in-context learning (ICL) strategies against fine-tuned BERT-based models, in an information extraction task."
+        "filename": "Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+        "path": "figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+        "caption": "Figure 1: Comparison of different frameworks: SFT, DPO, and SVPO. The top panel shows the typical pipeline of SFT and DPO, where GPT-4 does not indicate which step in yl led to the mistake. The bottom panel illustrates the pipeline of SVPO. Step-level preferences are autonomously generated via MCTS, where Q-values (represented by node colors) indicate potential reasoning errors."
       }
-    ],
-    "acl_id": "2025.bionlp-1.17"
+    ]
   },
   {
-    "id": 90,
-    "folder_name": "Propagation_and_Pitfalls_Reasoning-based_Assessment_of_Knowledge_Editing_through_Counterfactual_Tasks_2024.findings-acl.743",
-    "title": "Propagation and Pitfalls Reasoning-based Assessment of Knowledge Editing through Counterfactual Tasks",
+    "title": "Towards Statistical Factuality Guarantee for Large Vision-Language Models",
+    "folder_name": "Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models",
     "images": [
-      {
-        "filename": "Propagation_and_Pitfalls_Reasoning-based_Assessment_of_Knowledge_Editing_through_Counterfactual_Tasks_2024.findings-acl.743__p0__score0.85.png",
-        "path": "./Propagation_and_Pitfalls_Reasoning-based_Assessment_of_Knowledge_Editing_through_Counterfactual_Tasks_2024.findings-acl.743/Propagation_and_Pitfalls_Reasoning-based_Assessment_of_Knowledge_Editing_through_Counterfactual_Tasks_2024.findings-acl.743__p0__score0.85.png",
-        "caption": "Figure 1: An example of reasoning-based assessment for knowledge editing. Existing methods perform well at answering the question of the edited fact, but fail on reasoning with the edited fact."
-      },
       {
-        "filename": "Propagation_and_Pitfalls_Reasoning-based_Assessment_of_Knowledge_Editing_through_Counterfactual_Tasks_2024.findings-acl.743__p2__score1.00.png",
-        "path": "./Propagation_and_Pitfalls_Reasoning-based_Assessment_of_Knowledge_Editing_through_Counterfactual_Tasks_2024.findings-acl.743/Propagation_and_Pitfalls_Reasoning-based_Assessment_of_Knowledge_Editing_through_Counterfactual_Tasks_2024.findings-acl.743__p2__score1.00.png",
-        "caption": "Figure 2: Demonstration of construction process of ReCoE. Straight lines represent data sourced from existing datasets; Dashed lines denote data derived from Claude-generation; Zigzag lines denote data obtained through the corruption of other data. Group 1 includes superlative, comparative, and sorting questions, where we use “swapping” to create counterfactual facts. Group 2 represents counting, aggregation, and subtraction questions, where we use “altering” to create counterfactual facts."
+        "filename": "Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+        "path": "figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+        "caption": "Figure 1: Overview: given user-specified error tolerance λ, error rate α, and a calibration dataset, CONFLVLM returns a more reliable response for any new image and prompt at inference time through sampling, decomposing D, filtering F , and merging M , to ensure that the risk of the final response Y ∗ is controlled with high probability. Illustrative examples, one for each application domain, are provided for outcome demonstration, where claims are highlighted to indicate CONFLVLM’s confidence using specific conformity score and error tolerance level. Unhighlighted claims correspond to low confidence in factuality check."
       }
-    ],
-    "acl_id": "2024.findings-acl.743"
+    ]
   },
   {
-    "id": 91,
-    "folder_name": "RATHANDravidianLangTech_2025_Annaparavai_-_Separate_the_Authentic_Human_Reviews_from_AI-generated_one_2025.dravidianlangtech-1.66",
-    "title": "RATHANDravidianLangTech 2025 Annaparavai - Separate the Authentic Human Reviews from AI-generated one",
+    "title": "VISTA Visualized Text Embedding For Universal Multi-Modal Retrieval",
+    "folder_name": "VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval",
     "images": [
       {
-        "filename": "RATHANDravidianLangTech_2025_Annaparavai_-_Separate_the_Authentic_Human_Reviews_from_AI-generated_one_2025.dravidianlangtech-1.66__p2__score1.00.png",
-        "path": "./RATHANDravidianLangTech_2025_Annaparavai_-_Separate_the_Authentic_Human_Reviews_from_AI-generated_one_2025.dravidianlangtech-1.66/RATHANDravidianLangTech_2025_Annaparavai_-_Separate_the_Authentic_Human_Reviews_from_AI-generated_one_2025.dravidianlangtech-1.66__p2__score1.00.png",
-        "caption": "Figure 3: Proposed DNN architecture."
+        "filename": "VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+        "path": "figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+        "caption": "Figure 1: The model architecture of our VISTA model. We use the pre-trained language model as the foundation, making the ViT encoder transfer the Image to recognized tokens of the text encoder."
       },
       {
-        "filename": "RATHANDravidianLangTech_2025_Annaparavai_-_Separate_the_Authentic_Human_Reviews_from_AI-generated_one_2025.dravidianlangtech-1.66__p2__score1.00__1.png",
-        "path": "./RATHANDravidianLangTech_2025_Annaparavai_-_Separate_the_Authentic_Human_Reviews_from_AI-generated_one_2025.dravidianlangtech-1.66/RATHANDravidianLangTech_2025_Annaparavai_-_Separate_the_Authentic_Human_Reviews_from_AI-generated_one_2025.dravidianlangtech-1.66__p2__score1.00__1.png",
-        "caption": "Figure 4: Proposed methodology."
+        "filename": "VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p3__score1.00.png",
+        "path": "figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p3__score1.00.png",
+        "caption": "Figure 2: The construction pipeline of Image&Text To Image (IT2T) dataset."
       }
-    ],
-    "acl_id": "2025.dravidianlangtech-1.66"
+    ]
   },
   {
-    "id": 92,
-    "folder_name": "Ranking_Over_Scoring_Towards_Reliable_and_Robust_Automated_Evaluation_of_LLM-Generated_Medical_Explanatory_Arguments_2025.coling-main.634",
-    "title": "Ranking Over Scoring Towards Reliable and Robust Automated Evaluation of LLM-Generated Medical Explanatory Arguments",
+    "title": "VLind-Bench Measuring Language Priors in Large Vision-Language Models",
+    "folder_name": "VLind-Bench_Measuring_Language_Priors_in_Large_Vision-Language_Models",
     "images": [
-      {
-        "filename": "Ranking_Over_Scoring_Towards_Reliable_and_Robust_Automated_Evaluation_of_LLM-Generated_Medical_Explanatory_Arguments_2025.coling-main.634__p0__score1.00.png",
-        "path": "./Ranking_Over_Scoring_Towards_Reliable_and_Robust_Automated_Evaluation_of_LLM-Generated_Medical_Explanatory_Arguments_2025.coling-main.634/Ranking_Over_Scoring_Towards_Reliable_and_Robust_Automated_Evaluation_of_LLM-Generated_Medical_Explanatory_Arguments_2025.coling-main.634__p0__score1.00.png",
-        "caption": "Figure 1: Graphical abstract illustrating the key elements of our approach. Synthetic arguments are first generated by prompting multiple LLMs, which are then ranked alongside gold-standard arguments by both our trained LM evaluator and a human expert. Our results show the LM evaluator aligns with human preferences."
-      },
-      {
-        "filename": "Ranking_Over_Scoring_Towards_Reliable_and_Robust_Automated_Evaluation_of_LLM-Generated_Medical_Explanatory_Arguments_2025.coling-main.634__p5__score0.95.png",
-        "path": "./Ranking_Over_Scoring_Towards_Reliable_and_Robust_Automated_Evaluation_of_LLM-Generated_Medical_Explanatory_Arguments_2025.coling-main.634/Ranking_Over_Scoring_Towards_Reliable_and_Robust_Automated_Evaluation_of_LLM-Generated_Medical_Explanatory_Arguments_2025.coling-main.634__p5__score0.95.png",
-        "caption": "Figure 2: A graphical abstract illustrating the system’s main components and behavior. The proposed LM evaluator prioritizes ranking primary arguments first and placing control cases last."
-      },
-      {
-        "filename": "Ranking_Over_Scoring_Towards_Reliable_and_Robust_Automated_Evaluation_of_LLM-Generated_Medical_Explanatory_Arguments_2025.coling-main.634__p6__score0.70.png",
-        "path": "./Ranking_Over_Scoring_Towards_Reliable_and_Robust_Automated_Evaluation_of_LLM-Generated_Medical_Explanatory_Arguments_2025.coling-main.634/Ranking_Over_Scoring_Towards_Reliable_and_Robust_Automated_Evaluation_of_LLM-Generated_Medical_Explanatory_Arguments_2025.coling-main.634__p6__score0.70.png",
-        "caption": "Figure 3: Ranking of the Primary Arguments. Each row corresponds to a distinct evaluator: the first three rows correspond to our proposed Proxy Task evaluators based on discriminative classification models, while the last row reflects the human criteria, obtained by having experts directly rank the arguments."
-      },
       {
-        "filename": "Ranking_Over_Scoring_Towards_Reliable_and_Robust_Automated_Evaluation_of_LLM-Generated_Medical_Explanatory_Arguments_2025.coling-main.634__p7__score0.80.png",
-        "path": "./Ranking_Over_Scoring_Towards_Reliable_and_Robust_Automated_Evaluation_of_LLM-Generated_Medical_Explanatory_Arguments_2025.coling-main.634/Ranking_Over_Scoring_Towards_Reliable_and_Robust_Automated_Evaluation_of_LLM-Generated_Medical_Explanatory_Arguments_2025.coling-main.634__p7__score0.80.png",
-        "caption": "Figure 4: Ranking of the Primary Arguments and Control Cases by the Proxy Task evaluators for each Proxy Task. Each row represents a distinct evaluator, and the columns represent the evaluated arguments. This table highlights the evaluators’ ability to differentiate between proper and improper arguments."
+        "filename": "VLind-Bench_Measuring_Language_Priors_in_Large_Vision-Language_Models__p1__score1.00.png",
+        "path": "figs_human_eval_papers/VLind-Bench_Measuring_Language_Priors_in_Large_Vision-Language_Models/VLind-Bench_Measuring_Language_Priors_in_Large_Vision-Language_Models__p1__score1.00.png",
+        "caption": "Figure 1: (a) An example from VLind-Bench. Our benchmark consists of four types of questions (i-iv). (b) Evaluation pipeline of VLind-Bench. In the pipeline, both true and false statements of the current stage must be correctly evaluated to proceed to the next stage."
       }
-    ],
-    "acl_id": "2025.coling-main.634"
+    ]
   },
   {
-    "id": 93,
-    "folder_name": "Response_Wide_Shut_Surprising_Observations_in_Basic_Vision_Language_Model_Capabilities_2025.acl-long.1241",
-    "title": "Response Wide Shut Surprising Observations in Basic Vision Language Model Capabilities",
+    "title": "Visual Evidence Prompting Mitigates Hallucinations in Large Vision-Language Models",
+    "folder_name": "Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models",
     "images": [
       {
-        "filename": "Response_Wide_Shut_Surprising_Observations_in_Basic_Vision_Language_Model_Capabilities_2025.acl-long.1241__p0__score1.00.png",
-        "path": "./Response_Wide_Shut_Surprising_Observations_in_Basic_Vision_Language_Model_Capabilities_2025.acl-long.1241/Response_Wide_Shut_Surprising_Observations_in_Basic_Vision_Language_Model_Capabilities_2025.acl-long.1241__p0__score1.00.png",
-        "caption": "Figure 1: Overview of our VLM analysis. Going beyond existing efforts that analyze VLMs as a whole, we study performance of VLMs in terms of intermediate spaces that represent knowledge as it is processed through the VLM network. Specifically, we consider three spaces in VLMs: visual, VL projection and response space; to understand what aspects of visual information are captured (not captured) and where."
+        "filename": "Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+        "path": "figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+        "caption": "Figure 1: Visualization of the image attribution map for LLaVA-1.5-7B when hallucination happens and after the integration of visual evidence. Best viewed zoomed in. More cases can be found in Appendix E.2 and E.3."
       },
       {
-        "filename": "Response_Wide_Shut_Surprising_Observations_in_Basic_Vision_Language_Model_Capabilities_2025.acl-long.1241__p1__score0.90.png",
-        "path": "./Response_Wide_Shut_Surprising_Observations_in_Basic_Vision_Language_Model_Capabilities_2025.acl-long.1241/Response_Wide_Shut_Surprising_Observations_in_Basic_Vision_Language_Model_Capabilities_2025.acl-long.1241__p1__score0.90.png",
-        "caption": "Figure 2: Qualitative results supporting the findings of our analysis. We show prediction (correct vs incorrect) for three spaces i.e visual, VL projection and response. We notice correct predictions in intermediate spaces and incorrect predictions in response space for object recognition and counting task. Furthermore, we notice a reversal in trend for spatial understanding task, where the response space has more correct predictions compared to intermediate spaces."
+        "filename": "Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+        "path": "figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+        "caption": "Figure 3: An overview of visual evidence prompting, which mitigates hallucinations in LVLMs via referring to visual evidence from small visual models. Given the input image, the small visual models generate visual evidence about different aspects of the image, e.g., object categories, and relations between objects. Then the “visual evidence” prompts are used to extract the answer from the image and evidence context."
       }
-    ],
-    "acl_id": "2025.acl-long.1241"
+    ]
   },
   {
-    "id": 94,
-    "folder_name": "Retrieval-free_Knowledge_Injection_through_Multi-Document_Traversal_for_Dialogue_Models_2023.acl-long.364",
-    "title": "Retrieval-free Knowledge Injection through Multi-Document Traversal for Dialogue Models",
+    "title": "Weakly Supervised Semantic Parsing with Execution-based Spurious Program Filtering",
+    "folder_name": "Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering",
     "images": [
       {
-        "filename": "Retrieval-free_Knowledge_Injection_through_Multi-Document_Traversal_for_Dialogue_Models_2023.acl-long.364__p0__score0.95.png",
-        "path": "./Retrieval-free_Knowledge_Injection_through_Multi-Document_Traversal_for_Dialogue_Models_2023.acl-long.364/Retrieval-free_Knowledge_Injection_through_Multi-Document_Traversal_for_Dialogue_Models_2023.acl-long.364__p0__score0.95.png",
-        "caption": "Figure 1: The structure of the document \"Taylor Swift\" and her album \"Speak Now\". A document usually concentrates on one topic. Sentences within the document describe different aspects of the document’s topic."
+        "filename": "Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+        "path": "figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+        "caption": "Figure 1: Overview of task setup on Natural Language Visual Reasoning (top) and WIKITABLEQUESTIONS (bottom) dataset. The datasets include only utterance x, world w and denotation y (ground truth program z is not given). Spurious programs like z′, whose meaning is wrong but execution result is correct, are major challenges of the task."
       },
-      {
-        "filename": "Retrieval-free_Knowledge_Injection_through_Multi-Document_Traversal_for_Dialogue_Models_2023.acl-long.364__p2__score0.98.png",
-        "path": "./Retrieval-free_Knowledge_Injection_through_Multi-Document_Traversal_for_Dialogue_Models_2023.acl-long.364/Retrieval-free_Knowledge_Injection_through_Multi-Document_Traversal_for_Dialogue_Models_2023.acl-long.364__p2__score0.98.png",
-        "caption": "Figure 2: Overview of KiDG. To construct in-depth and topic-diversified dialogues, KiDG (1) builds an AG for each document to distinguish aspects; (2) connects topic-related documents to construct ATG; (3) utilizes the traversal algorithm MDT to walk through ATG to sample a sequence of knowledge sentences and transform them to a simulated dialogue. Note that, the Representative Nodes are marked in the darkest color, black, purple and red arrows represent the topic relations derived from Web Hyperlink, Knowledge Graph and Word vector respectively."
-      }
-    ],
-    "acl_id": "2023.acl-long.364"
-  },
-  {
-    "id": 95,
-    "folder_name": "Robust_and_Minimally_Invasive_Watermarking_for_EaaS_2025.findings-acl.112",
-    "title": "Robust and Minimally Invasive Watermarking for EaaS",
-    "images": [
       {
-        "filename": "Robust_and_Minimally_Invasive_Watermarking_for_EaaS_2025.findings-acl.112__p1__score1.00.png",
-        "path": "./Robust_and_Minimally_Invasive_Watermarking_for_EaaS_2025.findings-acl.112/Robust_and_Minimally_Invasive_Watermarking_for_EaaS_2025.findings-acl.112__p1__score1.00.png",
-        "caption": "Figure 1: The framework of our ESpeW. The upper part presents an overview of watermark injection and model extraction. (1) The stealer queries the provider’s EaaS to obtain a dataset that maps texts to embeddings. During this process, the provider injects watermarks. (2) The stealer trains its own model and may utilize possible means to apply watermark removal techniques. (3) The provider queries the stealer’s EaaS for copyright verification. The lower part offers a detailed explanation of the key modules for watermark insertion and verification."
+        "filename": "Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p2__score0.70.png",
+        "path": "figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p2__score0.70.png",
+        "caption": "Figure 2: Illustration of our program representation scheme and filtering based on majority vote. Retrieved worlds (wj’s) partition the programs into several groups by their execution results and are represented as lines in the figure.4 By running majority vote based on the execution results, programs in the gray regions may be filtered."
       },
       {
-        "filename": "Robust_and_Minimally_Invasive_Watermarking_for_EaaS_2025.findings-acl.112__p3__score0.98.png",
-        "path": "./Robust_and_Minimally_Invasive_Watermarking_for_EaaS_2025.findings-acl.112/Robust_and_Minimally_Invasive_Watermarking_for_EaaS_2025.findings-acl.112__p3__score0.98.png",
-        "caption": "Figure 2: Illustration of motivation for embedding-specific watermark. Left: Distributions of cosine similarity between original/watermarked embeddings and target embeddings. Middle: Calculation processes of watermarking. Right: Shared components among all watermarked embeddings."
+        "filename": "Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+        "path": "figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+        "caption": "Figure 3: Illustration of column and entity replacement. Here, z1 and z2 are programs conditioned on the source table, and z′1 and z′2 are their counterparts modified to be executed on the target table. Within the programs, column and entity names of the same type are displayed in the same color."
       }
-    ],
-    "acl_id": "2025.findings-acl.112"
+    ]
   },
   {
-    "id": 96,
-    "folder_name": "SURVEYFORGE_On_the_Outline_Heuristics_Memory-Driven_Generation_and_Multi-dimensional_Evaluation_for_Automated_Survey_2025.acl-long.609",
-    "title": "SURVEYFORGE  On the Outline Heuristics, Memory-Driven Generation, and Multi-dimensional Evaluation for Automated Survey ",
+    "title": "WebEvolver Enhancing Web Agent Self-Improvement with Co-evolving World Model",
+    "folder_name": "WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model",
     "images": [
       {
-        "filename": "SURVEYFORGE_On_the_Outline_Heuristics_Memory-Driven_Generation_and_Multi-dimensional_Evaluation_for_Automated_Survey_2025.acl-long.609__p0__score1.00.png",
-        "path": "./SURVEYFORGE_On_the_Outline_Heuristics_Memory-Driven_Generation_and_Multi-dimensional_Evaluation_for_Automated_Survey_2025.acl-long.609/SURVEYFORGE_On_the_Outline_Heuristics_Memory-Driven_Generation_and_Multi-dimensional_Evaluation_for_Automated_Survey_2025.acl-long.609__p0__score1.00.png",
-        "caption": "Figure 1: Compared to human-written surveys, AIgenerated surveys face two primary challenges. First, regarding the outline, these papers may often lack coherent logic and well-structured organization. Second, with respect to references, they frequently fail to include truly relevant and influential literature."
+        "filename": "WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p0__score1.00.png",
+        "path": "figs_human_eval_papers/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p0__score1.00.png",
+        "caption": "Figure 1: Overview of WebEvolver – A Self-Improving Framework with World-Model Look-Ahead. Our framework co-trains a world model with the agent to predict next-step observations based on current states and actions. The world model serves as a virtual web engine, which generates synthetic trajectories for policy training and enables look-ahead planning to select optimal actions during inference."
       },
-      {
-        "filename": "SURVEYFORGE_On_the_Outline_Heuristics_Memory-Driven_Generation_and_Multi-dimensional_Evaluation_for_Automated_Survey_2025.acl-long.609__p2__score1.00.png",
-        "path": "./SURVEYFORGE_On_the_Outline_Heuristics_Memory-Driven_Generation_and_Multi-dimensional_Evaluation_for_Automated_Survey_2025.acl-long.609/SURVEYFORGE_On_the_Outline_Heuristics_Memory-Driven_Generation_and_Multi-dimensional_Evaluation_for_Automated_Survey_2025.acl-long.609__p2__score1.00.png",
-        "caption": "Figure 2: The overview of SURVEYFORGE. The framework consists of two main stages: Outline Generation and Content Writing. In the Outline Generation stage, SURVEYFORGE utilizes heuristic learning to generate well-structured outlines by leveraging topic-relevant literature and structural patterns from existing surveys. In the Content Writing stage, a memory-driven Scholar Navigation Agent (SANA) retrieves high-quality literature for each subsection and LLM generates the content of each subsection. Finally, the content is synthesized and refined into a coherent and comprehensive survey."
-      }
-    ],
-    "acl_id": "2025.acl-long.609"
-  },
-  {
-    "id": 97,
-    "folder_name": "ScottyPoseidon_at_SemEval-2025_Task_8_LLM-Driven_Code_Generation_for_Zero-Shot_Question_Answering_on_Tabular_Data_2025.semeval-1.285",
-    "title": "ScottyPoseidon at SemEval-2025 Task 8 LLM-Driven Code Generation for Zero-Shot Question Answering on Tabular Data",
-    "images": [
-      {
-        "filename": "ScottyPoseidon_at_SemEval-2025_Task_8_LLM-Driven_Code_Generation_for_Zero-Shot_Question_Answering_on_Tabular_Data_2025.semeval-1.285__p2__score1.00.png",
-        "path": "./ScottyPoseidon_at_SemEval-2025_Task_8_LLM-Driven_Code_Generation_for_Zero-Shot_Question_Answering_on_Tabular_Data_2025.semeval-1.285/ScottyPoseidon_at_SemEval-2025_Task_8_LLM-Driven_Code_Generation_for_Zero-Shot_Question_Answering_on_Tabular_Data_2025.semeval-1.285__p2__score1.00.png",
-        "caption": "Figure 1: Flowchart illustrating the data preprocessing and model workflow for Subtasks 1 and 2 using a unified and an agentic approach. In the agentic setting the central ‘LLM’ turns into a ‘reasoner LLM’ which delineates steps for the ‘Code LLM’ to write code, which on execution feeds back the error codes to both the reasoner and code LLMs. This is illustrated by using red-dashed arrows in the figure."
-      }
-    ],
-    "acl_id": "2025.semeval-1.285"
-  },
-  {
-    "id": 98,
-    "folder_name": "Strategies_for_political-statement_segmentation_and_labelling_in_unstructured_text_2025.nlp4dh-1.38",
-    "title": "Strategies for political-statement segmentation and labelling in unstructured text",
-    "images": [
       {
-        "filename": "Strategies_for_political-statement_segmentation_and_labelling_in_unstructured_text_2025.nlp4dh-1.38__p3__score0.70.png",
-        "path": "./Strategies_for_political-statement_segmentation_and_labelling_in_unstructured_text_2025.nlp4dh-1.38/Strategies_for_political-statement_segmentation_and_labelling_in_unstructured_text_2025.nlp4dh-1.38__p3__score0.70.png",
-        "caption": "Figure 1: An example of an in-context learning prompt, comprising natural-language instructions, in-context learning examples, and the input text. The instructions are shown verbatim; in-context learning examples shown are real examples from the dataset but are truncated for space. The model’s response to this prompt, decoded with constraints, will constitute the prediction for the input text."
+        "filename": "WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p2__score1.00.png",
+        "path": "figs_human_eval_papers/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p2__score1.00.png",
+        "caption": "Figure 2: An illustration of the World Model trajectory synthesizing process and World Model Look-ahead for inference-time action selection."
       }
-    ],
-    "acl_id": "2025.nlp4dh-1.38"
+    ]
   },
   {
-    "id": 99,
-    "folder_name": "Streaming_Sequence_Transduction_through_Dynamic_Compression_2025.iwslt-1.1",
-    "title": "Streaming Sequence Transduction through Dynamic Compression",
+    "title": "When Not to Trust Language Models Investigating Effectiveness of Parametric and Non-Parametric Memories",
+    "folder_name": "When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories",
     "images": [
       {
-        "filename": "Streaming_Sequence_Transduction_through_Dynamic_Compression_2025.iwslt-1.1__p0__score0.97.png",
-        "path": "./Streaming_Sequence_Transduction_through_Dynamic_Compression_2025.iwslt-1.1/Streaming_Sequence_Transduction_through_Dynamic_Compression_2025.iwslt-1.1__p0__score0.97.png",
-        "caption": "Figure 1: When YIELD is triggered, the current segment’s information is compressed into an anchor representation to generate the next output."
+        "filename": "When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories__p0__score0.70.png",
+        "path": "figs_human_eval_papers/When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories/When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories__p0__score0.70.png",
+        "caption": "Figure 1: Relationship between subject entity popularity in a question and GPT-3 performance in open-domain QA, with and without retrieved passages. Adaptive Retrieval only retrieves when necessary (orange bars) based on the heuristically-decided threshold (red line)."
       },
-      {
-        "filename": "Streaming_Sequence_Transduction_through_Dynamic_Compression_2025.iwslt-1.1__p2__score1.00.png",
-        "path": "./Streaming_Sequence_Transduction_through_Dynamic_Compression_2025.iwslt-1.1/Streaming_Sequence_Transduction_through_Dynamic_Compression_2025.iwslt-1.1__p2__score1.00.png",
-        "caption": "Figure 2: Visualization for the training of the segmenter through feedback from the encoder-decoder’s crossattention."
-      },
-      {
-        "filename": "Streaming_Sequence_Transduction_through_Dynamic_Compression_2025.iwslt-1.1__p3__score0.95.png",
-        "path": "./Streaming_Sequence_Transduction_through_Dynamic_Compression_2025.iwslt-1.1/Streaming_Sequence_Transduction_through_Dynamic_Compression_2025.iwslt-1.1__p3__score0.95.png",
-        "caption": "Figure 3: Visualization for the proposed “selection as compression” method. Input features are transformed by the encoder and we only select the encoding at the anchor position (where YIELD is triggered) as the compressed representation."
-      }
-    ],
-    "acl_id": "2025.iwslt-1.1"
-  },
-  {
-    "id": 100,
-    "folder_name": "SuLoRA_Subspace_Low-Rank_Adaptation_for_Parameter-Efficient_Fine-Tuning_2025.findings-acl.278",
-    "title": "SuLoRA Subspace Low-Rank Adaptation for Parameter-Efficient Fine-Tuning",
-    "images": [
       {
-        "filename": "SuLoRA_Subspace_Low-Rank_Adaptation_for_Parameter-Efficient_Fine-Tuning_2025.findings-acl.278__p0__score0.95.png",
-        "path": "./SuLoRA_Subspace_Low-Rank_Adaptation_for_Parameter-Efficient_Fine-Tuning_2025.findings-acl.278/SuLoRA_Subspace_Low-Rank_Adaptation_for_Parameter-Efficient_Fine-Tuning_2025.findings-acl.278__p0__score0.95.png",
-        "caption": "Figure 1: (a) Comparison between LoRA (left) and our method SuLoRA (right). The core of our method is to partition the internal parameter space of LoRA and select different parameter spaces for different tasks, avoiding interference between tasks. (b) Activation of the internal parameter space in LoRA B. G and c denote the parameter subspace and task, respectively. Darker colors indicate higher levels of activation. Taking STS-B as an example, we find that the activation of the internal parameter space in LoRA varies across different tasks."
+        "filename": "When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories__p0__score0.80.png",
+        "path": "figs_human_eval_papers/When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories/When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories__p0__score0.80.png",
+        "caption": "Figure 1: Relationship between subject entity popularity in a question and GPT-3 performance in open-domain QA, with and without retrieved passages. Adaptive Retrieval only retrieves when necessary (orange bars) based on the heuristically-decided threshold (red line)."
       },
-      {
-        "filename": "SuLoRA_Subspace_Low-Rank_Adaptation_for_Parameter-Efficient_Fine-Tuning_2025.findings-acl.278__p3__score0.98.png",
-        "path": "./SuLoRA_Subspace_Low-Rank_Adaptation_for_Parameter-Efficient_Fine-Tuning_2025.findings-acl.278/SuLoRA_Subspace_Low-Rank_Adaptation_for_Parameter-Efficient_Fine-Tuning_2025.findings-acl.278__p3__score0.98.png",
-        "caption": "Figure 2: Parameter subspace selection of LoRA B matrix in SuLoRA. SuLoRA treats different parameter subspaces as experts and allocates r parameter subspaces to each instance through a routing method based on hidden features."
-      }
-    ],
-    "acl_id": "2025.findings-acl.278"
-  },
-  {
-    "id": 101,
-    "folder_name": "Synergistic_Weak-Strong_Collaboration_by_Aligning_Preferences_2025.acl-long.995",
-    "title": "Synergistic Weak-Strong Collaboration by Aligning Preferences",
-    "images": [
       {
-        "filename": "Synergistic_Weak-Strong_Collaboration_by_Aligning_Preferences_2025.acl-long.995__p0__score1.00.png",
-        "path": "./Synergistic_Weak-Strong_Collaboration_by_Aligning_Preferences_2025.acl-long.995/Synergistic_Weak-Strong_Collaboration_by_Aligning_Preferences_2025.acl-long.995__p0__score1.00.png",
-        "caption": "Figure 1: Comparison of our method and the related"
+        "filename": "When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories__p2__score1.00.png",
+        "path": "figs_human_eval_papers/When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories/When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories__p2__score1.00.png",
+        "caption": "Figure 2: POPQA is created by sampling knowledge triples from Wikidata and converting them to natural language questions, followed by popularity calculation."
       },
-      {
-        "filename": "Synergistic_Weak-Strong_Collaboration_by_Aligning_Preferences_2025.acl-long.995__p3__score1.00.png",
-        "path": "./Synergistic_Weak-Strong_Collaboration_by_Aligning_Preferences_2025.acl-long.995/Synergistic_Weak-Strong_Collaboration_by_Aligning_Preferences_2025.acl-long.995__p3__score1.00.png",
-        "caption": "Figure 2: Aligning the Weak Model with Strong Model Feedback, including preference data construction and preference tuning."
-      }
-    ],
-    "acl_id": "2025.acl-long.995"
-  },
-  {
-    "id": 102,
-    "folder_name": "Tarbiat_Modares_SemEval2025_Task11_MultiLabel_Emotion_TransferLearning_2025.semeval-1.154",
-    "title": "Tarbiat Modares SemEval2025 Task11 MultiLabel Emotion TransferLearning",
-    "images": [
       {
-        "filename": "Tarbiat_Modares_SemEval2025_Task11_MultiLabel_Emotion_TransferLearning_2025.semeval-1.154__p2__score1.00.png",
-        "path": "./Tarbiat_Modares_SemEval2025_Task11_MultiLabel_Emotion_TransferLearning_2025.semeval-1.154/Tarbiat_Modares_SemEval2025_Task11_MultiLabel_Emotion_TransferLearning_2025.semeval-1.154__p2__score1.00.png",
-        "caption": "Figure 1: Schematic of our multi-label emotion detection model. The LaBSE encoder generates sentence embeddings, followed by dropout, a fully connected layer, and sigmoid activation for classification."
+        "filename": "When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories__p2__score1.00__1.png",
+        "path": "figs_human_eval_papers/When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories/When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories__p2__score1.00__1.png",
+        "caption": "Figure 2: POPQA is created by sampling knowledge triples from Wikidata and converting them to natural language questions, followed by popularity calculation."
       }
-    ],
-    "acl_id": "2025.semeval-1.154"
+    ]
   },
   {
-    "id": 103,
-    "folder_name": "TaxoCritic_Exploring_Credit_Assignment_in_Taxonomy_Induction_with_Multi-Critic_Reinforcement_Learning_2024.dlnld-1.2",
-    "title": "TaxoCritic Exploring Credit Assignment in Taxonomy Induction with Multi-Critic Reinforcement Learning",
+    "title": "ZoomEye Enhancing Multimodal LLMs with Human-Like Zooming Capabilities through Tree-Based Image Exploration",
+    "folder_name": "ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration",
     "images": [
       {
-        "filename": "TaxoCritic_Exploring_Credit_Assignment_in_Taxonomy_Induction_with_Multi-Critic_Reinforcement_Learning_2024.dlnld-1.2__p2__score0.95.png",
-        "path": "./TaxoCritic_Exploring_Credit_Assignment_in_Taxonomy_Induction_with_Multi-Critic_Reinforcement_Learning_2024.dlnld-1.2/TaxoCritic_Exploring_Credit_Assignment_in_Taxonomy_Induction_with_Multi-Critic_Reinforcement_Learning_2024.dlnld-1.2__p2__score0.95.png",
-        "caption": "Figure 1: Example of an action at = (Apple Tree, Plant), where roott = {Living}, Ut = {Living, Plant, Animal, Carnivore, Herbivore}, Vt = {Tree, Rabbit, Apple Tree, Horse}, and Et = {(Plant, Living), (Animal, Living), (Carnivore, Animal), (Herbivore, Animal)}. After the execution of this action, roott+1 = {Living}, Ut+1 = {Living, Plant, Animal, Carnivore, Herbivore, Apple Tree}, Vt+1 = {Tree, Rabbit, Horse}, and Et+1 = {(Plant, Living), (Animal, Living), (Carnivore, Animal), (Herbivore, Animal), (Apple Tree, Plant)}."
+        "filename": "ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p0__score1.00.png",
+        "path": "figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p0__score1.00.png",
+        "caption": "Figure 1: Top: When dealing with a high-resolution image, MLLMs effectively perceive the dominant objects but often fail to recognize finer details, highlighting the need for vision-level reasoning. Bottom: Applied with Zoom Eye, MLLMs could perform vision-level reasoning, allowed to explore the image details until they can answer the question."
       },
       {
-        "filename": "TaxoCritic_Exploring_Credit_Assignment_in_Taxonomy_Induction_with_Multi-Critic_Reinforcement_Learning_2024.dlnld-1.2__p3__score1.00.png",
-        "path": "./TaxoCritic_Exploring_Credit_Assignment_in_Taxonomy_Induction_with_Multi-Critic_Reinforcement_Learning_2024.dlnld-1.2/TaxoCritic_Exploring_Credit_Assignment_in_Taxonomy_Induction_with_Multi-Critic_Reinforcement_Learning_2024.dlnld-1.2__p3__score1.00.png",
-        "caption": "Figure 2: An overview of the TaxoCritic method. fa, fc1 and fc2 represent the feature representations (vectors) of the inputs for the actor and two critics respectively. The actor (a two-layer fully connected feed-forward neural network) takes the encoding of a state as the input and outputs the policy π. Following this policy, the environment executes a sampled action which contains two sub-actions. As shown on the right side, the critic network features two sub-critics and a mixing layer. Considering the state and two sub-actions, one critic evaluates the child’s choice, while the other evaluates the parent’s choice. The mixing layer combines those results from both critics and produces the action value q."
+        "filename": "ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p1__score0.95.png",
+        "path": "figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p1__score0.95.png",
+        "caption": "Figure 2: Zoom Eye enables MLLMs to (a) answer the question directly when the visual information is adequate, (b) zoom in gradually for a closer examination, and (c) zoom out to the previous view and explore other regions if the desired information is not initially found."
       },
       {
-        "filename": "TaxoCritic_Exploring_Credit_Assignment_in_Taxonomy_Induction_with_Multi-Critic_Reinforcement_Learning_2024.dlnld-1.2__p4__score0.70.png",
-        "path": "./TaxoCritic_Exploring_Credit_Assignment_in_Taxonomy_Induction_with_Multi-Critic_Reinforcement_Learning_2024.dlnld-1.2/TaxoCritic_Exploring_Credit_Assignment_in_Taxonomy_Induction_with_Multi-Critic_Reinforcement_Learning_2024.dlnld-1.2__p4__score0.70.png",
-        "caption": "Figure 3: The action feature vector at = (v, u) concatenates the word embeddings —using GloVe (Pennington et al., 2014)— for terms v and u, their dependency path from the corpus, and syntactic features into one vector."
+        "filename": "ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p3__score0.95.png",
+        "path": "figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p3__score0.95.png",
+        "caption": "Figure 3: Two image input methods for MLLMs with distinct image processing."
       },
       {
-        "filename": "TaxoCritic_Exploring_Credit_Assignment_in_Taxonomy_Induction_with_Multi-Critic_Reinforcement_Learning_2024.dlnld-1.2__p7__score0.95.png",
-        "path": "./TaxoCritic_Exploring_Credit_Assignment_in_Taxonomy_Induction_with_Multi-Critic_Reinforcement_Learning_2024.dlnld-1.2/TaxoCritic_Exploring_Credit_Assignment_in_Taxonomy_Induction_with_Multi-Critic_Reinforcement_Learning_2024.dlnld-1.2__p7__score0.95.png",
-        "caption": "Figure 5: A simple partially constructed bedroom hierarchy. Yellow and Blue nodes (top three rows) denote correctly placed terms. Green and Red nodes (bottom two rows) are yet to be placed, while indicating their intended positions."
+        "filename": "ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p7__score0.95.png",
+        "path": "figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p7__score0.95.png",
+        "caption": "Figure 5: Examples of Zoom Eye. The resolution of the image is displayed. Red rectangles are patches searched by Zoom Eye."
       }
-    ],
-    "acl_id": "2024.dlnld-1.2"
+    ]
   },
   {
-    "id": 104,
-    "folder_name": "Text2Cypher_Bridging_Natural_Language_and_Graph_Databases_2025.genaik-1.11",
-    "title": "Text2Cypher Bridging Natural Language and Graph Databases",
+    "title": "arXiv 2307.01379v3 cs.CL 28 May 2024",
+    "folder_name": "arXiv_2307.01379v3_cs.CL_28_May_2024",
     "images": [
       {
-        "filename": "Text2Cypher_Bridging_Natural_Language_and_Graph_Databases_2025.genaik-1.11__p0__score1.00.png",
-        "path": "./Text2Cypher_Bridging_Natural_Language_and_Graph_Databases_2025.genaik-1.11/Text2Cypher_Bridging_Natural_Language_and_Graph_Databases_2025.genaik-1.11__p0__score1.00.png",
-        "caption": "Figure 1: User wants to write a Cypher query for ‘What are the movies of Tom Hanks‘. A Text2Cypher model translates the input natural language question into Cypher, i.e., ‘MATCH (actor:Person {name: \"Tom Hanks\"})-[:ACTED_IN]->(movie:Movie) RETURN movie.title AS movies‘"
+        "filename": "arXiv_2307.01379v3_cs.CL_28_May_2024__p0__score0.90.png",
+        "path": "figs_human_eval_papers/arXiv_2307.01379v3_cs.CL_28_May_2024/arXiv_2307.01379v3_cs.CL_28_May_2024__p0__score0.90.png",
+        "caption": "Figure 1: Irrelevant tokens (or sentences) may commit majority uncertainty in free-form generations, such as the token “of” committing extremely large uncertainty misleads the uncertainty quantification of LLMs. We term these observations as generative inequalities and tackle them by shifting attention to more relevant components."
       }
-    ],
-    "acl_id": "2025.genaik-1.11"
+    ]
   },
   {
-    "id": 105,
-    "folder_name": "Threefold_model_for_AI_Readiness_A_Case_Study_with_Finnish_Healthcare_SMEs_2025.nlp4dh-1.41",
-    "title": "Threefold model for AI Readiness A Case Study with Finnish Healthcare SMEs",
+    "title": "arXiv 2310.05002v1 cs.CL 8 Oct 2023",
+    "folder_name": "arXiv_2310.05002v1_cs.CL_8_Oct_2023",
     "images": [
       {
-        "filename": "Threefold_model_for_AI_Readiness_A_Case_Study_with_Finnish_Healthcare_SMEs_2025.nlp4dh-1.41__p6__score0.80.png",
-        "path": "./Threefold_model_for_AI_Readiness_A_Case_Study_with_Finnish_Healthcare_SMEs_2025.nlp4dh-1.41/Threefold_model_for_AI_Readiness_A_Case_Study_with_Finnish_Healthcare_SMEs_2025.nlp4dh-1.41__p6__score0.80.png",
-        "caption": "Figure 1: Threefold Model of AI in Business"
+        "filename": "arXiv_2310.05002v1_cs.CL_8_Oct_2023__p0__score0.95.png",
+        "path": "figs_human_eval_papers/arXiv_2310.05002v1_cs.CL_8_Oct_2023/arXiv_2310.05002v1_cs.CL_8_Oct_2023__p0__score0.95.png",
+        "caption": "Figure 1: Comparison between two responses given by InstructGPT. The retrieved passages are relevant but not particularly helpful for solving the question, which influences the model’s judgment and leads to incorrect answers."
       },
       {
-        "filename": "Threefold_model_for_AI_Readiness_A_Case_Study_with_Finnish_Healthcare_SMEs_2025.nlp4dh-1.41__p7__score1.00.png",
-        "path": "./Threefold_model_for_AI_Readiness_A_Case_Study_with_Finnish_Healthcare_SMEs_2025.nlp4dh-1.41/Threefold_model_for_AI_Readiness_A_Case_Study_with_Finnish_Healthcare_SMEs_2025.nlp4dh-1.41__p7__score1.00.png",
-        "caption": "Figure 2: Interdependence of Companies in Different Categories of Business AI"
-      }
-    ],
-    "acl_id": "2025.nlp4dh-1.41"
-  },
-  {
-    "id": 106,
-    "folder_name": "Tooling_or_Not_Tooling_The_Impact_of_Tools_on_Language_Agents_for_Chemistry_Problem_Solving_2025.findings-naacl.424",
-    "title": "Tooling or Not Tooling The Impact of Tools on Language Agents for Chemistry Problem Solving",
-    "images": [
+        "filename": "arXiv_2310.05002v1_cs.CL_8_Oct_2023__p2__score1.00.png",
+        "path": "figs_human_eval_papers/arXiv_2310.05002v1_cs.CL_8_Oct_2023/arXiv_2310.05002v1_cs.CL_8_Oct_2023__p2__score1.00.png",
+        "caption": "Figure 2: The overall pipeline of our SKR method. We first collect self-knowledge from training questions according to the performance with or without external information (§ 3.1). Then we use the LLMs themselves or explicit small trainable models to elicit self-knowledge of a question qt by referring to the collected self-knowledge from training questions (§ 3.2). Finally, we use the self-knowledge to the new question and adaptively call a retriever (§ 3.3)."
+      },
       {
-        "filename": "Tooling_or_Not_Tooling_The_Impact_of_Tools_on_Language_Agents_for_Chemistry_Problem_Solving_2025.findings-naacl.424__p1__score1.00.png",
-        "path": "./Tooling_or_Not_Tooling_The_Impact_of_Tools_on_Language_Agents_for_Chemistry_Problem_Solving_2025.findings-naacl.424/Tooling_or_Not_Tooling_The_Impact_of_Tools_on_Language_Agents_for_Chemistry_Problem_Solving_2025.findings-naacl.424__p1__score1.00.png",
-        "caption": "Figure 1: Our ChemAgent framework. Upon receiving a user task, the agent iterates through a three-step ReAct process (Yao et al., 2023): (1) Thought generation, analyzing the current situation and planning subsequent steps; (2) Action determination, selecting the appropriate tool and its input based on the generated thought; and (3) Observation obtaining, executing a tool in the environment and obtaining the results or feedback. This iterative cycle continues until task completion or conclusion, and the final answer is returned to the user."
+        "filename": "arXiv_2310.05002v1_cs.CL_8_Oct_2023__p3__score1.00.png",
+        "path": "figs_human_eval_papers/arXiv_2310.05002v1_cs.CL_8_Oct_2023/arXiv_2310.05002v1_cs.CL_8_Oct_2023__p3__score1.00.png",
+        "caption": "Figure 3: Illustration of k-nearest-neighbor search to elicit the self-knowledge to the question qt."
       }
-    ],
-    "acl_id": "2025.findings-naacl.424"
+    ]
   },
   {
-    "id": 107,
-    "folder_name": "Toward_Human-Like_Evaluation_for_Natural_Language_Generation_with_Error_Analysis_2023.acl-long.324",
-    "title": "Toward Human-Like Evaluation for Natural Language Generation with Error Analysis",
+    "title": "arXiv 2312.06681v4 cs.CL 5 Jul 2024",
+    "folder_name": "arXiv_2312.06681v4_cs.CL_5_Jul_2024",
     "images": [
       {
-        "filename": "Toward_Human-Like_Evaluation_for_Natural_Language_Generation_with_Error_Analysis_2023.acl-long.324__p2__score1.00.png",
-        "path": "./Toward_Human-Like_Evaluation_for_Natural_Language_Generation_with_Error_Analysis_2023.acl-long.324/Toward_Human-Like_Evaluation_for_Natural_Language_Generation_with_Error_Analysis_2023.acl-long.324__p2__score1.00.png",
-        "caption": "Figure 1: An analogy between MQM and BARTScore++. We show an evaluation example from machine translation (zh-en). Top: Source and reference sentence provided for evaluation. Medium: An annotation example using MQM framework. Errors in the hypothesis are assigned with Major and Minor. The MQM score is computed through the weighted sum of these errors. Bottom: BARTScore++. The hypothesis is first refined through an error analysis framework. The refined sentence is then used to obtain the distance of explicit/ implicit errors through vanilla BARTScore. Different weights are finally assigned to these errors to get a more accurate score."
+        "filename": "arXiv_2312.06681v4_cs.CL_5_Jul_2024__p0__score1.00.png",
+        "path": "figs_human_eval_papers/arXiv_2312.06681v4_cs.CL_5_Jul_2024/arXiv_2312.06681v4_cs.CL_5_Jul_2024__p0__score1.00.png",
+        "caption": "Figure 1: We perform forward passes on contrastive examples of answers to multiple-choice questions, extracting residual stream activations at a particular layer at the token position of the answer. We then take the mean activation difference over many contrast pairs. At inference time, this vector is added back into the residual stream with a chosen multiplier at all token positions after the instruction to control the behavior."
       }
-    ],
-    "acl_id": "2023.acl-long.324"
+    ]
   },
   {
-    "id": 108,
-    "folder_name": "Towards_Cross-Cultural_Machine_Translation_with_Retrieval-Augmented_Generation_from_Multilingual_Knowledge_Graphs_2024.emnlp-main.914",
-    "title": "Towards Cross-Cultural Machine Translation with Retrieval-Augmented Generation from Multilingual Knowledge Graphs",
+    "title": "arXiv 2401.06730v2 cs.CL 9 Jul 2024",
+    "folder_name": "arXiv_2401.06730v2_cs.CL_9_Jul_2024",
     "images": [
       {
-        "filename": "Towards_Cross-Cultural_Machine_Translation_with_Retrieval-Augmented_Generation_from_Multilingual_Knowledge_Graphs_2024.emnlp-main.914__p2__score1.00.png",
-        "path": "./Towards_Cross-Cultural_Machine_Translation_with_Retrieval-Augmented_Generation_from_Multilingual_Knowledge_Graphs_2024.emnlp-main.914/Towards_Cross-Cultural_Machine_Translation_with_Retrieval-Augmented_Generation_from_Multilingual_Knowledge_Graphs_2024.emnlp-main.914__p2__score1.00.png",
-        "caption": "Figure 1: Overview of KG-MT, which leverages a knowledge retriever, i.e., a dense retrieval mechanism to retrieve the most relevant entities from a multilingual knowledge graph (see Section 3.1), to improve the translation. The retrieved entities are then integrated into the MT system in two ways: explicit knowledge integration, where the entity names are explicitly added to the source text (see Section 3.2), and implicit knowledge integration, where the entity embeddings are fused with the encoder hidden states (see Section 3.3)."
+        "filename": "arXiv_2401.06730v2_cs.CL_9_Jul_2024__p0__score0.80.png",
+        "path": "figs_human_eval_papers/arXiv_2401.06730v2_cs.CL_9_Jul_2024/arXiv_2401.06730v2_cs.CL_9_Jul_2024__p0__score0.80.png",
+        "caption": "Figure 1: Overview of experiments on human interpretations of epistemic markers. We ask users to interpret epistemic markers generated by LMs by asking users which answer they would rely on and which answers they would need to double check."
       }
-    ],
-    "acl_id": "2024.emnlp-main.914"
+    ]
   },
   {
-    "id": 109,
-    "folder_name": "Transcending_Scaling_Laws_with_0.1_Extra_Compute_2023.emnlp-main.91",
-    "title": "Transcending Scaling Laws with 0.1 Extra Compute",
+    "title": "arXiv 2402.16837v2 cs.CL 31 May 2025",
+    "folder_name": "arXiv_2402.16837v2_cs.CL_31_May_2025",
     "images": [
-      {
-        "filename": "Transcending_Scaling_Laws_with_0.1_Extra_Compute_2023.emnlp-main.91__p6__score0.80.png",
-        "path": "./Transcending_Scaling_Laws_with_0.1_Extra_Compute_2023.emnlp-main.91/Transcending_Scaling_Laws_with_0.1_Extra_Compute_2023.emnlp-main.91__p6__score0.80.png",
-        "caption": "Figure 5: An example of a prompt that is improved by rephrasing to use U-PaLM’s infilling capabilities."
-      },
       {
-        "filename": "Transcending_Scaling_Laws_with_0.1_Extra_Compute_2023.emnlp-main.91__p7__score0.90.png",
-        "path": "./Transcending_Scaling_Laws_with_0.1_Extra_Compute_2023.emnlp-main.91/Transcending_Scaling_Laws_with_0.1_Extra_Compute_2023.emnlp-main.91__p7__score0.90.png",
-        "caption": "Figure 6: An example of a prompt that works only when querying a specific pretraining mode."
+        "filename": "arXiv_2402.16837v2_cs.CL_31_May_2025__p0__score0.90.png",
+        "path": "figs_human_eval_papers/arXiv_2402.16837v2_cs.CL_31_May_2025/arXiv_2402.16837v2_cs.CL_31_May_2025__p0__score0.90.png",
+        "caption": "Figure 1: We investigate the latent multi-hop reasoning of LLMs. For the first hop, we change the input prompt to refer to the bridge entity (Stevie Wonder) and check how often it increases the model’s internal recall of the bridge entity. For the second hop, we check if increasing this recall causes the model output to be more consistent with respect to what it knows about the bridge entity’s attribute (mother of Stevie Wonder)."
       }
-    ],
-    "acl_id": "2023.emnlp-main.91"
+    ]
   },
   {
-    "id": 110,
-    "folder_name": "USDC_A_Dataset_of_User_Stance_and_Dogmatism_in_Long_Conversations_2025.findings-acl.1216",
-    "title": "USDC A Dataset of User Stance and Dogmatism in Long Conversations",
+    "title": "arXiv 2403.20279v3 cs.CL 4 Oct 2024",
+    "folder_name": "arXiv_2403.20279v3_cs.CL_4_Oct_2024",
     "images": [
-      {
-        "filename": "USDC_A_Dataset_of_User_Stance_and_Dogmatism_in_Long_Conversations_2025.findings-acl.1216__p1__score0.95.png",
-        "path": "./USDC_A_Dataset_of_User_Stance_and_Dogmatism_in_Long_Conversations_2025.findings-acl.1216/USDC_A_Dataset_of_User_Stance_and_Dogmatism_in_Long_Conversations_2025.findings-acl.1216__p1__score0.95.png",
-        "caption": "Figure 1: Sample Reddit conversation on “Capitalism vs. Socialism” with Stance (for every comment {ci}6i=1) and Dogmatism (for every author {aj}3j=1) labels from Mistral Large and GPT-4. The submission content favors socialism and examines how the authors position their opinions regarding socialism vs. capitalism."
-      },
-      {
-        "filename": "USDC_A_Dataset_of_User_Stance_and_Dogmatism_in_Long_Conversations_2025.findings-acl.1216__p2__score1.00.png",
-        "path": "./USDC_A_Dataset_of_User_Stance_and_Dogmatism_in_Long_Conversations_2025.findings-acl.1216/USDC_A_Dataset_of_User_Stance_and_Dogmatism_in_Long_Conversations_2025.findings-acl.1216__p2__score1.00.png",
-        "caption": "Figure 2: Generating annotations using LLMs: We pass the entire conversation for each Reddit thread as JSON. The JSON includes top two authors who posted most comments, alongside annotation guidelines for stance and dogmatism labels in system prompt."
-      },
       {
-        "filename": "USDC_A_Dataset_of_User_Stance_and_Dogmatism_in_Long_Conversations_2025.findings-acl.1216__p4__score0.95.png",
-        "path": "./USDC_A_Dataset_of_User_Stance_and_Dogmatism_in_Long_Conversations_2025.findings-acl.1216/USDC_A_Dataset_of_User_Stance_and_Dogmatism_in_Long_Conversations_2025.findings-acl.1216__p4__score0.95.png",
-        "caption": "Figure 3: Failure cases of LLMs: Mistral Large few-shot output (left), the ids (“f6mmzx1”,“f6mna88”) were mismatched with generated ids (“f9mmzx1”,“f9mna88”), GPT-4 zero-shot output (right), the key “label” was mismatched with generated key “body”."
+        "filename": "arXiv_2403.20279v3_cs.CL_4_Oct_2024__p1__score1.00.png",
+        "path": "figs_human_eval_papers/arXiv_2403.20279v3_cs.CL_4_Oct_2024/arXiv_2403.20279v3_cs.CL_4_Oct_2024__p1__score1.00.png",
+        "caption": "Figure 1: The illustration of the LUQ and LUQ-ENSEMBLE framework. Given a question, various LLMs exhibit differing levels of uncertainty. We generate n sample responses from each LLM and then assess the uncertainty based on the diversity of these samples (the LUQ metric). Green highlights indicate consistency across responses (low uncertainty) and red highlights discrepancies (high uncertainty). The LUQ-ENSEMBLE method selects the response from the LLM with the lowest uncertainty score as the final answer."
       }
-    ],
-    "acl_id": "2025.findings-acl.1216"
+    ]
   },
   {
-    "id": 111,
-    "folder_name": "Unveiling_Fake_News_with_Adversarial_Arguments_Generated_by_Multimodal_Large_Language_Models_2025.coling-main.526",
-    "title": "Unveiling Fake News with Adversarial Arguments Generated by Multimodal Large Language Models",
+    "title": "arXiv 2411.00855v1 cs.LG 30 Oct 2024",
+    "folder_name": "arXiv_2411.00855v1_cs.LG_30_Oct_2024",
     "images": [
       {
-        "filename": "Unveiling_Fake_News_with_Adversarial_Arguments_Generated_by_Multimodal_Large_Language_Models_2025.coling-main.526__p2__score0.98.png",
-        "path": "./Unveiling_Fake_News_with_Adversarial_Arguments_Generated_by_Multimodal_Large_Language_Models_2025.coling-main.526/Unveiling_Fake_News_with_Adversarial_Arguments_Generated_by_Multimodal_Large_Language_Models_2025.coling-main.526__p2__score0.98.png",
-        "caption": "Figure 1: Illustration of AAR model."
+        "filename": "arXiv_2411.00855v1_cs.LG_30_Oct_2024__p3__score1.00.png",
+        "path": "figs_human_eval_papers/arXiv_2411.00855v1_cs.LG_30_Oct_2024/arXiv_2411.00855v1_cs.LG_30_Oct_2024__p3__score1.00.png",
+        "caption": "Figure 2: Overview of our multimodal self-training framework of R3V . It boosts vision-language reasoning by iteratively reflecting on bootstrapped CoT rationales and enables self-reflection through test-time computing."
       }
-    ],
-    "acl_id": "2025.coling-main.526"
+    ]
   },
   {
-    "id": 112,
-    "folder_name": "VECHR_A_Dataset_for_Explainable_and_Robust_Classification_of_Vulnerability_Type_in_the_European_Court_of_Human_Rights_2023.emnlp-main.718",
-    "title": "VECHR A Dataset for Explainable and Robust Classification of Vulnerability Type in the European Court of Human Rights",
+    "title": "arXiv 2412.01250v3 cs.AI 18 Mar 2025",
+    "folder_name": "arXiv_2412.01250v3_cs.AI_18_Mar_2025",
     "images": [
       {
-        "filename": "VECHR_A_Dataset_for_Explainable_and_Robust_Classification_of_Vulnerability_Type_in_the_European_Court_of_Human_Rights_2023.emnlp-main.718__p3__score1.00.png",
-        "path": "./VECHR_A_Dataset_for_Explainable_and_Robust_Classification_of_Vulnerability_Type_in_the_European_Court_of_Human_Rights_2023.emnlp-main.718/VECHR_A_Dataset_for_Explainable_and_Robust_Classification_of_Vulnerability_Type_in_the_European_Court_of_Human_Rights_2023.emnlp-main.718__p3__score1.00.png",
-        "caption": "Figure 2: Visualization of Hierarchical and Concept-aware Hierarchical Model architectures."
+        "filename": "arXiv_2412.01250v3_cs.AI_18_Mar_2025__p3__score1.00.png",
+        "path": "figs_human_eval_papers/arXiv_2412.01250v3_cs.AI_18_Mar_2025/arXiv_2412.01250v3_cs.AI_18_Mar_2025__p3__score1.00.png",
+        "caption": "Figure 2. Graphical depiction of AIUTA: left shows its interaction cycle with the user, and right provides an exploded view of our method. ① The agent receives an initial instruction I: “Find a c =<object category>”. ② At each timestep t, a zero-shot policy π [53], comprising a frozen object detection module [24], selects the optimal action at. ③ Upon detection, the agent performs the proposed AIUTA. Specifically, ④ the agent first obtains an initial scene description of observation Ot from a VLM. Then, a Self-Questioner module leverages an LLM to automatically generate attribute-specific questions to the VLM, acquiring more information and refining the scene description with reduced attribute-level uncertainty, producing Srefined. ⑤ The Interaction Trigger module then evaluates Srefined against the “facts” related to the target, to determine whether to terminate the navigation (if the agent believes it has located the target object ⑥), or to pose template-free, natural-language questions to a human ⑦, updating the “facts” based on the response ⑧."
       }
-    ],
-    "acl_id": "2023.emnlp-main.718"
+    ]
   },
   {
-    "id": 113,
-    "folder_name": "Value_FULCRA_Mapping_Large_Language_Models_to_the_Multidimensional_Spectrum_of_Basic_Human_Value_2024.naacl-long.486",
-    "title": "Value FULCRA Mapping Large Language Models to the Multidimensional Spectrum of Basic Human Value",
+    "title": "arXiv 2502.20897v1 cs.CL 28 Feb 2025",
+    "folder_name": "arXiv_2502.20897v1_cs.CL_28_Feb_2025",
     "images": [
-      {
-        "filename": "Value_FULCRA_Mapping_Large_Language_Models_to_the_Multidimensional_Spectrum_of_Basic_Human_Value_2024.naacl-long.486__p1__score1.00.png",
-        "path": "./Value_FULCRA_Mapping_Large_Language_Models_to_the_Multidimensional_Spectrum_of_Basic_Human_Value_2024.naacl-long.486/Value_FULCRA_Mapping_Large_Language_Models_to_the_Multidimensional_Spectrum_of_Basic_Human_Value_2024.naacl-long.486__p1__score1.00.png",
-        "caption": "Figure 1: Illustration of (a) downstream safety risks in existing value alignment datasets and (b) our proposed basic value paradigm with an instantiated 10-dim value space spanned by Schwartz’s Theory for evaluation and alignment."
-      },
-      {
-        "filename": "Value_FULCRA_Mapping_Large_Language_Models_to_the_Multidimensional_Spectrum_of_Basic_Human_Value_2024.naacl-long.486__p3__score0.90.png",
-        "path": "./Value_FULCRA_Mapping_Large_Language_Models_to_the_Multidimensional_Spectrum_of_Basic_Human_Value_2024.naacl-long.486/Value_FULCRA_Mapping_Large_Language_Models_to_the_Multidimensional_Spectrum_of_Basic_Human_Value_2024.naacl-long.486__p3__score0.90.png",
-        "caption": "Figure 2: Demonstration of FULCRA dataset, including dataset composition, statistical information and case study."
-      },
       {
-        "filename": "Value_FULCRA_Mapping_Large_Language_Models_to_the_Multidimensional_Spectrum_of_Basic_Human_Value_2024.naacl-long.486__p4__score0.98.png",
-        "path": "./Value_FULCRA_Mapping_Large_Language_Models_to_the_Multidimensional_Spectrum_of_Basic_Human_Value_2024.naacl-long.486/Value_FULCRA_Mapping_Large_Language_Models_to_the_Multidimensional_Spectrum_of_Basic_Human_Value_2024.naacl-long.486__p4__score0.98.png",
-        "caption": "Figure 3: The workflow of Human-GPT collaborative annotation, including three primary steps."
-      },
-      {
-        "filename": "Value_FULCRA_Mapping_Large_Language_Models_to_the_Multidimensional_Spectrum_of_Basic_Human_Value_2024.naacl-long.486__p5__score0.85.png",
-        "path": "./Value_FULCRA_Mapping_Large_Language_Models_to_the_Multidimensional_Spectrum_of_Basic_Human_Value_2024.naacl-long.486/Value_FULCRA_Mapping_Large_Language_Models_to_the_Multidimensional_Spectrum_of_Basic_Human_Value_2024.naacl-long.486__p5__score0.85.png",
-        "caption": "Figure 4: (a) Visualization of LLM outputs in the value space. We observe that 1) basic values effectively distinguish safe and unsafe behaviors; 2) different safety risks are well clarified in the value space; and 3) basic values can help identify new types of risks. (b) Correlation between basic value dimensions and specific safety risks."
+        "filename": "arXiv_2502.20897v1_cs.CL_28_Feb_2025__p0__score1.00.png",
+        "path": "figs_human_eval_papers/arXiv_2502.20897v1_cs.CL_28_Feb_2025/arXiv_2502.20897v1_cs.CL_28_Feb_2025__p0__score1.00.png",
+        "caption": "Figure 1: Unlike existing works that majorly rely on zero-shot demographic prompting, we explore whether LLMs can be trained to predict individuals’ subjective text perceptions."
       }
-    ],
-    "acl_id": "2024.naacl-long.486"
+    ]
   },
   {
-    "id": 114,
-    "folder_name": "WebWalker_Benchmarking_LLMs_in_Web_Traversal_2025.acl-long.508",
-    "title": "WebWalker Benchmarking LLMs in Web Traversal",
+    "title": "arXiv 2503.01658v2 cs.LG 17 Sep 2025",
+    "folder_name": "arXiv_2503.01658v2_cs.LG_17_Sep_2025",
     "images": [
-      {
-        "filename": "WebWalker_Benchmarking_LLMs_in_Web_Traversal_2025.acl-long.508__p0__score0.95.png",
-        "path": "./WebWalker_Benchmarking_LLMs_in_Web_Traversal_2025.acl-long.508/WebWalker_Benchmarking_LLMs_in_Web_Traversal_2025.acl-long.508__p0__score0.95.png",
-        "caption": "Figure 1: A multi-source QA2example from WebWalkerQA that requires traversing web pages to gather information for answering the given question."
-      },
       {
-        "filename": "WebWalker_Benchmarking_LLMs_in_Web_Traversal_2025.acl-long.508__p3__score1.00.png",
-        "path": "./WebWalker_Benchmarking_LLMs_in_Web_Traversal_2025.acl-long.508/WebWalker_Benchmarking_LLMs_in_Web_Traversal_2025.acl-long.508__p3__score1.00.png",
-        "caption": "Figure 2: Data Generation Pipeline for WebWalkerQA. We first collect root official websites across conference, organization, education, and game domains. Then we mimic human behavior by systematically clicking and collecting subpages accessible through sublinks on the root page. Using predefined rules, we leverage GPT4o to generate synthetic QA-pairs based on the gathered information, followed by manual verification to ensure accuracy and relevance."
+        "filename": "arXiv_2503.01658v2_cs.LG_17_Sep_2025__p3__score1.00.png",
+        "path": "figs_human_eval_papers/arXiv_2503.01658v2_cs.LG_17_Sep_2025/arXiv_2503.01658v2_cs.LG_17_Sep_2025__p3__score1.00.png",
+        "caption": "Figure 2: An overview of CoPL. To learn user representations, the GCF model is trained on a user-response bipartite graph. To build a personalized reward model, CoPL uses the learned representations to select a user-specific expert from MoLE, enabling effective modeling of diverse preferences."
       },
       {
-        "filename": "WebWalker_Benchmarking_LLMs_in_Web_Traversal_2025.acl-long.508__p4__score1.00.png",
-        "path": "./WebWalker_Benchmarking_LLMs_in_Web_Traversal_2025.acl-long.508/WebWalker_Benchmarking_LLMs_in_Web_Traversal_2025.acl-long.508__p4__score1.00.png",
-        "caption": "Figure 4: The overall framework of WebWalker."
+        "filename": "arXiv_2503.01658v2_cs.LG_17_Sep_2025__p4__score0.95.png",
+        "path": "figs_human_eval_papers/arXiv_2503.01658v2_cs.LG_17_Sep_2025/arXiv_2503.01658v2_cs.LG_17_Sep_2025__p4__score0.95.png",
+        "caption": "Figure 3: Illustration of unseen user adaptation. Blue nodes are users who have similar preferences to u∗, and red nodes are users who have dissimilar preferences."
       }
-    ],
-    "acl_id": "2025.acl-long.508"
+    ]
   },
   {
-    "id": 115,
-    "folder_name": "What_Factors_Influence_LLMs_Judgments_A_Case_Study_on_Question_Answering_2024.lrec-main.1519",
-    "title": "What Factors Influence LLMs Judgments A Case Study on Question Answering",
+    "title": "arXiv 2507.16076v2 cs.CL 3 Oct 2025",
+    "folder_name": "arXiv_2507.16076v2_cs.CL_3_Oct_2025",
     "images": [
       {
-        "filename": "What_Factors_Influence_LLMs_Judgments_A_Case_Study_on_Question_Answering_2024.lrec-main.1519__p0__score0.95.png",
-        "path": "./What_Factors_Influence_LLMs_Judgments_A_Case_Study_on_Question_Answering_2024.lrec-main.1519/What_Factors_Influence_LLMs_Judgments_A_Case_Study_on_Question_Answering_2024.lrec-main.1519__p0__score0.95.png",
-        "caption": "Figure 1: The workflow for answer quality judgment by a LLM judge. Initially, candidate models offer potential answers to the question, which are then combined with the question and presented to the judge model to obtain a judgment."
-      },
-      {
-        "filename": "What_Factors_Influence_LLMs_Judgments_A_Case_Study_on_Question_Answering_2024.lrec-main.1519__p1__score0.70.png",
-        "path": "./What_Factors_Influence_LLMs_Judgments_A_Case_Study_on_Question_Answering_2024.lrec-main.1519/What_Factors_Influence_LLMs_Judgments_A_Case_Study_on_Question_Answering_2024.lrec-main.1519__p1__score0.70.png",
-        "caption": "Table 1: Factors may influence LLMs’ judgments. The factors highlighted in gray above have already been explored, while the factors below are newly introduced in this paper. and represent two candidate answers, which are presented to the judge to determine which one is superior. ‘+’ signifies a positive guidance for the candidate, while ‘-’ conveys the opposite meaning."
+        "filename": "arXiv_2507.16076v2_cs.CL_3_Oct_2025__p0__score0.95.png",
+        "path": "figs_human_eval_papers/arXiv_2507.16076v2_cs.CL_3_Oct_2025/arXiv_2507.16076v2_cs.CL_3_Oct_2025__p0__score0.95.png",
+        "caption": "Figure 1: Evaluation Framework for Sociodemographic Persona Prompting. We construct sociodemographic persona prompts using combinations of three different role adoption formats and three strategies for demographic priming. We populate these prompts in conjunction with various sociodemographic groups and systematically evaluate them across both open- and closed-ended tasks using a broad set of bias and alignment measures."
       }
-    ],
-    "acl_id": "2024.lrec-main.1519"
+    ]
   },
   {
-    "id": 116,
-    "folder_name": "Word-Aware_Modality_Stimulation_for_Multimodal_Fusion_2024.lrec-main.1536",
-    "title": "Word-Aware Modality Stimulation for Multimodal Fusion",
+    "title": "arXiv 2509.05830v2 cs.LG 5 Nov 2025",
+    "folder_name": "arXiv_2509.05830v2_cs.LG_5_Nov_2025",
     "images": [
       {
-        "filename": "Word-Aware_Modality_Stimulation_for_Multimodal_Fusion_2024.lrec-main.1536__p2__score1.00.png",
-        "path": "./Word-Aware_Modality_Stimulation_for_Multimodal_Fusion_2024.lrec-main.1536/Word-Aware_Modality_Stimulation_for_Multimodal_Fusion_2024.lrec-main.1536__p2__score1.00.png",
-        "caption": "Figure 1: Overview of WA-MSF."
+        "filename": "arXiv_2509.05830v2_cs.LG_5_Nov_2025__p0__score1.00.png",
+        "path": "figs_human_eval_papers/arXiv_2509.05830v2_cs.LG_5_Nov_2025/arXiv_2509.05830v2_cs.LG_5_Nov_2025__p0__score1.00.png",
+        "caption": "Figure 1: We release SOCSCI210, a large-scale dataset built from open-source social science experiments. Through finetuning, we create behavioral prediction models SOCRATES-LLAMA-8B and SOCRATESQWEN-14B, which predict responses that are 12.1% and 13.2% respectively more aligned with human response distributions to outcomes under diverse experimental conditions, relative to GPT-4o."
       },
-      {
-        "filename": "Word-Aware_Modality_Stimulation_for_Multimodal_Fusion_2024.lrec-main.1536__p3__score0.98.png",
-        "path": "./Word-Aware_Modality_Stimulation_for_Multimodal_Fusion_2024.lrec-main.1536/Word-Aware_Modality_Stimulation_for_Multimodal_Fusion_2024.lrec-main.1536__p3__score0.98.png",
-        "caption": "Figure 2: Design of the MSU-Layer."
-      }
-    ],
-    "acl_id": "2024.lrec-main.1536"
-  },
-  {
-    "id": 117,
-    "folder_name": "ZenPropaganda_A_Comprehensive_Study_on_Identifying_Propaganda_Techniques_in_Russian_Coronavirus-Related_Media_2024.lrec-main.1548",
-    "title": "ZenPropaganda A Comprehensive Study on Identifying Propaganda Techniques in Russian Coronavirus-Related Media",
-    "images": [
-      {
-        "filename": "ZenPropaganda_A_Comprehensive_Study_on_Identifying_Propaganda_Techniques_in_Russian_Coronavirus-Related_Media_2024.lrec-main.1548__p3__score0.90.png",
-        "path": "./ZenPropaganda_A_Comprehensive_Study_on_Identifying_Propaganda_Techniques_in_Russian_Coronavirus-Related_Media_2024.lrec-main.1548/ZenPropaganda_A_Comprehensive_Study_on_Identifying_Propaganda_Techniques_in_Russian_Coronavirus-Related_Media_2024.lrec-main.1548__p3__score0.90.png",
-        "caption": "Table 2: Characteristics of text fragments."
-      }
-    ],
-    "acl_id": "2024.lrec-main.1548"
-  },
-  {
-    "id": 118,
-    "folder_name": "Zero-Shot_Fact-Checking_with_Semantic_Triples_and_Knowledge_Graphs_2024.kallm-1.11",
-    "title": "Zero-Shot Fact-Checking with Semantic Triples and Knowledge Graphs",
-    "images": [
       {
-        "filename": "Zero-Shot_Fact-Checking_with_Semantic_Triples_and_Knowledge_Graphs_2024.kallm-1.11__p1__score1.00.png",
-        "path": "./Zero-Shot_Fact-Checking_with_Semantic_Triples_and_Knowledge_Graphs_2024.kallm-1.11/Zero-Shot_Fact-Checking_with_Semantic_Triples_and_Knowledge_Graphs_2024.kallm-1.11__p1__score1.00.png",
-        "caption": "Figure 1: An overview of our zero-shot learning system. By harnessing Wikidata for training the universal schema model, incorporating on-demand training with evidence triples, and leveraging OpenIE for triple-level inference, our system achieves enhanced improvements. Label S stands for SUPPORTS and R stands for REFUTES."
+        "filename": "arXiv_2509.05830v2_cs.LG_5_Nov_2025__p3__score1.00.png",
+        "path": "figs_human_eval_papers/arXiv_2509.05830v2_cs.LG_5_Nov_2025/arXiv_2509.05830v2_cs.LG_5_Nov_2025__p3__score1.00.png",
+        "caption": "Figure 3: Overview of our task formulation, methods, and evaluation. Our dataset contains information on personas, conditions, outcomes, and predictions. We compare SFT, SFT on reasoning traces, and DPO. Our evaluation measures performance gains on both predicting individual accuracy and aggregate distributions under conditions."
       }
-    ],
-    "acl_id": "2024.kallm-1.11"
+    ]
   },
   {
-    "id": 119,
-    "folder_name": "mPLUG-DocOwl2_High-resolution_Compressing_for_OCR-free_Multi-page_Document_Understanding_2025.acl-long.291",
-    "title": "mPLUG-DocOwl2 High-resolution Compressing for OCR-free Multi-page Document Understanding",
+    "title": "arXiv 2510.01924v1 cs.AI 2 Oct 2025",
+    "folder_name": "arXiv_2510.01924v1_cs.AI_2_Oct_2025",
     "images": [
-      {
-        "filename": "mPLUG-DocOwl2_High-resolution_Compressing_for_OCR-free_Multi-page_Document_Understanding_2025.acl-long.291__p2__score1.00.png",
-        "path": "./mPLUG-DocOwl2_High-resolution_Compressing_for_OCR-free_Multi-page_Document_Understanding_2025.acl-long.291/mPLUG-DocOwl2_High-resolution_Compressing_for_OCR-free_Multi-page_Document_Understanding_2025.acl-long.291__p2__score1.00.png",
-        "caption": "Figure 2: Illustrations of different compressing methods for OCR-free document understanding."
-      },
       {
-        "filename": "mPLUG-DocOwl2_High-resolution_Compressing_for_OCR-free_Multi-page_Document_Understanding_2025.acl-long.291__p3__score1.00.png",
-        "path": "./mPLUG-DocOwl2_High-resolution_Compressing_for_OCR-free_Multi-page_Document_Understanding_2025.acl-long.291/mPLUG-DocOwl2_High-resolution_Compressing_for_OCR-free_Multi-page_Document_Understanding_2025.acl-long.291__p3__score1.00.png",
-        "caption": "Figure 3: The architecture of DocOwl2. Each image is independently encoded by the pipeline of Shape-adaptive Cropping, High-resolution Visual Encoding and High-resolution DocCompressor."
+        "filename": "arXiv_2510.01924v1_cs.AI_2_Oct_2025__p5__score1.00.png",
+        "path": "figs_human_eval_papers/arXiv_2510.01924v1_cs.AI_2_Oct_2025/arXiv_2510.01924v1_cs.AI_2_Oct_2025__p5__score1.00.png",
+        "caption": "Figure 1: Overview of experimental stages and representative interface images for the Lost at Sea implementation. 1) Participants are randomly assigned to either an identified or pseudonymous condition, 2) deliberate in groups of four, 3) self-nominate for leader eligibility, and 4) elect a representative via ranked-choice voting. 5) Each participant also completes the survival task individually, allowing leader quality to be measured."
       }
-    ],
-    "acl_id": "2025.acl-long.291"
+    ]
   },
   {
-    "id": 120,
-    "folder_name": "taz2024full_Analysing_German_Newspapers_for_Gender_Bias_and_Discrimination_across_Decades_2025.findings-acl.555",
-    "title": "taz2024full Analysing German Newspapers for Gender Bias and Discrimination across Decades",
+    "title": "of Multimodal Large Language Models Multimodal Needle in a Haystack Benchmarking Long-Context Capability",
+    "folder_name": "of_Multimodal_Large_Language_Models_Multimodal_Needle_in_a_Haystack_Benchmarking_Long-Context_Capability",
     "images": [
       {
-        "filename": "taz2024full_Analysing_German_Newspapers_for_Gender_Bias_and_Discrimination_across_Decades_2025.findings-acl.555__p3__score0.90.png",
-        "path": "./taz2024full_Analysing_German_Newspapers_for_Gender_Bias_and_Discrimination_across_Decades_2025.findings-acl.555/taz2024full_Analysing_German_Newspapers_for_Gender_Bias_and_Discrimination_across_Decades_2025.findings-acl.555__p3__score0.90.png",
-        "caption": "Figure 1: Structure of the elements in the corpus, including all available metadata collected alongside the raw texts."
+        "filename": "of_Multimodal_Large_Language_Models_Multimodal_Needle_in_a_Haystack_Benchmarking_Long-Context_Capability__p1__score1.00.png",
+        "path": "figs_human_eval_papers/of_Multimodal_Large_Language_Models_Multimodal_Needle_in_a_Haystack_Benchmarking_Long-Context_Capability/of_Multimodal_Large_Language_Models_Multimodal_Needle_in_a_Haystack_Benchmarking_Long-Context_Capability__p1__score1.00.png",
+        "caption": "Figure 1: MMNeedle evaluation overview. Correct answers are marked with checkmark (✓), while the incorrect answers are marked with cross (×). Our evaluation setup involves the following key components: (a) Needle Sub-Image: The needle sub-image to be retrieved based on the given caption. (b) Haystack Image Inputs: The long-context visual inputs consist of M images, each stitched from N × N sub-images. (c) Text Inputs (Instructions and Caption): Detailed instructions to MLLMs, followed by a caption describing the needle, i.e., sub-image 20. See Sec. A for MMNeedle’s complete instructions. (d) LLM Outputs: The answers from different MLLMs, indicating their ability to accurately locate the needle in the haystack based on the given caption. The expected output is composed of the model’s identification of the index, row, and column of the matching sub-image. The results showcase the comparative performance of various models: GPT-4o correctly predicts the exact location of the needle; Gemini Pro 1.5 only correctly predicts the image index of the needle; other API models predict incorrect locations; open-source models often output with wrong formats."
       }
-    ],
-    "acl_id": "2025.findings-acl.555"
+    ]
   }
 ];

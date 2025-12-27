@@ -1,19 +1,15 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Figure Generation Human Evaluation</title>
+    <title>Figure-Level Human Evaluation</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="data.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
         .hidden { display: none; }
-        .image-container img { max-height: 500px; max-width: 100%; object-fit: contain; border: 1px solid #e5e7eb; }
-        /* 링크 스타일 */
-        a { color: #2563eb; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-        /* 라디오 버튼 스타일 */
+        .image-container img { max-height: 450px; border: 1px solid #e5e7eb; }
         input[type="radio"] { accent-color: #4f46e5; }
     </style>
 </head>
@@ -21,164 +17,69 @@
 
     <div id="app" class="max-w-5xl mx-auto min-h-screen bg-white shadow-lg flex flex-col">
         
-        <!-- HEADER -->
-        <header class="bg-indigo-700 text-white p-6">
-            <div class="flex justify-between items-start">
+        <header class="bg-indigo-700 text-white p-6 sticky top-0 z-20 shadow-md">
+            <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-3xl font-bold mb-2">Figure Generation Human Eval</h1>
-                    <p class="text-indigo-100 text-sm mb-4 max-w-2xl">
-                        Benchmark for Automatic Research Paper Figure Generation 
-                    </p>
+                    <h1 class="text-2xl font-bold">Figure Evaluation (Per-Image)</h1>
+                    <div class="flex items-center gap-4 mt-2">
+                        <div class="w-64 bg-indigo-900 rounded-full h-3 overflow-hidden">
+                            <div id="progress-bar" class="bg-yellow-400 h-full transition-all" style="width: 0%"></div>
+                        </div>
+                        <span id="progress-text" class="text-xs text-indigo-100">0/0 (0%)</span>
+                    </div>
                 </div>
-                <div class="text-right">
-                    <button onclick="downloadResultsCSV()" class="bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-lg font-bold shadow transition flex items-center gap-2">
-                        <span>결과 파일 다운로드 (Excel용)</span>
-                    </button>
-                    <p class="text-xs text-indigo-200 mt-2">평가 완료 후 다운로드하여 제출해주세요.</p>
-                </div>
-            </div>
-            
-            <div class="bg-indigo-800 p-4 rounded text-xs opacity-90 leading-relaxed mb-4">
-                <strong>Abstract:</strong> 
-                작성 예정
-            </div>
-            
-            <div class="w-full bg-indigo-900 rounded-full h-4 relative overflow-hidden">
-                <div id="progress-bar" class="bg-yellow-400 h-full transition-all duration-300" style="width: 0%"></div>
-            </div>
-            <div class="flex justify-between text-xs mt-1 text-indigo-200">
-                <span>Progress</span>
-                <span id="progress-text">0 / 120</span>
+                <button onclick="downloadResultsCSV()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded font-bold text-sm transition">
+                    Download CSV
+                </button>
             </div>
         </header>
 
-        <!-- VIEW 1: INDEX PAGE -->
         <div id="view-index" class="p-8 flex-1">
-            <h2 class="text-xl font-bold mb-6 border-b pb-2">평가 대상 논문 목록 (120개)</h2>
-            <div class="grid grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3" id="paper-grid">
-                <!-- JS Generated -->
-            </div>
+            <h2 class="text-xl font-bold mb-6 border-b pb-2">Select a Paper to Start</h2>
+            <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3" id="paper-grid"></div>
         </div>
 
-        <!-- VIEW 2: EVALUATION PAGE -->
         <div id="view-eval" class="hidden p-8 flex-1">
-            <div class="flex justify-between items-center mb-6 sticky top-0 bg-white z-10 py-4 border-b">
-                <button onclick="goHome()" class="text-gray-600 hover:text-indigo-800 font-bold flex items-center px-3 py-2 rounded hover:bg-gray-100">
-                    ← 목록으로
-                </button>
-                <div class="text-xl font-bold">Paper <span id="current-paper-id" class="text-indigo-600"></span> / 120</div>
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <button onclick="goHome()" class="text-gray-600 hover:text-indigo-800 font-bold">← Back to List</button>
+                <div class="text-sm font-mono bg-gray-100 px-3 py-1 rounded" id="figure-counter">Figure 1 of 3</div>
                 <div class="flex gap-2">
-                    <button onclick="prevPaper()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 font-medium">이전</button>
-                    <button onclick="nextPaper()" class="px-4 py-2 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 font-medium">다음 (Skip)</button>
+                    <button onclick="prevStep()" class="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300">Prev</button>
+                    <button onclick="nextStep()" class="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300">Skip</button>
                 </div>
             </div>
 
-            <div class="bg-gray-50 p-5 rounded-lg mb-8 border border-gray-200">
-                <h3 class="font-bold text-lg mb-2 text-gray-900" id="paper-title">Loading...</h3>
-                <div class="flex gap-2 text-sm text-gray-500 mb-2">
-                    <span class="font-mono bg-white border px-1 rounded">ID: <span id="folder-name"></span></span>
+            <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200 flex justify-between items-center">
+                <div>
+                    <h3 class="font-bold text-gray-900" id="paper-title">Paper Title</h3>
+                    <p class="text-xs text-gray-500" id="folder-display"></p>
                 </div>
-                <a id="acl-link" href="#" target="_blank" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium transition">
-                    🔗 Open PDF (평가 전 필독)
+                <a id="local-pdf-link" href="#" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-blue-700 transition">
+                    📄 Open PDF
                 </a>
             </div>
 
-            <div id="images-container" class="space-y-12 mb-12">
-                <!-- Images Generated Here -->
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-8">
+                <div class="flex justify-center bg-gray-50 rounded-lg p-4 mb-4 min-h-[300px] items-center">
+                    <img id="main-figure" src="" class="max-w-full max-h-[450px] object-contain shadow-md">
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                    <p class="text-xs font-bold text-blue-600 uppercase mb-1">Figure Caption</p>
+                    <p class="text-sm text-gray-800" id="figure-caption"></p>
+                </div>
             </div>
 
-            <div class="bg-indigo-50 border border-indigo-100 p-6 rounded-lg shadow-sm">
-                <h3 class="text-xl font-bold text-indigo-900 mb-6 border-b border-indigo-200 pb-2">📊 Evaluation Criteria</h3>
-                <form id="eval-form">
-                    
-                    <!-- Q1. Informativeness -->
-                    <div class="mb-8 p-4 bg-white rounded border border-gray-200">
-                        <label class="block font-bold text-lg text-indigo-900 mb-1">Q1. Informativeness</label>
-                        <div class="text-sm text-gray-600 mb-4 space-y-1 bg-gray-50 p-3 rounded">
-                            <p>• <b>Content Coverage:</b> Are key components/formulas included without omission?</p>
-                            <p>• <b>Standalone Intelligibility:</b> Can the operating principle be understood just by looking at the figure?</p>
-                            <p>• <b>Completeness:</b> Is the entire content of the paper summarized?</p>
+            <div class="bg-indigo-50 p-8 rounded-xl border border-indigo-100 shadow-inner">
+                <h3 class="text-lg font-bold text-indigo-900 mb-6 flex items-center gap-2">
+                    📊 Quality Assessment for <span id="current-fig-name" class="underline">this image</span>
+                </h3>
+                <form id="eval-form" class="space-y-6">
+                    <div id="criteria-container" class="grid grid-cols-1 md:grid-cols-1 gap-6">
                         </div>
-                        <div class="flex gap-6 justify-center">
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q1" value="1" class="w-5 h-5 mb-1" required><span class="text-sm font-semibold text-red-500">1 (Bad)</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q1" value="2" class="w-5 h-5 mb-1"><span>2</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q1" value="3" class="w-5 h-5 mb-1"><span>3</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q1" value="4" class="w-5 h-5 mb-1"><span>4</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q1" value="5" class="w-5 h-5 mb-1"><span class="text-sm font-semibold text-blue-500">5 (Good)</span></label>
-                        </div>
-                    </div>
 
-                    <!-- Q2. Fidelity -->
-                    <div class="mb-8 p-4 bg-white rounded border border-gray-200">
-                        <label class="block font-bold text-lg text-indigo-900 mb-1">Q2. Fidelity</label>
-                        <div class="text-sm text-gray-600 mb-4 space-y-1 bg-gray-50 p-3 rounded">
-                            <p>• <b>Hallucination:</b> Does it contain components or formulas not mentioned in the paper?</p>
-                            <p>• <b>Relation Correctness:</b> Are the relationships between components accurate?</p>
-                            <p>• <b>Label Accuracy:</b> Are the names/labels accurate?</p>
-                        </div>
-                        <div class="flex gap-6 justify-center">
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q2" value="1" class="w-5 h-5 mb-1" required><span class="text-sm font-semibold text-red-500">1 (Bad)</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q2" value="2" class="w-5 h-5 mb-1"><span>2</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q2" value="3" class="w-5 h-5 mb-1"><span>3</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q2" value="4" class="w-5 h-5 mb-1"><span>4</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q2" value="5" class="w-5 h-5 mb-1"><span class="text-sm font-semibold text-blue-500">5 (Good)</span></label>
-                        </div>
-                    </div>
-
-                    <!-- Q3. Overall Readability -->
-                    <div class="mb-8 p-4 bg-white rounded border border-gray-200">
-                        <label class="block font-bold text-lg text-indigo-900 mb-1">Q3. Overall Readability</label>
-                        <div class="text-sm text-gray-600 mb-4 space-y-1 bg-gray-50 p-3 rounded">
-                            <p>• <b>Summarization:</b> Is it schematized focusing on the 'Main Contribution' rather than minor details?</p>
-                            <p>• <b>Contextual Match:</b> Does it function well as a supplementary aid to understanding the text?</p>
-                            <p>• <b>Redundancy:</b> Is it free of decorative elements or unnecessary information unrelated to the core idea?</p>
-                        </div>
-                        <div class="flex gap-6 justify-center">
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q3" value="1" class="w-5 h-5 mb-1" required><span class="text-sm font-semibold text-red-500">1 (Bad)</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q3" value="2" class="w-5 h-5 mb-1"><span>2</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q3" value="3" class="w-5 h-5 mb-1"><span>3</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q3" value="4" class="w-5 h-5 mb-1"><span>4</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q3" value="5" class="w-5 h-5 mb-1"><span class="text-sm font-semibold text-blue-500">5 (Good)</span></label>
-                        </div>
-                    </div>
-
-                    <!-- Q4. Design Quality -->
-                    <div class="mb-8 p-4 bg-white rounded border border-gray-200">
-                        <label class="block font-bold text-lg text-indigo-900 mb-1">Q4. Design Quality</label>
-                        <div class="text-sm text-gray-600 mb-4 space-y-1 bg-gray-50 p-3 rounded">
-                            <p>• <b>Direction/Crossing:</b> Is the flow natural (Left→Right / Top→Down) and are there no crossing lines?</p>
-                            <p>• <b>Proximity/Alignment:</b> Are related modules placed close together and aligned neatly?</p>
-                            <p>• <b>Hierarchy/Margin:</b> Are main components emphasized and is there sufficient margin?</p>
-                            <p>• <b>Consistency:</b> Are components with similar roles represented with identical shapes and colors?</p>
-                        </div>
-                        <div class="flex gap-6 justify-center">
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q4" value="1" class="w-5 h-5 mb-1" required><span class="text-sm font-semibold text-red-500">1 (Bad)</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q4" value="2" class="w-5 h-5 mb-1"><span>2</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q4" value="3" class="w-5 h-5 mb-1"><span>3</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q4" value="4" class="w-5 h-5 mb-1"><span>4</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q4" value="5" class="w-5 h-5 mb-1"><span class="text-sm font-semibold text-blue-500">5 (Good)</span></label>
-                        </div>
-                    </div>
-
-                    <!-- Q5. Creativity -->
-                    <div class="mb-8 p-4 bg-white rounded border border-gray-200">
-                        <label class="block font-bold text-lg text-indigo-900 mb-1">Q5. Creativity</label>
-                        <div class="text-sm text-gray-600 mb-4 space-y-1 bg-gray-50 p-3 rounded">
-                            <p>• <b>Metaphor:</b> Have abstract concepts been well replaced with concrete icons or symbols?</p>
-                            <p>• <b>Novelty/Adaptability:</b> Does it have a unique style distinct from generic templates?</p>
-                        </div>
-                        <div class="flex gap-6 justify-center">
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q5" value="1" class="w-5 h-5 mb-1" required><span class="text-sm font-semibold text-red-500">1 (Bad)</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q5" value="2" class="w-5 h-5 mb-1"><span>2</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q5" value="3" class="w-5 h-5 mb-1"><span>3</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q5" value="4" class="w-5 h-5 mb-1"><span>4</span></label>
-                            <label class="cursor-pointer flex flex-col items-center"><input type="radio" name="q5" value="5" class="w-5 h-5 mb-1"><span class="text-sm font-semibold text-blue-500">5 (Good)</span></label>
-                        </div>
-                    </div>
-
-                    <div class="mt-8 text-right">
-                        <button type="button" onclick="saveCurrentEval()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-bold shadow-md transition transform hover:scale-105">
-                            저장 후 다음 (Save & Next) →
+                    <div class="pt-8 border-t border-indigo-200 text-right">
+                        <button type="button" onclick="saveAndNext()" class="bg-indigo-600 text-white px-10 py-4 rounded-lg font-bold shadow-lg hover:bg-indigo-700 transition transform hover:scale-105">
+                            Save Figure Data & Next →
                         </button>
                     </div>
                 </form>
@@ -187,196 +88,148 @@
     </div>
 
     <script>
-        let currentIndex = -1;
-        // 로컬 저장소 키 변경 (구조가 바뀌었으므로 v3로 변경하여 충돌 방지)
-        let evalResults = JSON.parse(localStorage.getItem('humanEvalResults_v3')) || {};
+        let currentPaperIdx = 0;
+        let currentFigIdx = 0;
+        // Key: folder_name/image_name
+        let evalResults = JSON.parse(localStorage.getItem('figureEvalResults_v4')) || {};
 
-        window.onload = function() {
-            if (!window.PAPER_DATA) {
-                alert("데이터 로드 실패: data.js가 필요합니다.");
-                return;
-            }
+        const CRITERIA = [
+            { id: 'q1', label: 'Informativeness', desc: 'Coverage, Intelligibility, Completeness' },
+            { id: 'q2', label: 'Fidelity', desc: 'No Hallucinations, Correct Relations, Label Accuracy' },
+            { id: 'q3', label: 'Overall Readability', desc: 'Summarization, Contextual Match, No Redundancy' },
+            { id: 'q4', label: 'Design Quality', desc: 'Direction, Alignment, Hierarchy, Margins' },
+            { id: 'q5', label: 'Creativity', desc: 'Metaphors, Novelty, Adaptability' }
+        ];
+
+        window.onload = () => {
             renderIndex();
             updateProgress();
         };
 
-        function showView(viewName) {
-            document.getElementById('view-index').classList.add('hidden');
-            document.getElementById('view-eval').classList.add('hidden');
-            document.getElementById('view-' + viewName).classList.remove('hidden');
-            window.scrollTo(0, 0);
-        }
-
-        function goHome() {
-            renderIndex();
-            showView('index');
-        }
-
         function renderIndex() {
             const grid = document.getElementById('paper-grid');
             grid.innerHTML = '';
-
             window.PAPER_DATA.forEach((paper, idx) => {
+                const isPaperDone = paper.images.every(img => evalResults[`${paper.folder_name}/${img.filename}`]);
                 const btn = document.createElement('button');
-                const isDone = evalResults[paper.folder_name];
-                
-                btn.className = `p-3 rounded-lg border text-center transition ${
-                    isDone 
-                    ? 'bg-green-50 border-green-400 text-green-700 shadow-sm' 
-                    : 'bg-white border-gray-200 text-gray-500 hover:border-indigo-400 hover:text-indigo-600'
-                }`;
-                
-                const statusIcon = isDone ? '✅ ' : '';
-                
-                btn.innerHTML = `
-                    <div class="text-base font-bold mb-1">${statusIcon}${idx + 1}</div>
-                    <div class="text-xs opacity-70 overflow-hidden text-ellipsis whitespace-nowrap px-1" title="${paper.title}">
-                        ${paper.title}
-                    </div>
-                `;
-                btn.onclick = () => loadPaper(idx);
+                btn.className = `p-3 rounded-lg border text-xs font-bold transition ${isPaperDone ? 'bg-green-100 border-green-500 text-green-700' : 'bg-white border-gray-200'}`;
+                btn.innerHTML = `${idx + 1}<br><span class="opacity-50 font-normal">Figs: ${paper.images.length}</span>`;
+                btn.onclick = () => { currentPaperIdx = idx; currentFigIdx = 0; loadFigure(); };
                 grid.appendChild(btn);
             });
-            updateProgress();
+            document.getElementById('view-index').classList.remove('hidden');
+            document.getElementById('view-eval').classList.add('hidden');
         }
 
-        function loadPaper(index) {
-            if (index < 0 || index >= window.PAPER_DATA.length) return;
-            currentIndex = index;
-            const paper = window.PAPER_DATA[index];
+        function loadFigure() {
+            const paper = window.PAPER_DATA[currentPaperIdx];
+            const fig = paper.images[currentFigIdx];
+            if(!fig) { goHome(); return; }
 
-            document.getElementById('current-paper-id').innerText = index + 1;
             document.getElementById('paper-title').innerText = paper.title;
-            document.getElementById('folder-name').innerText = paper.folder_name;
-            
-            const linkElem = document.getElementById('acl-link');
-            if (paper.acl_id) {
-                // PDF 직접 다운로드 링크로 수정 (.pdf 추가)
-                linkElem.href = `https://aclanthology.org/${paper.acl_id}.pdf`;
-                linkElem.classList.remove('hidden');
-            } else {
-                linkElem.href = `https://scholar.google.com/scholar?q=${encodeURIComponent(paper.title)}`;
-            }
+            document.getElementById('folder-display').innerText = `Folder: ${paper.folder_name}`;
+            document.getElementById('current-fig-name').innerText = fig.filename;
+            document.getElementById('figure-counter').innerText = `Figure ${currentFigIdx + 1} of ${paper.images.length}`;
+            document.getElementById('main-figure').src = fig.path;
+            document.getElementById('figure-caption').innerText = fig.caption;
 
-            const imgContainer = document.getElementById('images-container');
-            imgContainer.innerHTML = '';
-            
-            if (paper.images.length === 0) {
-                imgContainer.innerHTML = '<div class="text-center py-10 text-gray-400 bg-gray-50 rounded">이미지가 없는 논문입니다.</div>';
-            } else {
-                paper.images.forEach(img => {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = "flex flex-col bg-white p-4 rounded-xl shadow-sm border border-gray-100";
-                    
-                    wrapper.innerHTML = `
-                        <div class="w-full bg-gray-50 rounded-lg mb-4 flex justify-center image-container p-2 min-h-[200px] items-center">
-                            <img src="${img.path}" 
-                                 alt="${img.filename}" 
-                                 loading="lazy" 
-                                 class="max-w-full max-h-[500px] object-contain"
-                                 onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'text-center p-4 text-red-500 text-sm\'>❌ <b>Image Load Failed</b><br><span class=\'text-xs text-gray-500 break-all\'>' + this.src + '</span><br><span class=\'text-xs text-indigo-500 mt-2 block\'>Check if folder structure matches</span></div>';">
-                        </div>
-                        <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-300">
-                            <p class="text-xs font-bold text-blue-500 uppercase mb-1">Caption</p>
-                            <p class="text-sm text-gray-800 leading-relaxed">${img.caption}</p>
-                        </div>
-                    `;
-                    imgContainer.appendChild(wrapper);
-                });
-            }
+            // Local PDF Link: figs_human_eval_papers/folder/folder.pdf
+            const pdfPath = `figs_human_eval_papers/${paper.folder_name}/${paper.folder_name}.pdf`;
+            document.getElementById('local-pdf-link').href = pdfPath;
 
+            renderCriteria();
+            
+            // Load previous scores if exist
+            const prev = evalResults[`${paper.folder_name}/${fig.filename}`];
             const form = document.getElementById('eval-form');
             form.reset();
-            const prevData = evalResults[paper.folder_name];
-            if (prevData) {
-                Object.keys(prevData).forEach(key => {
-                    if (form.elements[key]) {
-                        form.elements[key].value = prevData[key];
-                    }
-                });
-            }
+            if(prev) CRITERIA.forEach(c => { if(form[c.id]) form[c.id].value = prev[c.id]; });
 
-            showView('eval');
+            document.getElementById('view-index').classList.add('hidden');
+            document.getElementById('view-eval').classList.remove('hidden');
+            window.scrollTo(0, 0);
         }
 
-        function saveCurrentEval() {
-            const paper = window.PAPER_DATA[currentIndex];
+        function renderCriteria() {
+            const container = document.getElementById('criteria-container');
+            container.innerHTML = CRITERIA.map(c => `
+                <div class="bg-white p-4 rounded border border-gray-200 shadow-sm">
+                    <label class="block font-bold text-indigo-900 mb-1">${c.label}</label>
+                    <p class="text-xs text-gray-500 mb-3 italic">${c.desc}</p>
+                    <div class="flex justify-between px-2">
+                        ${[1,2,3,4,5].map(v => `
+                            <label class="flex flex-col items-center cursor-pointer group">
+                                <input type="radio" name="${c.id}" value="${v}" required class="w-5 h-5">
+                                <span class="text-[10px] mt-1 text-gray-400 group-hover:text-indigo-600">${v == 1 ? 'Bad' : v == 5 ? 'Perfect' : v}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function saveAndNext() {
+            const paper = window.PAPER_DATA[currentPaperIdx];
+            const fig = paper.images[currentFigIdx];
             const form = document.getElementById('eval-form');
             const formData = new FormData(form);
             const data = {};
-            
-            let hasAnswer = false;
-            for (let [key, value] of formData.entries()) {
-                data[key] = value;
-                if(value) hasAnswer = true;
-            }
+            let complete = true;
 
-            if (!hasAnswer) {
-                if(!confirm("평가 항목이 비어있습니다. 건너뛰시겠습니까?")) return;
-            }
+            CRITERIA.forEach(c => {
+                const val = formData.get(c.id);
+                if(!val) complete = false;
+                data[c.id] = val;
+            });
 
-            evalResults[paper.folder_name] = data;
-            localStorage.setItem('humanEvalResults_v3', JSON.stringify(evalResults));
+            if(!complete) { if(!confirm("Some scores are missing. Continue anyway?")) return; }
 
-            if (currentIndex < window.PAPER_DATA.length - 1) {
-                loadPaper(currentIndex + 1);
-                window.scrollTo(0, 0);
+            evalResults[`${paper.folder_name}/${fig.filename}`] = data;
+            localStorage.setItem('figureEvalResults_v4', JSON.stringify(evalResults));
+            updateProgress();
+
+            // Next Figure or Next Paper
+            if (currentFigIdx < paper.images.length - 1) {
+                currentFigIdx++;
+                loadFigure();
+            } else if (currentPaperIdx < window.PAPER_DATA.length - 1) {
+                if(confirm("Completed all figures in this paper. Move to next paper?")) {
+                    currentPaperIdx++;
+                    currentFigIdx = 0;
+                    loadFigure();
+                } else { goHome(); }
             } else {
-                alert("모든 논문을 확인했습니다! 메인 화면으로 돌아가서 결과를 다운로드하세요.");
+                alert("Evaluation complete for all figures!");
                 goHome();
             }
         }
 
-        function prevPaper() {
-            if (currentIndex > 0) loadPaper(currentIndex - 1);
-        }
-        
-        function nextPaper() {
-            if (currentIndex < window.PAPER_DATA.length - 1) loadPaper(currentIndex + 1);
-        }
+        function goHome() { renderIndex(); updateProgress(); }
+        function prevStep() { if(currentFigIdx > 0) { currentFigIdx--; loadFigure(); } }
+        function nextStep() { if(currentFigIdx < window.PAPER_DATA[currentPaperIdx].images.length - 1) { currentFigIdx++; loadFigure(); } }
 
         function updateProgress() {
-            const total = window.PAPER_DATA.length;
-            const done = Object.keys(evalResults).length;
-            const percentage = Math.round((done / total) * 100);
-            
-            document.getElementById('progress-text').innerText = `${done} / ${total} (${percentage}%)`;
-            document.getElementById('progress-bar').style.width = `${percentage}%`;
+            const totalFigs = window.PAPER_DATA.reduce((sum, p) => sum + p.images.length, 0);
+            const doneFigs = Object.keys(evalResults).length;
+            const pct = totalFigs > 0 ? Math.round((doneFigs / totalFigs) * 100) : 0;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+            document.getElementById('progress-text').innerText = `${doneFigs} / ${totalFigs} Figures (${pct}%)`;
         }
 
-        // CSV 다운로드 기능 (컬럼명 Q1~Q5로 변경)
         function downloadResultsCSV() {
-            if (Object.keys(evalResults).length === 0) {
-                alert("저장된 평가 결과가 없습니다.");
-                return;
-            }
-
-            // CSV 헤더 생성
-            let csvContent = "\uFEFF"; 
-            csvContent += "ID,Q1(Informativeness),Q2(Fidelity),Q3(Readability),Q4(Design),Q5(Creativity)\n";
-
-            window.PAPER_DATA.forEach((paper, idx) => {
-                const res = evalResults[paper.folder_name];
-                if (res) {
-                    // 각 항목 점수 가져오기
-                    const q1 = res.q1 || "";
-                    const q2 = res.q2 || "";
-                    const q3 = res.q3 || "";
-                    const q4 = res.q4 || "";
-                    const q5 = res.q5 || "";
-                    
-                    csvContent += `${idx + 1},${q1},${q2},${q3},${q4},${q5}\n`;
-                }
+            if(Object.keys(evalResults).length === 0) return alert("No data to download.");
+            let csv = "\uFEFFFigurePath,Paper,FigureName,Informativeness,Fidelity,Readability,Design,Creativity\n";
+            window.PAPER_DATA.forEach(p => {
+                p.images.forEach(img => {
+                    const res = evalResults[`${p.folder_name}/${img.filename}`] || {};
+                    csv += `"${img.path}","${p.title}","${img.filename}",${res.q1||""},${res.q2||""},${res.q3||""},${res.q4||""},${res.q5||""}\n`;
+                });
             });
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", "eval_results_v3.csv");
-            document.body.appendChild(link);
+            link.href = URL.createObjectURL(blob);
+            link.download = "figure_human_eval_v4.csv";
             link.click();
-            document.body.removeChild(link);
         }
     </script>
 </body>
