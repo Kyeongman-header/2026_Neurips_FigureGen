@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Figure-Level Human Evaluation</title>
+    <title>Figure-Level Human Evaluation (Detailed)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="data.js"></script>
     <style>
@@ -11,78 +11,93 @@
         .hidden { display: none; }
         .image-container img { max-height: 450px; border: 1px solid #e5e7eb; }
         input[type="radio"] { accent-color: #4f46e5; }
+        /* 제목 한 줄 제한 */
+        .truncate-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     </style>
 </head>
 <body class="text-gray-800">
 
-    <div id="app" class="max-w-5xl mx-auto min-h-screen bg-white shadow-lg flex flex-col">
+    <div id="app" class="max-w-6xl mx-auto min-h-screen bg-white shadow-lg flex flex-col">
         
         <header class="bg-indigo-700 text-white p-6 sticky top-0 z-20 shadow-md">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl font-bold">Figure Evaluation (Per-Image)</h1>
+                    <h1 class="text-2xl font-bold">Figure Evaluation System</h1>
                     <div class="flex items-center gap-4 mt-2">
-                        <div class="w-64 bg-indigo-900 rounded-full h-3 overflow-hidden">
+                        <div class="w-64 bg-indigo-900 rounded-full h-3 overflow-hidden border border-indigo-500">
                             <div id="progress-bar" class="bg-yellow-400 h-full transition-all" style="width: 0%"></div>
                         </div>
-                        <span id="progress-text" class="text-xs text-indigo-100">0/0 (0%)</span>
+                        <span id="progress-text" class="text-xs text-indigo-100 font-mono">0/0 Figures (0%)</span>
                     </div>
                 </div>
-                <button onclick="downloadResultsCSV()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded font-bold text-sm transition">
-                    Download CSV
-                </button>
+                <div class="flex gap-3">
+                    <button onclick="downloadResultsCSV()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded font-bold text-sm transition shadow-sm">
+                        Excel Download
+                    </button>
+                </div>
             </div>
         </header>
 
         <div id="view-index" class="p-8 flex-1">
-            <h2 class="text-xl font-bold mb-6 border-b pb-2">Select a Paper to Start</h2>
-            <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3" id="paper-grid"></div>
+            <div class="flex justify-between items-end mb-6 border-b pb-4">
+                <h2 class="text-xl font-bold text-gray-700">Evaluation Target List</h2>
+                <input type="text" id="search-input" oninput="renderIndex()" placeholder="논문 제목 검색..." class="px-4 py-2 border rounded-lg text-sm w-1/3 focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="paper-grid">
+                </div>
         </div>
 
         <div id="view-eval" class="hidden p-8 flex-1">
             <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <button onclick="goHome()" class="text-gray-600 hover:text-indigo-800 font-bold">← Back to List</button>
-                <div class="text-sm font-mono bg-gray-100 px-3 py-1 rounded" id="figure-counter">Figure 1 of 3</div>
+                <button onclick="goHome()" class="bg-gray-100 text-gray-600 hover:bg-gray-200 px-4 py-2 rounded font-bold transition">← List View</button>
+                <div class="text-center">
+                    <div class="text-xs text-gray-400 font-bold uppercase tracking-widest" id="folder-display">FOLDER NAME</div>
+                    <div class="text-lg font-black text-indigo-600" id="figure-counter">FIG 1 / 10</div>
+                </div>
                 <div class="flex gap-2">
-                    <button onclick="prevStep()" class="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300">Prev</button>
-                    <button onclick="nextStep()" class="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300">Skip</button>
+                    <button onclick="prevStep()" class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 text-sm">Prev Figure</button>
+                    <button onclick="nextStep()" class="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 text-sm">Skip</button>
                 </div>
             </div>
 
-            <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-gray-900" id="paper-title">Paper Title</h3>
-                    <p class="text-xs text-gray-500" id="folder-display"></p>
+            <div class="bg-slate-50 p-5 rounded-xl mb-8 border border-slate-200 flex justify-between items-center shadow-sm">
+                <div class="max-w-3xl">
+                    <h3 class="font-bold text-slate-900 leading-tight" id="paper-title">Paper Title</h3>
                 </div>
-                <a id="local-pdf-link" href="#" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-blue-700 transition">
-                    📄 Open PDF
+                <a id="local-pdf-link" href="#" target="_blank" class="flex-shrink-0 bg-blue-600 text-white px-5 py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow-lg flex items-center gap-2">
+                    <span>📄 Open Original PDF</span>
                 </a>
             </div>
 
-            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-8">
-                <div class="flex justify-center bg-gray-50 rounded-lg p-4 mb-4 min-h-[300px] items-center">
-                    <img id="main-figure" src="" class="max-w-full max-h-[450px] object-contain shadow-md">
-                </div>
-                <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
-                    <p class="text-xs font-bold text-blue-600 uppercase mb-1">Figure Caption</p>
-                    <p class="text-sm text-gray-800" id="figure-caption"></p>
-                </div>
-            </div>
-
-            <div class="bg-indigo-50 p-8 rounded-xl border border-indigo-100 shadow-inner">
-                <h3 class="text-lg font-bold text-indigo-900 mb-6 flex items-center gap-2">
-                    📊 Quality Assessment for <span id="current-fig-name" class="underline">this image</span>
-                </h3>
-                <form id="eval-form" class="space-y-6">
-                    <div id="criteria-container" class="grid grid-cols-1 md:grid-cols-1 gap-6">
-                        </div>
-
-                    <div class="pt-8 border-t border-indigo-200 text-right">
-                        <button type="button" onclick="saveAndNext()" class="bg-indigo-600 text-white px-10 py-4 rounded-lg font-bold shadow-lg hover:bg-indigo-700 transition transform hover:scale-105">
-                            Save Figure Data & Next →
-                        </button>
+            <div class="flex flex-col lg:flex-row gap-8">
+                <div class="lg:w-1/2 space-y-4">
+                    <div class="bg-white p-2 rounded-xl border shadow-sm flex justify-center items-center min-h-[400px]">
+                        <img id="main-figure" src="" class="max-w-full max-h-[500px] object-contain">
                     </div>
-                </form>
+                    <div class="bg-amber-50 p-5 rounded-xl border border-amber-200 shadow-sm">
+                        <p class="text-[10px] font-black text-amber-600 uppercase mb-2 tracking-tighter">Reference Caption</p>
+                        <p class="text-sm text-amber-900 leading-relaxed italic" id="figure-caption"></p>
+                    </div>
+                </div>
+
+                <div class="lg:w-1/2 bg-white p-6 rounded-2xl border shadow-lg overflow-y-auto max-h-[800px]">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 border-b pb-2 flex items-center gap-2">
+                        <span class="bg-indigo-600 text-white text-xs px-2 py-1 rounded">SCORE</span>
+                        Evaluating: <span id="current-fig-name" class="text-indigo-600">image.png</span>
+                    </h3>
+                    
+                    <form id="eval-form" class="space-y-8">
+                        <div id="criteria-container" class="space-y-10">
+                            </div>
+
+                        <div class="pt-10 border-t mt-10">
+                            <button type="button" onclick="saveAndNext()" class="w-full bg-indigo-600 text-white py-5 rounded-xl font-black text-xl shadow-xl hover:bg-indigo-700 transition transform active:scale-95">
+                                SAVE & NEXT FIGURE →
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -90,35 +105,93 @@
     <script>
         let currentPaperIdx = 0;
         let currentFigIdx = 0;
-        // Key: folder_name/image_name
-        let evalResults = JSON.parse(localStorage.getItem('figureEvalResults_v4')) || {};
+        let evalResults = JSON.parse(localStorage.getItem('figureEvalResults_v5')) || {};
 
+        // LLM Schema - Copy & Pasted Sub-questions
         const CRITERIA = [
-            { id: 'q1', label: 'Informativeness', desc: 'Coverage, Intelligibility, Completeness' },
-            { id: 'q2', label: 'Fidelity', desc: 'No Hallucinations, Correct Relations, Label Accuracy' },
-            { id: 'q3', label: 'Overall Readability', desc: 'Summarization, Contextual Match, No Redundancy' },
-            { id: 'q4', label: 'Design Quality', desc: 'Direction, Alignment, Hierarchy, Margins' },
-            { id: 'q5', label: 'Creativity', desc: 'Metaphors, Novelty, Adaptability' }
+            { 
+                id: 'q1', 
+                label: '1. Informativeness', 
+                desc: 'Does the figure include key components and can it be understood standalone?',
+                points: [
+                    "1.1. Content Coverage: 주요 컴포넌트/수식 누락 여부",
+                    "1.2. Standalone Intelligibility: 그림만으로 작동 원리 파악 가능 여부",
+                    "1.3. Completeness: 논문의 전체 흐름 요약 여부"
+                ]
+            },
+            { 
+                id: 'q2', 
+                label: '2. Fidelity', 
+                desc: 'Accuracy of the information and relationships compared to the paper.',
+                points: [
+                    "2.1. Hallucination: 본문에 없는 내용 포함 여부",
+                    "2.2. Relation Correctness: 컴포넌트 간 관계의 정확성",
+                    "2.3. Label Accuracy: 명칭/라벨의 정확성"
+                ]
+            },
+            { 
+                id: 'q3', 
+                label: '3. Overall Readability', 
+                desc: 'Focus on main contributions and contextual matching.',
+                points: [
+                    "3.1. Summarization: 핵심 기여도 중심 도식화 여부",
+                    "3.2. Contextual Match: 본문/캡션과의 보조 역할 적절성",
+                    "3.3. Redundancy: 불필요한 장식이나 정보 포함 여부"
+                ]
+            },
+            { 
+                id: 'q4', 
+                label: '4. Design Quality', 
+                desc: 'Visual flow, alignment, hierarchy, and consistency.',
+                points: [
+                    "4.1~2. Direction/Crossing: 흐름의 방향성 및 선 교차 여부",
+                    "4.3~4. Proximity/Alignment: 모듈 배치 및 정렬 상태",
+                    "4.5~7. Hierarchy/Margin/Consistency: 강조, 여백, 일관성"
+                ]
+            },
+            { 
+                id: 'q5', 
+                label: '5. Creativity', 
+                desc: 'Metaphors, novelty, and layout adaptability.',
+                points: [
+                    "5.1. Metaphor: 추상적 개념의 구체적 심볼화",
+                    "5.2. Novelty: 일반 템플릿과의 차별성",
+                    "5.3. Adaptability: 논문 특성에 맞는 레이아웃 적용"
+                ]
+            }
         ];
 
-        window.onload = () => {
-            renderIndex();
-            updateProgress();
-        };
+        window.onload = () => { if(window.PAPER_DATA) renderIndex(); updateProgress(); };
 
         function renderIndex() {
             const grid = document.getElementById('paper-grid');
+            const search = document.getElementById('search-input').value.toLowerCase();
             grid.innerHTML = '';
+
             window.PAPER_DATA.forEach((paper, idx) => {
-                const isPaperDone = paper.images.every(img => evalResults[`${paper.folder_name}/${img.filename}`]);
-                const btn = document.createElement('button');
-                btn.className = `p-3 rounded-lg border text-xs font-bold transition ${isPaperDone ? 'bg-green-100 border-green-500 text-green-700' : 'bg-white border-gray-200'}`;
-                btn.innerHTML = `${idx + 1}<br><span class="opacity-50 font-normal">Figs: ${paper.images.length}</span>`;
-                btn.onclick = () => { currentPaperIdx = idx; currentFigIdx = 0; loadFigure(); };
-                grid.appendChild(btn);
+                if(paper.title.toLowerCase().includes(search) || paper.folder_name.toLowerCase().includes(search)) {
+                    const isPaperDone = paper.images.every(img => evalResults[`${paper.folder_name}/${img.filename}`]);
+                    const doneCount = paper.images.filter(img => evalResults[`${paper.folder_name}/${img.filename}`]).length;
+                    
+                    const card = document.createElement('div');
+                    card.className = `p-4 rounded-xl border-2 transition cursor-pointer flex flex-col justify-between h-40 shadow-sm hover:shadow-md ${
+                        isPaperDone ? 'bg-green-50 border-green-400' : 'bg-white border-gray-100 hover:border-indigo-400'
+                    }`;
+                    
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="bg-gray-200 text-gray-700 text-[10px] px-2 py-0.5 rounded-full font-bold">ID: ${idx + 1}</span>
+                                <span class="text-[10px] ${isPaperDone ? 'text-green-600 font-bold' : 'text-gray-400'}">${doneCount} / ${paper.images.length} Done</span>
+                            </div>
+                            <h3 class="font-bold text-sm leading-snug truncate-title ${isPaperDone ? 'text-green-900' : 'text-gray-700'}">${paper.title}</h3>
+                        </div>
+                        <div class="text-[10px] text-gray-400 mt-2 italic truncate">${paper.folder_name}</div>
+                    `;
+                    card.onclick = () => { currentPaperIdx = idx; currentFigIdx = 0; loadFigure(); };
+                    grid.appendChild(card);
+                }
             });
-            document.getElementById('view-index').classList.remove('hidden');
-            document.getElementById('view-eval').classList.add('hidden');
         }
 
         function loadFigure() {
@@ -127,19 +200,15 @@
             if(!fig) { goHome(); return; }
 
             document.getElementById('paper-title').innerText = paper.title;
-            document.getElementById('folder-display').innerText = `Folder: ${paper.folder_name}`;
+            document.getElementById('folder-display').innerText = paper.folder_name;
             document.getElementById('current-fig-name').innerText = fig.filename;
-            document.getElementById('figure-counter').innerText = `Figure ${currentFigIdx + 1} of ${paper.images.length}`;
+            document.getElementById('figure-counter').innerText = `FIG ${currentFigIdx + 1} / ${paper.images.length}`;
             document.getElementById('main-figure').src = fig.path;
             document.getElementById('figure-caption').innerText = fig.caption;
-
-            // Local PDF Link: figs_human_eval_papers/folder/folder.pdf
-            const pdfPath = `figs_human_eval_papers/${paper.folder_name}/${paper.folder_name}.pdf`;
-            document.getElementById('local-pdf-link').href = pdfPath;
+            document.getElementById('local-pdf-link').href = `figs_human_eval_papers/${paper.folder_name}/${paper.folder_name}.pdf`;
 
             renderCriteria();
             
-            // Load previous scores if exist
             const prev = evalResults[`${paper.folder_name}/${fig.filename}`];
             const form = document.getElementById('eval-form');
             form.reset();
@@ -153,16 +222,25 @@
         function renderCriteria() {
             const container = document.getElementById('criteria-container');
             container.innerHTML = CRITERIA.map(c => `
-                <div class="bg-white p-4 rounded border border-gray-200 shadow-sm">
-                    <label class="block font-bold text-indigo-900 mb-1">${c.label}</label>
-                    <p class="text-xs text-gray-500 mb-3 italic">${c.desc}</p>
-                    <div class="flex justify-between px-2">
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 relative">
+                    <div class="flex justify-between items-start mb-4">
+                        <label class="font-black text-slate-800 text-lg">${c.label}</label>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg border border-slate-100 mb-5 shadow-sm">
+                        <p class="text-xs text-indigo-600 font-bold mb-2 uppercase">✔ Checklist (LLM Criteria)</p>
+                        <ul class="text-[11px] text-slate-500 space-y-1">
+                            ${c.points.map(p => `<li>• ${p}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-inner border">
+                        <span class="text-xs font-bold text-red-500">Bad</span>
                         ${[1,2,3,4,5].map(v => `
-                            <label class="flex flex-col items-center cursor-pointer group">
-                                <input type="radio" name="${c.id}" value="${v}" required class="w-5 h-5">
-                                <span class="text-[10px] mt-1 text-gray-400 group-hover:text-indigo-600">${v == 1 ? 'Bad' : v == 5 ? 'Perfect' : v}</span>
+                            <label class="flex flex-col items-center gap-2 cursor-pointer group">
+                                <input type="radio" name="${c.id}" value="${v}" required class="w-6 h-6">
+                                <span class="text-xs font-bold text-slate-400 group-hover:text-indigo-600">${v}</span>
                             </label>
                         `).join('')}
+                        <span class="text-xs font-bold text-blue-500">Good</span>
                     </div>
                 </div>
             `).join('');
@@ -182,29 +260,22 @@
                 data[c.id] = val;
             });
 
-            if(!complete) { if(!confirm("Some scores are missing. Continue anyway?")) return; }
+            if(!complete) { alert("모든 항목에 점수를 매겨주세요."); return; }
 
             evalResults[`${paper.folder_name}/${fig.filename}`] = data;
-            localStorage.setItem('figureEvalResults_v4', JSON.stringify(evalResults));
+            localStorage.setItem('figureEvalResults_v5', JSON.stringify(evalResults));
             updateProgress();
 
-            // Next Figure or Next Paper
             if (currentFigIdx < paper.images.length - 1) {
                 currentFigIdx++;
                 loadFigure();
-            } else if (currentPaperIdx < window.PAPER_DATA.length - 1) {
-                if(confirm("Completed all figures in this paper. Move to next paper?")) {
-                    currentPaperIdx++;
-                    currentFigIdx = 0;
-                    loadFigure();
-                } else { goHome(); }
             } else {
-                alert("Evaluation complete for all figures!");
+                alert("해당 논문의 모든 그림 평가 완료!");
                 goHome();
             }
         }
 
-        function goHome() { renderIndex(); updateProgress(); }
+        function goHome() { renderIndex(); updateProgress(); document.getElementById('view-index').classList.remove('hidden'); document.getElementById('view-eval').classList.add('hidden'); }
         function prevStep() { if(currentFigIdx > 0) { currentFigIdx--; loadFigure(); } }
         function nextStep() { if(currentFigIdx < window.PAPER_DATA[currentPaperIdx].images.length - 1) { currentFigIdx++; loadFigure(); } }
 
@@ -217,18 +288,18 @@
         }
 
         function downloadResultsCSV() {
-            if(Object.keys(evalResults).length === 0) return alert("No data to download.");
-            let csv = "\uFEFFFigurePath,Paper,FigureName,Informativeness,Fidelity,Readability,Design,Creativity\n";
+            if(Object.keys(evalResults).length === 0) return alert("저장된 데이터가 없습니다.");
+            let csv = "\uFEFFPaperTitle,Folder,Figure,Q1,Q2,Q3,Q4,Q5\n";
             window.PAPER_DATA.forEach(p => {
                 p.images.forEach(img => {
                     const res = evalResults[`${p.folder_name}/${img.filename}`] || {};
-                    csv += `"${img.path}","${p.title}","${img.filename}",${res.q1||""},${res.q2||""},${res.q3||""},${res.q4||""},${res.q5||""}\n`;
+                    csv += `"${p.title}","${p.folder_name}","${img.filename}",${res.q1||""},${res.q2||""},${res.q3||""},${res.q4||""},${res.q5||""}\n`;
                 });
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = "figure_human_eval_v4.csv";
+            link.download = "figure_eval_results_v5.csv";
             link.click();
         }
     </script>

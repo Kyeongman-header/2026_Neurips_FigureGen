@@ -64,11 +64,6 @@ window.PAPER_DATA = [
     ]
   },
   {
-    "title": "Adaptive Retrieval without Self-Knowledge Bringing Uncertainty Back Home",
-    "folder_name": "Adaptive_Retrieval_without_Self-Knowledge_Bringing_Uncertainty_Back_Home",
-    "images": []
-  },
-  {
     "title": "Are LLM-Judges Robust to Expressions of Uncertainty Investigating the effect of Epistemic Markers on LLM-based Evaluation",
     "folder_name": "Are_LLM-Judges_Robust_to_Expressions_of_Uncertainty_Investigating_the_effect_of_Epistemic_Markers_on_LLM-based_Evaluation",
     "images": [
