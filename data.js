@@ -1,21 +1,5 @@
 window.PAPER_DATA = [
   {
-    "title": "... ... ...",
-    "folder_name": "..._..._...",
-    "images": [
-      {
-        "filename": "..._..._...__p0__score0.90.png",
-        "path": "figs_human_eval_papers/..._..._.../..._..._...__p0__score0.90.png",
-        "caption": "Figure 1: An example of a topic shift dialogue. The MP2D framework utilizes paths in a Knowledge Graph (KG) to extract entities and facilitates natural topic transitions based on the relations between these entities."
-      },
-      {
-        "filename": "..._..._...__p2__score1.00.png",
-        "path": "figs_human_eval_papers/..._..._.../..._..._...__p2__score1.00.png",
-        "caption": "Figure 2: An overview of the MP2D framework. In the knowledge graph, paths are identified and passages are retrieved for entities within those paths. Then, the retrieved passages and their relations become the \"answers\", and a LLM generates \"questions\" corresponding to each answer to create dialogues."
-      }
-    ]
-  },
-  {
     "title": "AGrail A Lifelong Agent Guardrail with Effective and Adaptive Safety Detection",
     "folder_name": "AGrail_A_Lifelong_Agent_Guardrail_with_Effective_and_Adaptive_Safety_Detection",
     "images": [
@@ -850,6 +834,22 @@ window.PAPER_DATA = [
         "filename": "MASTER_A_Multi-Agent_System_with_LLM_Specialized_MCTS__p2__score1.00.png",
         "path": "figs_human_eval_papers/MASTER_A_Multi-Agent_System_with_LLM_Specialized_MCTS/MASTER_A_Multi-Agent_System_with_LLM_Specialized_MCTS__p2__score1.00.png",
         "caption": "Figure 1: Reasoning Tree of MASTER. Starting from Agent0, Agent1 and Agent2 are created in the first expansion. Then the system first selects Agent1 for expansion due to its higher UCT. Its child agent Agent3 is a terminal agent that failed evaluation which triggers a backpropagation and lowers the UCT of Agent1. Now Agent2 has the highest UCT and is selected for next expansion. Its child agent, Agent6 is a terminal agent and passes evaluation. The answer in it is the final answer."
+      }
+    ]
+  },
+  {
+    "title": "MP2D AnAutomated Topic Shift Dialogue Generation Framework",
+    "folder_name": "MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework",
+    "images": [
+      {
+        "filename": "MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+        "path": "figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+        "caption": "Figure 1: An example of a topic shift dialogue. The MP2D framework utilizes paths in a Knowledge Graph (KG) to extract entities and facilitates natural topic transitions based on the relations between these entities."
+      },
+      {
+        "filename": "MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+        "path": "figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+        "caption": "Figure 2: An overview of the MP2D framework. In the knowledge graph, paths are identified and passages are retrieved for entities within those paths. Then, the retrieved passages and their relations become the \"answers\", and a LLM generates \"questions\" corresponding to each answer to create dialogues."
       }
     ]
   },
