@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Figure-Level Human Evaluation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="data.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .hidden { display: none; }
+        .image-container img { max-height: 450px; border: 1px solid #e5e7eb; }
+        input[type="radio"] { accent-color: #4f46e5; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div id="app" class="max-w-5xl mx-auto min-h-screen bg-white shadow-lg flex flex-col">
+        
+        <header class="bg-indigo-700 text-white p-6 sticky top-0 z-20 shadow-md">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold">Figure Evaluation (Per-Image)</h1>
+                    <div class="flex items-center gap-4 mt-2">
+                        <div class="w-64 bg-indigo-900 rounded-full h-3 overflow-hidden">
+                            <div id="progress-bar" class="bg-yellow-400 h-full transition-all" style="width: 0%"></div>
+                        </div>
+                        <span id="progress-text" class="text-xs text-indigo-100">0/0 (0%)</span>
+                    </div>
+                </div>
+                <button onclick="downloadResultsCSV()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded font-bold text-sm transition">
+                    Download CSV
+                </button>
+            </div>
+        </header>
+
+        <div id="view-index" class="p-8 flex-1">
+            <h2 class="text-xl font-bold mb-6 border-b pb-2">Select a Paper to Start</h2>
+            <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3" id="paper-grid"></div>
+        </div>
+
+        <div id="view-eval" class="hidden p-8 flex-1">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <button onclick="goHome()" class="text-gray-600 hover:text-indigo-800 font-bold">← Back to List</button>
+                <div class="text-sm font-mono bg-gray-100 px-3 py-1 rounded" id="figure-counter">Figure 1 of 3</div>
+                <div class="flex gap-2">
+                    <button onclick="prevStep()" class="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300">Prev</button>
+                    <button onclick="nextStep()" class="px-4 py-1 bg-gray-200 rounded hover:bg-gray-300">Skip</button>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200 flex justify-between items-center">
+                <div>
+                    <h3 class="font-bold text-gray-900" id="paper-title">Paper Title</h3>
+                    <p class="text-xs text-gray-500" id="folder-display"></p>
+                </div>
+                <a id="local-pdf-link" href="#" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-blue-700 transition">
+                    📄 Open PDF
+                </a>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-8">
+                <div class="flex justify-center bg-gray-50 rounded-lg p-4 mb-4 min-h-[300px] items-center">
+                    <img id="main-figure" src="" class="max-w-full max-h-[450px] object-contain shadow-md">
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                    <p class="text-xs font-bold text-blue-600 uppercase mb-1">Figure Caption</p>
+                    <p class="text-sm text-gray-800" id="figure-caption"></p>
+                </div>
+            </div>
+
+            <div class="bg-indigo-50 p-8 rounded-xl border border-indigo-100 shadow-inner">
+                <h3 class="text-lg font-bold text-indigo-900 mb-6 flex items-center gap-2">
+                    📊 Quality Assessment for <span id="current-fig-name" class="underline">this image</span>
+                </h3>
+                <form id="eval-form" class="space-y-6">
+                    <div id="criteria-container" class="grid grid-cols-1 md:grid-cols-1 gap-6">
+                        </div>
+
+                    <div class="pt-8 border-t border-indigo-200 text-right">
+                        <button type="button" onclick="saveAndNext()" class="bg-indigo-600 text-white px-10 py-4 rounded-lg font-bold shadow-lg hover:bg-indigo-700 transition transform hover:scale-105">
+                            Save Figure Data & Next →
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPaperIdx = 0;
+        let currentFigIdx = 0;
+        // Key: folder_name/image_name
+        let evalResults = JSON.parse(localStorage.getItem('figureEvalResults_v4')) || {};
+
+        const CRITERIA = [
+            { id: 'q1', label: 'Informativeness', desc: 'Coverage, Intelligibility, Completeness' },
+            { id: 'q2', label: 'Fidelity', desc: 'No Hallucinations, Correct Relations, Label Accuracy' },
+            { id: 'q3', label: 'Overall Readability', desc: 'Summarization, Contextual Match, No Redundancy' },
+            { id: 'q4', label: 'Design Quality', desc: 'Direction, Alignment, Hierarchy, Margins' },
+            { id: 'q5', label: 'Creativity', desc: 'Metaphors, Novelty, Adaptability' }
+        ];
+
+        window.onload = () => {
+            renderIndex();
+            updateProgress();
+        };
+
+        function renderIndex() {
+            const grid = document.getElementById('paper-grid');
+            grid.innerHTML = '';
+            window.PAPER_DATA.forEach((paper, idx) => {
+                const isPaperDone = paper.images.every(img => evalResults[`${paper.folder_name}/${img.filename}`]);
+                const btn = document.createElement('button');
+                btn.className = `p-3 rounded-lg border text-xs font-bold transition ${isPaperDone ? 'bg-green-100 border-green-500 text-green-700' : 'bg-white border-gray-200'}`;
+                btn.innerHTML = `${idx + 1}<br><span class="opacity-50 font-normal">Figs: ${paper.images.length}</span>`;
+                btn.onclick = () => { currentPaperIdx = idx; currentFigIdx = 0; loadFigure(); };
+                grid.appendChild(btn);
+            });
+            document.getElementById('view-index').classList.remove('hidden');
+            document.getElementById('view-eval').classList.add('hidden');
+        }
+
+        function loadFigure() {
+            const paper = window.PAPER_DATA[currentPaperIdx];
+            const fig = paper.images[currentFigIdx];
+            if(!fig) { goHome(); return; }
+
+            document.getElementById('paper-title').innerText = paper.title;
+            document.getElementById('folder-display').innerText = `Folder: ${paper.folder_name}`;
+            document.getElementById('current-fig-name').innerText = fig.filename;
+            document.getElementById('figure-counter').innerText = `Figure ${currentFigIdx + 1} of ${paper.images.length}`;
+            document.getElementById('main-figure').src = fig.path;
+            document.getElementById('figure-caption').innerText = fig.caption;
+
+            // Local PDF Link: figs_human_eval_papers/folder/folder.pdf
+            const pdfPath = `figs_human_eval_papers/${paper.folder_name}/${paper.folder_name}.pdf`;
+            document.getElementById('local-pdf-link').href = pdfPath;
+
+            renderCriteria();
+            
+            // Load previous scores if exist
+            const prev = evalResults[`${paper.folder_name}/${fig.filename}`];
+            const form = document.getElementById('eval-form');
+            form.reset();
+            if(prev) CRITERIA.forEach(c => { if(form[c.id]) form[c.id].value = prev[c.id]; });
+
+            document.getElementById('view-index').classList.add('hidden');
+            document.getElementById('view-eval').classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        function renderCriteria() {
+            const container = document.getElementById('criteria-container');
+            container.innerHTML = CRITERIA.map(c => `
+                <div class="bg-white p-4 rounded border border-gray-200 shadow-sm">
+                    <label class="block font-bold text-indigo-900 mb-1">${c.label}</label>
+                    <p class="text-xs text-gray-500 mb-3 italic">${c.desc}</p>
+                    <div class="flex justify-between px-2">
+                        ${[1,2,3,4,5].map(v => `
+                            <label class="flex flex-col items-center cursor-pointer group">
+                                <input type="radio" name="${c.id}" value="${v}" required class="w-5 h-5">
+                                <span class="text-[10px] mt-1 text-gray-400 group-hover:text-indigo-600">${v == 1 ? 'Bad' : v == 5 ? 'Perfect' : v}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function saveAndNext() {
+            const paper = window.PAPER_DATA[currentPaperIdx];
+            const fig = paper.images[currentFigIdx];
+            const form = document.getElementById('eval-form');
+            const formData = new FormData(form);
+            const data = {};
+            let complete = true;
+
+            CRITERIA.forEach(c => {
+                const val = formData.get(c.id);
+                if(!val) complete = false;
+                data[c.id] = val;
+            });
+
+            if(!complete) { if(!confirm("Some scores are missing. Continue anyway?")) return; }
+
+            evalResults[`${paper.folder_name}/${fig.filename}`] = data;
+            localStorage.setItem('figureEvalResults_v4', JSON.stringify(evalResults));
+            updateProgress();
+
+            // Next Figure or Next Paper
+            if (currentFigIdx < paper.images.length - 1) {
+                currentFigIdx++;
+                loadFigure();
+            } else if (currentPaperIdx < window.PAPER_DATA.length - 1) {
+                if(confirm("Completed all figures in this paper. Move to next paper?")) {
+                    currentPaperIdx++;
+                    currentFigIdx = 0;
+                    loadFigure();
+                } else { goHome(); }
+            } else {
+                alert("Evaluation complete for all figures!");
+                goHome();
+            }
+        }
+
+        function goHome() { renderIndex(); updateProgress(); }
+        function prevStep() { if(currentFigIdx > 0) { currentFigIdx--; loadFigure(); } }
+        function nextStep() { if(currentFigIdx < window.PAPER_DATA[currentPaperIdx].images.length - 1) { currentFigIdx++; loadFigure(); } }
+
+        function updateProgress() {
+            const totalFigs = window.PAPER_DATA.reduce((sum, p) => sum + p.images.length, 0);
+            const doneFigs = Object.keys(evalResults).length;
+            const pct = totalFigs > 0 ? Math.round((doneFigs / totalFigs) * 100) : 0;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+            document.getElementById('progress-text').innerText = `${doneFigs} / ${totalFigs} Figures (${pct}%)`;
+        }
+
+        function downloadResultsCSV() {
+            if(Object.keys(evalResults).length === 0) return alert("No data to download.");
+            let csv = "\uFEFFFigurePath,Paper,FigureName,Informativeness,Fidelity,Readability,Design,Creativity\n";
+            window.PAPER_DATA.forEach(p => {
+                p.images.forEach(img => {
+                    const res = evalResults[`${p.folder_name}/${img.filename}`] || {};
+                    csv += `"${img.path}","${p.title}","${img.filename}",${res.q1||""},${res.q2||""},${res.q3||""},${res.q4||""},${res.q5||""}\n`;
+                });
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "figure_human_eval_v4.csv";
+            link.click();
+        }
+    </script>
+</body>
+</html>
