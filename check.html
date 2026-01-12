@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Figure Outlier Review</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
+        .item { background: white; margin-bottom: 30px; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .item.excluded { opacity: 0.5; background: #ffebee; }
+        img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+        .info { margin-top: 10px; }
+        .score { font-size: 1.2em; color: #d32f2f; font-weight: bold; }
+        #controls { position: fixed; top: 20px; right: 20px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+    <h1>Figure Outlier Review System</h1>
+    <div id="controls">
+        <p>체크된 항목: <span id="count">0</span>개</p>
+        <button onclick="downloadMask()">마스킹 리스트 다운로드 (.txt)</button>
+    </div>
+    <div id="container"></div>
+
+    <script src="data.js"></script>
+    <script>
+        // 1단계에서 만든 JSON 데이터를 fetch로 가져온다고 가정하거나, 수동으로 변환하여 넣습니다.
+        // 여기서는 예시로 rankingData 변수를 선언합니다.
+        let rankingData = []; 
+        let excludedList = new Set();
+
+        async function init() {
+            // ranking_data.json 로드
+            const response = await fetch('ranking_data.json');
+            rankingData = await response.json();
+            
+            // PAPER_DATA 평탄화 (검색 최적화)
+            const allImages = {};
+            window.PAPER_DATA.forEach(paper => {
+                paper.images.forEach(img => {
+                    allImages[img.filename] = img;
+                });
+            });
+
+            const container = document.getElementById('container');
+            rankingData.forEach((item, index) => {
+                const imgInfo = allImages[item[Object.keys(item)[0]]]; // ID로 이미지 정보 찾기
+                if(!imgInfo) return;
+
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.id = `item-${index}`;
+                div.innerHTML = `
+                    <div class="score">Rank ${index+1} | Diff Score: ${item.Total_Abs_Diff.toFixed(4)}</div>
+                    <img src="${imgInfo.path}" alt="figure">
+                    <div class="info">
+                        <strong>File:</strong> ${imgInfo.filename}<br>
+                        <strong>Caption:</strong> ${imgInfo.caption}
+                    </div>
+                    <label style="margin-top:10px; display:block; color:red; font-weight:bold;">
+                        <input type="checkbox" onchange="toggleExclude('${imgInfo.filename}', 'item-${index}')"> 이 피규어 제외하기
+                    </label>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function toggleExclude(filename, elementId) {
+            const el = document.getElementById(elementId);
+            if (excludedList.has(filename)) {
+                excludedList.delete(filename);
+                el.classList.remove('excluded');
+            } else {
+                excludedList.add(filename);
+                el.classList.add('excluded');
+            }
+            document.getElementById('count').innerText = excludedList.size;
+        }
+
+        function downloadMask() {
+            const data = Array.from(excludedList).join('\n');
+            const blob = new Blob([data], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'mask_list.txt';
+            a.click();
+        }
+
+        init();
+    </script>
+</body>
+</html>
