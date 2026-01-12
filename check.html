@@ -1,66 +1,85 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Figure Outlier Review</title>
+    <title>Figure Correlation Impact Review</title>
     <style>
         body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
         .item { background: white; margin-bottom: 30px; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .item.excluded { opacity: 0.5; background: #ffebee; }
-        img { max-width: 100%; height: auto; border: 1px solid #ddd; }
-        .info { margin-top: 10px; }
-        .score { font-size: 1.2em; color: #d32f2f; font-weight: bold; }
-        #controls { position: fixed; top: 20px; right: 20px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .item.excluded { opacity: 0.3; background: #ffebee; border: 2px solid red; }
+        img { max-width: 100%; height: auto; border: 1px solid #ddd; display: block; margin: 10px 0; }
+        .score { font-size: 1.2em; color: #d32f2f; font-weight: bold; margin-bottom: 10px; }
+        .details { font-size: 0.9em; color: #666; background: #f9f9f9; padding: 10px; border-radius: 4px; }
+        #controls { position: fixed; top: 20px; right: 20px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 1000; }
+        button { padding:10px; cursor:pointer; background:#d32f2f; color:white; border:none; border-radius:4px; font-weight:bold; }
     </style>
 </head>
 <body>
-    <h1>Figure Outlier Review System</h1>
+    <h1>Figure Review: Correlation Killers First</h1>
     <div id="controls">
-        <p>체크된 항목: <span id="count">0</span>개</p>
-        <button onclick="downloadMask()">마스킹 리스트 다운로드 (.txt)</button>
+        <p>체크된 제외 항목: <span id="count">0</span>개</p>
+        <button onclick="downloadMask()">mask_list.txt 다운로드</button>
     </div>
-    <div id="container"></div>
+    <div id="container">로딩 중... (데이터가 안 나오면 F12를 눌러 콘솔 에러를 확인하세요)</div>
 
     <script src="data.js"></script>
     <script>
-        // 1단계에서 만든 JSON 데이터를 fetch로 가져온다고 가정하거나, 수동으로 변환하여 넣습니다.
-        // 여기서는 예시로 rankingData 변수를 선언합니다.
-        let rankingData = []; 
         let excludedList = new Set();
 
         async function init() {
-            // ranking_data.json 로드
-            const response = await fetch('ranking_data.json');
-            rankingData = await response.json();
-            
-            // PAPER_DATA 평탄화 (검색 최적화)
-            const allImages = {};
-            window.PAPER_DATA.forEach(paper => {
-                paper.images.forEach(img => {
-                    allImages[img.filename] = img;
+            try {
+                // 1. 파이썬이 생성한 ranking_data.json 로드
+                const response = await fetch('ranking_data.json');
+                if (!response.ok) throw new Error('ranking_data.json 파일을 찾을 수 없습니다.');
+                const rankingData = await response.json();
+                
+                // 2. PAPER_DATA 매핑
+                const allImages = {};
+                if (!window.PAPER_DATA) throw new Error('data.js가 로드되지 않았습니다.');
+                window.PAPER_DATA.forEach(paper => {
+                    paper.images.forEach(img => {
+                        allImages[img.filename] = img;
+                    });
                 });
-            });
 
-            const container = document.getElementById('container');
-            rankingData.forEach((item, index) => {
-                const imgInfo = allImages[item[Object.keys(item)[0]]]; // ID로 이미지 정보 찾기
-                if(!imgInfo) return;
+                const container = document.getElementById('container');
+                container.innerHTML = ''; // 로딩 메시지 제거
 
-                const div = document.createElement('div');
-                div.className = 'item';
-                div.id = `item-${index}`;
-                div.innerHTML = `
-                    <div class="score">Rank ${index+1} | Diff Score: ${item.Total_Abs_Diff.toFixed(4)}</div>
-                    <img src="${imgInfo.path}" alt="figure">
-                    <div class="info">
-                        <strong>File:</strong> ${imgInfo.filename}<br>
-                        <strong>Caption:</strong> ${imgInfo.caption}
-                    </div>
-                    <label style="margin-top:10px; display:block; color:red; font-weight:bold;">
-                        <input type="checkbox" onchange="toggleExclude('${imgInfo.filename}', 'item-${index}')"> 이 피규어 제외하기
-                    </label>
-                `;
-                container.appendChild(div);
-            });
+                rankingData.forEach((item, index) => {
+                    // JSON의 첫 번째 키값이 파일명(ID)임
+                    const filename = item[Object.keys(item)[0]]; 
+                    const imgInfo = allImages[filename];
+                    if(!imgInfo) return;
+
+                    // 영향도 수치 (음수일수록 상관관계를 많이 깎아먹는 아웃라이어)
+                    const impact = item.Correlation_Impact || item.Total_Impact || 0;
+
+                    const div = document.createElement('div');
+                    div.className = 'item';
+                    div.id = `item-${index}`;
+                    div.innerHTML = `
+                        <div class="score">
+                            Rank ${index+1} | Impact Score: <span style="color:blue">${impact.toFixed(6)}</span>
+                            <br><small style="color:#666; font-weight:normal;">(음수값이 클수록 제거 시 상관관계가 크게 상승합니다)</small>
+                        </div>
+                        <img src="${imgInfo.path}" alt="figure" loading="lazy" onerror="this.src='https://via.placeholder.com/400x200?text=Image+Not+Found'">
+                        <div class="info">
+                            <strong>File:</strong> ${imgInfo.filename}<br>
+                            <strong>Caption:</strong> ${imgInfo.caption}
+                        </div>
+                        <div class="details" style="margin-top:10px;">
+                            <strong>Metric별 영향도:</strong> ${JSON.stringify(item.details || {})}
+                        </div>
+                        <label style="margin-top:15px; display:block; font-size:1.1em; cursor:pointer;">
+                            <input type="checkbox" style="transform: scale(1.5);" onchange="toggleExclude('${imgInfo.filename}', 'item-${index}')"> 
+                            <b>이 데이터 제외하기</b>
+                        </label>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (e) {
+                document.getElementById('container').innerHTML = `<h2 style="color:red">오류 발생: ${e.message}</h2>`;
+                console.error(e);
+            }
         }
 
         function toggleExclude(filename, elementId) {
@@ -76,6 +95,10 @@
         }
 
         function downloadMask() {
+            if(excludedList.size === 0) {
+                alert("제외할 항목을 선택하지 않았습니다.");
+                return;
+            }
             const data = Array.from(excludedList).join('\n');
             const blob = new Blob([data], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
