@@ -100,52 +100,55 @@
     <script>
         let currentPaperIdx = 0;
         let currentFigIdx = 0;
-        let evalResults = JSON.parse(localStorage.getItem('figureEvalResults_v7')) || {};
 
-        // Detailed Evaluation Schema
+        // Version split: v7 kept intact, v8 used for expanded sub-question scoring
+        const STORAGE_KEY_V8 = 'figureEvalResults_v8';
+        let evalResults = JSON.parse(localStorage.getItem(STORAGE_KEY_V8)) || {};
+
+        // Expanded Evaluation Schema: sub-question-level IDs (qX_Y)
         const EVAL_SCHEMA = {
             "Informativeness": {
                 "id": "q1",
                 "questions": [
-                    "1.1. Content Coverage: Does it include all major components or formulas mentioned in the paper without omission?",
-                    "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
-                    "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?"
+                    { id: "q1_1", text: "1.1. Content Coverage: Does it include all major components or formulas mentioned in the paper without omission?" },
+                    { id: "q1_2", text: "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?" },
+                    { id: "q1_3", text: "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?" }
                 ]
             },
             "Fidelity": {
                 "id": "q2",
                 "questions": [
-                    "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
-                    "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper accurately represented?",
-                    "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper accurately labeled?"
+                    { id: "q2_1", text: "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?" },
+                    { id: "q2_2", text: "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper accurately represented?" },
+                    { id: "q2_3", text: "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper accurately labeled?" }
                 ]
             },
             "Overall Readability": {
                 "id": "q3",
                 "questions": [
-                    "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
-                    "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
-                    "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?"
+                    { id: "q3_1", text: "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?" },
+                    { id: "q3_2", text: "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?" },
+                    { id: "q3_3", text: "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?" }
                 ]
             },
             "Design Quality": {
                 "id": "q4",
                 "questions": [
-                    "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
-                    "4.2. Crossing: Do the connection lines avoid crossing each other?",
-                    "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
-                    "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
-                    "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
-                    "4.6. Margin: Is there sufficient margin between elements?",
-                    "4.7. Consistency: Are components with similar roles represented with the same shape and color?"
+                    { id: "q4_1", text: "4.1. Direction: Does the diagram flow from left to right or top to bottom?" },
+                    { id: "q4_2", text: "4.2. Crossing: Do the connection lines avoid crossing each other?" },
+                    { id: "q4_3", text: "4.3. Proximity: Are functionally closely related modules physically placed near each other?" },
+                    { id: "q4_4", text: "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?" },
+                    { id: "q4_5", text: "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?" },
+                    { id: "q4_6", text: "4.6. Margin: Is there sufficient margin between elements?" },
+                    { id: "q4_7", text: "4.7. Consistency: Are components with similar roles represented with the same shape and color?" }
                 ]
             },
             "Creativity": {
                 "id": "q5",
                 "questions": [
-                    "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
-                    "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
-                    "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?"
+                    { id: "q5_1", text: "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?" },
+                    { id: "q5_2", text: "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?" },
+                    { id: "q5_3", text: "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?" }
                 ]
             }
         };
@@ -153,10 +156,27 @@
         const CRITERIA = Object.entries(EVAL_SCHEMA).map(([key, value], index) => ({
             id: value.id,
             label: `${index + 1}. ${key}`,
-            points: value.questions
+            sub: value.questions
         }));
 
-        window.onload = () => { if(window.PAPER_DATA) renderIndex(); updateProgress(); };
+        function isFigureCompleteV8(paper, img) {
+            const key = `${paper.folder_name}/${img.filename}`;
+            const res = evalResults[key];
+            if (!res) return false;
+
+            for (const group of CRITERIA) {
+                for (const sq of group.sub) {
+                    const v = res[sq.id];
+                    if (!v || !["1","2","3","4","5"].includes(String(v))) return false;
+                }
+            }
+            return true;
+        }
+
+        window.onload = () => {
+            if (window.PAPER_DATA) renderIndex();
+            updateProgress();
+        };
 
         function renderIndex() {
             const grid = document.getElementById('paper-grid');
@@ -164,15 +184,15 @@
             grid.innerHTML = '';
 
             window.PAPER_DATA.forEach((paper, idx) => {
-                if(paper.title.toLowerCase().includes(search) || paper.folder_name.toLowerCase().includes(search)) {
-                    const doneCount = paper.images.filter(img => evalResults[`${paper.folder_name}/${img.filename}`]).length;
+                if (paper.title.toLowerCase().includes(search) || paper.folder_name.toLowerCase().includes(search)) {
+                    const doneCount = paper.images.filter(img => isFigureCompleteV8(paper, img)).length;
                     const isPaperDone = doneCount === paper.images.length && paper.images.length > 0;
-                    
+
                     const card = document.createElement('div');
                     card.className = `paper-card p-5 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between min-h-[140px] shadow-sm ${
                         isPaperDone ? 'bg-green-50 border-green-500' : 'bg-white border-gray-100'
                     }`;
-                    
+
                     card.innerHTML = `
                         <div>
                             <div class="flex justify-between items-center mb-3">
@@ -191,28 +211,33 @@
 
         function renderCriteria() {
             const container = document.getElementById('criteria-container');
-            container.innerHTML = CRITERIA.map(c => `
+
+            container.innerHTML = CRITERIA.map(group => `
                 <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
-                    <label class="font-black text-slate-800 text-xl tracking-tight block mb-4">${c.label}</label>
-                    <div class="bg-white p-4 rounded-lg border border-indigo-100 mb-6 shadow-sm">
-                        <p class="text-[11px] text-indigo-600 font-bold mb-2 uppercase tracking-wider flex items-center gap-1">
-                            Checklist Details
-                        </p>
-                        <ul class="text-[13px] text-slate-600 space-y-2 pl-1 leading-relaxed">
-                            ${c.points.map(p => `<li class="flex items-start gap-2"><span class="text-indigo-400 mt-1">•</span><span>${p}</span></li>`).join('')}
-                        </ul>
-                    </div>
-                    <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-inner border border-slate-100">
-                        <span class="text-xs font-bold text-red-500 uppercase tracking-wider">Poor (1)</span>
-                        <div class="flex gap-4 md:gap-8">
-                            ${[1,2,3,4,5].map(v => `
-                                <label class="flex flex-col items-center gap-2 cursor-pointer group relative">
-                                    <input type="radio" name="${c.id}" value="${v}" required class="w-6 h-6 text-indigo-600">
-                                    <span class="text-xs font-bold text-slate-400 absolute -bottom-5">${v}</span>
-                                </label>
-                            `).join('')}
-                        </div>
-                        <span class="text-xs font-bold text-blue-500 uppercase tracking-wider">Excellent (5)</span>
+                    <label class="font-black text-slate-800 text-xl tracking-tight block mb-4">${group.label}</label>
+
+                    <div class="space-y-4">
+                        ${group.sub.map((sq) => `
+                            <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                                <p class="text-[13px] text-slate-700 leading-relaxed mb-3">
+                                    <span class="font-bold text-indigo-600">${sq.id.replace('_', '.')}</span>
+                                    <span class="ml-1">${sq.text.replace(/^\d+\.\d+\.\s*/, '')}</span>
+                                </p>
+
+                                <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-inner border border-slate-100">
+                                    <span class="text-[10px] font-bold text-red-500 uppercase tracking-wider">Poor (1)</span>
+                                    <div class="flex gap-4 md:gap-8">
+                                        ${[1,2,3,4,5].map(v => `
+                                            <label class="flex flex-col items-center gap-2 cursor-pointer group relative">
+                                                <input type="radio" name="${sq.id}" value="${v}" required class="w-6 h-6 text-indigo-600">
+                                                <span class="text-xs font-bold text-slate-400 absolute -bottom-5">${v}</span>
+                                            </label>
+                                        `).join('')}
+                                    </div>
+                                    <span class="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Excellent (5)</span>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
             `).join('');
@@ -221,7 +246,7 @@
         function loadFigure() {
             const paper = window.PAPER_DATA[currentPaperIdx];
             const fig = paper.images[currentFigIdx];
-            if(!fig) { goHome(); return; }
+            if (!fig) { goHome(); return; }
 
             document.getElementById('paper-title').innerText = paper.title;
             document.getElementById('folder-display').innerText = paper.folder_name;
@@ -231,11 +256,20 @@
             document.getElementById('local-pdf-link').href = `figs_human_eval_papers/${paper.folder_name}/${paper.folder_name}.pdf`;
 
             renderCriteria();
-            
-            const prev = evalResults[`${paper.folder_name}/${fig.filename}`];
+
+            const key = `${paper.folder_name}/${fig.filename}`;
+            const prev = evalResults[key];
+
             const form = document.getElementById('eval-form');
             form.reset();
-            if(prev) CRITERIA.forEach(c => { if(form[c.id]) form[c.id].value = prev[c.id]; });
+
+            if (prev) {
+                CRITERIA.forEach(group => {
+                    group.sub.forEach(sq => {
+                        if (form[sq.id] && prev[sq.id]) form[sq.id].value = prev[sq.id];
+                    });
+                });
+            }
 
             document.getElementById('view-index').classList.add('hidden');
             document.getElementById('view-eval').classList.remove('hidden');
@@ -245,20 +279,25 @@
         function saveAndNext() {
             const paper = window.PAPER_DATA[currentPaperIdx];
             const fig = paper.images[currentFigIdx];
-            const formData = new FormData(document.getElementById('eval-form'));
+
+            const formEl = document.getElementById('eval-form');
+            const formData = new FormData(formEl);
+
             const data = {};
             let complete = true;
 
-            CRITERIA.forEach(c => {
-                const val = formData.get(c.id);
-                if(!val) complete = false;
-                data[c.id] = val;
+            CRITERIA.forEach(group => {
+                group.sub.forEach(sq => {
+                    const val = formData.get(sq.id);
+                    if (!val) complete = false;
+                    data[sq.id] = val || "";
+                });
             });
 
-            if(!complete) { alert("Please score all criteria."); return; }
+            if (!complete) { alert("Please score all checklist items (all sub-questions)."); return; }
 
             evalResults[`${paper.folder_name}/${fig.filename}`] = data;
-            localStorage.setItem('figureEvalResults_v7', JSON.stringify(evalResults));
+            localStorage.setItem(STORAGE_KEY_V8, JSON.stringify(evalResults));
             updateProgress();
 
             if (currentFigIdx < paper.images.length - 1) {
@@ -268,30 +307,65 @@
             }
         }
 
-        function goHome() { renderIndex(); updateProgress(); document.getElementById('view-index').classList.remove('hidden'); document.getElementById('view-eval').classList.add('hidden'); }
-        function prevStep() { if(currentFigIdx > 0) { currentFigIdx--; loadFigure(); } }
-        function nextStep() { if(currentFigIdx < window.PAPER_DATA[currentPaperIdx].images.length - 1) { currentFigIdx++; loadFigure(); } }
+        function goHome() {
+            renderIndex();
+            updateProgress();
+            document.getElementById('view-index').classList.remove('hidden');
+            document.getElementById('view-eval').classList.add('hidden');
+        }
+
+        function prevStep() {
+            if (currentFigIdx > 0) { currentFigIdx--; loadFigure(); }
+        }
+
+        function nextStep() {
+            if (currentFigIdx < window.PAPER_DATA[currentPaperIdx].images.length - 1) { currentFigIdx++; loadFigure(); }
+        }
 
         function updateProgress() {
             const totalFigs = window.PAPER_DATA.reduce((sum, p) => sum + p.images.length, 0);
-            const doneFigs = Object.keys(evalResults).length;
+
+            let doneFigs = 0;
+            window.PAPER_DATA.forEach(p => {
+                p.images.forEach(img => {
+                    if (isFigureCompleteV8(p, img)) doneFigs++;
+                });
+            });
+
             const pct = totalFigs > 0 ? Math.round((doneFigs / totalFigs) * 100) : 0;
             document.getElementById('progress-bar').style.width = `${pct}%`;
             document.getElementById('progress-text').innerText = `${doneFigs} / ${totalFigs} Figures (${pct}%)`;
         }
 
         function downloadResultsCSV() {
-            if(Object.keys(evalResults).length === 0) return alert("No data.");
-            let csv = "\uFEFFPaperTitle,Folder,Figure,Informativeness,Fidelity,Readability,Design,Creativity\n";
+            // Always export expanded columns (sub-question-level) for v8
+            const flatCols = [];
+            CRITERIA.forEach(group => group.sub.forEach(sq => flatCols.push(sq.id)));
+
+            // Human-friendly column labels: q1_1 -> q1.1
+            const headerCols = flatCols.map(id => id.replace('_', '.'));
+
+            let csv = "\uFEFF" + ["PaperTitle", "Folder", "Figure", ...headerCols].join(",") + "\n";
+
             window.PAPER_DATA.forEach(p => {
                 p.images.forEach(img => {
-                    const res = evalResults[`${p.folder_name}/${img.filename}`] || {};
-                    csv += `"${p.title}","${p.folder_name}","${img.filename}",${res.q1||""},${res.q2||""},${res.q3||""},${res.q4||""},${res.q5||""}\n`;
+                    const key = `${p.folder_name}/${img.filename}`;
+                    const res = evalResults[key] || {};
+
+                    const row = [
+                        `"${(p.title || "").replaceAll('"', '""')}"`,
+                        `"${(p.folder_name || "").replaceAll('"', '""')}"`,
+                        `"${(img.filename || "").replaceAll('"', '""')}"`,
+                        ...flatCols.map(cid => (res[cid] ?? ""))
+                    ];
+
+                    csv += row.join(",") + "\n";
                 });
             });
+
             const link = document.createElement("a");
             link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-            link.download = "figure_eval_results_v7.csv";
+            link.download = "figure_eval_results_v8_expanded.csv";
             link.click();
         }
     </script>
