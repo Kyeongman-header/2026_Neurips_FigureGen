@@ -1,20 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Figure Analysis: LLM vs Human</title>
+    <title>Figure Analysis: LLM vs Human with Reasons</title>
     <style>
         body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
-        .container { max-width: 900px; margin: auto; }
+        .container { max-width: 1200px; margin: auto; } /* 폭을 넓혀 텍스트 공간 확보 */
         .item { background: white; padding: 20px; margin-bottom: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .rank { font-size: 1.2em; font-weight: bold; color: #d32f2f; }
-        .impact { font-weight: bold; color: #1976d2; }
-        img { max-width: 100%; height: auto; margin: 15px 0; border: 1px solid #ddd; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        th { background: #f8f8f8; }
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        .rank { font-size: 1.4em; font-weight: bold; color: #d32f2f; }
+        .impact { font-size: 1.1em; font-weight: bold; color: #1976d2; }
+        img { max-width: 100%; height: auto; margin: 15px 0; border: 1px solid #ddd; display: block; margin-left: auto; margin-right: auto; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; word-wrap: break-word; }
+        th { background: #f8f8f8; font-weight: bold; }
+        
+        /* 컬럼별 너비 설정 */
+        .col-metric { width: 120px; }
+        .col-score { width: 80px; }
+        .col-impact { width: 100px; }
+        .col-reason { width: auto; text-align: left; } /* Reason 컬럼은 왼쪽 정렬 및 자동 확장 */
+
         .neg { color: red; font-weight: bold; }
         .pos { color: green; }
+        
+        .reason-box { font-size: 0.9em; line-height: 1.5; color: #444; background: #fdfdfd; padding: 8px; border-radius: 4px; border: 1px inset #eee; }
+        .filename-text { color: #666; font-size: 0.9em; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -31,6 +42,8 @@
                 const response = await fetch('ranking_data_2.json');
                 const rankingData = await response.json();
                 const allImages = {};
+                
+                // data.js의 PAPER_DATA를 기반으로 이미지 정보 매핑 유지
                 if(window.PAPER_DATA) {
                     window.PAPER_DATA.forEach(p => p.images.forEach(img => allImages[img.filename] = img));
                 }
@@ -41,12 +54,17 @@
                 rankingData.forEach((item, idx) => {
                     const img = allImages[item.filename] || { path: '', caption: 'No Caption' };
                     let rows = '';
+                    
                     for(const [m, d] of Object.entries(item.details)) {
+                        // Reason이 있을 경우 HTML 구조 생성, 없으면 안내 문구
+                        const reasonText = d.reason ? d.reason : '<span style="color:#ccc italic;">No reason provided.</span>';
+                        
                         rows += `<tr>
-                            <td>${m}</td>
+                            <td><strong>${m}</strong></td>
                             <td><strong>${d.llm_score}</strong></td>
                             <td><strong>${d.human_score}</strong></td>
                             <td class="${d.impact < 0 ? 'neg' : 'pos'}">${d.impact.toFixed(6)}</td>
+                            <td class="col-reason"><div class="reason-box">${reasonText}</div></td>
                         </tr>`;
                     }
 
@@ -54,19 +72,30 @@
                     section.className = 'item';
                     section.innerHTML = `
                         <div class="header">
-                            <span class="rank">Rank ${idx+1}</span>
+                            <span class="rank">Rank ${idx+1} Outlier</span>
                             <span class="impact">Total Impact: ${item.Total_Impact.toFixed(6)}</span>
                         </div>
-                        <p><strong>File:</strong> ${item.filename}</p>
-                        <img src="${img.path}" onerror="this.src='https://via.placeholder.com/500x250?text=Image+Not+Found'">
+                        <div class="filename-text"><strong>File:</strong> ${item.filename}</div>
+                        <img src="${img.path}" onerror="this.src='https://via.placeholder.com/800x400?text=Image+Not+Found'">
                         <table>
-                            <thead><tr><th>Metric</th><th>LLM Score</th><th>Human Score</th><th>Corr Impact</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th class="col-metric">Metric</th>
+                                    <th class="col-score">LLM</th>
+                                    <th class="col-score">Human</th>
+                                    <th class="col-impact">Impact</th>
+                                    <th>Reason (LLM Explanation)</th>
+                                </tr>
+                            </thead>
                             <tbody>${rows}</tbody>
                         </table>
                     `;
                     container.appendChild(section);
                 });
-            } catch(e) { container.innerHTML = "오류 발생: " + e.message; }
+            } catch(e) { 
+                console.error(e);
+                document.getElementById('content').innerHTML = "오류 발생: " + e.message; 
+            }
         }
         init();
     </script>
