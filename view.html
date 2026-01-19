@@ -1,102 +1,143 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Figure Analysis: LLM vs Human with Reasons</title>
+    <title>Figure Analysis: One by One</title>
     <style>
         body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
-        .container { max-width: 1200px; margin: auto; } /* 폭을 넓혀 텍스트 공간 확보 */
-        .item { background: white; padding: 20px; margin-bottom: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
-        .rank { font-size: 1.4em; font-weight: bold; color: #d32f2f; }
-        .impact { font-size: 1.1em; font-weight: bold; color: #1976d2; }
-        img { max-width: 100%; height: auto; margin: 15px 0; border: 1px solid #ddd; display: block; margin-left: auto; margin-right: auto; }
+        .container { max-width: 1100px; margin: auto; }
+        .item { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); min-height: 600px; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
+        /* 네비게이션 버튼 스타일 */
+        .nav-controls { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 20px; }
+        button { padding: 10px 25px; font-size: 16px; cursor: pointer; border-radius: 5px; border: none; background: #1976d2; color: white; transition: background 0.2s; }
+        button:hover { background: #1565c0; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        #page-info { font-weight: bold; font-size: 1.1em; color: #444; min-width: 100px; text-align: center; }
+
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        .rank { font-size: 1.5em; font-weight: bold; color: #d32f2f; }
+        .impact { font-size: 1.2em; font-weight: bold; color: #1976d2; }
+        
+        .img-container { background: #eee; border-radius: 8px; padding: 10px; margin-bottom: 20px; text-align: center; }
+        img { max-width: 100%; max-height: 500px; height: auto; border: 1px solid #ddd; }
+        
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th, td { border: 1px solid #ddd; padding: 12px; text-align: center; word-wrap: break-word; }
-        th { background: #f8f8f8; font-weight: bold; }
+        th { background: #f8f8f8; }
         
-        /* 컬럼별 너비 설정 */
-        .col-metric { width: 120px; }
+        .col-metric { width: 140px; }
         .col-score { width: 80px; }
         .col-impact { width: 100px; }
-        .col-reason { width: auto; text-align: left; } /* Reason 컬럼은 왼쪽 정렬 및 자동 확장 */
-
+        .col-reason { text-align: left; font-size: 0.9em; line-height: 1.5; color: #333; }
+        
+        .reason-box { background: #fafafa; padding: 10px; border-radius: 5px; border-left: 4px solid #1976d2; }
         .neg { color: red; font-weight: bold; }
         .pos { color: green; }
-        
-        .reason-box { font-size: 0.9em; line-height: 1.5; color: #444; background: #fdfdfd; padding: 8px; border-radius: 4px; border: 1px inset #eee; }
-        .filename-text { color: #666; font-size: 0.9em; margin-bottom: 10px; }
+        .filename-text { color: #777; font-size: 0.9em; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Figure Review: Correlation Outliers</h1>
-        <p>Impact Score가 낮을수록(음수) LLM과 인간의 평가가 어긋나 상관관계를 떨어뜨리는 항목입니다.</p>
+        
+        <div class="nav-controls">
+            <button id="prev-btn" onclick="changePage(-1)">◀ Previous</button>
+            <span id="page-info">Loading...</span>
+            <button id="next-btn" onclick="changePage(1)">Next ▶</button>
+        </div>
+
         <div id="content">데이터를 불러오는 중...</div>
+        
+        <div class="nav-controls" style="margin-top: 20px;">
+            <button id="prev-btn-2" onclick="changePage(-1)">◀ Previous</button>
+            <button id="next-btn-2" onclick="changePage(1)">Next ▶</button>
+        </div>
     </div>
 
     <script src="data.js"></script>
     <script>
+        let rankingData = [];
+        let allImages = {};
+        let currentIndex = 0;
+
         async function init() {
             try {
                 const response = await fetch('ranking_data_2.json');
-                const rankingData = await response.json();
-                const allImages = {};
+                rankingData = await response.json();
                 
-                // data.js의 PAPER_DATA를 기반으로 이미지 정보 매핑 유지
                 if(window.PAPER_DATA) {
                     window.PAPER_DATA.forEach(p => p.images.forEach(img => allImages[img.filename] = img));
                 }
 
-                const container = document.getElementById('content');
-                container.innerHTML = '';
-
-                rankingData.forEach((item, idx) => {
-                    const img = allImages[item.filename] || { path: '', caption: 'No Caption' };
-                    let rows = '';
-                    
-                    for(const [m, d] of Object.entries(item.details)) {
-                        // Reason이 있을 경우 HTML 구조 생성, 없으면 안내 문구
-                        const reasonText = d.reason ? d.reason : '<span style="color:#ccc italic;">No reason provided.</span>';
-                        
-                        rows += `<tr>
-                            <td><strong>${m}</strong></td>
-                            <td><strong>${d.llm_score}</strong></td>
-                            <td><strong>${d.human_score}</strong></td>
-                            <td class="${d.impact < 0 ? 'neg' : 'pos'}">${d.impact.toFixed(6)}</td>
-                            <td class="col-reason"><div class="reason-box">${reasonText}</div></td>
-                        </tr>`;
-                    }
-
-                    const section = document.createElement('div');
-                    section.className = 'item';
-                    section.innerHTML = `
-                        <div class="header">
-                            <span class="rank">Rank ${idx+1} Outlier</span>
-                            <span class="impact">Total Impact: ${item.Total_Impact.toFixed(6)}</span>
-                        </div>
-                        <div class="filename-text"><strong>File:</strong> ${item.filename}</div>
-                        <img src="${img.path}" onerror="this.src='https://via.placeholder.com/800x400?text=Image+Not+Found'">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th class="col-metric">Metric</th>
-                                    <th class="col-score">LLM</th>
-                                    <th class="col-score">Human</th>
-                                    <th class="col-impact">Impact</th>
-                                    <th>Reason (LLM Explanation)</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rows}</tbody>
-                        </table>
-                    `;
-                    container.appendChild(section);
-                });
-            } catch(e) { 
-                console.error(e);
-                document.getElementById('content').innerHTML = "오류 발생: " + e.message; 
+                if(rankingData.length > 0) {
+                    renderItem(0);
+                } else {
+                    document.getElementById('content').innerHTML = "표시할 데이터가 없습니다.";
+                }
+            } catch(e) {
+                document.getElementById('content').innerHTML = "오류 발생: " + e.message;
             }
         }
+
+        function renderItem(index) {
+            const item = rankingData[index];
+            const container = document.getElementById('content');
+            const imgInfo = allImages[item.filename] || { path: '', caption: 'No Caption' };
+            
+            // 테이블 행 생성
+            let rows = '';
+            for(const [m, d] of Object.entries(item.details)) {
+                rows += `<tr>
+                    <td><strong>${m}</strong></td>
+                    <td><strong>${d.llm_score}</strong></td>
+                    <td><strong>${d.human_score}</strong></td>
+                    <td class="${d.impact < 0 ? 'neg' : 'pos'}">${d.impact.toFixed(6)}</td>
+                    <td class="col-reason"><div class="reason-box">${d.reason || 'No reason'}</div></td>
+                </tr>`;
+            }
+
+            // 전체 내용 렌더링
+            container.innerHTML = `
+                <div class="item">
+                    <div class="header">
+                        <span class="rank">Rank ${index + 1} Outlier</span>
+                        <span class="impact">Total Impact: ${item.Total_Impact.toFixed(6)}</span>
+                    </div>
+                    <div class="img-container">
+                        <img src="${imgInfo.path}" onerror="this.src='https://via.placeholder.com/800x400?text=Image+Not+Found'">
+                        <div class="filename-text">${item.filename}</div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="col-metric">Metric</th>
+                                <th class="col-score">LLM</th>
+                                <th class="col-score">Human</th>
+                                <th class="col-impact">Impact</th>
+                                <th>Reason (LLM Explanation)</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            `;
+
+            // 페이지 정보 및 버튼 상태 업데이트
+            document.getElementById('page-info').innerText = `${index + 1} / ${rankingData.length}`;
+            document.querySelectorAll('#prev-btn, #prev-btn-2').forEach(b => b.disabled = (index === 0));
+            document.querySelectorAll('#next-btn, #next-btn-2').forEach(b => b.disabled = (index === rankingData.length - 1));
+            
+            // 페이지 상단으로 스크롤 이동
+            window.scrollTo(0, 0);
+        }
+
+        function changePage(offset) {
+            currentIndex += offset;
+            if(currentIndex < 0) currentIndex = 0;
+            if(currentIndex >= rankingData.length) currentIndex = rankingData.length - 1;
+            renderItem(currentIndex);
+        }
+
         init();
     </script>
 </body>
