@@ -4,7 +4,7 @@
     <title>Sub-Metric Analysis Viewer with Anchors</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #f0f2f5; color: #333; }
-        .container { max-width: 1400px; margin: auto; } /* 넓이 약간 확장 */
+        .container { max-width: 1400px; margin: auto; }
         .item { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); margin-bottom: 30px; }
         
         .nav-controls { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 25px; position: sticky; top: 10px; z-index: 100; }
@@ -50,15 +50,16 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             padding: 15px; z-index: 1000; width: 850px;
             transition: opacity 0.3s, visibility 0.3s;
-            pointer-events: none;
+            pointer-events: none; /* 마우스 오버 해제 시 바로 사라지는 것 방지하려면 JS 제어 필요하지만, CSS 호버로 간단 구현 */
         }
-        .anchor-wrapper:hover .anchor-popup { visibility: visible; opacity: 1; }
+        .anchor-wrapper:hover .anchor-popup { visibility: visible; opacity: 1; pointer-events: auto; }
         
         .anchor-list { display: flex; gap: 10px; justify-content: center; }
-        .anchor-item { width: 160px; text-align: center; }
-        .anchor-item img { width: 100%; height: 100px; object-fit: contain; background: #eee; border-radius: 4px; }
-        .anchor-info { font-size: 10px; margin-top: 5px; color: #444; }
-        .anchor-sim { font-weight: bold; color: #2563eb; }
+        .anchor-item { width: 160px; text-align: center; display: flex; flex-direction: column; }
+        .anchor-item img { width: 100%; height: 100px; object-fit: contain; background: #eee; border-radius: 4px; margin-bottom: 5px; }
+        .anchor-info { font-size: 10px; margin-top: auto; color: #444; }
+        .anchor-sim { font-weight: bold; color: #2563eb; font-size: 11px; margin-top: 2px; }
+        .anchor-fname { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #888; font-size: 9px; }
     </style>
 </head>
 <body>
@@ -95,36 +96,72 @@
 
         async function init() {
             try {
+                // 1. JSON 데이터 로드
                 const response = await fetch('ranking_data_submetrics.json');
                 rankingData = await response.json();
                 
+                // 2. data.js의 PAPER_DATA를 이용해 파일명 -> 전체 경로 매핑 생성
                 if(window.PAPER_DATA) {
-                    window.PAPER_DATA.forEach(p => p.images.forEach(img => allImages[img.filename] = img));
+                    window.PAPER_DATA.forEach(p => {
+                        p.images.forEach(img => {
+                            // img.filename을 키로 사용하여 img 객체 전체(경로 포함)를 저장
+                            allImages[img.filename] = img;
+                        });
+                    });
+                } else {
+                    console.error("PAPER_DATA not found in data.js");
                 }
 
+                // 3. 첫 페이지 렌더링
                 if(rankingData.length > 0) {
                     renderItem(0);
                 } else {
                     document.getElementById('content').innerHTML = "No data found in ranking_data_submetrics.json";
                 }
             } catch(e) {
-                document.getElementById('content').innerHTML = "Error loading JSON: " + e.message;
+                document.getElementById('content').innerHTML = "Error loading JSON: " + e.message + "<br>Please check console for details.";
+                console.error(e);
             }
         }
 
-        // --- Anchor Popup HTML Generator ---
+        // --- Anchor Popup HTML Generator (수정됨) ---
         function renderAnchors(anchors) {
             if (!anchors || Object.keys(anchors).length === 0) return '-';
 
             let anchorItemsHtml = '';
-            // used_anchor_paths의 "1", "2", "3"... 순회
+            
+            // anchors 객체: { "1": { filename: "...", similarity: ... }, ... }
             Object.entries(anchors).forEach(([key, val]) => {
+                // val이 객체인지 확인
+                let filename = '';
+                let similarity = null;
+
+                if (val && typeof val === 'object') {
+                    filename = val.filename;
+                    similarity = val.similarity;
+                } else {
+                    // 혹시 모를 구형 데이터 대응
+                    filename = val; 
+                }
+
+                // data.js 매핑을 통해 실제 이미지 경로(path) 찾기
+                const imgData = allImages[filename];
+                const realPath = imgData ? imgData.path : ''; 
+                
+                // 이미지를 못 찾았을 때를 대비한 플레이스홀더
+                const srcAttr = realPath ? realPath : 'https://via.placeholder.com/150x100?text=Path+Not+Found';
+
+                const simText = (similarity !== null && similarity !== undefined) 
+                                ? `Sim: ${similarity.toFixed(4)}` 
+                                : '';
+
                 anchorItemsHtml += `
                     <div class="anchor-item">
-                        <img src="${val.path}" onerror="this.src='https://via.placeholder.com/150x100?text=Error'">
+                        <img src="${srcAttr}" title="${filename}" onerror="this.src='https://via.placeholder.com/150x100?text=Err'">
                         <div class="anchor-info">
-                            <div>Anchor #${key}</div>
-                            <div class="anchor-sim">Sim: ${val.similarity.toFixed(4)}</div>
+                            <div style="font-weight:bold;">Anchor #${key}</div>
+                            <div class="anchor-fname" title="${filename}">${filename}</div>
+                            <div class="anchor-sim">${simText}</div>
                         </div>
                     </div>
                 `;
@@ -135,7 +172,7 @@
                     <span class="view-anchors-btn">View Anchors</span>
                     <div class="anchor-popup">
                         <div style="font-weight:bold; margin-bottom:10px; color:#1e293b; border-bottom:1px solid #eee; padding-bottom:5px;">
-                            Top 5 Reference Anchors (Nearest Neighbors)
+                            Top Reference Anchors (Nearest Neighbors)
                         </div>
                         <div class="anchor-list">
                             ${anchorItemsHtml}
@@ -148,10 +185,16 @@
         function renderItem(index) {
             const item = rankingData[index];
             const container = document.getElementById('content');
+            
+            // 타겟 이미지 경로 찾기
             const imgInfo = allImages[item.filename] || { path: '', caption: 'No Caption' };
+            const mainImgSrc = imgInfo.path ? imgInfo.path : 'https://via.placeholder.com/800x400?text=Target+Image+Not+Found';
             
             let rows = '';
+            
+            // details 객체를 순회하며 테이블 행 생성
             for(const [m, d] of Object.entries(item.details)) {
+                // 새로운 q 그룹(예: q2.1)이 시작될 때 헤더 추가
                 if(metricGroups[m]) {
                     rows += `<tr><td colspan="6" class="group-header">${metricGroups[m]}</td></tr>`;
                 }
@@ -176,7 +219,7 @@
                         <span class="impact">Total Impact: ${item.Total_Impact_Combined.toFixed(6)}</span>
                     </div>
                     <div class="img-container">
-                        <img src="${imgInfo.path}" onerror="this.src='https://via.placeholder.com/800x400?text=Target+Image+Not+Found'">
+                        <img src="${mainImgSrc}" onerror="this.src='https://via.placeholder.com/800x400?text=Image+Load+Error'">
                         <div class="filename-text">Target File: ${item.filename}</div>
                     </div>
                     <table>
@@ -195,6 +238,7 @@
                 </div>
             `;
 
+            // 페이지네이션 상태 업데이트
             document.getElementById('page-info').innerText = `Outlier ${index + 1} / ${rankingData.length}`;
             document.querySelectorAll('#prev-btn, #prev-btn-2').forEach(b => b.disabled = (index === 0));
             document.querySelectorAll('#next-btn, #next-btn-2').forEach(b => b.disabled = (index === rankingData.length - 1));
