@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Sub-Metric Analysis Viewer</title>
+    <title>Sub-Metric Analysis Viewer with Anchors</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #f0f2f5; color: #333; }
-        .container { max-width: 1200px; margin: auto; }
+        .container { max-width: 1400px; margin: auto; } /* 넓이 약간 확장 */
         .item { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); margin-bottom: 30px; }
         
         .nav-controls { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 25px; position: sticky; top: 10px; z-index: 100; }
@@ -21,25 +21,49 @@
         img { max-width: 100%; max-height: 550px; height: auto; border-radius: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .filename-text { color: #64748b; font-size: 0.95em; margin-top: 12px; font-family: monospace; }
         
-        table { width: 100%; border-collapse: collapse; background: white; font-size: 14px; }
-        th, td { border: 1px solid #e2e8f0; padding: 10px 8px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; background: white; font-size: 14px; table-layout: fixed; }
+        th, td { border: 1px solid #e2e8f0; padding: 10px 8px; text-align: center; word-wrap: break-word; }
         th { background: #f1f5f9; color: #475569; font-weight: 700; position: sticky; top: 0; }
         
         .group-header { background: #f8fafc; font-weight: bold; text-align: left; padding-left: 15px; color: #2563eb; border-left: 4px solid #2563eb; }
         
-        .col-metric { width: 90px; }
-        .col-score { width: 60px; }
-        .col-impact { width: 100px; }
-        .col-reason { text-align: left; line-height: 1.4; min-width: 400px; }
+        .col-metric { width: 80px; }
+        .col-anchor { width: 100px; }
+        .col-score { width: 80px; }
+        .col-impact { width: 90px; }
+        .col-reason { text-align: left; line-height: 1.4; width: auto; }
         
         .reason-box { background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #f1f5f9; }
         .neg { color: #ef4444; font-weight: bold; }
         .pos { color: #10b981; }
+
+        /* --- Anchor Popup Styles --- */
+        .anchor-wrapper { position: relative; display: inline-block; }
+        .view-anchors-btn { 
+            background: #64748b; color: white; padding: 4px 8px; border-radius: 4px; 
+            font-size: 11px; cursor: help; display: inline-block; 
+        }
+        .anchor-popup {
+            visibility: hidden; opacity: 0;
+            position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%);
+            background: white; border: 1px solid #ccc; border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 15px; z-index: 1000; width: 850px;
+            transition: opacity 0.3s, visibility 0.3s;
+            pointer-events: none;
+        }
+        .anchor-wrapper:hover .anchor-popup { visibility: visible; opacity: 1; }
+        
+        .anchor-list { display: flex; gap: 10px; justify-content: center; }
+        .anchor-item { width: 160px; text-align: center; }
+        .anchor-item img { width: 100%; height: 100px; object-fit: contain; background: #eee; border-radius: 4px; }
+        .anchor-info { font-size: 10px; margin-top: 5px; color: #444; }
+        .anchor-sim { font-weight: bold; color: #2563eb; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 style="text-align: center; color: #1e293b; margin-bottom: 30px;">Figure Sub-Metric Analysis</h1>
+        <h1 style="text-align: center; color: #1e293b; margin-bottom: 30px;">Figure Sub-Metric Analysis (w/ Anchors)</h1>
         
         <div class="nav-controls">
             <button id="prev-btn" onclick="changePage(-1)">◀ Previous Outlier</button>
@@ -61,7 +85,6 @@
         let allImages = {};
         let currentIndex = 0;
 
-        // 매핑 수정: Informativeness(q1), Fidelity(q2), Overall Readability(q3), Design Quality(q4), Creativity(q5)
         const metricGroups = {
             'q1.1': 'Informativeness (q1)',
             'q2.1': 'Fidelity (q2)',
@@ -85,8 +108,41 @@
                     document.getElementById('content').innerHTML = "No data found in ranking_data_submetrics.json";
                 }
             } catch(e) {
-                document.getElementById('content').innerHTML = "Error loading JSON: " + e.message + "<br>Make sure the file exists in the same directory.";
+                document.getElementById('content').innerHTML = "Error loading JSON: " + e.message;
             }
+        }
+
+        // --- Anchor Popup HTML Generator ---
+        function renderAnchors(anchors) {
+            if (!anchors || Object.keys(anchors).length === 0) return '-';
+
+            let anchorItemsHtml = '';
+            // used_anchor_paths의 "1", "2", "3"... 순회
+            Object.entries(anchors).forEach(([key, val]) => {
+                anchorItemsHtml += `
+                    <div class="anchor-item">
+                        <img src="${val.path}" onerror="this.src='https://via.placeholder.com/150x100?text=Error'">
+                        <div class="anchor-info">
+                            <div>Anchor #${key}</div>
+                            <div class="anchor-sim">Sim: ${val.similarity.toFixed(4)}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            return `
+                <div class="anchor-wrapper">
+                    <span class="view-anchors-btn">View Anchors</span>
+                    <div class="anchor-popup">
+                        <div style="font-weight:bold; margin-bottom:10px; color:#1e293b; border-bottom:1px solid #eee; padding-bottom:5px;">
+                            Top 5 Reference Anchors (Nearest Neighbors)
+                        </div>
+                        <div class="anchor-list">
+                            ${anchorItemsHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         function renderItem(index) {
@@ -97,37 +153,39 @@
             let rows = '';
             for(const [m, d] of Object.entries(item.details)) {
                 if(metricGroups[m]) {
-                    rows += `<tr><td colspan="5" class="group-header">${metricGroups[m]}</td></tr>`;
+                    rows += `<tr><td colspan="6" class="group-header">${metricGroups[m]}</td></tr>`;
                 }
 
-                // 평균 점수가 데이터에 포함되어 있다면 표시, 없으면 '-' 표시
                 const llmAvg = d.llm_avg !== undefined ? d.llm_avg.toFixed(1) : '-';
                 const humanAvg = d.human_avg !== undefined ? d.human_avg.toFixed(1) : '-';
 
                 rows += `<tr>
-                    <td><strong>${m}</strong></td>
-                    <td>${d.llm_score} <span style="color: #64748b; font-size: 0.85em;">/ ${llmAvg}</span></td>
-                    <td>${d.human_score} <span style="color: #64748b; font-size: 0.85em;">/ ${humanAvg}</span></td>
-                    <td class="${d.impact < 0 ? 'neg' : 'pos'}">${d.impact.toFixed(6)}</td>
+                    <td class="col-metric"><strong>${m}</strong></td>
+                    <td class="col-anchor">${renderAnchors(d.anchors)}</td>
+                    <td class="col-score">${d.llm_score} <span style="color: #64748b; font-size: 0.8em;">(${llmAvg})</span></td>
+                    <td class="col-score">${d.human_score} <span style="color: #64748b; font-size: 0.8em;">(${humanAvg})</span></td>
+                    <td class="col-impact ${d.impact < 0 ? 'neg' : 'pos'}">${d.impact.toFixed(6)}</td>
                     <td class="col-reason"><div class="reason-box">${d.reason || '<span style="color:#ccc">No reason available</span>'}</div></td>
                 </tr>`;
             }
+
             container.innerHTML = `
                 <div class="item">
                     <div class="header">
-                        <span class="rank">Rank #${index + 1} <small style="font-size: 0.6em; color: #64748b;">(Worst Correlation Impact)</small></span>
-                        <span class="impact">Total Combined Impact: ${item.Total_Impact_Combined.toFixed(6)}</span>
+                        <span class="rank">Rank #${index + 1} <small style="font-size: 0.6em; color: #64748b;">(Outlier Index)</small></span>
+                        <span class="impact">Total Impact: ${item.Total_Impact_Combined.toFixed(6)}</span>
                     </div>
                     <div class="img-container">
-                        <img src="${imgInfo.path}" onerror="this.src='https://via.placeholder.com/800x400?text=Image+Not+Found'">
-                        <div class="filename-text">File: ${item.filename}</div>
+                        <img src="${imgInfo.path}" onerror="this.src='https://via.placeholder.com/800x400?text=Target+Image+Not+Found'">
+                        <div class="filename-text">Target File: ${item.filename}</div>
                     </div>
                     <table>
                         <thead>
                             <tr>
                                 <th class="col-metric">Metric</th>
-                                <th class="col-score">LLM</th>
-                                <th class="col-score">Human</th>
+                                <th class="col-anchor">Anchors</th>
+                                <th class="col-score">LLM (Avg)</th>
+                                <th class="col-score">Human (Avg)</th>
                                 <th class="col-impact">Impact Δ</th>
                                 <th>Sub-Metric Explanation (Reason)</th>
                             </tr>
