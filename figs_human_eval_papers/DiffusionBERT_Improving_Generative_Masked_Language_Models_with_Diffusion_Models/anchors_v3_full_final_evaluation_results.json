@@ -1,0 +1,1945 @@
+{
+  "paper_name": "DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models_first8",
+  "mode": "full",
+  "evaluated_at": "2026-01-29T15:45:52.566303",
+  "figure_evaluations": [
+    {
+      "figure_file": "DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+      "caption": "Figure 1: In contrast to conventional discrete diffusion models, DiffusionBERT uses BERT as its backbone to perform text generation. The main differences are highlighted in color: (1) DiffusionBERT performs decoding without knowing the current time step while canonical diffusion models are conditioned on time step. (2) The diffusion process of DiffusionBERT is non-Markovian in that it generates noise samples xt conditioning not only on xt−1 but also on x0. Such a non-Markov process is due to our proposed noise schedule.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Pre-trained denoising language model (PLM) denoiser (e.g., BERT)', 'Forward diffusion / noising process over discrete tokens', 'Absorbing state token [MASK] (discrete absorbing state)', 'Per-step transition/noising probabilities β_t (transition to [MASK])', 'Forward trajectory: x0 -> x1 -> ... -> xT', 'Stationary end state q(xT): all tokens become [MASK]', 'Spindle noise schedule module (uniformly distributed corrupted information across steps)', 'Non-Markovian forward process dependency: q(x_t | x_{t-1}, x0) (conditioned on original text x0)', 'Information-based token ordering and bucketing into T buckets (different masking probabilities per token)', 'Reverse diffusion / denoising process: predicting x_{t-1} from x_t', 'Reverse model input: x_t (and optionally time step t)', 'Time-step feeding design space (ways to incorporate t into PLM)', 'Time-Agnostic Decoding (TAD): reverse model ignores t, using p_θ(x_{t-1} | x_t)']\nContext: In this work, we explore using pre-trained denoising language models (e.g., BERT) to learn the re- verse diffusion process and demonstrate their ad- vantages in accelerating convergence and improv- ing generation quality. Further, we propose a new noise schedule of the forward process based on the principle of distributing the corrupted information uniformly across the forward process. The noise schedule, called spindle schedule, generates noise for xt conditioned not only on xt−1 but also on x0, making the forward process non-Markovian with- out changing the original training objective. Note that the denoising model takes as input xt and time step t to predict xt−1, where t is unseen during the pre-training of language models so we investigate several ways of incorporating the time step into PLMs. As a result, we find that the best result is achieved by throwing away the time information, which we call time-agnostic decoding (TAD).\n\n3.1 Diffusion Models with a Discrete Absorbing State\nTo be combined with pre-trained denoising lan- guage models, we incorporate an absorbing state, e.g., [MASK] for BERT, in the Markov process. In particular, each token in the sequence either stays the same or transitions to [MASK] with some prob- ability. Formally, each entry of the transition matrix at step t is as follows,\n[Qt]i,j = { 1 if i = j = [M], βt if j = [M], i ̸= [M], 1 −βt if i = j ̸= [M], (6)\nwhere [M] is the abbreviation of [MASK]. Such a Markov process converges to a stationary distribu- tion q(xT ), which places all probability mass on a sequence with all [MASK] tokens.\n\n3.2 Spindle Noise Schedule\n...we consider a noise schedule that (1) measures the added noise at each step by the corrupted information and en- courage the corrupted information to be uniformly distributed across the diffusion steps. Since the information is measured independently for each token, (2) different tokens in a sequence are as- signed different probabilities of transitioning to the [MASK] token. Moreover, inspired by the easy- first-generation phenomenon, (3) we put the tokens in a sequence in descending order of their informa- tion and divide them into T buckets. Each bucket is ensured to contain the same amount of information...\nIn our proposed schedule, the transition proba- bility at time step t depends not only on the current state but also on the original text, making the for- ward diffusion process non-Markovian. Neverthe- less, as revealed by Eq. (5), this does not change the original training objective.\n\n3.3 The Design Space of Feeding Time Steps\nTypically, a diffusion model takes as input a noised sample and the time step to predict the denoised sample during the reverse process, i.e., pθ(xt−1|xt, t). However, t is an additional vari- able that is unseen during the pre-training of lan- guage models and therefore it is less trivial how to feed the time information into the PLMs... Time-Agnostic Decoding Another alternative is not to explicitly incorporate the time step t because it can be implied by the noised sample xt... the PLM has to perform iter- ative decoding while being ignorant of the current time step, i.e., pθ(xt−1|xt).",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': '(a) Diffusion models for discrete data', 'status': 'Supported', 'evidence': 'The chunk includes Figure 1 with panel label “(a) Diffusion models for discrete data” and describes conventional discrete diffusion as a Markov chain with q(xt|xt−1) and reverse pθ(xt−1|xt,t).'}, {'element': '(b) Non-Markovian DiffusionBERT', 'status': 'Supported', 'evidence': 'The chunk includes Figure 1 with panel label “(b) Non-Markovian DiffusionBERT” and states “The diffusion process of DiffusionBERT is non-Markovian… generates noise samples xt conditioning not only on xt−1 but also on x0.”'}, {'element': '\"[MASK] [MASK] [MASK]\" -> x_T', 'status': 'Supported', 'evidence': 'Text: “the clean text \"Hello world !\" is gradually corrupted into \"[MASK] [MASK] [MASK]\" during the diffusion process” and describes xT as the fully noised end state; with absorbing [MASK], q(xT) becomes all [MASK].'}, {'element': '\"[MASK] world !\" -> x_t', 'status': 'Supported', 'evidence': 'Figure 1(a) in the chunk shows intermediate corruption examples between x0 and xT; an intermediate xt like \"[MASK] world !\" is consistent with “gradually corrupted” masking in the forward process.'}, {'element': '\"Hello [MASK] !\" -> x_{t-1}', 'status': 'Supported', 'evidence': 'Figure 1(b) in the chunk explicitly displays an intermediate partially masked state (“Hello [MASK] !”) during the diffusion chain; mapping it to an intermediate step such as x_{t-1} is semantically consistent.'}, {'element': '\"Hello world !\" -> x_0', 'status': 'Supported', 'evidence': 'The chunk explicitly uses “clean text \"Hello world !\"” as x0 in Figure 1 and throughout the description of the forward process.'}, {'element': 'x_T', 'status': 'Supported', 'evidence': 'The chunk discusses the forward chain producing x1,…,xT and in the absorbing-state discrete process “q(xT) … all [MASK] tokens.”'}, {'element': 'x_t', 'status': 'Supported', 'evidence': 'The forward diffusion and reverse denoising are described for generic step t, including q(xt|xt−1) and pθ(xt−1|xt,t).'}, {'element': 'x_{t-1}', 'status': 'Supported', 'evidence': 'The reverse process is stepwise in t, predicting xt−1 from xt; both xt−1 and xt appear in equations and in Figure 1.'}, {'element': 'x_0', 'status': 'Supported', 'evidence': 'x0 is the clean data sample: “Given a sample x0~q(x0)…”, and DiffusionBERT’s non-Markovian forward process conditions on x0.'}, {'element': 'p_θ(x_{t-1} | x_t, t) (x_t -> x_{t-1})', 'status': 'Supported', 'evidence': 'Text (continuous and discrete sections): reverse model “pθ(xt−1|xt, t)” learns to denoise step by step; Figure 1(a) also shows pθ(xt−1|xt,t).'}, {'element': 'q(x_t | x_{t-1}) (x_{t-1} -> x_t)', 'status': 'Supported', 'evidence': 'Forward process is Markov in conventional diffusion: “q(xt|xt−1)=…”, and for discrete: “q(xt|xt−1)=Cat(xt; p=xt−1Qt).”'}, {'element': 'p_θ(x_{t-1} | x_t) (x_t -> x_{t-1})', 'status': 'Supported', 'evidence': 'The chunk explicitly introduces time-agnostic decoding: “iterative decoding while being ignorant of the current time step, i.e., pθ(xt−1|xt).” Figure 1(b) labels pθ(xt−1|xt).'}, {'element': 'q(x_t | x_{t-1}, x_0) (x_{t-1}, x_0 -> x_t)', 'status': 'Supported', 'evidence': 'Text: “Spindle schedule… generates noise for xt conditioned not only on xt−1 but also on x0, making the forward process non-Markovian.” Figure 1(b) labels q(xt|xt−1,x0).'}, {'element': '… (x_T -> x_t)', 'status': 'Supported', 'evidence': 'The diffusion chain is defined across many steps xT,…,xt,…,x0, so ellipses indicating intermediate steps are consistent with “x1,· · ·,xT” and Figure 1’s depiction.'}, {'element': '… (x_{t-1} -> x_0)', 'status': 'Supported', 'evidence': 'Reverse denoising proceeds iteratively from noisy states down to x0, consistent with “learn the reverse process step by step” and the depicted chain with omitted steps.'}, {'element': 'non-Markovian (pink dashed) dependencies (x_0 -> x_T)', 'status': 'Supported', 'evidence': 'The chunk states the forward process is non-Markovian due to conditioning on x0: “generates noise samples xt conditioning not only on xt−1 but also on x0.” This implies dependencies from x0 to later xt, including xT.'}, {'element': 'non-Markovian (pink dashed) dependencies (x_0 -> x_t)', 'status': 'Supported', 'evidence': 'Directly supported by: “generates noise samples xt conditioning not only on xt−1 but also on x0,” which is precisely an x0→xt dependency.'}, {'element': 'non-Markovian (pink dashed) dependencies (x_0 -> x_{t-1})', 'status': 'Supported', 'evidence': 'Same rationale as above: if xt depends on x0 under the spindle schedule, intermediate steps are also governed by x0-conditioned corruption; Figure 1(b) visually indicates these extra dependencies from x0 to multiple time steps.'}], [{'element': '(a) Diffusion models for discrete data', 'status': 'Supported', 'evidence': 'The chunk explicitly discusses a \"general family of discrete diffusion processes\" and relates them to text generation settings, supporting a panel about diffusion models for discrete data.'}, {'element': '(b) Non-Markovian DiffusionBERT', 'status': 'Not Mentioned', 'evidence': 'The chunk mentions DiffusionBERT and discrete diffusion, but does not mention a \"Non-Markovian\" variant or emphasize non-Markovian dependencies.'}, {'element': '\"[MASK] [MASK] [MASK]\" -> x_T', 'status': 'Supported', 'evidence': 'The text describes absorbing discrete diffusion models resembling masked language models and an iterative refinement process, consistent with starting from fully masked tokens (an absorbing/masked state) at a high-noise time step.'}, {'element': '\"[MASK] world !\" -> x_t', 'status': 'Supported', 'evidence': 'The chunk describes predicting/refining the whole sequence simultaneously in a construct-destruct iterative process, consistent with partially unmasked intermediate states like a mixed [MASK]/token sequence.'}, {'element': '\"Hello [MASK] !\" -> x_{t-1}', 'status': 'Supported', 'evidence': 'Iterative refinement in masked/absorbing discrete diffusion is described (construct-destruct pattern), matching intermediate partially denoised sequences.'}, {'element': '\"Hello world !\" -> x_0', 'status': 'Supported', 'evidence': 'The chunk is about text generation and iterative refinement toward a final generated text, consistent with x_0 being the final clean sequence.'}, {'element': 'x_T', 'status': 'Supported', 'evidence': 'Discrete diffusion processes over time steps are discussed; using x_T as an endpoint in a diffusion chain is consistent with standard diffusion notation implied by the discussion.'}, {'element': 'x_t', 'status': 'Supported', 'evidence': 'The text discusses iterative refinement across steps (diffusion time steps), which semantically supports intermediate states like x_t.'}, {'element': 'x_{t-1}', 'status': 'Supported', 'evidence': 'Iterative refinement implies successive steps; x_{t-1} as the previous state fits the described diffusion-style unrolling/generation path.'}, {'element': 'x_0', 'status': 'Supported', 'evidence': 'The text is about generating final text output through refinement, consistent with x_0 denoting the final clean sample.'}, {'element': 'p_θ(x_{t-1} | x_t, t) (x_t -> x_{t-1})', 'status': 'Not Mentioned', 'evidence': 'The chunk does not present this probabilistic parameterization or formula; it only gives high-level descriptions of discrete diffusion models and masked-LM-like refinement.'}, {'element': 'q(x_t | x_{t-1}) (x_{t-1} -> x_t)', 'status': 'Not Mentioned', 'evidence': 'While diffusion processes are mentioned generally, the chunk does not specify the forward transition kernel in this explicit conditional form.'}, {'element': 'p_θ(x_{t-1} | x_t) (x_t -> x_{t-1})', 'status': 'Not Mentioned', 'evidence': 'No explicit reverse-model formula appears in the provided text chunk.'}, {'element': 'q(x_t | x_{t-1}, x_0) (x_{t-1}, x_0 -> x_t)', 'status': 'Not Mentioned', 'evidence': 'The chunk does not discuss conditioning the forward process on x_0 or any non-Markovian forward transition; it stays at a conceptual level.'}, {'element': '… (x_T -> x_t)', 'status': 'Supported', 'evidence': 'The text discusses unrolling the generation path and iterative refinement, which implies a multi-step sequence from an initial/noisy state to intermediate states.'}, {'element': '… (x_{t-1} -> x_0)', 'status': 'Supported', 'evidence': 'The described iterative refinement toward final generated text supports a chain of steps leading to x_0.'}, {'element': 'non-Markovian (pink dashed) dependencies (x_0 -> x_T)', 'status': 'Not Mentioned', 'evidence': 'The chunk does not mention non-Markovian dependencies or any explicit dependence of later diffusion states on x_0 beyond general diffusion/MLM analogies.'}, {'element': 'non-Markovian (pink dashed) dependencies (x_0 -> x_t)', 'status': 'Not Mentioned', 'evidence': 'No statement in the chunk asserts non-Markovian links from x_0 to intermediate x_t; the discussion is about discrete diffusion and masked-LM-like refinement broadly.'}, {'element': 'non-Markovian (pink dashed) dependencies (x_0 -> x_{t-1})', 'status': 'Not Mentioned', 'evidence': 'The chunk does not describe non-Markovian conditioning across time steps; it focuses on discrete diffusion families and non-autoregressive refinement at a high level.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 4,
+              "reason": "The figure captures most core components described: a discrete-token forward diffusion trajectory x0→…→xT ending in the absorbing [MASK] state, the reverse denoising process pθ(x_{t−1}|x_t,t), and the non-Markovian variant where the forward transition depends on x0 via q(x_t|x_{t−1},x0). It also visually conveys the stationary end state as all [MASK] tokens and contrasts standard vs Non-Markovian DiffusionBERT. However, it omits several major paper elements: the explicit transition/noising probabilities β_t and the Qt matrix definition, the spindle noise schedule details (uniform corrupted-information principle), and the information-based token ordering/bucketing into T buckets with per-token masking probabilities. It also does not depict the time-step feeding design space or Time-Agnostic Decoding (pθ(x_{t−1}|x_t) without t)."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 3,
+              "reason": "The figure conveys the high-level operating principle of discrete text diffusion: a forward noising trajectory from x0 (“Hello world!”) to xT (all [MASK]) and a reverse denoising trajectory pθ(x_{t−1}|x_t, t) to recover text. It also visually highlights the key distinction of the proposed method—non-Markovian forward transitions q(x_t|x_{t−1}, x0) (pink dashed dependence on x0) and time-agnostic decoding pθ(x_{t−1}|x_t). However, as a standalone, it lacks explanatory labels for what the model θ is (a PLM/BERT denoiser), what the noising mechanism is (β_t transition-to-[MASK] probabilities / absorbing state), and what “DiffusionBERT” concretely changes beyond the conditional dependence. Thus, a reader can grasp the general flow and the Markovian vs non-Markovian contrast, but not the full mechanism or design choices without caption/text."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 2,
+              "reason": "The target figure captures only a narrow subset of the paper: the discrete absorbing-state diffusion setup with [MASK], the forward trajectory x0→…→xT (all [MASK] terminal state), and the distinction between Markovian q(x_t|x_{t-1}) vs the proposed non-Markovian forward process q(x_t|x_{t-1},x0). However, it omits several central components needed for end-to-end completeness: the spindle noise schedule details (uniform corrupted-information distribution across steps), information-based token ordering and bucketing into T buckets with token-dependent masking probabilities/β_t, and the design space for feeding time step t into PLMs (including the conclusion of Time-Agnostic Decoding where the reverse model ignores t). Thus it is not a complete summary from beginning to end, but rather a partial conceptual schematic."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 3,
+              "reason": "Partially avoids hallucination. In the stronger evidence set, all major components in the target figure are explicitly supported: the panel titles (a) and (b), the Markov forward transition q(x_t|x_{t-1}), reverse model p_θ(x_{t-1}|x_t,t), the time-agnostic variant p_θ(x_{t-1}|x_t), the non-Markovian forward q(x_t|x_{t-1},x_0), and the illustrative masking examples (x_0=\"Hello world !\" to x_T=\"[MASK] [MASK] [MASK]\") plus dashed non-Markovian dependencies from x_0. However, in the weaker evidence set, the figure’s explicit probabilistic formulas and especially the non-Markovian DiffusionBERT panel (including q(x_t|x_{t-1},x_0), p_θ(x_{t-1}|x_t), and dashed x_0→x_t links) are not mentioned, indicating those components could be unsupported depending on which paper text chunk is authoritative. Thus, the figure risks including formulas/structure not explicitly stated in the provided paper excerpt."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "The target figure accurately represents the key relationships described in the evidence. Panel (a) shows the standard discrete diffusion Markov chain with the forward transition q(x_t|x_{t-1}) and the time-dependent reverse model p_θ(x_{t-1}|x_t,t), aligned with the paper’s description of conventional discrete diffusion. Panel (b) correctly depicts DiffusionBERT’s non-Markovian forward process by adding dependence on x_0 via q(x_t|x_{t-1},x_0) (pink dashed links from x_0 to later steps) and the time-agnostic reverse model p_θ(x_{t-1}|x_t), matching the stated ‘ignorant of time step’ decoding and x_0-conditioned noise generation. The example token states (from clean “Hello world !” to fully masked x_T and intermediate partially masked states) are consistent with the described masking/absorbing-noise process."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "Major components/methodologies are accurately labeled. Panel (a) is titled “Diffusion models for discrete data,” matching the paper’s description of conventional discrete diffusion as a Markov chain with q(x_t|x_{t-1}) and reverse p_θ(x_{t-1}|x_t,t). Panel (b) is titled “Non-Markovian DiffusionBERT,” consistent with the paper’s statement that DiffusionBERT’s forward process conditions on both x_{t-1} and x_0 (q(x_t|x_{t-1},x_0)) and uses time-agnostic decoding p_θ(x_{t-1}|x_t). The example token sequences (x_0: “Hello world !”, fully-masked x_T) also align with the described masking/absorbing-state corruption process."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 5,
+              "reason": "The figure is highly schematic and centers on the paper’s main contribution: contrasting a standard discrete absorbing-state diffusion model (Markov forward process q(x_t|x_{t-1}) with [MASK] as the absorbing state and reverse p_θ(x_{t-1}|x_t,t)) against the proposed Non-Markovian DiffusionBERT forward process q(x_t|x_{t-1},x_0). It highlights the key conceptual change (conditioning on x0, shown via dashed dependencies) and the reverse denoising pathway, without cluttering the diagram with implementation/training specifics (e.g., token bucketing, spindle schedule computation, exact β_t forms, or time-feeding variants like TAD). This makes it focused on the main idea rather than trivial details."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "The figure is an excellent supplement to the text in Sections 3.1–3.3. Panel (a) visually summarizes the discrete-token diffusion setup with an absorbing state: a forward noising trajectory x0→…→xT ending in all [MASK], and a reverse denoising model pθ(xt−1|xt,t), matching the described Markov transition-to-[MASK] process and stationary end state. Panel (b) directly illustrates the key contribution: a non-Markovian forward process q(xt|xt−1,x0) (shown via the dashed dependency from x0) while keeping the same reverse denoiser form; it also aligns with the discussion that time-step input t is optional (and motivates time-agnostic decoding). Overall, the diagram clarifies the roles of x0, xt, xT, [MASK], forward vs reverse processes, and the non-Markovian conditioning in a way that complements the caption/text effectively."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 5,
+              "reason": "The figure is highly focused on the core conceptual differences: (a) Markov forward process q(x_t|x_{t-1}) with reverse p_θ(x_{t-1}|x_t,t), and (b) the proposed non-Markovian forward process q(x_t|x_{t-1},x_0) with time-agnostic decoding p_θ(x_{t-1}|x_t). It uses minimal, directly relevant visual elements (state nodes, arrows, and short token examples) and avoids decorative graphics, extraneous annotations, or unrelated metrics. The only extra styling (dashed pink dependency arrows) serves to emphasize non-Markovian dependence and is not redundant."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.857,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The Target Figure’s processes are laid out horizontally with sequential states (x_T … x_t … x_{t-1} … x_0) connected by arrows, indicating a clear left-to-right flow. This matches the primary reference diffusion diagrams (Evidence with Similarity 1.0) which also depict the timeline/progression along the horizontal axis, with (a) and (b) as vertically stacked panels rather than a top-to-bottom process flow."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 5,
+              "reason": "Connection lines are well-routed and largely parallel, with no apparent intersections that would create ambiguity. In both subfigures, the main bidirectional arrows between nodes and the dashed pink dependency lines are separated vertically and aligned to avoid crossings; dashed guides run beneath the chain and do not intersect the black process arrows. This matches the clean, non-crossing layout seen in the visual references."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "The figure groups functionally related elements tightly: in both panels, the diffusion states (x_T … x_t … x_{t-1} … x_0) are aligned on a single horizontal chain, with the corresponding forward/noising q(.) and reverse/denoising p_θ(.) transitions drawn directly adjacent between the same neighboring states. In (b), the additional non-Markovian dependencies are indicated with dashed arrows placed immediately beneath and pointing up to the specific timesteps they relate to, without separating them into a distant legend or separate subpanel. This mirrors the reference design where closely related process modules are co-located, yielding clear proximity-based grouping and minimal visual travel."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 5,
+              "reason": "Nodes are aligned cleanly on two consistent horizontal baselines (top panel a, bottom panel b), with circles evenly spaced and centered along the same axis. The transition arrows and ellipsis markers follow the same horizontal grid, and corresponding elements between panels (x_T, x_t, x_{t-1}, x_0) are vertically aligned. Labels sit consistently above/below their respective arrows with no noticeable drift, matching the neat grid-like alignment seen in the highest-quality reference."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 5,
+              "reason": "The figure presents a clear visual hierarchy: the two main panels (a) and (b) are prominently separated by position and labeled with large, bold subcaptions. The primary process elements (x_T … x_0 nodes and forward/backward arrows) are consistently sized and centered, making them the dominant components. In panel (b), the additional non-Markovian connections are emphasized via contrasting pink dashed arrows and callouts, which stand out without overwhelming the base chain. This matches the reference figure’s hierarchy and clarity."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "Overall spacing is clean and consistent: the two subfigures (a) and (b) have adequate vertical separation, labels are centered with comfortable whitespace, and the main node/arrow chains are not cramped. However, the small token text above the chains (e.g., \"[MASK]\", \"Hello world !\") sits relatively close to the diagram elements, and the dashed pink guide lines/arrows in (b) approach other elements tightly, making the top/bottom margins in those areas feel slightly constrained compared with the strongest reference examples."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 5,
+              "reason": "The figure uses highly consistent visual encodings across both subpanels (a) and (b). State nodes (x_T, x_t, x_{t-1}, x_0) are uniformly shown as gray circles with the same outline; forward/backward process transitions are consistently depicted with matching arrow styles; and the probabilistic mappings p_θ(·) and q(·) are rendered with the same typographic/math styling and placement relative to the arrows in both panels. The only color accent (magenta dashed arrows in (b)) is used consistently to denote the additional non-Markovian connections, clearly differentiating them from the baseline transitions without reusing that color for other roles."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 3,
+              "reason": "The target figure uses some symbolic/abbreviated representations for abstract concepts: state nodes (x_T … x_0) as circles, transition arrows, probability notation (p_θ, q), and token placeholders like [MASK] to concretize the diffusion/denoising process. However, most content remains abstract and mathematical (equations, timestep indices), with limited use of concrete pictorial icons beyond standard diagrammatic conventions. This matches the reference diffusion-model diagrams (score ~3) where metaphor is moderate but primarily schematic rather than icon-based."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a conventional academic schematic template: monochrome block diagram with repeated nodes (x_T … x_0), arrows, and standard mathematical labels (pθ, q). Its composition and typography closely match the provided diffusion-model reference figure (nearly identical layout and styling), indicating minimal stylistic differentiation. While the dashed pink arrows add a small visual accent, they do not constitute a distinctive or novel style compared to common paper-figure conventions."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure follows a highly standard, uniform academic schematic style (two horizontally aligned Markov-chain diagrams with dashed arrows), closely matching the reference diffusion/BERT-style layouts. It does not noticeably introduce paper-specific layout innovations (e.g., novel grouping, asymmetric emphasis, customized panel structure, or tailored visual encoding) beyond the conventional (a)/(b) subfigure split and minimal color accenting. Compared with evidence examples that adapt layout to task structure via multi-stage panels, richer annotations, or bespoke visual organization, this figure remains largely generic."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.905,
+      "used_anchor_paths": {
+        "q1.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q1.2": [
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q1.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q2.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q2.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q2.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q3.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q3.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q3.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.4": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.5": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.6": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.7": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q5.1": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q5.2": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q5.3": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ]
+      }
+    },
+    {
+      "figure_file": "DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+      "caption": "Figure 1: In contrast to conventional discrete diffusion models, DiffusionBERT uses BERT as its backbone to perform text generation. The main differences are highlighted in color: (1) DiffusionBERT performs decoding without knowing the current time step while canonical diffusion models are conditioned on time step. (2) The diffusion process of DiffusionBERT is non-Markovian in that it generates noise samples xt conditioning not only on xt−1 but also on x0. Such a non-Markov process is due to our proposed noise schedule.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Generative PLMs (e.g., GPT) as autoregressive baseline (contrast element)', 'Diffusion models factorization along time (non-autoregressive generation)', 'Forward diffusion process in discrete text domain', 'Chain of transition matrices Qt (step-wise corruption mechanism)', 'Clean text input x0 (example: \"Hello world !\")', 'Gradual corruption over time steps to fully-masked sequence xT (example: \"[MASK] [MASK] [MASK]\")', 'Absorbing state token [MASK] in the forward process', 'Markov forward transition rule: each token either stays the same or transitions to [MASK] with probability βt', 'Noise schedule βt controlling corruption amount per step', 'Stationary distribution q(xT) concentrating probability mass on all-[MASK] sequences', 'Reverse diffusion (denoising) process to generate/restore text: pθ(xt−1 | xt, t)', 'Pre-trained denoising language model module used for reverse process (e.g., BERT)', 'Input to denoising model: noised text xt (and optionally time step t)', 'Output/prediction from denoising model: previous-step text xt−1', 'Spindle noise schedule (forward process) that conditions noise for xt on both xt−1 and x0 (non-Markovian forward process)', 'Time-step feeding design choice (module/decision point): whether/how to incorporate t into PLM', 'Time-Agnostic Decoding (TAD): do not provide time step; reverse model uses pθ(xt−1 | xt) without explicit t', 'Iterative decoding loop over reverse steps from xT to x0 (generation process)']\nContext: In contrast to commonly used generative PLMs (e.g., GPT (Brown et al., 2020)) that rely on an autoregressive factorization of the joint prob- ability, diffusion models provide another way of factorization along the dimension of time and there- fore allow the generative model to be not necessar- ily autoregressive. Thus, diffusion models can be combined with a variety of PLMs that may not be pre-trained for generation.\n\nIn the discrete domain, the forward diffusion process can be implemented by a chain of tran- sition matrices that gradually corrupt the clean text. As shown in Figure 1, the clean text \"Hello world !\" is gradually corrupted into \"[MASK] [MASK] [MASK]\" during the diffusion process. In this work, we explore using pre-trained denois- ing language models (e.g., BERT) to learn the re- verse diffusion process and demonstrate their ad- vantages in accelerating convergence and improv- ing generation quality. Further, we propose a new noise schedule of the forward process based on the principle of distributing the corrupted information uniformly across the forward process. The noise schedule, called spindle schedule, generates noise for xt conditioned not only on xt−1 but also on x0, making the forward process non-Markovian with- out changing the original training objective. Note that the denoising model takes as input xt and time step t to predict xt−1, where t is unseen during the pre-training of language models so we investigate several ways of incorporating the time step into PLMs. As a result, we find that the best result is achieved by throwing away the time information, which we call time-agnostic decoding (TAD).\n\n3.1 Diffusion Models with a Discrete Absorbing State\nTo be combined with pre-trained denoising lan- guage models, we incorporate an absorbing state, e.g., [MASK] for BERT, in the Markov process. In particular, each token in the sequence either stays the same or transitions to [MASK] with some prob- ability. Formally, each entry of the transition matrix at step t is as follows,\n[Qt]i,j = { 1 if i = j = [M], βt if j = [M], i ̸= [M], 1 −βt if i = j ̸= [M], (6)\nwhere [M] is the abbreviation of [MASK]. Such a Markov process converges to a stationary distribu- tion q(xT ), which places all probability mass on a sequence with all [MASK] tokens.\n\n3.3 The Design Space of Feeding Time Steps\nTypically, a diffusion model takes as input a noised sample and the time step to predict the denoised sample during the reverse process, i.e., pθ(xt−1|xt, t). However, t is an additional vari- able that is unseen during the pre-training of lan- guage models and therefore it is less trivial how to feed the time information into the PLMs.\n...\nTime-Agnostic Decoding Another alternative is not to explicitly incorporate the time step t because it can be implied by the noised sample xt. In con- trast to the image data, it is easier to implicitly in- fer the diffusion time step by counting the number of corrupted tokens (i.e., [MASK]) in the noised sequence. In this way, the PLM has to perform iter- ative decoding while being ignorant of the current time step, i.e., pθ(xt−1|xt).",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': '(a) Diffusion models for discrete data', 'status': 'Supported', 'evidence': 'The chunk includes the caption and description of Figure 1 with panel (a): it contrasts \"conventional discrete diffusion models\" with DiffusionBERT (panel b).'}, {'element': '(b) Non-Markovian DiffusionBERT', 'status': 'Supported', 'evidence': 'Figure 1 caption and text explicitly: \"(b) Non-Markovian DiffusionBERT\" and \"The diffusion process of DiffusionBERT is non-Markovian ... conditioning not only on xt−1 but also on x0.\"'}, {'element': 'x_T', 'status': 'Supported', 'evidence': 'Figure 1 in the chunk shows the diffusion chain from x0 to xT and mentions: \"Eventually xT becomes...\" and in discrete absorbing-state version \"converges... to a sequence with all [MASK] tokens.\"'}, {'element': 'x_t', 'status': 'Supported', 'evidence': 'The chunk repeatedly uses intermediate states x1,...,xT and refers to general step t: e.g., \"a Markov chain of latent variables x1, · · · , xT\" and formulas q(xt|xt−1), pθ(xt−1|xt,t).'}, {'element': 'x_{t-1}', 'status': 'Supported', 'evidence': 'Reverse/forward stepwise relationship is central: \"q(xt|xt−1)\" and \"pθ(xt−1|xt,t)\".'}, {'element': 'x_0', 'status': 'Supported', 'evidence': 'Clean data is x0 throughout: \"Given a sample x0\" and example \"clean text \\'Hello world !\\'\" corresponds to x0 in Figure 1.'}, {'element': 'p_θ(x_{t-1} | x_t, t)', 'status': 'Supported', 'evidence': 'Explicitly defined as the reverse model: \"pθ(xt−1|xt, t)\" (Eq. 2) and used in discrete section: \"use a parameterized model pθ(xt−1|xt, t) to learn the reverse diffusion process.\"'}, {'element': 'q(x_t | x_{t-1})', 'status': 'Supported', 'evidence': 'Forward Markov transition is given: \"q(xt|xt−1)\" in both continuous (Eq. 1) and discrete (Eq. 4) formulations.'}, {'element': 'p_θ(x_{t-1} | x_t)', 'status': 'Supported', 'evidence': 'The chunk describes time-agnostic decoding where time is omitted: \"perform iterative decoding while being ignorant of the current time step, i.e., pθ(xt−1|xt).\"'}, {'element': 'q(x_t | x_{t-1}, x_0)', 'status': 'Supported', 'evidence': 'Non-Markovian forward/noise schedule is described: \"generates noise for xt conditioned not only on xt−1 but also on x0\" and \"forward diffusion process non-Markovian\" (also echoed in Figure 1(b) with q(xt|xt−1,x0)).'}, {'element': '\"[MASK] [MASK] [MASK]\"', 'status': 'Supported', 'evidence': 'The chunk explicitly: \"the clean text \\'Hello world !\\' is gradually corrupted into \\'[MASK] [MASK] [MASK]\\' during the diffusion process\" and Figure 1 shows this as xT.'}, {'element': '\"[MASK] world !\"', 'status': 'Supported', 'evidence': 'Figure 1(a) in the chunk includes the example intermediate noisy sentence \"[MASK] world !\" along the chain from \"Hello world !\" to all masks.'}, {'element': '\"Hello [MASK] !\"', 'status': 'Supported', 'evidence': 'Figure 1(b) in the chunk includes the example intermediate sentence \"Hello [MASK] !\" as part of the DiffusionBERT illustration.'}, {'element': '\"Hello world !\"', 'status': 'Supported', 'evidence': 'Used as the clean text example (x0): \"the clean text \\'Hello world !\\'\" and shown in Figure 1.'}, {'element': '...', 'status': 'Supported', 'evidence': 'The ellipses represent intermediate diffusion steps, consistent with the described chain \"x1, · · · , xT\" and the figure depiction \"xT · · · xt xt−1 · · · x0\".'}], [{'element': '(a) Diffusion models for discrete data', 'status': 'Supported', 'evidence': 'The chunk discusses a \"general family of discrete diffusion processes\" and specifically mentions \"absorbing discrete diffusion models,\" supporting a panel about diffusion models for discrete data.'}, {'element': '(b) Non-Markovian DiffusionBERT', 'status': 'Supported', 'evidence': 'The conclusion states they \"combine pre-trained denoising language models with absorbing-state discrete diffusion models\" and reports success of \"DiffusionBERT,\" supporting a DiffusionBERT panel (even if \"Non-Markovian\" is not explicitly stated here).'}, {'element': 'x_T', 'status': 'Supported', 'evidence': 'The text describes an iterative diffusion-style generation process (construct-destruct refinement), which commonly uses a terminal noisy state (x_T) as the starting point for generation.'}, {'element': 'x_t', 'status': 'Supported', 'evidence': 'The chunk describes iterative refinement in diffusion/absorbing discrete diffusion models, consistent with intermediate states indexed by t.'}, {'element': 'x_{t-1}', 'status': 'Supported', 'evidence': 'Iterative refinement implies transitions between consecutive timesteps (t to t-1), consistent with diffusion-step notation.'}, {'element': 'x_0', 'status': 'Supported', 'evidence': 'The text is about text generation where the final output sequence corresponds to a clean/data sample, typically denoted x_0 in diffusion formulations.'}, {'element': 'p_θ(x_{t-1} | x_t, t)', 'status': 'Not Mentioned', 'evidence': 'The chunk does not provide explicit mathematical reverse-process conditionals with parameters θ or dependence on t; it only describes the approach at a high level.'}, {'element': 'q(x_t | x_{t-1})', 'status': 'Not Mentioned', 'evidence': 'While discrete diffusion processes are mentioned, the specific forward kernel notation q(x_t|x_{t-1}) is not shown in this excerpt.'}, {'element': 'p_θ(x_{t-1} | x_t)', 'status': 'Not Mentioned', 'evidence': 'The excerpt does not explicitly define the reverse model distribution in this form; it remains a conceptual discussion.'}, {'element': 'q(x_t | x_{t-1}, x_0)', 'status': 'Not Mentioned', 'evidence': 'No explicit conditional forward distribution depending on x_0 appears in the provided text chunk.'}, {'element': '\"[MASK] [MASK] [MASK]\"', 'status': 'Supported', 'evidence': 'The chunk links absorbing discrete diffusion models to \"conditional masked language models\" and an iterative mask-based refinement pattern, consistent with an all-[MASK] initial sequence visualization.'}, {'element': '\"[MASK] world !\"', 'status': 'Supported', 'evidence': 'Iterative refinement in masked-language-model-like generation (construct-destruct) is described, matching intermediate partially-masked sequences.'}, {'element': '\"Hello [MASK] !\"', 'status': 'Supported', 'evidence': 'The described masked-LM-style iterative refinement supports intermediate sequences where some tokens are filled and others remain masked.'}, {'element': '\"Hello world !\"', 'status': 'Supported', 'evidence': 'The overall goal is text generation; an unmasked complete sentence is a natural depiction of the final generated output after refinement.'}, {'element': '...', 'status': 'Supported', 'evidence': 'The text explicitly describes iterative refinement over multiple steps (construct-destruct pattern), which is naturally represented by ellipses indicating repeated timesteps.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 5,
+              "reason": "The target figure covers the paper’s major components for both the standard discrete diffusion and the proposed non-Markovian variant: (i) forward corruption from clean text x0 (\"Hello world !\") to fully-masked xT (\"[MASK] [MASK] [MASK]\") via a stepwise process q(xt|xt−1); (ii) reverse denoising generation pθ(xt−1|xt,t) with iterative steps from xT back to x0; (iii) explicit use of the absorbing state [MASK] (shown as the terminal/absorbing corruption outcome); (iv) the non-Markovian spindle schedule idea is reflected by conditioning the forward step on both xt−1 and x0, labeled q(xt|xt−1,x0) with the dashed connections; and (v) the time-step feeding design choice is represented by the reverse label including t in (a) and omitted in (b) (pθ(xt−1|xt)), matching Time-Agnostic Decoding. While the exact transition-matrix formula Qt and βt are not written out, the figure still includes the forward/reverse factorization, variables, and conditioning relationships that constitute the main elements discussed, with no major omissions for a schematic figure."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "Largely yes. The figure conveys the core operating principle of discrete text diffusion: a forward (corruption) process from clean text x0 to fully masked xT via q(xt|xt−1) and a reverse (denoising) process pθ(xt−1|xt,t) iterated back to x0. The use of an absorbing [MASK] state and the stepwise trajectory are visually clear, and the example strings (“Hello world !” → “[MASK] world !” → “[MASK] [MASK] [MASK]”) make the mechanism intuitive. It also communicates the key contrast between (a) Markov forward diffusion and (b) the proposed non-Markovian variant where q depends on both xt−1 and x0 (dashed dependency arrows).\n\nHowever, some important details needed for full standalone understanding are missing or too implicit: it does not define βt / the noise schedule controlling masking probabilities, does not explicitly state that each token either stays or becomes [MASK], and does not clearly indicate that a pre-trained denoising PLM (e.g., BERT) parameterizes pθ. The “time-agnostic decoding” claim/design choice is not directly explained in the diagram (it still shows t in (a)). These gaps prevent a perfect standalone interpretation without accompanying text."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 2,
+              "reason": "The figure captures a central mid-paper concept (discrete diffusion for text with an absorbing [MASK] state) and includes both the Markov forward process q(xt|xt−1) and reverse denoising pθ(xt−1|xt,t) with an illustrative corruption path (\"Hello world !\" → all [MASK]). It also includes the later contribution of a non-Markovian forward process (spindle schedule) via q(xt|xt−1,x0) and indicates the reverse step under time-agnostic decoding as pθ(xt−1|xt). However, it does not summarize the paper end-to-end: it omits many paper-level elements such as training/objective details, how the pre-trained denoising LM (e.g., BERT) is integrated/used beyond a label, the broader design space of feeding time steps (only TAD is shown), and any experimental setup/results/claims about convergence and quality. Thus it is not comprehensive across the full paper, mainly covering the method overview around Sections 3.1 and the spindle/TAD ideas."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 4,
+              "reason": "The Target Figure is largely consistent with the paper evidence and the provided reference: it includes the discrete diffusion chain x0→…→xT, the masked-text examples (\"Hello world !\", \"[MASK] world !\", \"Hello [MASK] !\", \"[MASK] [MASK] [MASK]\"), and the forward/reverse kernels q(x_t|x_{t-1}) and p_θ(x_{t-1}|x_t,t), all explicitly supported in the evidence. It also matches the non-Markovian DiffusionBERT depiction q(x_t|x_{t-1},x_0), which the evidence states. The only potential hallucination/over-specificity is the inclusion of the time-agnostic reverse model p_θ(x_{t-1}|x_t) in panel (b); while this form is mentioned in the paper text, it is not clearly indicated as part of the non-Markovian panel in the supplied evidence/description, so its placement could be seen as slightly speculative. Overall, the figure avoids introducing unsupported components and shows at most minor overreach."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "The target figure accurately encodes the core relationships described in the evidence: (a) a Markovian discrete diffusion with forward kernel q(x_t|x_{t-1}) and reverse model p_θ(x_{t-1}|x_t,t) along the chain x_0→…→x_T (with partial masking examples such as “[MASK] world !”); and (b) DiffusionBERT’s stated non-Markovian forward process q(x_t|x_{t-1},x_0) while retaining the reverse denoising model p_θ(x_{t-1}|x_t), matching the paper’s claim that noise generation conditions on both x_{t-1} and x_0. The progression from clean text “Hello world !” (x_0) to an absorbing all-[MASK] state (x_T) and back is consistent with the described absorbing-state discrete diffusion setup and the reference visuals."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "The target figure’s major labels match the paper’s terminology and the reference figure: panel (a) is labeled “Diffusion models for discrete data” and panel (b) “Non-Markovian DiffusionBERT,” consistent with the Figure 1 caption and surrounding text. Core variables and process labels (x0, xt, xT; forward q(xt|xt−1) and reverse pθ(xt−1|xt,t); and the non-Markovian forward q(xt|xt−1,x0) in panel (b)) align with the described formulations and the visual reference. Example token strings (e.g., “Hello world !”, partial [MASK] states, all-[MASK]) are also consistent with the paper’s illustrative example. No mislabeled major component or methodology is evident."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 5,
+              "reason": "The target figure is a high-level schematic that emphasizes the paper’s main contributions: (1) discrete diffusion for text with an absorbing [MASK] state and Markov forward corruption q(xt|xt−1), (2) the reverse denoising model pθ(xt−1|xt,t) using a pretrained MLM, and (3) the proposed non-Markovian (spindle) forward process q(xt|xt−1,x0) plus the time-step feeding design choice (including time-agnostic decoding pθ(xt−1|xt)). It avoids implementation/training minutiae (loss terms, architectural blocks, optimization details) and uses a minimal token example (“Hello world !” → masks) only to illustrate the process, keeping focus on the conceptual novelty rather than trivial details."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "The figure closely aligns with the described concepts and serves as effective supplementary material. Panel (a) clearly depicts the Markov forward diffusion q(xt|xt−1) via progressive masking from clean x0 (\"Hello world!\") to fully masked xT, and the reverse denoising pθ(xt−1|xt, t), matching the text’s focus on discrete diffusion with an absorbing [MASK] state and iterative reverse decoding. Panel (b) directly visualizes the proposed non-Markovian (spindle) forward process q(xt|xt−1, x0) by adding explicit dependency arrows from x0, consistent with the claim that xt depends on both xt−1 and x0. The inclusion/omission of time-step conditioning is also supported visually: (a) shows pθ(xt−1|xt, t) while (b) highlights pθ(xt−1|xt), corresponding to the design-space discussion and Time-Agnostic Decoding. Overall, the figure adds structural clarity beyond the text/caption and matches the reference figures’ content and intent."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The figure is largely free of decorative elements and focuses on the core diffusion/BERT ideas: the forward corruption chain, reverse denoising conditionals, and the Markov vs non-Markov (spindle) distinction via dashed dependencies on x0. Labels (xT…x0, q(·), pθ(·), [MASK]/\"Hello world!\") directly support the paper’s explanation of discrete absorbing-state diffusion and time-step conditioning/TAD. Minor redundancy remains: the same xT↔…↔x0 pipeline and example strings are repeated in both (a) and (b), and some repeated annotations could be slightly condensed, but this repetition also serves a legitimate comparison purpose rather than being purely decorative."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The Target Figure’s process is laid out horizontally: nodes progress from x_T on the far left through intermediate x_t and x_{t-1} to x_0 on the far right, with arrows indicating transitions primarily left-to-right. This matches the main flow direction in the closest reference diffusion diagrams, which also depict the diffusion chain across the page from left to right (with only minor vertical separation between subpanels (a) and (b), not the primary flow)."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 5,
+              "reason": "Connection lines are well separated and do not intersect. The horizontal bidirectional arrows between states are aligned on a single axis, and the additional pink dashed guidance lines in (b) run beneath the main chain in parallel with clear vertical offsets, avoiding crossings with each other and with the main transition arrows. Overall, the layout cleanly prevents line overlap/crossing."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Functionally related elements are tightly grouped. In both subfigures, each diffusion step (x_t, x_{t-1}, …, x_0) is arranged along a single horizontal chain with local transition arrows directly between neighboring states, keeping related operations adjacent. The probability terms p_θ(x_{t-1}|x_t) and q(x_t|x_{t-1}) are placed immediately above/below the corresponding transition segment (between x_t and x_{t-1}), minimizing cross-figure scanning. In (b), the non-Markovian dependencies are shown with dashed magenta arrows originating from nearby nodes/segments, clearly associating the added connections with the same local modules rather than distant regions. Overall, the spatial layout mirrors the functional structure, matching the reference figures’ strong proximity design."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 5,
+              "reason": "Nodes and annotations are aligned cleanly to an implicit grid. In both subfigures, the state circles (x_T, x_t, x_{t-1}, x_0) sit on consistent horizontal baselines, with evenly spaced ellipsis segments. The bidirectional arrows and conditional labels are centered between the same node pairs, and the two panels (a) and (b) are vertically stacked with matching left/right extents. The added dashed pink dependency arrows in (b) also follow straight horizontal/vertical runs and terminate consistently under corresponding nodes, without noticeable jitter or drift."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 5,
+              "reason": "The figure establishes a clear visual hierarchy: each subfigure is separated and labeled prominently with (a) and (b), and the main states (x_T, x_t, x_{t-1}, x_0) are emphasized as large, circled nodes aligned along the central flow. The forward/backward transitions are rendered with consistent arrow thickness, while the key difference in (b) is highlighted via distinctive pink dashed arrows spanning long-range connections, making the non-Markovian aspect immediately salient. This matches the strong hierarchy seen in the reference diffusion-diagram evidence, where major modules and annotated differences are visually dominant."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 5,
+              "reason": "Yes. The figure maintains clear whitespace between major components: the two subfigures (a) and (b) are separated by ample vertical space; labels and equations are not crowded against the node/arrow graphics; and the bottom subfigure’s dashed pink guidance lines and arrows have enough separation from the main Markov chain line to avoid overlap. Overall margins around the content and between text annotations match the clean spacing seen in the highest-quality reference examples."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 5,
+              "reason": "The target figure represents analogous components consistently across both subfigures: the state nodes (x_T, x_t, x_{t-1}, x_0) use the same circular shape and fill; forward/backward transition relations are consistently shown with the same arrow styling; and the key distributions p_θ(·) and q(·) are rendered in matching typographic style and placement relative to the corresponding arrows. The added non-Markovian dependencies are uniformly highlighted with the same pink dashed arrows, clearly distinguishing them while remaining consistent within their role. Overall, similar roles map to the same shapes/colors without conflicting encodings."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 2,
+              "reason": "The target figure is primarily an abstract schematic of diffusion processes using mathematical notation (pθ, q, x_t, x_0), arrows, and timestep indices. It includes a few concrete/abbreviated visual elements—circles for states, solid/dashed arrows for transitions, and token strings like \"[MASK]\"/\"Hello world!\" as recognizable NLP placeholders—but these serve as illustrative labels rather than replacing the abstract concepts with concrete icons or metaphoric symbols. Compared with the references, it aligns with the same equation-and-graph style and uses minimal metaphorical/concrete iconography."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure follows a very common academic schematic template: black-and-white block/arrow diagram, repeated Markov-chain style nodes (x_t), standard math notation (p_θ, q), and simple subfigure labeling “(a)/(b)”. Its layout and visual language closely match the provided evidence/reference diffusion diagrams (including near-identical structure and styling), with no distinctive typography, color palette, iconography, or compositional choices that would make it stand out as a unique style."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure follows a conventional, uniform academic schematic layout: two stacked subfigures (a)/(b), consistent node-and-arrow diffusion pipeline, monochrome strokes with a single accent color (pink dashed arrows), and standard equation labeling. Compared with the evidence/reference set, it does not introduce paper-specific layout innovations (e.g., richer multi-panel storytelling, annotated workflow blocks, or domain-tailored visual hierarchy). Its design is clear but largely generic and adheres to common diffusion-model diagram conventions rather than breaking away with a bespoke layout."
+            }
+          ]
+        }
+      },
+      "weighted_total": 4.0,
+      "used_anchor_paths": {
+        "q1.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q1.2": [
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q1.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q2.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q2.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q2.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q3.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q3.2": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q3.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.4": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.5": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.6": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.7": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q5.1": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q5.2": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q5.3": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ]
+      }
+    },
+    {
+      "figure_file": "DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+      "caption": "Figure 1: In contrast to conventional discrete diffusion models, DiffusionBERT uses BERT as its backbone to perform text generation. The main differences are highlighted in color: (1) DiffusionBERT performs decoding without knowing the current time step while canonical diffusion models are conditioned on time step. (2) The diffusion process of DiffusionBERT is non-Markovian in that it generates noise samples xt conditioning not only on xt−1 but also on x0. Such a non-Markov process is due to our proposed noise schedule.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['DiffusionBERT (generative masked language model combining discrete diffusion + BERT/PLM denoiser)', 'Forward diffusion process over discrete text using a chain of transition matrices Q_t', 'Absorbing state [MASK] in the forward process (tokens either stay the same or transition to [MASK])', 'Example forward corruption flow: clean text x0 (e.g., \"Hello world !\") -> progressively more masked xt -> fully masked xT (\"[MASK] [MASK] [MASK]\")', 'Reverse diffusion / generation process learned by BERT: iterative denoising p_θ(x_{t-1} | x_t, t) from xT to x0', 'Sampling factorization / reverse chain: p_θ(x0:T)=p(xT)∏_{t=1}^T p_θ(x_{t-1}|x_t,t)', 'Spindle noise schedule module for the forward process (noise amount per step measured by corrupted information; aims to distribute corruption uniformly across steps)', 'Token-dependent masking probabilities under spindle schedule (different tokens get different transition-to-[MASK] probabilities)', 'Non-Markovian forward diffusion under spindle schedule: q(x_t | x_{t-1}, x0) dependency (conditioned on x0 as well as x_{t-1})', 'Time-step handling design in the reverse model (explicit time input vs omitting it)', 'Time-Agnostic Decoding (TAD): reverse denoising without time input p_θ(x_{t-1} | x_t)']\nContext: We present DiffusionBERT, a new generative masked language model based on discrete dif- fusion models. Diffusion models and many pre- trained language models have a shared training objective, i.e., denoising, making it possible to combine the two powerful models and enjoy the best of both worlds. ... In this work, we explore training BERT to learn the reverse process of a discrete diffusion process with an absorbing state and elucidate several designs to improve it. First, we propose a new noise schedule for the forward diffusion process that controls the degree of noise added at each step based on the information of each token. Second, we investigate several designs of incorpo- rating the time step into BERT.\n\nIn the discrete domain, the forward diffusion process can be implemented by a chain of tran- sition matrices that gradually corrupt the clean text. As shown in Figure 1, the clean text \"Hello world !\" is gradually corrupted into \"[MASK] [MASK] [MASK]\" during the diffusion process. In this work, we explore using pre-trained denois- ing language models (e.g., BERT) to learn the re- verse diffusion process and demonstrate their ad- vantages in accelerating convergence and improv- ing generation quality. Further, we propose a new noise schedule of the forward process based on the principle of distributing the corrupted information uniformly across the forward process. The noise schedule, called spindle schedule, generates noise for xt conditioned not only on xt−1 but also on x0, making the forward process non-Markovian with- out changing the original training objective. ... As a result, we find that the best result is achieved by throwing away the time information, which we call time-agnostic decoding (TAD).\n\n3.1 Diffusion Models with a Discrete Absorbing State\nTo be combined with pre-trained denoising lan- guage models, we incorporate an absorbing state, e.g., [MASK] for BERT, in the Markov process. In particular, each token in the sequence either stays the same or transitions to [MASK] with some prob- ability. Formally, each entry of the transition matrix at step t is as follows, [Qt]i,j = ... Such a Markov process converges to a stationary distribu- tion q(xT ), which places all probability mass on a sequence with all [MASK] tokens. ... Combining with Eq. (3) and (5), we can derive a training objective to optimize pθ(xt−1|xt, t) and generate a sample by performing the reverse diffusion process: pθ(x0:T ) = p(xT ) ∏_{t=1}^T pθ(xt−1|xt, t).\n\n3.2 Spindle Noise Schedule\n... we consider a noise schedule that (1) measures the added noise at each step by the corrupted information and en- courage the corrupted information to be uniformly distributed across the diffusion steps. Since the information is measured independently for each token, (2) different tokens in a sequence are as- signed different probabilities of transitioning to the [MASK] token. ... The schedule is named as spindle due to the shape of the probability curves.\nIn our proposed schedule, the transition proba- bility at time step t depends not only on the current state but also on the original text, making the for- ward diffusion process non-Markovian. Neverthe- less, as revealed by Eq. (5), this does not change the original training objective.\n\n3.3 The Design Space of Feeding Time Steps\nTypically, a diffusion model takes as input a noised sample and the time step to predict the denoised sample during the reverse process, i.e., pθ(xt−1|xt, t). However, t is an additional vari- able that is unseen during the pre-training of lan- guage models and therefore it is less trivial how to feed the time information into the PLMs. ... Time-Agnostic Decoding Another alternative is not to explicitly incorporate the time step t because it can be implied by the noised sample xt. ... the PLM has to perform iter- ative decoding while being ignorant of the current time step, i.e., pθ(xt−1|xt).",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': 'x_T', 'status': 'Supported', 'evidence': 'Figure 1 in the text shows the diffusion chain endpoints: “xT · · · xt xt−1 · · · x0”, and explains the forward process reaches an all-mask/noise state (“...gradually corrupted into \"[MASK] [MASK] [MASK]\" during the diffusion process.”).'}, {'element': 'x_t', 'status': 'Supported', 'evidence': 'The paper describes intermediate diffusion states xt in both forward and reverse processes, e.g., “Given a sample x0… latent variables x1, · · · , xT are produced in the forward process…” and labels xt explicitly in Figure 1.'}, {'element': 'x_{t-1}', 'status': 'Supported', 'evidence': 'Reverse denoising is defined stepwise: “learn the reverse process step by step” with pθ(xt−1|xt, t), matching the presence of xt−1 adjacent to xt in the chain.'}, {'element': 'x_0', 'status': 'Supported', 'evidence': 'The clean data sample is x0 throughout: “Given a sample x0 ∼ q(x0) …” and in the discrete example: “the clean text \"Hello world !\" is gradually corrupted…”'}, {'element': 'p_θ(x_{t-1} | x_t, t)', 'status': 'Supported', 'evidence': 'Explicitly defined for the reverse process: “pθ(xt−1|xt, t) …” and also shown in Figure 1(a): “pθ(xt−1|xt, t)”.'}, {'element': 'q(x_t | x_{t-1})', 'status': 'Supported', 'evidence': 'Forward Markov step is given in both continuous and discrete forms: “q(xt|xt−1) = …” (Eq. 1, Eq. 4) and appears in Figure 1(a) as q(xt|xt−1).'}, {'element': 'p_θ(x_{t-1} | x_t)', 'status': 'Supported', 'evidence': 'This corresponds to DiffusionBERT’s time-agnostic decoding described in §3.3: “iterative decoding while being ignorant of the current time step, i.e., pθ(xt−1|xt).” Also shown in Figure 1(b).'}, {'element': 'q(x_t | x_{t-1}, x_0)', 'status': 'Supported', 'evidence': 'The non-Markovian forward process is explicitly stated: “generates noise for xt conditioned not only on xt−1 but also on x0, making the forward process non-Markovian…” and Figure 1(b) labels “q(xt|xt−1, x0)”.'}, {'element': 'x_T -> x_t', 'status': 'Supported', 'evidence': 'The figure depicts the diffusion timeline xT … xt … x0; the paper defines the chain of latent variables “x1, · · · , xT” and Figure 1 shows them ordered, supporting connectivity along the timeline (even if not every intermediate arrow is verbally enumerated).'}, {'element': 'x_t -> x_{t-1}', 'status': 'Supported', 'evidence': 'Reverse transition is the core denoising step: “learn the reverse process step by step” with pθ(xt−1|xt, t) (or without t for TAD).'}, {'element': 'x_{t-1} -> x_t', 'status': 'Supported', 'evidence': 'Forward diffusion transition is defined: q(xt|xt−1) (Eq. 1 / Eq. 4), so xt−1 leads to xt in the forward process.'}, {'element': 'x_t -> x_{t-1} | p_θ(x_{t-1} | x_t, t)', 'status': 'Supported', 'evidence': 'Directly matches Eq. (2) and the statement: “a neural network (pθ in Figure 1) is employed to learn the reverse process step by step” and the label in Figure 1(a).'}, {'element': 'x_{t-1} -> x_t | q(x_t | x_{t-1})', 'status': 'Supported', 'evidence': 'Matches the forward diffusion definition q(xt|xt−1) and Figure 1(a)’s arrow labeling.'}, {'element': 'x_t -> x_{t-1} | p_θ(x_{t-1} | x_t)', 'status': 'Supported', 'evidence': 'Matches time-agnostic decoding: “pθ(xt−1|xt)” when not providing t, shown in Figure 1(b).'}, {'element': 'x_{t-1}, x_0 -> x_t | q(x_t | x_{t-1}, x_0)', 'status': 'Supported', 'evidence': 'Exactly the non-Markovian spindle schedule motivation: “xt conditioning not only on xt−1 but also on x0… forward process non-Markovian” and Figure 1(b) shows q(xt|xt−1, x0).'}, {'element': '\"[MASK] [MASK] [MASK]\"', 'status': 'Supported', 'evidence': 'Explicit example in Figure 1 and described in text: “the clean text \"Hello world !\" is gradually corrupted into \"[MASK] [MASK] [MASK]\" during the diffusion process.”'}, {'element': '\"[MASK] world !\"', 'status': 'Supported', 'evidence': 'Shown in Figure 1(a) as an intermediate corrupted state; the paper’s narrative supports intermediate partial-masking states as part of “gradually corrupted” forward diffusion with an absorbing [MASK] state (Eq. 6–7).'}, {'element': '\"Hello [MASK] !\"', 'status': 'Supported', 'evidence': 'Shown in Figure 1(b) as an intermediate state; consistent with the absorbing-state corruption process where some tokens transition to [MASK] with probability (Eq. 6–7).'}, {'element': '\"Hello world !\"', 'status': 'Supported', 'evidence': 'Used explicitly as the clean text x0 in the paper’s Figure 1 description: “the clean text \"Hello world !\" …”'}, {'element': '(a) Diffusion models for discrete data', 'status': 'Supported', 'evidence': 'Matches the captioned subfigure label in the provided text block: “(a) Diffusion models for discrete data”.'}, {'element': '(b) Non-Markovian DiffusionBERT', 'status': 'Supported', 'evidence': 'Matches the captioned subfigure label and concept: “(b) Non-Markovian DiffusionBERT” and the text explaining the forward process becomes non-Markovian under the spindle schedule.'}], [{'element': 'x_T', 'status': 'Not Mentioned', 'evidence': 'The chunk discusses discrete diffusion and masked language modeling at a high level, but does not mention specific diffusion-state notation like x_T.'}, {'element': 'x_t', 'status': 'Not Mentioned', 'evidence': 'No explicit time-indexed latent/state variables (x_t) appear in the provided text chunk.'}, {'element': 'x_{t-1}', 'status': 'Not Mentioned', 'evidence': 'The text does not include formal diffusion-step notation such as x_{t-1}.'}, {'element': 'x_0', 'status': 'Not Mentioned', 'evidence': 'The chunk does not define x_0 or any endpoint state variables; it stays conceptual.'}, {'element': 'p_θ(x_{t-1} | x_t, t)', 'status': 'Not Mentioned', 'evidence': 'The excerpt does not provide diffusion-model equations or parameterized reverse kernels like p_θ(·).'}, {'element': 'q(x_t | x_{t-1})', 'status': 'Not Mentioned', 'evidence': 'No forward noising transition kernel q(·) is shown or described explicitly in the chunk.'}, {'element': 'p_θ(x_{t-1} | x_t)', 'status': 'Not Mentioned', 'evidence': 'The text does not include a reverse-process conditional distribution formula.'}, {'element': 'q(x_t | x_{t-1}, x_0)', 'status': 'Not Mentioned', 'evidence': 'The chunk does not mention non-Markovian conditional transitions or any q(x_t | x_{t-1}, x_0) expression.'}, {'element': '\"[MASK] [MASK] [MASK]\"', 'status': 'Supported', 'evidence': 'The text states absorbing discrete diffusion resembles \"conditional masked language models\" and follows a \"construct-destruct pattern to iteratively refine the generated text,\" which conceptually matches sequences of [MASK] tokens as an initial/noised state.'}, {'element': '\"[MASK] world !\"', 'status': 'Supported', 'evidence': 'The excerpt connects these models to masked language modeling and iterative refinement of text, consistent with partially masked sequences as intermediate steps.'}, {'element': '\"Hello [MASK] !\"', 'status': 'Supported', 'evidence': 'Masked language model behavior (predicting masked tokens) is explicitly referenced: \"resembles conditional masked language models ... predict the whole sequence simultaneously ... iteratively refine the generated text.\"'}, {'element': '\"Hello world !\"', 'status': 'Supported', 'evidence': 'The chunk is about text generation and refinement; an unmasked final sequence is consistent with the described iterative refinement toward complete text.'}, {'element': '(a) Diffusion models for discrete data', 'status': 'Supported', 'evidence': 'The chunk directly discusses \"discrete diffusion processes\" and \"absorbing kernels,\" matching a panel about diffusion models for discrete data.'}, {'element': '(b) Non-Markovian DiffusionBERT', 'status': 'Supported', 'evidence': 'The chunk focuses on DiffusionBERT and deviations from current discrete diffusion models; while it does not explicitly say \"Non-Markovian\" here, it is consistent with a DiffusionBERT panel in context of diffusion-based non-autoregressive text generation.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 5,
+              "reason": "The target figure covers the paper’s main conceptual and formal components: (i) the discrete forward diffusion as a chain with transition matrices q(x_t|x_{t-1}) (shown in (a)); (ii) the absorbing-state corruption to all-[MASK] at x_T with an illustrative token flow (\"Hello world !\" → progressively masked → all [MASK]); (iii) the reverse/generation chain learned by BERT/PLM with the conditional p_θ(x_{t-1}|x_t,t) (shown in (a)); (iv) the spindle schedule’s key consequence—non-Markovian forward process depending on x_0 via q(x_t|x_{t-1},x_0) (shown in (b) with dashed dependencies); and (v) the time-step design alternative (TAD) via p_θ(x_{t-1}|x_t) (explicitly labeled in (b)). While it does not write out the full factorization p_θ(x_{0:T}) = p(x_T)∏_t p_θ(·) or the explicit Q_t entry formula, it includes the major components and core conditional distributions central to the paper’s method and design space."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 3,
+              "reason": "The figure communicates the high-level operating principle reasonably well: a forward corruption process takes x0 (clean text) to xT (all [MASK]) and a learned reverse process pθ iteratively denoises back to x0, with an explicit chain factorization shown. Panel (b) further conveys the key extension—non-Markovian forward diffusion—via the conditional q(xt | xt−1, x0) and dashed dependencies to x0. However, standalone understanding is limited by notation-heavy presentation (x0:T, q vs pθ, dependence arrows) and lack of an explicit legend/brief caption explaining what [MASK], Qt, and the dashed arrows mean. It gives the gist of “mask-then-denoise iteratively,” but a viewer without diffusion/MLM background may not fully grasp the role of time t, what changes between (a) and (b), or how the forward transitions are implemented."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 2,
+              "reason": "The target figure captures only a subset of the paper’s core narrative: (i) discrete diffusion for text with an absorbing [MASK] state, (ii) the reverse denoising chain learned by a PLM/BERT (pθ(x_{t-1}|x_t,t)), and (iii) the non-Markovian forward process variant conditioned on x0 (q(x_t|x_{t-1},x0)). However, it omits several major contributions and end-to-end elements described in the paper, especially the spindle noise schedule details (uniformly distributing corrupted information, token-dependent masking probabilities, and the schedule’s shaping rationale) and the broader design space/empirical finding around time-step handling, notably Time-Agnostic Decoding (pθ(x_{t-1}|x_t) without time input). It also does not reflect other paper sections such as training objective elaboration beyond the chain depiction, experimental setup/results, and conclusions. Therefore, it is not complete from beginning to end of the paper."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 4,
+              "reason": "Most components and formulas in the target figure are explicitly supported by the paper per the provided evidence: the diffusion states (x0, xt, xT), Markov forward kernel q(xt|xt−1), reverse kernel pθ(xt−1|xt,t), and the DiffusionBERT variants (time-agnostic pθ(xt−1|xt) and non-Markovian forward q(xt|xt−1,x0)) all appear to be mentioned and match the reference figure. The only potential hallucination risk is that the second evidence chunk (high-level discussion) does not explicitly mention the formal state notation or kernels; however, the first evidence chunk does, so the figure is largely grounded. Minor ambiguity remains around the exact presentation/labeling (e.g., specific intermediate token strings like \"[MASK] world !\" vs \"Hello [MASK] !\") being illustrative rather than formally stated for every panel, but these are consistent with the described masking diffusion example."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "The target figure accurately represents the key relationships described in the paper: (1) a forward noising process progressing x0 → … → xT via the Markov transition q(x_t|x_{t-1}) and a reverse denoising process xT → … → x0 via p_θ(x_{t-1}|x_t,t), matching the paper’s equations and Figure 1(a); (2) DiffusionBERT’s time-agnostic decoding p_θ(x_{t-1}|x_t) and the non-Markovian forward transition q(x_t|x_{t-1},x0) (spindle schedule), matching §3.3 and Figure 1(b). The illustrative masking states ([MASK]… → partially masked → clean text) are consistent with the described absorbing [MASK] corruption and iterative refinement. No mismatched arrow directions or incorrect conditionals are evident relative to the provided evidence and reference figures."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "The major methodology/component labels in the target figure are accurate and consistent with both the textual evidence and the reference figures. Panel (a) is correctly labeled as discrete-data diffusion, showing the standard Markov forward kernel q(x_t|x_{t-1}) and time-conditioned reverse kernel p_θ(x_{t-1}|x_t,t), along with the endpoint/intermediate states (x_T…x_0) and masked-token examples described in the paper. Panel (b) is accurately labeled as Non-Markovian DiffusionBERT, matching the paper’s stated non-Markovian forward process q(x_t|x_{t-1},x_0) and the time-agnostic decoding p_θ(x_{t-1}|x_t). No major component/methodology names appear misnamed or misleading relative to the provided evidence."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 5,
+              "reason": "The figure is highly schematic and centers on the paper’s main contributions: (a) depicts the standard discrete diffusion with an absorbing [MASK] state and reverse denoising model pθ(x_{t-1}|x_t,t), including the canonical chain factorization, and (b) highlights the key novelty—spindle schedule inducing a non-Markovian forward process q(x_t|x_{t-1},x0) while keeping the same reverse denoiser form. It uses minimal illustrative text tokens (e.g., 'Hello world !' → masks) only to convey the masking/absorption concept, avoids architectural or training-loss minutiae, and visually emphasizes the difference between Markovian vs non-Markovian forward corruption with concise annotations and dashed dependencies."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "The figure closely aligns with the paper’s described mechanisms and serves as strong supplementary material. Panel (a) visually explains the discrete diffusion setup with an absorbing [MASK] state and the reverse denoising chain pθ(x_{t-1}|x_t,t), matching the text’s Markov transition-matrix forward corruption and reverse factorization narrative. Panel (b) directly illustrates the spindle schedule’s key conceptual change: a non-Markovian forward process q(x_t|x_{t-1},x0) (shown via dashed dependencies from x0), while keeping the reverse model form for denoising. The inclusion of example token strings progressing toward fully masked xT supports the ‘Hello world!’ corruption example. Overall, it is readable, conceptually accurate, and clarifies the Markov vs non-Markov distinction and time-conditioning in the reverse process."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 5,
+              "reason": "The figure is highly minimal and focused on the core conceptual distinction: (a) Markov discrete diffusion with an absorbing [MASK] state and reverse denoising conditioned on t, versus (b) the spindle-induced non-Markovian forward process q(x_t|x_{t-1},x_0) and time-agnostic decoding pθ(x_{t-1}|x_t). It uses only essential elements (state nodes x0…xT, transition arrows, and concise mathematical labels) and a small illustrative token sequence to convey progressive masking. There are no decorative graphics, extraneous annotations, or unrelated metrics; the only added styling (pink dashed arrows) directly encodes the extra dependency on x0, which is central rather than redundant."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The Target Figure’s process is arranged horizontally with nodes (x_T … x_t … x_0) connected by arrows progressing from left to right, matching the primary directional flow seen in the top reference diagrams. While there are additional dashed vertical/pink arrows indicating non-Markovian dependencies, they do not change the main left-to-right sequence."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 5,
+              "reason": "The connection lines are arranged in parallel left-to-right chains with clear directional arrows, and they do not intersect. In panel (b), the dashed magenta guidance lines run horizontally/vertically beneath the main chain and are spaced to avoid overlaps with the black transition arrows and state links. Overall, the figure maintains clean separation between paths, consistent with the reference examples that also avoid line crossings."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Functionally related elements are grouped tightly in both subfigures: the forward/backward diffusion chain nodes (x_T … x_0) are aligned on a single horizontal line with adjacent transition arrows/labels placed directly between the corresponding states. Each subfigure’s key process-specific annotations are positioned immediately around the relevant links (pθ above, q below). In (b), the added non-Markovian dependencies are shown with dashed magenta arrows anchored near the corresponding states, remaining within the same local region rather than being separated. Overall, module proximity clearly supports reading the computation flow without long-distance cross-referencing."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 5,
+              "reason": "Nodes and labels are placed on consistent horizontal baselines in both subfigures, with circular nodes evenly spaced along the main flow. The left-to-right chains align cleanly across (a) and (b), and the dashed pink auxiliary connections in (b) follow a uniform horizontal level with vertically consistent arrow endpoints. Overall, the layout adheres well to an implicit grid with no noticeable misalignment."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 5,
+              "reason": "The figure establishes clear hierarchy similar to the top reference: two large, centered subfigures (a) and (b) are separated vertically, with bold subfigure captions placed prominently beneath each panel. The main process flow is emphasized by thick, continuous horizontal arrows and large circular nodes (x_T … x_0), making the primary structure immediately salient. Secondary information (token examples like \"[MASK]\" and \"Hello world!\", and conditional distributions pθ/q) is smaller and positioned near the corresponding transitions, supporting rather than competing with the main flow. In (b), the magenta dashed long-range arrows add emphasis to the non-Markovian aspect without overpowering the core chain, reinforcing the intended focus through color and placement."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 5,
+              "reason": "Yes. The target figure maintains clear whitespace between the two subpanels (a) and (b), with ample vertical separation around the captions and between the diagram elements (nodes, arrows, and annotations). Within each panel, labels (e.g., pθ, q) and token strings are not crowded against arrows or circles, and the dashed pink guide lines in (b) have enough clearance from other marks. Overall spacing is consistent and comparable to the best reference examples, avoiding overlap or visual clutter."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 5,
+              "reason": "Yes. Components serving the same roles are encoded consistently across both subfigures: states are circles (x_T, x_t, x_{t-1}, x_0) with the same fill/stroke style; forward/backward transitions use the same arrow styling; and the probabilistic mappings are consistently labeled (p_θ on the top path, q on the bottom path). The additional non-Markovian dependencies in (b) are uniformly indicated with the same pink dashed arrows, distinguishing them clearly without changing the base encoding for comparable elements. This matches the consistency seen in the reference diffusion diagrams."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 2,
+              "reason": "The target figure primarily uses abstract mathematical notation and schematic nodes/arrows (x_t states, transition probabilities pθ/q, timesteps), which remain conceptual rather than being replaced by concrete icons. There is limited use of symbolic abbreviation (e.g., [MASK], subscripts, dashed arrows) to stand in for processes, but these function as standard diagrammatic conventions rather than metaphorical/concrete imagery. Compared to the evidence references, it is similar to the diffusion schematic (mostly abstract) and far less metaphorical than pipeline-style figures that use blocks, labels, and illustrative modules."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure closely follows a very common academic schematic template: a two-panel (a)/(b) layout with left-to-right diffusion timelines, circular nodes, dashed arrows, and LaTeX-style math labels. It is visually and structurally near-identical to the provided reference diffusion diagrams (same arrangement, typography, and iconography), indicating minimal stylistic differentiation. While the pink dashed guidance lines add a small distinguishing accent, overall the design does not introduce a notably unique visual style beyond standard paper-figure conventions."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure follows a standard, uniform schematic style typical of ML papers: two horizontally aligned Markov chains with repeated circular nodes, symmetric arrows, and centered subfigure labels (a)/(b). This mirrors the visual reference/evidence almost exactly (same structure and typography), indicating little adaptation to a specific paper’s unique layout needs. While the dashed pink arrows in (b) add a small, paper-specific emphasis, the overall design remains conventional and not notably customized beyond minor annotation."
+            }
+          ]
+        }
+      },
+      "weighted_total": 4.0,
+      "used_anchor_paths": {
+        "q1.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q1.2": [
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q1.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q2.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q2.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q2.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q3.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q3.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q3.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.4": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.5": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.6": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q4.7": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q5.1": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q5.2": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ],
+        "q5.3": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models/DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+            "similarity": 1.0
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7348
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6763
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.6544
+          }
+        ]
+      }
+    }
+  ]
+}

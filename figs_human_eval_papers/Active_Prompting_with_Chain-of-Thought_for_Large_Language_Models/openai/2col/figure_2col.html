@@ -1,0 +1,254 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Uncertainty-based CoT Exemplar Selection Pipeline</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#1f2937;
+    --muted:#4b5563;
+    --light:#f3f4f6;
+    --lighter:#f8fafc;
+    --stroke:#111827;
+    --thin:#9ca3af;
+    --accent:#2563eb;
+    --accent2:#7c3aed;
+    --accent3:#059669;
+    --warn:#b45309;
+  }
+  html,body{height:100%; margin:0; background:var(--bg); font-family: Arial, Helvetica, sans-serif;}
+  #figure-root{
+    width:1800px; height:1200px;
+    margin:0 auto;
+    background:#fff;
+    position:relative;
+    box-sizing:border-box;
+  }
+  .caption{
+    position:absolute;
+    left:40px; right:40px;
+    bottom:18px;
+    height:96px;
+    border-top:1px solid #d1d5db;
+    padding-top:12px;
+    box-sizing:border-box;
+    color:#111827;
+    font-size:22px;
+    line-height:1.25;
+  }
+  .caption .caplabel{font-weight:700;}
+  /* Ensure deterministic SVG rendering */
+  svg{shape-rendering:geometricPrecision; text-rendering:geometricPrecision;}
+</style>
+</head>
+<body>
+<div id="figure-root">
+  <svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200">
+    <defs>
+      <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 z" fill="#111827"/>
+      </marker>
+      <marker id="arrowAccent" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 z" fill="#2563eb"/>
+      </marker>
+      <marker id="arrowMuted" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 z" fill="#6b7280"/>
+      </marker>
+
+      <style>
+        .title{font-size:34px; font-weight:700; fill:#111827;}
+        .subtitle{font-size:20px; fill:#4b5563;}
+        .panelTitle{font-size:22px; font-weight:700; fill:#111827;}
+        .label{font-size:20px; fill:#111827;}
+        .small{font-size:18px; fill:#111827;}
+        .muted{font-size:18px; fill:#4b5563;}
+        .tiny{font-size:16px; fill:#4b5563;}
+        .kpi{font-size:18px; fill:#111827; font-weight:700;}
+        .box{fill:#ffffff; stroke:#111827; stroke-width:2;}
+        .boxSoft{fill:#f8fafc; stroke:#111827; stroke-width:2;}
+        .boxLight{fill:#f3f4f6; stroke:#111827; stroke-width:2;}
+        .boxAccent{fill:#eef2ff; stroke:#2563eb; stroke-width:2.5;}
+        .boxAccent2{fill:#f5f3ff; stroke:#7c3aed; stroke-width:2.5;}
+        .boxAccent3{fill:#ecfdf5; stroke:#059669; stroke-width:2.5;}
+        .chip{fill:#ffffff; stroke:#9ca3af; stroke-width:1.5;}
+        .chipText{font-size:16px; fill:#111827;}
+        .arrow{stroke:#111827; stroke-width:2.5; fill:none; marker-end:url(#arrow);}
+        .arrowAccent{stroke:#2563eb; stroke-width:3; fill:none; marker-end:url(#arrowAccent);}
+        .arrowMuted{stroke:#6b7280; stroke-width:2.2; fill:none; marker-end:url(#arrowMuted);}
+        .dash{stroke:#9ca3af; stroke-width:2; stroke-dasharray:6 6; fill:none;}
+        .divider{stroke:#d1d5db; stroke-width:2;}
+      </style>
+    </defs>
+
+    <!-- Header -->
+    <text x="60" y="70" class="title">Uncertainty-based Chain-of-Thought Exemplar Selection (Pipeline Overview)</text>
+    <text x="60" y="105" class="subtitle">Unlabeled questions → sample k outputs → compute uncertainty → select top-n → human annotate CoT+answers → prepend exemplars for test-time CoT prompting</text>
+
+    <!-- Main panels (2-column journal style: left column = selection/annotation; right column = test-time prompting) -->
+    <!-- Left column boundary guides -->
+    <rect x="50" y="140" width="1085" height="920" rx="14" class="boxSoft"/>
+    <text x="80" y="180" class="panelTitle">Selection &amp; Exemplar Construction (from unlabeled training pool)</text>
+
+    <rect x="1165" y="140" width="585" height="920" rx="14" class="boxSoft"/>
+    <text x="1195" y="180" class="panelTitle">Inference (test-time CoT prompting)</text>
+
+    <!-- Left column: Step 1: Unlabeled dataset -->
+    <rect x="90" y="220" width="470" height="200" rx="12" class="box"/>
+    <text x="120" y="255" class="label">Unlabeled question pool</text>
+    <text x="120" y="285" class="muted">Dataset D = {q₁, q₂, …}</text>
+
+    <!-- Sample questions inside -->
+    <rect x="120" y="305" width="410" height="38" rx="8" class="chip"/>
+    <text x="135" y="330" class="chipText">q: “(unlabeled) reasoning question …”</text>
+    <rect x="120" y="352" width="410" height="38" rx="8" class="chip"/>
+    <text x="135" y="377" class="chipText">q: “(unlabeled) reasoning question …”</text>
+
+    <!-- Step 2: Sample k model outputs -->
+    <rect x="610" y="220" width="490" height="200" rx="12" class="boxAccent"/>
+    <text x="640" y="255" class="label">Sample k model outputs per question</text>
+    <text x="640" y="285" class="muted">Run the LLM k times → {a₁,…,a_k} (optionally with CoT)</text>
+
+    <!-- Outputs as stacked boxes -->
+    <rect x="640" y="310" width="205" height="40" rx="8" class="chip"/>
+    <text x="652" y="335" class="chipText">Output 1: answer a₁</text>
+    <rect x="855" y="310" width="205" height="40" rx="8" class="chip"/>
+    <text x="867" y="335" class="chipText">Output 2: answer a₂</text>
+    <rect x="640" y="360" width="205" height="40" rx="8" class="chip"/>
+    <text x="652" y="385" class="chipText">…</text>
+    <rect x="855" y="360" width="205" height="40" rx="8" class="chip"/>
+    <text x="867" y="385" class="chipText">Output k: answer a_k</text>
+    <rect x="1010" y="278" width="80" height="32" rx="8" class="chip"/>
+    <text x="1023" y="300" class="chipText">k</text>
+
+    <!-- Arrow: pool -> sample outputs -->
+    <path d="M560,320 C585,320 585,320 610,320" class="arrow"/>
+
+    <!-- Step 3: Compute uncertainty -->
+    <rect x="90" y="470" width="1010" height="250" rx="12" class="boxLight"/>
+    <text x="120" y="505" class="label">Compute uncertainty u(q) from the k outputs</text>
+    <text x="120" y="535" class="muted">Examples: disagreement / entropy (also variance, self-confidence)</text>
+
+    <!-- Uncertainty metrics mini-cards -->
+    <rect x="120" y="565" width="300" height="130" rx="12" class="box"/>
+    <text x="140" y="595" class="kpi">Disagreement</text>
+    <text x="140" y="622" class="tiny">Count unique answers among {a₁..a_k}</text>
+    <text x="140" y="648" class="tiny">u = (# unique) / k</text>
+    <text x="140" y="676" class="tiny">Higher → more uncertain</text>
+
+    <rect x="450" y="565" width="300" height="130" rx="12" class="box"/>
+    <text x="470" y="595" class="kpi">Entropy</text>
+    <text x="470" y="622" class="tiny">u = − Σ P(a|q) ln P(a|q)</text>
+    <text x="470" y="648" class="tiny">From answer-frequency distribution</text>
+    <text x="470" y="676" class="tiny">Higher → more uncertain</text>
+
+    <rect x="780" y="565" width="300" height="130" rx="12" class="box"/>
+    <text x="800" y="595" class="kpi">Other options</text>
+    <text x="800" y="622" class="tiny">Variance (numeric answers), etc.</text>
+    <text x="800" y="648" class="tiny">Self-confidence can be unreliable</text>
+
+    <!-- Arrow: sampled outputs -> compute uncertainty -->
+    <path d="M855,420 C855,445 855,445 855,470" class="arrow"/>
+
+    <!-- Step 4: Rank and select top-n uncertain -->
+    <rect x="90" y="760" width="510" height="260" rx="12" class="boxAccent2"/>
+    <text x="120" y="795" class="label">Rank questions by uncertainty</text>
+    <text x="120" y="825" class="muted">Select top-n most uncertain questions</text>
+
+    <!-- Ranking list -->
+    <rect x="120" y="855" width="450" height="46" rx="10" class="chip"/>
+    <text x="135" y="884" class="chipText">q₇  •  u=0.92  (very uncertain)</text>
+
+    <rect x="120" y="910" width="450" height="46" rx="10" class="chip"/>
+    <text x="135" y="939" class="chipText">q₂  •  u=0.87</text>
+
+    <rect x="120" y="965" width="450" height="46" rx="10" class="chip"/>
+    <text x="135" y="994" class="chipText">q₁₄ •  u=0.83</text>
+
+    <rect x="455" y="802" width="115" height="32" rx="8" class="chip"/>
+    <text x="465" y="824" class="chipText">top-n</text>
+
+    <!-- Arrow: uncertainty -> rank/select -->
+    <path d="M345,720 C345,740 345,740 345,760" class="arrow"/>
+
+    <!-- Step 5: Human annotation to form exemplars -->
+    <rect x="650" y="760" width="450" height="260" rx="12" class="boxAccent3"/>
+    <text x="680" y="795" class="label">Annotate selected questions</text>
+    <text x="680" y="825" class="muted">Human adds rationale (CoT) and final answer</text>
+    <text x="680" y="853" class="muted">Construct exemplar set E</text>
+
+    <!-- Exemplars -->
+    <rect x="680" y="885" width="390" height="46" rx="10" class="chip"/>
+    <text x="695" y="914" class="chipText">Exemplar: (q₇, CoT rationale, answer)</text>
+
+    <rect x="680" y="940" width="390" height="46" rx="10" class="chip"/>
+    <text x="695" y="969" class="chipText">Exemplar: (q₂, CoT rationale, answer)</text>
+
+    <rect x="680" y="995" width="390" height="46" rx="10" class="chip"/>
+    <text x="695" y="1024" class="chipText">… up to n exemplars</text>
+
+    <!-- Arrow: select -> annotate -->
+    <path d="M600,890 C625,890 625,890 650,890" class="arrow"/>
+
+    <!-- Divider from left to right column -->
+    <line x1="1135" y1="160" x2="1135" y2="1040" class="divider"/>
+
+    <!-- Right column: Test-time prompting -->
+    <!-- Step A: Test question -->
+    <rect x="1195" y="220" width="525" height="165" rx="12" class="box"/>
+    <text x="1225" y="255" class="label">Test question</text>
+    <text x="1225" y="285" class="muted">Input p (unseen)</text>
+    <rect x="1225" y="305" width="465" height="56" rx="10" class="chip"/>
+    <text x="1240" y="332" class="chipText">p: “(test) reasoning question …”</text>
+
+    <!-- Step B: Prepend exemplars -->
+    <rect x="1195" y="420" width="525" height="250" rx="12" class="boxAccent"/>
+    <text x="1225" y="455" class="label">Prepend exemplars E for CoT prompting</text>
+    <text x="1225" y="485" class="muted">Prompt = [E] + p</text>
+
+    <!-- Prompt structure -->
+    <rect x="1225" y="515" width="465" height="46" rx="10" class="chip"/>
+    <text x="1240" y="544" class="chipText">E₁: q + rationale + answer</text>
+    <rect x="1225" y="570" width="465" height="46" rx="10" class="chip"/>
+    <text x="1240" y="599" class="chipText">E₂: q + rationale + answer</text>
+    <rect x="1225" y="625" width="465" height="46" rx="10" class="chip"/>
+    <text x="1240" y="654" class="chipText">… (n exemplars)</text>
+
+    <!-- Arrow from exemplars (left) to prepend (right) -->
+    <path d="M1100,890 C1180,890 1180,520 1195,520" class="arrowAccent"/>
+
+    <!-- Arrow: test question -> prepend -->
+    <path d="M1458,385 C1458,402 1458,402 1458,420" class="arrow"/>
+
+    <!-- Step C: LLM output -->
+    <rect x="1195" y="720" width="525" height="210" rx="12" class="box"/>
+    <text x="1225" y="755" class="label">Model prediction with chain-of-thought prompting</text>
+    <text x="1225" y="785" class="muted">Generate rationale → final answer</text>
+
+    <rect x="1225" y="815" width="465" height="46" rx="10" class="chip"/>
+    <text x="1240" y="844" class="chipText">Rationale (CoT): step-by-step reasoning …</text>
+    <rect x="1225" y="870" width="465" height="46" rx="10" class="chip"/>
+    <text x="1240" y="899" class="chipText">Final answer: â</text>
+
+    <!-- Arrow: prepend -> output -->
+    <path d="M1458,670 C1458,692 1458,692 1458,720" class="arrow"/>
+
+    <!-- Optional note: self-consistency at inference (kept subtle) -->
+    <rect x="1195" y="955" width="525" height="85" rx="12" class="boxLight"/>
+    <text x="1225" y="990" class="small">Optional: infer multiple times and select most consistent answer</text>
+    <text x="1225" y="1018" class="tiny">Self-consistency can be applied at test time (not required by pipeline caption).</text>
+
+    <!-- Flow label along bottom of main diagram -->
+    <text x="90" y="1100" class="tiny">Left: selection on unlabeled pool. Right: use annotated exemplars for test-time CoT prompting.</text>
+
+    <!-- Keep space for caption area (bottom) -->
+    <rect x="40" y="1085" width="1720" height="1" fill="#ffffff" opacity="0"/>
+  </svg>
+
+  <div class="caption">
+    <span class="caplabel">Figure:</span>
+    Overview of the proposed uncertainty-based chain-of-thought exemplar selection pipeline: sample k model outputs per unlabeled question, compute uncertainty (e.g., disagreement/entropy), annotate the top-n uncertain questions with rationales and answers to form exemplars, then prepend these exemplars for test-time CoT prompting.
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,118 @@
+{
+  "paper_name": "Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models",
+  "evaluated_at": "2026-01-12T00:37:19.665499",
+  "figure_summary": "## 1. Core Contributions\n- Proposes **Active-Prompt**, an *uncertainty-based active selection* method to choose which task-specific questions should be **human-annotated with Chain-of-Thought (CoT)** exemplars for prompting LLMs.\n- Introduces and evaluates **multiple uncertainty metrics** (disagreement, entropy, variance, self-confidence) computed from **k repeated model answers** per unlabeled question to rank annotation candidates.\n- Demonstrates that selecting **most-uncertain questions** for CoT annotation yields **better downstream reasoning accuracy** than using fixed exemplars or random selection, across **eight reasoning datasets**.\n\n## 2. Method Components & Relations relevant to figures\n- **Inputs / data splits**\n  - Unlabeled training question pool \\(D_{tr}=\\{q_i\\}_{i=1}^l\\) (questions only).\n  - Test set \\(D_{te}=\\{p_i\\}_{i=1}^m\\).\n  - Annotation budget: select **\\(n\\)** questions to form exemplar set \\(E\\).\n\n- **Key modules**\n  1. **Uncertainty Estimation (pre-annotation)**\n     - For each training question \\(q_i\\), query the LLM **\\(k\\)** times to produce \\(k\\) candidate answers (with intermediate reasoning steps in CoT-style generation).\n     - Compute uncertainty \\(u(q_i)\\) via metrics:\n       - **Disagreement**: number of unique final answers among \\(k\\) samples, normalized by \\(k\\).\n       - **Entropy**: entropy over the empirical answer distribution from the \\(k\\) samples.\n       - **Variance** (primarily for numeric answers, with normalization by numbers mentioned in the question).\n       - **Self-confidence** (model-reported confidence categories; found unreliable due to overconfidence).\n\n  2. **Selection**\n     - Rank all \\(q_i\\) by \\(u(q_i)\\); select **top-\\(n\\)** most uncertain for annotation (ties broken randomly).\n\n  3. **Annotation**\n     - Humans annotate each selected question with **reasoning chain \\(c\\)** and **final answer \\(a\\)**, forming exemplars\n       \\[\n       E=\\{(q_1,c_1,a_1),\\dots,(q_n,c_n,a_n)\\}.\n       \\]\n\n  4. **Inference**\n     - Prepend \\(E\\) to each test question as a **few-shot CoT prompt** (replacing any initial exemplar set).\n     - Optionally apply **self-consistency** at inference: sample multiple completions at temperature \\(T\\), choose the most consistent final answer.\n\n- **Key relations / data flow emphasized**\n  - Repeated sampling \\(\\rightarrow\\) uncertainty score per question \\(\\rightarrow\\) selection for human labeling \\(\\rightarrow\\) new exemplar prompt \\(\\rightarrow\\) improved test-time performance.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **visualize the end-to-end pipeline** of Active-Prompt as a staged process (estimate uncertainty, rank/select, annotate, then prompt for inference).\n- To clarify **how uncertainty is operationalized** from multiple LLM generations (e.g., answer disagreement across \\(k\\) runs) and how that becomes a **ranking signal** for annotation decisions.\n- To make explicit the **human-in-the-loop role**: humans label only a *small, strategically chosen* subset, and these labeled items are then used as **task-specific CoT exemplars** for prompting.\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide a **complete empirical comparison** across all baselines/datasets or report full quantitative results (those belong in tables/experiments).\n- Not intended to validate **causal mechanisms inside the LLM** (e.g., why uncertainty correlates with usefulness), only to depict the *procedural method*.\n- Not intended to claim that the shown uncertainty metric (e.g., disagreement) is universally best; the paper explicitly considers multiple metrics and notes limitations (e.g., self-confidence overconfidence).\n- Not intended to demonstrate **fine-grained annotation quality**, cost analysis, or detailed prompt engineering beyond illustrating that selected questions are annotated with CoT and answers.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+      "caption": "Figure 1: Illustrations of our proposed approach. There are four stages. (1) Uncertainty Estimation: with or without a few human-written chain-of-thoughts, we query the large language model k (k “ 5 in this illustration) times to generate possible answers with intermediate steps for a set of training questions. Then, we calculate the uncertainty u based on k answers via an uncertainty metric (we use disagreement in this illustration). (2) Selection: according to the uncertainty, we select the most uncertain questions for annotation. (3) Annotation: we involve humans to annotate the selected questions. (4) Inference: infer each question with the new annotated exemplars.",
+      "scores": {
+        "Informativeness": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure’s four-stage pipeline (Uncertainty Estimation → Selection → Annotation → Inference) matches the summary. It shows k repeated LLM answers, computes uncertainty u via disagreement (e.g., u=1/5, 5/5, 4/5), ranks questions, selects “Most Uncertain Questions,” then human annotates to form exemplars E, and uses E for inference—consistent with the described method. Minor potential additions (e.g., explicit depiction of “with or without a few human-written CoTs,” ‘Fill in the question,’ and concrete toy math examples) are illustrative and do not introduce new method components beyond the summary."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 5.0,
+              "reason": "Relationships are correctly represented: repeated sampling per unlabeled question produces multiple candidate answers; an uncertainty metric (disagreement) yields u(q_i); questions are ranked by uncertainty and top uncertain ones are selected for human CoT+answer annotation to form E; E is then used as few-shot CoT exemplars at inference. This matches the summary’s stated data flow and module dependencies."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled in line with the summary: “Uncertainty Estimation,” “Selection,” “Annotation,” and “Inference,” plus “Uncertainty Ranking,” “Most Uncertain Questions,” and “New Exemplars E.” The uncertainty metric shown as disagreement-based u values and the use of few-shot/zero-shot CoT prompting terminology align with the paper summary."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The schematic cleanly foregrounds the main contribution described in the summary: a four-stage Active-Prompt pipeline (uncertainty estimation via k sampled answers → ranking/selection → human CoT annotation → inference with new exemplars). The key variables (k, u, top-n) and the exemplar set E are visually emphasized, while details of model internals or dataset-specific results are appropriately omitted."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "With the caption, the figure is understandable as supplementary material for the method: it shows how repeated LLM generations for each unlabeled question produce an uncertainty score (illustrated with disagreement), which then drives selection and annotation before being used as few-shot CoT exemplars at inference. Minor readability friction comes from small text in example question/answer boxes and dense layout, which may require zooming to parse."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "Most elements directly support the core ideas (unlabeled pool, k samples, uncertainty metric example, ranking list, selected set, human-annotated exemplars, and inference prompt). Some auxiliary visual choices—such as multiple illustrative question boxes and the explicit 'with or without few-shot CoT' fork—add slight clutter, but they do not introduce irrelevant claims beyond the summarized method and do not materially distract from the central pipeline."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 5.0,
+              "reason": "The pipeline is laid out in four clearly labeled stages with a left-to-right flow: (1) Uncertainty Estimation on the left, leading via arrows to (2) Selection in the upper middle/right, then down to (3) Annotation, and finally to (4) Inference at the lower right. This matches the staged process described in the summary and caption."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 4.0,
+              "reason": "Connection lines largely avoid crossings: the main arrows proceed horizontally and then vertically into the annotation/inference area. There is a slightly busy region where arrows go from uncertainty estimation toward the ranking/selection and then down into annotation, but they do not visibly cross in a way that creates ambiguity about data flow."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 5.0,
+              "reason": "Functionally related elements are grouped tightly: the unlabeled question pool and CoT/zero-shot prompting options sit together at the left input area; repeated samples and uncertainty computation are contained within the Uncertainty Estimation block; ranking and the selected set are adjacent in the Selection area; annotation outputs (new exemplars E) are placed directly above inference within the same dashed container, reflecting the summary’s human-in-the-loop exemplar creation and subsequent prompting."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "Major modules are aligned cleanly along an implicit grid (large rounded rectangles and the right-side dashed container). Within modules, text boxes and sample blocks are mostly neatly stacked. Minor internal elements (e.g., some question boxes and small numbered sample squares) show small spacing irregularities, but overall alignment remains tidy and readable."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 5.0,
+              "reason": "The four main stages stand out via prominent titles (numbered headings), large enclosing boxes, and central placement. Secondary details (example questions, k-samples, uncertainty values) are smaller and visually subordinate, which supports the figure’s purpose of presenting the end-to-end Active-Prompt pipeline rather than experimental results."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between major blocks and within containers, preventing clutter. Some areas (e.g., dense text within exemplar boxes and the left input/prompting options) are compact and could benefit from slightly more internal padding, but legibility is still acceptable."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 4.0,
+              "reason": "Similar roles are depicted consistently: questions are shown as rounded text boxes; stages use consistent large rounded containers and blue stage labels; the selected set is consistently emphasized (cylinder icon), and exemplars are consistently formatted as Q/A blocks. However, the use of multiple visual encodings for sampled answers (colored numbered squares) is not reused elsewhere, and some stylistic differences (e.g., dashed vs solid containers) could be more uniformly explained, though they do not contradict the method in the summary."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure replaces some abstract steps with concrete visual surrogates: a pipeline split into four numbered stages, a cylinder to depict the selected “Most Uncertain Questions” set, and colored boxes/tiles representing the k sampled answers used to compute uncertainty (disagreement). These are conventional but clear icons for data grouping and sampling; the uncertainty itself is still shown numerically (u = 1/5, 5/5, etc.) rather than via a more metaphorical symbol."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Stylistically, it closely follows a common method-figure template: rectangular modules, arrows, and callout boxes with a small model icon in the middle. While it includes the specific k-sample tiles and ranking-to-selection depiction aligned with Active-Prompt, the overall visual language is standard for ML/NLP pipeline illustrations rather than uniquely styled."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s staged procedure and emphasizes the core relation in the summary—repeated sampling → uncertainty score → ranking/selection → human annotation → new exemplars for inference. It explicitly embeds the two prompt variants mentioned (“Few-shot CoT” with optional existing exemplars vs “Zero-shot CoT”), and uses per-question k-sample blocks plus a ranking panel to make the uncertainty-to-selection mechanism concrete, which is more customized than a generic four-box flow."
+            }
+          ]
+        },
+        "weighted_total": 3.286
+      }
+    }
+  ]
+}

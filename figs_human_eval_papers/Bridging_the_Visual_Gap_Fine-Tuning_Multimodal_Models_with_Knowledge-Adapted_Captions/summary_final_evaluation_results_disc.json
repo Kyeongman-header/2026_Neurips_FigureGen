@@ -1,0 +1,356 @@
+{
+  "paper_name": "Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions",
+  "evaluated_at": "2026-01-12T00:50:19.456110",
+  "figure_summary": "## 1. Core Contributions\n- Introduces **KnowAda**, a **model-specific, data-centric caption adaptation** method that edits dense captions to match a target VLM’s visual/knowledge capabilities, aiming to **reduce hallucinations while retaining descriptiveness**.\n- Proposes **DNLI (Decomposed NLI)**, an evaluation framework for dense captions that **decomposes captions into atomic propositions** and evaluates each proposition’s **entailed/contradicted/neutral** status against a detailed ground-truth description.\n- Empirically argues that **naively fine-tuning small/medium VLMs on dense captions increases hallucinations**, and that standard simplification/curation baselines are insufficient compared to KnowAda.\n\n## 2. Method Components & Relations relevant to figures\n- **KnowAda pipeline modules (Figure 2, also illustrated conceptually in Figure 1):**\n  1) **Question generation (LLM)** from each dense caption: produce visual questions whose answers are contained in the caption.\n  2) **Knowledge probing (VLM):** for each question, sample multiple answers from the VLM; compute a **difficulty score** per question based on incorrect vs. total answers.  \n     - Difficulty: \\( df_i = \\frac{|I_i|}{|C_i|+|I_i|} \\)  \n     - Threshold \\(T\\): questions with \\(df_i > T\\) are treated as **unknown** (knowledge gap).\n  3) **Answer checking (LLM-as-judge):** label sampled VLM answers as correct/incorrect relative to the question and the caption-derived “ground truth.”\n  4) **Caption adaptation (LLM rephrase/edit):** **remove or simplify caption parts linked to unknown questions**, yielding “KnowAda” captions tailored to the probed VLM.\n- **Evaluation module DNLI (Figure 4):**\n  - Input: a VLM-generated dense description + a detailed ground-truth caption/description.\n  - Steps: **(i) proposition generation** (decompose the generated caption into atomic propositions) → **(ii) NLI entailment classification** of each proposition vs. ground truth → compute aggregate measures reflecting:\n    - **Descriptiveness** (via proportion/count of *entailed* propositions)\n    - **Hallucination/contradiction** (via proportion/count of *contradicted* propositions)\n- **Figure 3 ties method to outcome:** plots a **precision–recall trade-off** between descriptiveness and contradiction/hallucination across caption-processing baselines and KnowAda (with “Original captions” corresponding to \\(T=100\\%\\), i.e., no unknown content removed).\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **visualize the central causal story**: dense captions may exceed a small VLM’s visual/knowledge capacity; **probing reveals gaps**, and **adapting captions to those gaps** yields better fine-tuning behavior (less hallucination without collapsing descriptiveness).\n- To **make the pipeline operational and inspectable**: figures depict how caption content is converted into questions, how “unknown” is determined via sampled-answer difficulty, and how that drives caption editing.\n- To **justify evaluation choices for dense captions**: figures motivate and illustrate why sentence-level similarity metrics are inadequate and why **proposition-level entailment accounting (DNLI)** is used to separate “being detailed” from “being wrong.”\n- To **compare trade-offs across baselines** in a way aligned with the paper’s thesis: show that KnowAda achieves a **better balance** than trimming/simplification approaches.\n\n## 4. What Figures are NOT intended to show\n- Not a claim that KnowAda **adds new visual capability or knowledge** to the VLM; it primarily **changes training captions** to fit what the model already can reliably ground.\n- Not a comprehensive validation of **all** caption-quality dimensions (e.g., style, fluency, helpfulness for end users); the visualizations focus mainly on **descriptiveness vs. hallucination/contradiction**.\n- Not an exhaustive ablation of every component (e.g., alternative question generators, judges, or editing strategies); figures primarily support the **end-to-end pipeline rationale and its trade-off improvements**.\n- Not evidence that DNLI is a universal truth criterion; it is presented as an **evaluation framework conditioned on available ground-truth descriptions**, not as direct image-grounded verification.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p3__score1.00.png",
+      "caption": "Figure 4: DNLI Evaluation. Given a generated description by a VLM, we decompose it to atomic propositions. Then, we classify each proposition to either entailed, contradicted or neutral, conditioned on the ground-truth description. Finally, we calculate the descriptiveness and contradiction based on the number of entailed and contradicted propositions.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure captures the major DNLI components described in the summary: (i) a VLM-generated dense description, (ii) decomposition into atomic propositions (via an LLM), and (iii) NLI-based classification of each proposition against a ground-truth description into entailed/contradicted/neutral, followed by computing descriptiveness/contradiction from entailed/contradicted counts. It omits details about the exact aggregation metrics (e.g., proportions vs. counts) and does not show any formal definitions beyond the class labels, but those are minor relative to DNLI’s core structure."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 5.0,
+              "reason": "The figure is stepwise and readable without the paper: it shows inputs (image→VLM description; ground-truth caption), intermediate artifact (proposition list), the premise–hypothesis setup for NLI, and the final per-proposition labels. The mapping from labels to the two reported outcomes (descriptiveness and contradiction) is explicitly stated, making the operating principle clear."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "As a paper-level summary, the figure is not complete: it focuses only on the DNLI evaluation framework (Figure 4 in the summary) and does not cover the main method contribution KnowAda (question generation, knowledge probing with difficulty/threshold, answer checking, caption adaptation) or the empirical trade-off results (precision–recall style plot in Figure 3). Thus it summarizes only the evaluation part, not the full paper from beginning to end."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 5.0,
+              "reason": "The figure shows the DNLI pipeline described in the summary: generated dense description, decomposition into atomic propositions, NLI-based classification into entailed/contradicted/neutral, and computing descriptiveness/contradiction from counts. It does not introduce extra formulas or non-mentioned modules that would alter the method’s core claims."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 5.0,
+              "reason": "Relationships match the summary: VLM produces a description; an LLM decomposes it into propositions; each proposition is compared against the ground-truth description via NLI to assign entailment labels; aggregate descriptiveness and contradiction are then computed from entailed vs. contradicted propositions."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled consistently with the summary’s DNLI description: VLM (generator), LLM (proposition generation), NLI (entailment classification), and the three-way labels (entailed/contradicted/neutral). The overall title 'DNLI Evaluation' aligns with the paper’s naming."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The figure is tightly schematized around DNLI’s core steps described in the summary: (i) VLM-generated description, (ii) decomposition into atomic propositions, and (iii) NLI-based entailment labeling against a ground-truth description, culminating in descriptiveness/contradiction counts. It avoids diving into implementation specifics (e.g., model variants, datasets) and instead highlights the main contribution: proposition-level evaluation rather than sentence-level similarity."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "It functions well alongside the caption and paper text because it directly operationalizes the DNLI workflow in the summary: generated dense caption + ground-truth description → propositions → entailed/contradicted/neutral classification → aggregate descriptiveness and contradiction. The example (ducks) makes the entailment/contradiction distinction concrete and matches the summary’s intent to separate “being detailed” from “being wrong.”"
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure largely avoids decorative or irrelevant elements: the image, VLM/LLM/NLI blocks, and color-coded outcomes all support the DNLI explanation. Minor redundancy exists (the full generated paragraph appears before and after the VLM block, and the example text is somewhat verbose), but it does not distract from the core DNLI structure or claimed evaluation logic."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.571,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The diagram clearly flows left-to-right across three labeled stages: (i) Generate Descriptions → (ii) Generate Propositions → (iii) Calculate Entailment, matching the summary’s DNLI pipeline ordering (generated caption → propositions → NLI classification/aggregation)."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "Connections are simple vertical arrows within each column and there are no inter-column line crossings; the layout avoids any ambiguous wiring between modules."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Elements that belong to the same step (e.g., VLM and its generated description; LLM and proposition list; NLI and labeled outputs) are grouped within the same column, supporting the decomposition-then-NLI concept in the summary. Minor proximity issue: the NLI input (premise/hypothesis box) is slightly visually dense relative to the NLI block, making the association a bit less immediate than in earlier columns."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 5.0,
+              "reason": "The three columns are evenly partitioned with consistent vertical stacks (input box/image → model block → output box), aligned to an implicit grid, producing a clean, readable structure."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Main components (VLM/LLM/NLI) stand out via large labeled boxes with distinct colors, and the three-step headings emphasize the primary stages. However, the final aggregate metrics mentioned in the caption/summary (descriptiveness/contradiction computation) are only implied rather than visually highlighted as a distinct final output block."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between modules and columns. The top-right premise/hypothesis panel is text-heavy, reducing internal margins and making that area feel slightly cramped compared to the rest."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Similar roles use consistent visual encodings: model blocks are thick bordered colored rectangles; text artifacts are in bordered boxes; entailment outcomes are consistently color-coded (entailed/contradicted/neutral), reinforcing the DNLI categories described in the summary."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure replaces abstract DNLI steps with concrete pipeline icons/blocks (VLM → LLM → NLI) and uses color-coded labels (entailed/contradicted/neutral) as a compact symbolic representation of logical status. However, it largely remains literal (text boxes and arrows) rather than employing richer metaphors beyond standard module icons."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Visually, it follows a common three-stage flowchart template with boxed modules, arrows, and example text snippets. The inclusion of an NLI premise/hypothesis example and color-coded outcomes is clear but stylistically conventional for ML papers, with limited distinctive visual language beyond standard diagramming."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is well-tailored to DNLI as described in the summary: it explicitly instantiates (i) generated description, (ii) proposition decomposition, and (iii) entailment classification against a ground-truth description, culminating in entailed/contradicted/neutral counts as proxies for descriptiveness vs contradiction. The use of a worked example across panels (same content threaded through) makes the evaluation procedure more inspectable than a generic metrics block, indicating adaptation to the paper’s specific framework."
+            }
+          ]
+        },
+        "weighted_total": 4.181
+      }
+    },
+    {
+      "figure_file": "Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+      "caption": "Figure 2: Our proposed KnowAda pipeline. We first probe the knowledge of the VLM, identifying the known and unknown parts of the image description, by generating questions about the visual content of the image mentioned in the caption. Then, KnowAda identifies the knowledge gaps by judging the VLM answers to these questions. Finally, KnowAda adapt the description to match these gaps (e.g., removing the number of limousines mentioned in the caption, which relates to a question the model failed to answer).",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 3.0,
+              "reason": "The figure covers the main pipeline stages described in the summary: (i) LLM-based question generation from dense captions, (ii) VLM knowledge probing via answering those questions (with an implied notion of correct vs. incorrect answers), and (iii) LLM-based rephrasing/adaptation using identified unknown questions. However, key operational details from the summary are omitted, notably the difficulty score formula df_i = |I_i|/(|C_i|+|I_i|), the sampling of multiple VLM answers per question, the threshold T for declaring questions unknown, and the explicit LLM-as-judge answer checking module (it is only implicitly suggested by check/cross marks)."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the visual flow, one can understand the general operating principle: generate questions from a dense caption (via an LLM), probe the target VLM with those questions to find what it can/cannot answer reliably, then rephrase/edit the caption (via an LLM) using the unknown parts to remove/simplify risky details (illustrated by the limousine-count example). What is less clear without the paper is how 'unknown' is systematically determined (sampling, judging, thresholds), since the figure does not spell out the scoring/decision rule."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure is informative for the KnowAda method pipeline but does not summarize the broader paper from beginning to end as described in the summary: it does not include DNLI (proposition decomposition + NLI entail/contradict/neutral evaluation) or the trade-off/precision–recall analysis across baselines (Figure 3 in the summary). Thus it is not a complete overview of the paper’s full method-and-evaluation story, only of the adaptation pipeline."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 4.0,
+              "reason": "The figure depicts the core KnowAda modules described in the summary: LLM-based question generation from dense captions, VLM knowledge probing by answering those questions, and LLM-based rephrasing/editing conditioned on identified unknown questions. It does not introduce extra formulas (e.g., the difficulty-score equation/threshold) beyond what is summarized. One potential mismatch is that it explicitly brands the LLM as “Gemini,” which is not mentioned in the summary; however, this is an implementation detail and does not change the claimed pipeline structure."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 4.0,
+              "reason": "Component relationships match the summary’s causal flow: dense captions → LLM generates caption-grounded questions → VLM answers (knowledge probing) → incorrect/unknown questions are identified → LLM rephrases the caption using the set of unknown questions (illustrated as removing/simplifying problematic parts). The only notable omission vs. the summary is an explicit “LLM-as-judge” answer-checking stage; the figure visually implies correctness/incorrectness (checkmark/cross) but does not clearly show a separate judge module."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 4.0,
+              "reason": "Major stages are labeled consistently with the summary’s modules: “Question Generation,” “Knowledge Probing,” and “Rephrase by LLM,” with a generic “Your VLM.” This aligns with KnowAda being model-specific and LLM-driven. The label “Gemini” for the LLM is more specific than the summary (which only says LLM) but does not contradict the described method; it is simply not explicitly mentioned in the provided summary."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the core KnowAda pipeline described in the summary: (i) question generation from dense captions, (ii) VLM knowledge probing via answering those questions with correct/incorrect outcomes, and (iii) LLM rephrasing/editing to adapt the caption. The stepwise layout with arrows and a concrete example question about “how many limousines” makes the main contribution easy to follow, though it omits some key operational specifics from the summary (e.g., multi-sampling, difficulty score df_i, and threshold T), slightly reducing completeness of the schematic."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption/text, it effectively illustrates the causal story in the summary: probing reveals unknown parts and drives caption adaptation (e.g., removing the limousine count). The labels (i)–(iii), the inclusion of dense captions as input, and the visual distinction between correct vs. incorrect answers support understanding. However, because the figure does not visually encode the difficulty computation and thresholding that define 'unknown' in the summary, a reader may not fully understand how unknown questions are determined without consulting the text."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The diagram is mostly focused on essential components, but it includes branding-style 'Gemini' logos and decorative icons (sparkles, robot), which are not part of the method description in the summary and add visual clutter without clarifying the core mechanism. These elements do not alter the claimed method structure, but they reduce visual economy and slightly distract from the pipeline."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The pipeline is organized into three clearly labeled stages (i) Question Generation, (ii) Knowledge Probing, (iii) Rephrase by LLM, laid out left-to-right, matching the summary’s sequential KnowAda modules (question generation → probing/unknown detection → caption adaptation). Arrows predominantly move rightward between stages."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Connection lines mostly avoid crossings: within each stage, arrows run vertically between module icon/text and inputs/outputs, and the main inter-stage flow is a simple left-to-right arrow from the image/VLM area to the next step. There are multiple vertical arrows in each stage, but they are parallel and do not visibly tangle; minor visual clutter comes from having several arrows in the central probing area."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related items are grouped: question boxes near the question-generation LLM, the image and VLM centered in the probing stage with questions and sampled answers nearby, and the dense caption plus “unknown questions” placed together before the rephrase module. However, the caption document icon appears in both left and right sections, which can slightly weaken immediate perception of a single continuous artifact."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major modules are aligned in three columns with consistent top headings, and elements within columns follow a rough vertical stack. Some items (e.g., question boxes and answer boxes in the probing stage) are not perfectly grid-aligned, creating slight asymmetry, but overall alignment is neat and readable."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Main components stand out via column titles and central placement of the image + VLM in stage (ii), consistent with the summary emphasizing probing as the key decision point (difficulty/unknown). The LLM modules (shown as 'Gemini') are prominent, though the figure does not visually emphasize the 'unknown' decision/threshold mechanism beyond check/cross marks, so the core gating concept is present but not strongly highlighted."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is adequate whitespace between the three stages and between most boxes/icons, preventing crowding. The central probing stage contains several elements (image, VLM icon, questions, answers) that are closer together than other regions, but still legible."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles use consistent visual language: question prompts are in similar gray rounded rectangles; caption artifacts are shown as document icons; stages are labeled uniformly; correct/incorrect outputs are consistently marked with check/cross. One mild inconsistency is that different module types (LLM vs VLM) are indicated by brand/logo text vs a generic robot icon, which is understandable but not a fully uniform shape/color scheme for 'model blocks'."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces abstract pipeline stages with concrete visual metaphors: document icons for dense captions, question boxes for generated probes, checkmark/cross for correct vs. incorrect answers, and an edited-document icon with colored highlights for caption adaptation. These symbols concretize the summary’s modules (question generation, probing with correctness, and LLM rephrase/edit) rather than leaving them as purely textual blocks."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "The layout is a fairly common three-stage method diagram, but it includes a distinctive, story-like instantiation (a specific image plus example questions/answers and the check/cross outcome) that goes beyond generic blocks-and-arrows. However, stylistically it still resembles standard ML pipeline schematics rather than a strongly unique visual style."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The design is tailored to KnowAda’s core causal story from the summary: it explicitly shows question generation from dense captions, probing a target VLM on an image, identifying failures (unknowns) via incorrect answers, and then feeding the unknown questions into an LLM-based rephrase step. The inclusion of concrete example questions tied to caption parts (e.g., limousine count) makes the layout more paper-specific than a uniform, template flowchart."
+            }
+          ]
+        },
+        "weighted_total": 3.695
+      }
+    },
+    {
+      "figure_file": "Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p0__score1.00.png",
+      "caption": "Figure 1: KnowAda identifies knowledge gaps of a VLM and adapts the dense caption accordingly. The KnowAda dense captions are better suited for downstream fine-tuning of the VLM.",
+      "scores": {
+        "Informativeness": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Fidelity": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The schematic centers on the main contribution described in the summary: dense captions + target VLM feeding into KnowAda, producing an adapted caption with removed/simplified content. The before/after caption example visually demonstrates the core idea (edit dense caption to match VLM capability). However, the figure does not explicitly visualize the intermediate pipeline modules (question generation, probing, answer checking) mentioned in the summary, so the abstraction is clear but slightly under-specified relative to the described method."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "Given the caption (“identifies knowledge gaps…adapts the dense caption…better suited for fine-tuning”), the figure functions well as a conceptual overview: it shows inputs, the KnowAda block, and the output caption with deletions/changes. It supports the paper’s causal story at a high level, but readers may still need the text/other figures to understand how ‘knowledge gaps’ are identified (difficulty thresholding via Q/A sampling) since that mechanism is not depicted here."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The figure avoids decorative elements overall, but readability is reduced by large blocks of dense caption text that dominate the layout. The strikethrough/red/green edits communicate adaptation effectively, yet the long paragraphs are visually heavy and may be more detailed than necessary to convey the central point, creating some redundancy/visual clutter relative to the conceptual goal."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure has a clear top-to-bottom flow: dense captions at the top feed into the central KnowAda module, which outputs the knowledge-adapted captions at the bottom. Side inputs (image on the left, VLM on the right) are visually secondary but clearly connected to the central module."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "Arrows/connection lines are simple and do not cross. Inputs (top, left, right) converge cleanly to the central KnowAda box, and the output arrow proceeds downward without intersecting other connectors."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are placed near each other: the KnowAda box is centered between its two main inputs (image and target VLM) and vertically between input dense caption (top) and adapted caption (bottom). The only minor issue is that the top caption is large and visually dominates space, making the central processing step feel slightly separated."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major components are largely aligned on an implicit grid: top caption centered above KnowAda, output caption centered below, with left (image) and right (VLM icon) horizontally aligned around the central box. Some small misalignment/spacing asymmetry between left and right side elements reduces perfect grid neatness."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The central KnowAda module is emphasized via a bordered box and central placement, matching the conceptual focus in the summary (KnowAda as the key pipeline). However, the large text blocks (dense captions) compete for attention due to their size, slightly diluting the visual emphasis on the method itself."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between modules (top caption, central module region, bottom caption). The central area (KnowAda box with side inputs) is not cramped, though the overall figure is vertically dense because the caption text boxes occupy substantial area."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Roles are represented consistently: inputs are shown as distinct sources (caption text, image, VLM icon) feeding a single processing box, and the output is a modified caption with visual markup (red strikethrough/green insertion) to indicate adaptation. Styling is mostly consistent, though different element types (icons vs. photos vs. text blocks) naturally use different visual forms."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 3.0,
+              "reason": "The figure replaces abstract steps (knowledge gaps, adaptation) with concrete visual symbols: an image example, a central 'KnowAda' box, a 'Your VLM' robot icon, and before/after caption blocks. The use of red strikethrough and green highlighting concretely encodes removal/retention of caption content, but it remains fairly literal rather than metaphorical beyond standard annotation cues."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "Visually it follows a common pipeline-template style (input dense caption + image → method block → edited output caption). The robot icon and color-coded edits add some flair, but the overall aesthetic and composition are conventional for ML method overview figures and do not present a distinctly unique visual style."
+            },
+            {
+              "question": "adaptability",
+              "score": 3.0,
+              "reason": "The layout is tailored to the paper’s specific causal story (dense caption exceeds VLM capacity → KnowAda adapts caption), showing an explicit concrete example and the exact kind of edits (removal of uncertain details) that match the summary’s intent. However, it does not strongly break away from standard left-to-right / top-to-bottom block-diagram design."
+            }
+          ]
+        },
+        "weighted_total": 2.095
+      }
+    }
+  ]
+}

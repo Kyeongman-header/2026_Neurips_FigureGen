@@ -1,0 +1,134 @@
+{
+  "paper_name": "Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding",
+  "evaluated_at": "2026-01-12T03:09:27.114719",
+  "figure_summary": "## 1. Core Contributions\n- Identifies **instruction disturbance** (adding role-style prefixes to the user instruction) as a **systematic trigger that increases LVLM hallucinations**, by perturbing multimodal alignment and amplifying dataset-driven biases / language priors.\n- Proposes **Instruction Contrastive Decoding (ICD)**, a **training-free, model-agnostic inference-time decoding** method that reduces hallucinations by **contrasting token distributions** from standard vs. disturbed instructions.\n- Empirically validates that ICD mitigates **object- and attribute-level hallucinations** on standard hallucination benchmarks (POPE, MME hallucination subsets, LLaVA-Bench) and can **improve general perception/recognition scores** on the broader MME suite.\n\n## 2. Method Components & Relations relevant to figures\n- **Key modules**\n  - **Visual encoder** extracts image features \\(X_V\\).\n  - **Fusion / alignment module (Q-Former)** uses learnable queries \\(Q_K\\) and an **instruction-conditioned** interaction to produce fused visual features:\n    \\[\n    Z_V = Q_\\theta(X_V, Q_K, X_{ins})\n    \\]\n  - **Projector** \\(g(\\cdot)\\) maps fused features to LLM embedding space: \\(H_V = g(Z_V)\\).\n  - **Frozen LLM** generates tokens conditioned on \\(H_V\\) and the instruction/query.\n\n- **Instruction disturbance mechanism**\n  - Constructs two instruction variants:\n    - **Standard instruction**: \\(X_{ins} = X_q\\)\n    - **Disturbed instruction**: \\(X_{ins} = [X_d, X_q]\\) where \\(X_d\\) is a **role prefix** (positive or negative; especially “confusing/uncertain” prefixes intended to raise alignment uncertainty).\n  - This yields **two decoding distributions** over next tokens (one per instruction variant) under the same image.\n\n- **ICD relation (contrastive decoding)**\n  - Uses the **difference between distributions** produced with standard vs. disturbed instructions to:\n    - **expose / amplify** hallucination-prone concepts under disturbance, then\n    - **suppress (“detach”)** them in the final generation by subtracting/penalizing the disturbed-induced probabilities relative to the standard distribution.\n  - Conceptually, figures focus on ICD as a **two-pass inference procedure** (same image, two prompts) whose contrast reweights token probabilities away from hallucinated concepts.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To visually argue that **hallucinations are not only a model/training artifact but can be modulated at inference** by changing the *instruction* that conditions multimodal fusion.\n- To illustrate the **causal chain**: role-prefix disturbances → altered Q-Former alignment behavior / higher uncertainty → **hallucination amplification** in token probabilities → ICD contrast step → **hallucination suppression** in output.\n- To provide **evidence patterns** (e.g., frequency/co-occurrence of hallucinated objects under different instruction conditions) supporting the claim that disturbance interacts with **statistical biases and language priors** rather than random noise.\n\n## 4. What Figures are NOT intended to show\n- Not intended to claim **full interpretability** of internal Q-Former/LLM representations; figures use distributions/outputs as observable proxies, not mechanistic proofs.\n- Not intended to present ICD as **training** or as adding new model parameters/modules; the depicted pipeline emphasizes **frozen components** and **inference-only changes**.\n- Not intended to demonstrate that disturbance prefixes are realistic user prompts; they are primarily a **controlled intervention** to surface and contrast hallucination tendencies.\n- Not intended to establish that ICD eliminates all hallucinations universally; figures support **reduction trends** (object/attribute hallucinations) rather than absolute guarantees.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+      "caption": "Figure 1: An illustration on inference framework and contrastive decoding process of ICD method. At the core (middle orange box), the framework integrates a frozen image encoder, LLM, and query vectors (gray box) within the Q-Former, focusing solely on adjusting the standard and disturbance instructions. The latter, exemplified by adding role prefixes like ‘You are a confused object detector,’ aims to increase multimodal alignment uncertainty. This results in two distinct distributions: one from the standard instruction and another influenced by the disturbance. The contrastive decoding method (right orange box) highlights how disturbance instructions amplify hallucinated concepts (‘person and fork’), which are then corrected by subtracting probabilities derived from the standard instruction, ensuring accurate recognition of the correct concept ‘dog’.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1",
+              "score": 4.0,
+              "reason": "The figure covers the main architectural components and relationships described in the summary: frozen image encoder, Q-Former with learned queries, instruction-conditioned processing (standard vs. disturbed role-prefix instruction), frozen LLM decoding, and the two resulting next-token distributions. It also depicts the key ICD idea of contrasting distributions to down-weight hallucinated concepts (e.g., 'person'/'fork') and favor the correct one ('dog'). However, it omits some explicit notation/details from the summary such as the projector g(·) mapping to LLM embedding space (H_V = g(Z_V)) and the explicit fusion equation Z_V = Q_θ(X_V, Q_K, X_ins)."
+            },
+            {
+              "question": "1.2",
+              "score": 4.0,
+              "reason": "As a standalone, the figure makes the operating principle largely understandable: run the same image with two prompts (standard vs. role-disturbed), obtain two token probability distributions, then apply a contrastive decoding step to suppress disturbance-amplified hallucination tokens. The visual cues (two branches, probability bars, subtraction/penalization) and the concrete example help. Some specifics of how the contrast is mathematically formed (exact reweighting rule/parameters) are only sketched, so a reader may not be able to implement it from the figure alone."
+            },
+            {
+              "question": "1.3",
+              "score": 2.0,
+              "reason": "The figure is focused on the method pipeline (instruction disturbance and ICD decoding) and does not summarize broader paper content end-to-end. In particular, it does not include the empirical validation aspects highlighted in the summary (benchmarks like POPE/MME/LLaVA-Bench, object- vs. attribute-level hallucination reductions, and broader MME perception improvements), nor the evidence patterns about dataset priors/bias interactions. Thus it is informative for the core method but not a complete summary of the full paper."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 4.0,
+              "reason": "The figure’s main components (image encoder, Q-Former with learned queries, frozen LLM, standard vs. disturbed instruction producing two token distributions, and an inference-time contrastive decoding step) align with the summary. Minor extra architectural blocks inside Q-Former (e.g., explicit self-attention/feedforward boxes and a ‘Fully Connected’ block) are not explicitly mentioned in the summary, but they are conventional and do not change the core method claim. The contrastive-decoding expression is schematic and matches the summary’s idea of subtracting/penalizing disturbed-induced probabilities relative to the standard distribution."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 5.0,
+              "reason": "Relationships are consistent with the summary: the same image is encoded, the instruction conditions multimodal fusion (via Q-Former), two prompt variants (standard vs. role-prefix disturbed) yield two next-token distributions, and ICD uses their contrast to downweight hallucination-prone tokens amplified under disturbance. The causal narrative ‘disturbance increases uncertainty → amplifies hallucinated concepts → contrastive decoding suppresses them’ is faithful to the described mechanism."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Major elements are labeled in line with the summary: Image Encoder, Q-Former with learned queries, LLM (implicitly frozen as per caption/summary), disturbance instruction via role prefix, standard instruction, and ‘Contrastive Decoding’ for ICD. The example role prefix (‘You are a confused object detector’) and the depiction of hallucinated concepts being detached match the summary’s disturbance and ICD descriptions."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure centers on the main contribution described in the summary: a two-pass inference setup (standard vs. disturbed instruction) producing two token distributions, followed by contrastive decoding to suppress hallucinated concepts. The causal chain—disturbance prefix → changed distribution → ICD subtraction → corrected output (dog vs. person/fork)—is visually explicit. However, it includes relatively low-level architectural blocks (self-attention/cross-attention/feedforward, fully connected) that are more detailed than needed to convey the core idea of training-free contrastive decoding."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "As a supplement to the caption/text, the figure matches the paper summary well: it shows the frozen image encoder and LLM with a Q-Former-like fusion, the construction of standard and disturbed instructions (role-prefix example), the resulting two probability distributions, and the ICD contrast step that downweights disturbance-amplified hallucinations. The example outcome (selecting 'dog' while detaching 'person' and 'fork') directly supports the summary’s claimed mechanism and intended explanatory purpose."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "Most elements support the core story, but there is noticeable redundancy/extra complexity: duplicating detailed internal Q-Former sublayers (self-attention/cross-attention/feedforward) on both branches and showing multiple colored query blocks adds visual load without clearly increasing understanding of ICD beyond what the two distributions and subtraction already convey. Still, these are conventional architectural depictions and do not contradict the core claims, so they are only a moderate readability penalty rather than a severe one."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The figure has a clear left-to-right flow consistent with the described two-pass inference: input image/text query on the left, the central framework producing two distributions (standard vs. disturbance), and the contrastive decoding outcome on the right."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Connections are mostly clean and do not visibly cross in a confusing way. The only mild complexity comes from having two parallel branches (disturbed vs. standard) feeding into their respective probability distributions, but these are drawn with separated lanes and remain readable."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally coupled components are grouped: the two instruction variants are placed symmetrically within the same central block; each branch keeps Q-Former, projector/FC, and LLM close together; the decoding/contrast step is placed adjacent on the right, matching the method narrative."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major blocks (input, encoder, central framework, contrastive decoding) align well along a horizontal axis, and the two branches are arranged in parallel. Some internal submodules (e.g., small attention/FFN rectangles and query tokens) are slightly uneven, but not enough to harm comprehension."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 5.0,
+              "reason": "The main stages stand out by size and background panels (central orange framework and right orange decoding box). Key components (Image Encoder, Q-Former, LLM) are large, strongly colored, and centrally positioned, reflecting the claimed frozen backbone with instruction changes and ICD on the output."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is sufficient spacing between the left inputs, the central framework, and the right decoding panel. Within the central block, elements are somewhat dense (multiple small tokens/boxes), but margins are still adequate to distinguish modules and branches."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles use consistent visual encoding: both branches depict the same Q-Former structure, both have a 'Fully Connected' box and a blue LLM box, and probability distributions are shown similarly. Minor inconsistencies arise from varied small token shapes/patterns (e.g., dashed/filled query blocks) that are not fully explained but do not alter the method structure."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces several abstract ideas from the summary (instruction disturbance, multimodal alignment uncertainty, and token-probability reweighting) with concrete visual surrogates: role-prefix prompt boxes for disturbance vs. standard instruction, a two-branch pipeline to embody the two-pass inference, and bar charts with colored labels plus red X marks to depict hallucinated concepts being suppressed. While the Q-Former/LLM blocks are still shown in conventional schematic form, the hallucination amplification/suppression is communicated via intuitive, concrete probability bars rather than only equations."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "The overall look is a fairly standard ML systems diagram (modules as boxes, arrows, and side-by-side branches), which is common for decoding/pipeline papers. The more distinctive aspect is the explicit pairing of (i) disturbed vs. standard instruction flows feeding the same frozen backbone and (ii) a probability-bar contrast panel that narratively illustrates hallucinated tokens (e.g., “person”, “fork”) being ‘detached’ to recover the correct concept (“dog”), aligning with the paper’s ICD idea. Still, the visual style itself is not strongly differentiated beyond typical templates."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s core causal chain in the summary: a controlled intervention (role-prefix disturbance) produces a second distribution, and ICD contrasts the two at inference. This is expressed by a specialized two-branch architecture (same image, two instructions) culminating in a dedicated ‘Contrastive Decoding’ panel, rather than a generic single-stream LVLM diagram. The figure foregrounds the inference-only nature (frozen components) and the two distributions, which is specifically suited to ICD’s training-free contrast mechanism."
+            }
+          ]
+        },
+        "weighted_total": 4.019
+      }
+    }
+  ]
+}

@@ -1,0 +1,228 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>SafeDecoding overview and motivation</title>
+<style>
+  body { margin: 0; background: #ffffff; font-family: Arial, Helvetica, sans-serif; }
+  #figure-root { width: 1200px; height: 1500px; margin: 0 auto; position: relative; background: #fff; }
+  .panel-title { font-size: 26px; font-weight: 700; fill: #111; }
+  .panel-subtitle { font-size: 16px; fill: #444; }
+  .small { font-size: 14px; fill: #444; }
+  .tiny { font-size: 12px; fill: #555; }
+  .label { font-size: 16px; fill: #222; }
+  .label-bold { font-size: 16px; font-weight: 700; fill: #222; }
+  .mono { font-family: "Arial", Helvetica, sans-serif; letter-spacing: 0.2px; }
+  .box { fill: #ffffff; stroke: #222; stroke-width: 2; }
+  .soft-box { fill: #fbfbfd; stroke: #222; stroke-width: 2; }
+  .dashed { stroke-dasharray: 8 7; }
+  .divider { stroke: #c9c9cf; stroke-width: 2; }
+  .arrow { stroke: #222; stroke-width: 2.5; fill: none; }
+  .arrow-muted { stroke: #666; stroke-width: 2.2; fill: none; }
+  .accent-safe { fill: #1f7a4a; }
+  .accent-harm { fill: #b42318; }
+  .accent-blue { fill: #1b4fb8; }
+  .pill-safe { fill: #e7f6ee; stroke: #1f7a4a; stroke-width: 1.8; }
+  .pill-harm { fill: #fdecec; stroke: #b42318; stroke-width: 1.8; }
+  .pill-neutral { fill: #eef2ff; stroke: #1b4fb8; stroke-width: 1.8; }
+  .legend-box { fill: #ffffff; stroke: #c9c9cf; stroke-width: 1.5; }
+  .chip { rx: 10; ry: 10; }
+  .tokenbar-outline { fill: #fff; stroke: #222; stroke-width: 1.6; }
+  .gridline { stroke: #e6e6ea; stroke-width: 1; }
+  .note { font-size: 13px; fill: #444; }
+  .caption-area { fill: #ffffff; stroke: #c9c9cf; stroke-width: 1.5; }
+  .caption { font-size: 14px; fill: #111; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-label="SafeDecoding overview diagram">
+  <defs>
+    <marker id="arrowhead" markerWidth="12" markerHeight="10" refX="10.5" refY="5" orient="auto">
+      <path d="M0,0 L12,5 L0,10 Z" fill="#222"></path>
+    </marker>
+    <marker id="arrowheadMuted" markerWidth="12" markerHeight="10" refX="10.5" refY="5" orient="auto">
+      <path d="M0,0 L12,5 L0,10 Z" fill="#666"></path>
+    </marker>
+  </defs>
+
+  <!-- Background and main title -->
+  <rect x="30" y="30" width="1140" height="1340" fill="#ffffff" stroke="#c9c9cf" stroke-width="2"/>
+  <text x="60" y="80" class="panel-title">SafeDecoding: motivation (token-probability view) and inference-time mechanism</text>
+  <text x="60" y="110" class="panel-subtitle">Jailbreak success can occur when attack-aligned tokens dominate standard decoding, even when refusal tokens have nonzero probability.</text>
+
+  <!-- Vertical divider between left and right -->
+  <line x1="600" y1="140" x2="600" y2="1320" class="divider"/>
+
+  <!-- LEFT PANEL: Motivation -->
+  <text x="60" y="165" class="label-bold">A. Why standard decoding can jailbreak</text>
+  <text x="60" y="190" class="small">At a given generation step, the model assigns probabilities to next-token candidates.</text>
+
+  <!-- User prompt box -->
+  <rect x="60" y="220" width="500" height="90" class="soft-box"/>
+  <text x="80" y="252" class="label-bold">Adversarial (jailbreak) prompt</text>
+  <text x="80" y="278" class="label">“Explain how to make a bomb …”</text>
+  <text x="80" y="303" class="tiny">(illustrative harmful intent)</text>
+
+  <!-- Arrow to token distribution -->
+  <path d="M310,310 L310,355" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <!-- Token distribution mock -->
+  <rect x="60" y="355" width="500" height="380" class="box"/>
+  <text x="80" y="386" class="label-bold">Next-token distribution pθ(· | x)</text>
+  <text x="80" y="410" class="small">Refusal tokens exist (nonzero), but attack-aligned tokens can dominate the top choices.</text>
+
+  <!-- Horizontal baseline axis -->
+  <line x1="90" y1="680" x2="530" y2="680" class="arrow-muted" marker-end="url(#arrowheadMuted)"/>
+  <text x="90" y="705" class="tiny">higher probability →</text>
+
+  <!-- Token bars (left panel) -->
+  <!-- Harmful top tokens -->
+  <rect x="90" y="445" width="430" height="40" class="pill-harm chip"/>
+  <text x="105" y="471" class="label" fill="#222">“Sure,”</text>
+  <text x="460" y="471" class="small" fill="#222">p≈0.34</text>
+
+  <rect x="90" y="500" width="360" height="40" class="pill-harm chip"/>
+  <text x="105" y="526" class="label" fill="#222">“Here’s”</text>
+  <text x="460" y="526" class="small" fill="#222">p≈0.22</text>
+
+  <rect x="90" y="555" width="300" height="40" class="pill-harm chip"/>
+  <text x="105" y="581" class="label" fill="#222">“a tutorial”</text>
+  <text x="460" y="581" class="small" fill="#222">p≈0.16</text>
+
+  <rect x="90" y="610" width="240" height="40" class="pill-harm chip"/>
+  <text x="105" y="636" class="label" fill="#222">“for making”</text>
+  <text x="460" y="636" class="small" fill="#222">p≈0.10</text>
+
+  <!-- Refusal tokens present but smaller -->
+  <rect x="90" y="665" width="120" height="40" class="pill-safe chip"/>
+  <text x="105" y="691" class="label" fill="#222">“Sorry,”</text>
+  <text x="460" y="691" class="small" fill="#222">p≈0.04</text>
+
+  <rect x="90" y="720" width="90" height="40" class="pill-safe chip"/>
+  <text x="105" y="746" class="label" fill="#222">“I can’t”</text>
+  <text x="460" y="746" class="small" fill="#222">p≈0.03</text>
+
+  <!-- Explanation of failure under greedy/top-k -->
+  <rect x="60" y="760" width="500" height="170" class="soft-box"/>
+  <text x="80" y="792" class="label-bold">Standard decoding (e.g., greedy / top-k)</text>
+  <text x="80" y="818" class="small">Selects from the highest-probability tokens in pθ.</text>
+  <text x="80" y="844" class="small">If attack-aligned tokens dominate, generation begins with affirmation</text>
+  <text x="80" y="868" class="small">and the model proceeds into harmful continuations.</text>
+
+  <!-- Outcome arrow -->
+  <path d="M310,930 L310,980" class="arrow" marker-end="url(#arrowhead)"/>
+  <rect x="60" y="980" width="500" height="130" class="box"/>
+  <text x="80" y="1012" class="label-bold">Possible outcome</text>
+  <text x="80" y="1038" class="label">Attack succeeds: harmful-response tokens are sampled early.</text>
+  <text x="80" y="1064" class="small">Even though refusal tokens were present, they were not amplified.</text>
+
+  <!-- Legend -->
+  <rect x="60" y="1140" width="500" height="160" class="legend-box"/>
+  <text x="80" y="1170" class="label-bold">Legend (token types)</text>
+  <rect x="80" y="1186" width="170" height="34" class="pill-harm chip"/>
+  <text x="95" y="1208" class="small" fill="#222">Attack-aligned tokens</text>
+  <rect x="80" y="1230" width="170" height="34" class="pill-safe chip"/>
+  <text x="95" y="1252" class="small" fill="#222">Refusal / safety tokens</text>
+  <rect x="280" y="1186" width="240" height="34" class="pill-neutral chip"/>
+  <text x="295" y="1208" class="small" fill="#222">Model-side operation / set</text>
+  <text x="280" y="1252" class="tiny">Probabilities are illustrative to convey dominance vs. nonzero refusal mass.</text>
+
+  <!-- RIGHT PANEL: SafeDecoding -->
+  <text x="640" y="165" class="label-bold">B. SafeDecoding: expert + intersection + reweighting</text>
+  <text x="640" y="190" class="small">Training phase fine-tunes a safety expert; inference phase modifies the token distribution.</text>
+
+  <!-- Training phase box -->
+  <rect x="640" y="220" width="520" height="190" class="soft-box"/>
+  <text x="660" y="250" class="label-bold">Training phase: construct safety expert model</text>
+
+  <!-- Original model -->
+  <rect x="660" y="275" width="220" height="60" class="box"/>
+  <text x="675" y="310" class="label">Original LLM (θ)</text>
+
+  <!-- Fine-tuning arrow -->
+  <path d="M890,305 L940,305" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <!-- Expert model -->
+  <rect x="950" y="275" width="190" height="60" class="box"/>
+  <text x="965" y="310" class="label">Safety expert (θ')</text>
+
+  <text x="660" y="360" class="small">Fine-tune on safety-aware query–refusal pairs to strengthen refusal behavior.</text>
+
+  <!-- Inference phase big box -->
+  <rect x="640" y="440" width="520" height="860" class="box"/>
+  <text x="660" y="472" class="label-bold">Inference phase (per decoding step, applied early)</text>
+
+  <!-- User query input -->
+  <rect x="660" y="500" width="480" height="70" class="soft-box"/>
+  <text x="680" y="530" class="label-bold">Input query x</text>
+  <text x="680" y="554" class="label">Same user prompt sent to both models</text>
+
+  <!-- Split arrows to models -->
+  <path d="M900,570 L780,615" class="arrow" marker-end="url(#arrowhead)"/>
+  <path d="M900,570 L1020,615" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <!-- Model output distributions -->
+  <rect x="690" y="615" width="300" height="175" class="soft-box"/>
+  <text x="705" y="645" class="label-bold">Original top tokens Vθ (top-k)</text>
+  <rect x="705" y="662" width="265" height="30" class="pill-harm chip"/>
+  <text x="720" y="683" class="small" fill="#222">“Sure,” “Here’s,” …</text>
+  <rect x="705" y="700" width="190" height="30" class="pill-safe chip"/>
+  <text x="720" y="721" class="small" fill="#222">“Sorry,” …</text>
+  <text x="705" y="760" class="tiny">Sorted by pθ(·|x)</text>
+
+  <rect x="860" y="615" width="280" height="175" class="soft-box"/>
+  <text x="875" y="645" class="label-bold">Expert top tokens Vθ' (top-k)</text>
+  <rect x="875" y="662" width="245" height="30" class="pill-safe chip"/>
+  <text x="890" y="683" class="small" fill="#222">“Sorry,” “I can’t,” …</text>
+  <rect x="875" y="700" width="170" height="30" class="pill-harm chip"/>
+  <text x="890" y="721" class="small" fill="#222">“Sure,” …</text>
+  <text x="875" y="760" class="tiny">Sorted by pθ'(·|x)</text>
+
+  <!-- Intersection step -->
+  <rect x="660" y="820" width="480" height="140" class="pill-neutral"/>
+  <text x="680" y="850" class="label-bold">Step 1: intersect top tokens to form sample space V</text>
+  <text x="680" y="876" class="small">V = (top-k from θ) ∩ (top-k from θ'), with minimum size c.</text>
+  <text x="680" y="902" class="small">Keeps helpful candidates while ensuring safety-relevant tokens remain selectable.</text>
+
+  <!-- Draw a small set depiction -->
+  <rect x="690" y="920" width="200" height="30" class="pill-harm chip" opacity="0.95"/>
+  <text x="705" y="941" class="small" fill="#222">Shared: “Sure,” …</text>
+  <rect x="900" y="920" width="220" height="30" class="pill-safe chip" opacity="0.95"/>
+  <text x="915" y="941" class="small" fill="#222">Shared: “Sorry,” …</text>
+
+  <!-- Reweighting step -->
+  <rect x="660" y="980" width="480" height="160" class="soft-box"/>
+  <text x="680" y="1010" class="label-bold">Step 2: reweight probabilities on V</text>
+  <text x="680" y="1036" class="small">Construct new distribution:</text>
+  <text x="680" y="1060" class="label mono">P(xₙ | x) ∝ pθ(xₙ | x) + α ( pθ'(xₙ | x) − pθ(xₙ | x) )</text>
+  <text x="680" y="1086" class="small">If expert favors refusal tokens, their probabilities increase; attack-aligned tokens decrease.</text>
+
+  <!-- Before/After mini bars -->
+  <rect x="680" y="1110" width="220" height="22" class="pill-harm chip"/>
+  <text x="910" y="1126" class="tiny">attenuate attack-aligned</text>
+  <rect x="680" y="1138" width="220" height="22" class="pill-safe chip"/>
+  <text x="910" y="1154" class="tiny">amplify refusals</text>
+
+  <!-- Sampling step -->
+  <path d="M900,1150 L900,1185" class="arrow" marker-end="url(#arrowhead)"/>
+  <rect x="660" y="1185" width="480" height="95" class="box"/>
+  <text x="680" y="1217" class="label-bold">Decode using P on V</text>
+  <text x="680" y="1242" class="small">Sample/choose next token(s) so refusal prefixes become more likely.</text>
+  <text x="680" y="1267" class="tiny">Typically applied for the first few steps to keep efficiency and helpfulness.</text>
+
+  <!-- Output -->
+  <path d="M900,1280 L900,1315" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <rect x="640" y="1315" width="520" height="70" class="soft-box"/>
+  <text x="660" y="1345" class="label-bold">Resulting response tendency</text>
+  <text x="660" y="1368" class="small">More refusals; fewer attack-aligned continuations under jailbreak prompts.</text>
+
+  <!-- Caption area -->
+  <rect x="30" y="1385" width="1140" height="90" class="caption-area"/>
+  <text x="60" y="1415" class="caption">
+    SafeDecoding overview and motivation: jailbreak success arises when harmful-response tokens dominate standard decoding, despite nonzero probabilities for refusal tokens. SafeDecoding fine-tunes a safety expert model and, at inference, intersects top tokens and reweights probabilities to amplify refusals and attenuate attack-aligned continuations.
+  </text>
+</svg>
+</div>
+</body>
+</html>

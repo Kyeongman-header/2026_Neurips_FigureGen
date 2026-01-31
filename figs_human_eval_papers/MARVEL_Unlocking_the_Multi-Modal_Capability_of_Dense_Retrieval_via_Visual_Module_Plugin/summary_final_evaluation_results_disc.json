@@ -1,0 +1,261 @@
+{
+  "paper_name": "MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin",
+  "evaluated_at": "2026-01-12T02:44:47.550936",
+  "figure_summary": "## 1. Core Contributions\n- Proposes **MARVEL**, a **universal dense retriever** that embeds **queries, text documents, and image documents** into a **single retrieval space** by plugging a **visual module** into a strong text dense retriever (T5-ANCE).\n- Introduces a **visual-module plugin mechanism** (CLIP image encoder + projection) that injects **patch-level image features as “pseudo token” embeddings** into the T5-ANCE input stream to reduce the text–image modality gap.\n- Defines a **two-stage training recipe**: (i) **visual module adaptation pretraining** via **image–caption contrastive alignment**, then (ii) **language-model finetuning** for multi-modal dense retrieval.\n- Builds **ClueWeb22-MM**, a large-scale multi-modal retrieval benchmark derived from ClueWeb22 using **anchor text as queries** and **anchor-linked pages as weak relevance signals**, with extracted text and image documents.\n\n## 2. Method Components & Relations relevant to figures\n- **Base retriever backbone:** **T5-ANCE** (pretrained on MS MARCO), used as the *unified encoder* for queries and documents once image features are injected.\n- **Visual module plugin:**\n  - **CLIP visual encoder** produces patch/grid features \\( \\vec{h}_I = \\{\\vec{h}_{I1}, \\dots, \\vec{h}_{I49}\\} \\).\n  - A **linear projection layer** maps CLIP features into the **T5-ANCE input embedding space**: \\( \\vec{I}_i = \\text{Linear}(\\vec{h}_{Ii}) \\).\n  - Constructed **input embedding sequence** for an image document includes special prompt tokens and projected image patches followed by text tokens (caption / associated text):  \n    \\( \\vec{X} = \\vec{e}(\\langle start\\rangle); \\vec{I}_1; \\dots; \\vec{I}_{49}; \\vec{e}(\\langle end\\rangle); \\vec{e}_1; \\dots; \\vec{e}_k \\).\n- **Universal encoding & retrieval:**\n  - Same encoder (**T5-ANCE-CLIP**) encodes **query**, **text docs**, and **image docs** (image docs represented via **image features + caption**).\n  - **Relevance scoring** uses **cosine similarity** between query and document embeddings; retrieval via **KNN search**.\n- **Training relations (as depicted):**\n  - **Stage 1 (Figure 2a):** pretrain/adapt the visual module using **caption–image and image–caption contrastive losses** (named \\(L_{CI}\\) and \\(L_{IC}\\) in the figure caption).\n  - **Stage 2 (Figure 2b):** **finetune the language model** for multi-modal retrieval with **modality-balanced sampling** (explicitly sampling both text and image negatives, following prior multi-modal DR practice).\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To visually justify that MARVEL is a **retrieval-centric, end-to-end dense retrieval system** (not a reranking pipeline) where **both modalities are handled inside one encoder**.\n- To clarify **how images are converted into T5-compatible “token-like” embeddings** (patch features + projection + boundary tokens) and **where they enter the language model’s computation**.\n- To communicate the **two-stage optimization strategy**: first align/adapt the visual plugin (image–caption contrast), then train the unified encoder for **multi-modal retrieval with balanced modality exposure**.\n- To position MARVEL as a **plugin-based extension of an existing text retriever**, emphasizing preservation/reuse of **text matching knowledge** while enabling image understanding.\n\n## 4. What Figures are NOT intended to show\n- They are not meant to provide **full empirical evidence** (e.g., detailed metrics, ablations, or statistical significance) for performance gains—only the conceptual pipeline/architecture.\n- They do not aim to prove that MARVEL achieves **perfect modality alignment** or fully eliminates the modality gap; they illustrate the *mechanism* claimed to alleviate it.\n- They are not intended as an exhaustive description of **dataset construction details** (noise, filtering, annotation quality) or all training hyperparameters.\n- They do not depict a **divide-and-conquer multi-retriever + fusion reranker** approach; the figures emphasize **unified dense retrieval**, not late fusion across separate modality-specific retrievers.",
+  "figure_evaluations": [
+    {
+      "figure_file": "MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+      "caption": "Figure 2: The Architecture of Multi-modAl Retrieval model via Visual modulE pLugin (MARVEL). We first pretrain the visual modules using the image-caption alignment task (Figure 2(a)) and then finetune the language model to conduct multi-modal retrieval (Figure 2(b)).",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "content_coverage",
+              "score": 4.0,
+              "reason": "The figure clearly includes the major architectural components from the summary: T5-ANCE/MS MARCO–pretrained language model as backbone, a plug-in visual module composed of a CLIP image encoder plus a projection layer, and the two-stage training recipe with Stage 1 caption–image and image–caption contrastive alignment losses (L_CI, L_IC) and Stage 2 modality-balanced hard-negative finetuning (L_LM). However, several retrieval-specific details mentioned in the summary are not explicitly shown: the patch-level pseudo-token sequence construction (e.g., 49 patch tokens with start/end tokens), the single unified embedding space depiction for queries/text/image, and the cosine-similarity + KNN retrieval step."
+            },
+            {
+              "question": "standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the visual evidence alone, one can infer the operating principle: a text dense retriever is extended by plugging in a CLIP-based visual module (with projection) and trained in two stages (contrastive image–caption alignment, then multimodal finetuning with balanced negatives) to handle queries, text docs, and image docs. What is less intelligible without the paper is exactly how images are converted into token-like embeddings (patch/pseudo-token injection) and how retrieval is performed (explicit scoring function and nearest-neighbor search are not depicted)."
+            },
+            {
+              "question": "completeness",
+              "score": 3.0,
+              "reason": "The figure summarizes the core method pipeline (architecture + two-stage optimization) but does not cover other major paper elements in the summary such as the universal single retrieval space formulation details (cosine similarity, KNN), the explicit pseudo-token embedding sequence/formula, or the benchmark construction contribution (ClueWeb22-MM). As a result, it is not a beginning-to-end summary of the paper’s contributions beyond the model/training recipe."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 4.0,
+              "reason": "The figure largely matches the summary: CLIP image encoder + projection as a plug-in to a MS MARCO–pretrained text dense retriever (T5-ANCE), followed by two-stage training with image–caption contrastive adaptation (L_CI, L_IC) then modality-balanced finetuning. Minor elements like the fire/snowflake icons (train/freeze) and example captions/negatives are not explicitly mentioned in the summary, but they are auxiliary and do not change the core method claims."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 4.0,
+              "reason": "Relationships are mostly consistent: (a) uses caption-image and image-caption contrastive objectives to adapt the visual module; (b) uses the same backbone with the visual plug-in for multi-modal retrieval finetuning with modality-balanced hard negatives (sampling text and image negatives). One potential mismatch is that the summary emphasizes injecting patch-level pseudo tokens into the T5-ANCE input stream, while the figure depicts a plug-in visual module but does not explicitly show the patch-token injection sequence/boundary tokens; however, it does not contradict it."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled in line with the summary: 'CLIP Image Encoder', 'Projection layer', 'Plug-IN', 'MS MARCO Pretrained Language Model', and the two stages 'Visual Module Adaptation Pretraining' with L_CI/L_IC and 'Modality-Balanced Hard Negative Training'. These align with the described MARVEL architecture and training recipe."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the main contribution described in the summary: a CLIP-based visual module (image encoder + projection) plugged into a strong text dense retriever (MS MARCO–pretrained language model/T5-ANCE), plus the two-stage recipe (a) visual-module adaptation pretraining with caption–image contrastive losses and (b) modality-balanced finetuning for retrieval. Most elements serve this narrative, though some space is spent on concrete example captions/images that are not strictly necessary to convey the architecture."
+            },
+            {
+              "question": "contextual_match",
+              "score": 5.0,
+              "reason": "As a supplement to the caption and paper text, it clearly maps to the summary’s method components and relations: Stage 1 explicitly labels caption-image and image-caption contrastive training (LCI/LIC), and Stage 2 shows queries, text docs, and image docs entering the same plugged-in model with modality-balanced hard negative training. The pipeline structure (visual module plugin into the base retriever) is visually unambiguous and consistent with the described two-stage training."
+            },
+            {
+              "question": "redundancy",
+              "score": 3.0,
+              "reason": "It largely avoids decorative graphics, but includes several example-specific items (multiple sample images, checkmarks, and specific negative captions/places) that add visual clutter without improving understanding of the core mechanism (pseudo-token injection/projection and unified retrieval training). These examples do not contradict the summary, but they reduce visual economy and make the figure denser than necessary."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.286,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 5.0,
+              "reason": "Both subfigures exhibit a clear left-to-right pipeline: inputs (captions/images or queries/text+image docs) on the left, the T5-ANCE backbone with the visual-module plug-in in the middle, and training objectives/paired examples on the right. This matches the summary’s two-stage recipe and the notion of a unified encoder receiving injected image features."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 4.0,
+              "reason": "Connection arrows are mostly non-overlapping and easy to follow. Within each subfigure, arrows proceed linearly without obvious crossings. Minor visual density occurs around the plug-in depiction and objective text blocks, but it does not create ambiguous crossings that would obscure the method structure described in the summary."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 5.0,
+              "reason": "Functionally related elements are grouped: the CLIP image encoder and projection layer are enclosed together as the visual module, and this module is placed directly under/attached to the T5-ANCE language model as a plug-in. The right-side training examples (caption–image pairs for Stage 1; modality-balanced negatives for Stage 2) are colocated with their corresponding loss labels, reflecting the summary’s stage-wise training relations."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "Major blocks are aligned in a clean grid-like layout: top row for Stage 1, bottom row for Stage 2, with consistent left/middle/right columns. Some smaller elements (e.g., example captions and checkmarks) are not perfectly aligned to an invisible grid, but the core architecture blocks and flow remain neatly aligned."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "Key components stand out: the T5-ANCE pretrained language model box is large and central, and the visual module is clearly boxed and labeled as a plug-in. Stage titles (adaptation pretraining vs finetuning) and losses (L_CI/L_IC and L_LM) are prominent. However, auxiliary illustrative images and captions are also visually salient, slightly competing with the main architectural blocks."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient spacing between the left input icons, the central encoder/plug-in block, and the right objective/examples. The figure is information-dense, and some text (especially in the right-side example areas) is tight, but elements do not appear to overlap or crowd to the point of impairing readability."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 4.0,
+              "reason": "Similar roles use consistent visual treatment: boxed modules for model components (language model, visual module, projection, CLIP encoder), consistent arrow styling for flow, and consistent use of icons for queries/text/image docs. Color cues are mostly consistent (e.g., different outline colors for different input types), though some decorative symbols (e.g., flames/snowflakes) introduce extra visual conventions not strictly necessary for role consistency."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 3.0,
+              "reason": "The figure replaces abstract components with concrete, conventional icons and visual cues: separate query/text/image document symbols; example photos for image docs; and checkmarks to indicate positive alignment in contrastive training and retrieval. These help instantiate the paper’s abstract ideas (image–caption alignment, unified retrieval) but remain standard schematic metaphors rather than inventive symbolic encoding."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 2.0,
+              "reason": "Visually, it follows a common two-panel deep-learning architecture diagram template: boxed modules (T5-ANCE backbone, CLIP encoder, projection), arrows for dataflow, and illustrative examples. While the content (visual-module ‘plugin’ with pseudo tokens) is method-specific per the summary, the graphic style and visual language are not notably unique compared to typical multimodal training diagrams."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s two-stage recipe and plugin concept described in the summary: panel (a) isolates visual-module adaptation via caption–image and image–caption contrastive losses (LCI/LIC), while panel (b) shows modality-balanced finetuning with both text and image negatives. The figure also foregrounds the ‘plug-in’ structure (CLIP + projection inserted into the T5-ANCE stream) and uses paired modality examples to match the multi-modal retrieval goal, indicating purposeful adaptation beyond a generic single-stage pipeline."
+            }
+          ]
+        },
+        "weighted_total": 3.857
+      }
+    },
+    {
+      "figure_file": "MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+      "caption": "Figure 1: Retrieval Pipeline with Our MARVEL Model. MARVEL incorporates the visual module plugin, aiming to unlock the multi-modal capabilities of well trained dense retrieval model.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 3.0,
+              "reason": "The figure covers several major high-level components from the summary: a MARVEL encoder originating from MS MARCO/T5-ANCE pretraining, a vision module, contrastive image–text alignment, unified query/document encoding, and KNN-based retrieval to a ranking list. However, it omits key method-specific details emphasized in the summary, notably the plugin mechanism of injecting CLIP patch-level features as pseudo tokens (including the 49 patch tokens, linear projection into T5 embedding space, and start/end boundary tokens), the explicit cosine-similarity scoring, and the two-stage recipe separation (visual-module adaptation vs LM finetuning with modality-balanced sampling)."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the visual flow alone, one can understand the general operating principle: queries and documents (text and image) are encoded by a MARVEL encoder augmented with a vision module; there is contrastive alignment between images and texts; retrieval is performed via KNN search to produce a ranked list. What is not intelligible without the paper is how images are represented inside the encoder (pseudo-token injection/projection) and how training is staged/what losses specifically are used, but the overall retrieval-centric pipeline is clear."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure is limited to the retrieval pipeline concept and does not summarize the full paper arc described in the summary: it does not depict the explicit two-stage training procedure (stage 1 vs stage 2 finetuning), modality-balanced sampling, or the benchmark/dataset contribution (ClueWeb22-MM construction with anchor text queries and weak relevance). As a result, it is not a beginning-to-end summary of the paper’s contributions."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 3.0,
+              "reason": "The figure mostly matches the summary’s high-level pipeline (retrieval with a unified encoder plus a visual module plugin and contrastive pretraining). However, several depicted elements are not explicitly supported by the summary: the explicit MS MARCO label inside the model box, the generic ‘Pretrain’ arrow between MS MARCO and the encoders, and the simplified ‘Vision Module’ block without showing the key claimed mechanism (CLIP patch features + linear projection + pseudo tokens with start/end prompts). These additions/omissions do not fully contradict the summary, but they introduce/abstract away core structural details of how the visual plugin works."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 3.0,
+              "reason": "Core relations are directionally consistent: queries and documents are encoded, then KNN search produces a ranking list; and there is a contrastive alignment step between images and texts associated with the vision module. But the figure’s relationships are underspecified or potentially misleading relative to the summary: it suggests the vision module only processes the document branch, while the summary emphasizes a single unified encoder (T5-ANCE-CLIP) handling queries, text docs, and image docs with injected pseudo tokens. Also, the figure collapses the two-stage recipe into a single ‘Contrastive Training’ block and does not represent stage-2 language-model finetuning with modality-balanced negatives."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 3.0,
+              "reason": "Labels like ‘Queries’, ‘Image Docs’, ‘Text Docs’, ‘KNN Search’, and the model name ‘MARVEL’ are consistent with the summary. However, major components are not accurately/sufficiently named as in the summary: the backbone is not labeled as T5-ANCE, the vision module is not labeled as CLIP + projection, and the contrastive losses (L_CI/L_IC) are not shown. The ‘MS MARCO’ label is plausible given T5-ANCE pretraining but is not explicitly tied to the figure’s stated pipeline components in the summary."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The schematic emphasizes the main contribution described in the summary: a unified MARVEL encoder (T5-ANCE-based) that handles queries, text docs, and image docs, plus a visual module and contrastive pretraining leading to KNN retrieval. It stays mostly at the concept level (pipeline blocks and flow). However, it omits some key clarifying details from the summary that would improve interpretability—e.g., the pseudo-token injection of patch features and the explicit two-stage breakdown (visual adaptation vs LM finetuning)—so the high-level message is clear but not maximally informative."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 3.0,
+              "reason": "As a supplement to the caption (“Retrieval Pipeline with Our MARVEL Model”), it conveys a retrieval-centric pipeline and indicates a pretraining/contrastive alignment component plus a vision module feeding the document side. But several summary-critical specifics are not visually explicit (CLIP + linear projection, patch/pseudo tokens, cosine similarity, modality-balanced sampling, and the fact that the same unified encoder encodes all modalities). This makes the figure understandable in broad strokes, yet it may leave readers uncertain about how images are converted into the T5-compatible input stream and how training is staged."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "Most elements support the core idea (queries/image docs/text docs, encoders, contrastive alignment, vision module, KNN search, ranking list). Iconography is simple and largely functional rather than decorative. Minor redundancy/visual clutter exists (multiple icons and stylized graphics like the 3D embedding scatter and some large pictograms) that do not add much methodological specificity, but they do not substantially obscure the main pipeline."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.571,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure generally reads top-to-bottom: inputs (Queries / Image Docs / Text Docs) at the top, MARVEL encoders and pretraining/contrastive alignment in the middle, and KNN search + ranking list at the bottom/right. Some arrows are lateral (e.g., within the contrastive training box and to the vision module), but the dominant flow remains clear and consistent with a single unified retrieval pipeline."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 3.0,
+              "reason": "Most connectors avoid crossings, but the long vertical black connection from the document encoder region down into the vision module visually intersects/competes with nearby elements in the dashed container and can be perceived as overlapping the conceptual separation between encoder and plugin. Crossings are not severe, yet the routing is not maximally clean."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are placed near each other: the query/document encoders sit together within the MARVEL encoder block, and the contrastive image-text alignment (stage-1 adaptation) is grouped in a dedicated box adjacent to the vision module. The retrieval output (embedding space dots, KNN search, ranking list) is also colocated at the bottom/right."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 3.0,
+              "reason": "Major blocks are roughly aligned (top input icons in a row; central dashed container; bottom retrieval outputs), but internal components do not adhere to a strong grid. Mixed centering (e.g., query/document boxes, vision module, contrastive training box) and varied spacing reduce the neatness of horizontal/vertical alignment."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The main system boundary (dashed 'MARVEL Encoders' region) and the central retrieval mechanism (KNN search to ranking list) stand out. Inputs are visually separated with icons and labels, and the vision module is highlighted as a distinct component, supporting the summary’s emphasis on a plugin-based extension to a text retriever."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "While most elements have adequate whitespace, the middle region is dense: the contrastive training box, the vision module, and the document-encoder connection are close, making the composition feel slightly cramped. Margins are sufficient for readability but not generous."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Role-consistent visual encoding is mostly maintained: inputs use icon+label styling; query and document are represented with similar rounded boxes; the dashed boundary consistently denotes the MARVEL module. Color usage (e.g., distinct colors for different inputs) is fairly consistent, though some components (e.g., the thick black connector vs other arrows) use differing visual conventions for links."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces several abstract components from the summary with concrete icons/symbols: queries (star), image docs (picture icon), text docs (TXT page), neural encoders (network doodles), and KNN retrieval space (colored points + axes) culminating in a ranking list. This iconography helps convey the unified retrieval idea and the visual-module plugin concept without heavy math, aligning with the paper’s intent to communicate pipeline/architecture."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Stylistically, it largely follows a common academic block-diagram template (dashed container, labeled boxes, arrows, simple icons). While clean and readable, there is limited distinctive visual language beyond standard clip-art-like modality icons and generic network sketches, so it does not strongly differentiate itself from typical retrieval-pipeline figures."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 3.0,
+              "reason": "The layout is moderately adapted to the paper’s specific narrative by explicitly juxtaposing (i) MS MARCO pretraining for the encoder, (ii) contrastive image–text alignment, and (iii) KNN search producing a ranking list—matching the summary’s emphasis on retrieval-centric, end-to-end dense retrieval with a visual plugin. However, it remains a fairly standard top-down pipeline and does not exploit more customized structure (e.g., clearly showing pseudo-token injection into T5-ANCE) that would more uniquely reflect the method’s key mechanism."
+            }
+          ]
+        },
+        "weighted_total": 3.248
+      }
+    }
+  ]
+}

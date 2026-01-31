@@ -1,0 +1,253 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>IIW Human-in-the-loop Annotation Pipeline</title>
+<style>
+  :root{
+    --w:1200px;
+    --h:1500px;
+    --bg:#ffffff;
+    --ink:#1f2937;
+    --muted:#4b5563;
+    --line:#9ca3af;
+    --soft:#e5e7eb;
+    --panel:#f9fafb;
+
+    --vlm:#e6f2ff;
+    --human:#eaf7ee;
+    --data:#fff7e6;
+    --loop:#f3e8ff;
+
+    --accent:#2563eb;
+    --accent2:#16a34a;
+    --accent3:#b45309;
+    --accent4:#7c3aed;
+  }
+  html,body{margin:0;padding:0;background:var(--bg);font-family:Arial, Helvetica, sans-serif;}
+  #figure-root{
+    width:var(--w);
+    height:var(--h);
+    margin:0 auto;
+    position:relative;
+    background:var(--bg);
+  }
+  .small { font-size: 15px; }
+  .body { font-size: 18px; }
+  .title { font-size: 26px; font-weight: 700; }
+  .subtitle { font-size: 16px; }
+  .caption { font-size: 14px; }
+
+  /* SVG text color MUST use fill */
+  .t-ink { fill: var(--ink); }
+  .t-muted { fill: var(--muted); }
+  .t-white { fill: #ffffff; }
+  .t-accent { fill: var(--accent); }
+  .t-accent2 { fill: var(--accent2); }
+  .t-accent3 { fill: var(--accent3); }
+  .t-accent4 { fill: var(--accent4); }
+
+  .box { stroke: var(--line); stroke-width: 2; rx: 16; ry: 16; }
+  .box-soft { stroke: var(--soft); stroke-width: 2; rx: 18; ry: 18; }
+  .chip { stroke: var(--line); stroke-width: 1.5; rx: 12; ry: 12; }
+
+  .arrow { stroke: #374151; stroke-width: 2.4; fill: none; }
+  .arrow-muted { stroke: #6b7280; stroke-width: 2.2; fill: none; }
+  .arrow-loop { stroke: var(--accent4); stroke-width: 2.6; fill: none; stroke-dasharray: 7 6; }
+  .arrow-active { stroke: var(--accent); stroke-width: 2.6; fill: none; stroke-dasharray: 6 5; }
+
+  .divider { stroke: var(--soft); stroke-width: 2; }
+  .dotted { stroke-dasharray: 4 6; }
+
+  .legend-swatch { stroke: var(--line); stroke-width: 1.5; rx: 10; ry: 10; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-label="Overview of the ImageInWords human-in-the-loop annotation pipeline.">
+  <defs>
+    <marker id="arrowHead" markerWidth="12" markerHeight="12" refX="10.5" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#374151"></path>
+    </marker>
+    <marker id="arrowHeadMuted" markerWidth="12" markerHeight="12" refX="10.5" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#6b7280"></path>
+    </marker>
+    <marker id="arrowHeadLoop" markerWidth="12" markerHeight="12" refX="10.5" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#7c3aed"></path>
+    </marker>
+    <marker id="arrowHeadActive" markerWidth="12" markerHeight="12" refX="10.5" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#2563eb"></path>
+    </marker>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Header -->
+  <text x="60" y="70" class="title t-ink">ImageInWords (IIW) annotation pipeline (human-in-the-loop)</text>
+  <text x="60" y="100" class="subtitle t-muted">Seeded by VLM generations; corrected and refined by crowd workers; improved via active-learning updates.</text>
+
+  <!-- Legend -->
+  <rect x="820" y="45" width="320" height="92" class="box-soft" fill="var(--panel)"></rect>
+  <text x="840" y="75" class="small t-ink" font-weight="700">Legend</text>
+  <rect x="840" y="88" width="18" height="18" class="legend-swatch" fill="var(--vlm)"></rect>
+  <text x="866" y="102" class="small t-muted">VLM-generated seed</text>
+  <rect x="1005" y="88" width="18" height="18" class="legend-swatch" fill="var(--human)"></rect>
+  <text x="1031" y="102" class="small t-muted">Crowd-worker edit</text>
+  <rect x="840" y="112" width="18" height="18" class="legend-swatch" fill="var(--data)"></rect>
+  <text x="866" y="126" class="small t-muted">IIW outputs</text>
+  <rect x="1005" y="112" width="18" height="18" class="legend-swatch" fill="var(--loop)"></rect>
+  <text x="1031" y="126" class="small t-muted">Active-learning loop</text>
+
+  <!-- Main workflow container -->
+  <rect x="50" y="140" width="1100" height="1220" class="box-soft" fill="white" filter="url(#softShadow)"></rect>
+
+  <!-- Input image panel -->
+  <rect x="90" y="190" width="1020" height="150" class="box-soft" fill="var(--panel)"></rect>
+  <text x="110" y="225" class="body t-ink" font-weight="700">Input image</text>
+  <rect x="110" y="245" width="210" height="80" class="box" fill="#ffffff"></rect>
+  <!-- stylized "image" icon -->
+  <rect x="125" y="260" width="180" height="50" rx="10" ry="10" fill="#f3f4f6" stroke="#d1d5db" stroke-width="2"></rect>
+  <circle cx="160" cy="282" r="8" fill="#c7d2fe" stroke="#a5b4fc" stroke-width="1.5"></circle>
+  <path d="M135 305 L185 275 L215 295 L245 270 L295 310 L135 310 Z" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"></path>
+  <text x="340" y="272" class="small t-muted">Single image enters two seeded tasks:</text>
+  <text x="340" y="296" class="small t-muted">• Task 1: object-level descriptions (localized)</text>
+  <text x="340" y="320" class="small t-muted">• Task 2: image-level description (global, coherent)</text>
+
+  <!-- Split arrows to Task 1 and Task 2 -->
+  <path d="M215 340 L215 375 L320 375" class="arrow-muted" marker-end="url(#arrowHeadMuted)"></path>
+  <path d="M215 340 L215 375 L880 375" class="arrow-muted" marker-end="url(#arrowHeadMuted)"></path>
+  <text x="330" y="365" class="small t-muted">to Task 1</text>
+  <text x="820" y="365" class="small t-muted" text-anchor="end">to Task 2</text>
+
+  <!-- Task 1 container -->
+  <rect x="90" y="400" width="520" height="620" class="box-soft" fill="#ffffff"></rect>
+  <text x="110" y="435" class="body t-ink" font-weight="700">Task 1: Object-level descriptions</text>
+  <text x="110" y="460" class="small t-muted">Goal: hallucination-free, rich object descriptions per salient object.</text>
+
+  <!-- Task 1 steps -->
+  <!-- Step 1: OD + boxes -->
+  <rect x="120" y="490" width="460" height="120" class="box" fill="var(--vlm)"></rect>
+  <text x="140" y="522" class="body t-ink" font-weight="700">1) VLM-generated object captions (seed)</text>
+  <text x="140" y="548" class="small t-muted">Detect salient objects → (label, bounding box) list</text>
+  <text x="140" y="570" class="small t-muted">Crop each box → generate caption per object</text>
+  <!-- mini list -->
+  <rect x="385" y="516" width="175" height="74" class="chip" fill="#ffffff"></rect>
+  <text x="398" y="540" class="small t-muted">Seed examples:</text>
+  <text x="398" y="562" class="small t-muted">• “person …”</text>
+  <text x="398" y="582" class="small t-muted">• “bicycle …”</text>
+
+  <!-- Arrow to step 2 -->
+  <path d="M350 610 L350 642" class="arrow" marker-end="url(#arrowHead)"></path>
+
+  <!-- Step 2: Human correction -->
+  <rect x="120" y="650" width="460" height="160" class="box" fill="var(--human)"></rect>
+  <text x="140" y="682" class="body t-ink" font-weight="700">2) Crowd-worker correction &amp; augmentation</text>
+  <text x="140" y="708" class="small t-muted">Edit/merge/add/remove objects; adjust boxes and labels</text>
+  <text x="140" y="730" class="small t-muted">Rewrite object captions using only visually supported details</text>
+  <text x="140" y="752" class="small t-muted">Outcome: richer, precise, hallucination-free object descriptions</text>
+  <rect x="140" y="768" width="420" height="28" class="chip" fill="#ffffff"></rect>
+  <text x="152" y="788" class="small t-muted">Output per object: (label, bounding box, corrected description)</text>
+
+  <!-- Arrow to step 3 -->
+  <path d="M350 810 L350 842" class="arrow" marker-end="url(#arrowHead)"></path>
+
+  <!-- Step 3: Object description set -->
+  <rect x="120" y="850" width="460" height="140" class="box" fill="var(--data)"></rect>
+  <text x="140" y="882" class="body t-ink" font-weight="700">Task 1 output: Object-description set</text>
+  <text x="140" y="908" class="small t-muted">Used as grounded evidence for global description refinement.</text>
+  <text x="140" y="930" class="small t-muted">Provides coverage for fine-grained attributes, materials, text, etc.</text>
+  <rect x="140" y="948" width="420" height="26" class="chip" fill="#ffffff"></rect>
+  <text x="152" y="967" class="small t-muted">Collection of corrected objects → “object annotations”</text>
+
+  <!-- Task 2 container -->
+  <rect x="630" y="400" width="480" height="620" class="box-soft" fill="#ffffff"></rect>
+  <text x="650" y="435" class="body t-ink" font-weight="700">Task 2: Image-level description</text>
+  <text x="650" y="460" class="small t-muted">Goal: a single coherent, hyper-detailed image description with TLDR lead.</text>
+
+  <!-- Task 2 step 1: VLM global caption -->
+  <rect x="660" y="490" width="420" height="110" class="box" fill="var(--vlm)"></rect>
+  <text x="680" y="522" class="body t-ink" font-weight="700">1) VLM global caption (seed)</text>
+  <text x="680" y="548" class="small t-muted">Initial image-level description to start from</text>
+  <text x="680" y="570" class="small t-muted">May be incomplete; may include hallucinations</text>
+
+  <!-- Arrow from Task1 output to Task2 refinement -->
+  <path d="M580 920 C690 920, 680 650, 660 650" class="arrow" marker-end="url(#arrowHead)"></path>
+  <text x="605" y="895" class="small t-muted">object-level evidence</text>
+
+  <!-- Arrow from global seed to refinement -->
+  <path d="M870 600 L870 634" class="arrow" marker-end="url(#arrowHead)"></path>
+
+  <!-- Task 2 step 2: Iterative refinement -->
+  <rect x="660" y="640" width="420" height="210" class="box" fill="var(--human)"></rect>
+  <text x="680" y="672" class="body t-ink" font-weight="700">2) Iterative crowd-worker refinement</text>
+  <text x="680" y="698" class="small t-muted">Consume: global seed caption + Task-1 object annotations</text>
+  <text x="680" y="720" class="small t-muted">Add context beyond objects: perspective, layout, interactions, text</text>
+  <text x="680" y="742" class="small t-muted">Remove only obvious errors; augment for coverage and specificity</text>
+  <rect x="680" y="760" width="380" height="28" class="chip" fill="#ffffff"></rect>
+  <text x="692" y="780" class="small t-muted">Sequential rounds: multiple annotators update the same description</text>
+  <rect x="680" y="794" width="380" height="40" class="chip" fill="#ffffff"></rect>
+  <text x="692" y="815" class="small t-muted">Lead sentence: newspaper-style TLDR</text>
+  <text x="692" y="833" class="small t-muted">Then: salient objects → relations → background/style</text>
+
+  <!-- Arrow to final description -->
+  <path d="M870 850 L870 882" class="arrow" marker-end="url(#arrowHead)"></path>
+
+  <!-- Task 2 output: Final hyper-detailed description -->
+  <rect x="660" y="890" width="420" height="130" class="box" fill="var(--data)"></rect>
+  <text x="680" y="922" class="body t-ink" font-weight="700">Task 2 output: Final image description</text>
+  <text x="680" y="948" class="small t-muted">Single coherent hyper-detailed description (one per image).</text>
+  <text x="680" y="970" class="small t-muted">Grounded by object-level corrections; minimized hallucinations.</text>
+  <rect x="680" y="988" width="380" height="22" class="chip" fill="#ffffff"></rect>
+  <text x="692" y="1004" class="small t-muted">Used for supervised fine-tuning and evaluation</text>
+
+  <!-- Lower section: Active learning loop -->
+  <line x1="90" y1="1045" x2="1110" y2="1045" class="divider"></line>
+  <text x="90" y="1085" class="body t-ink" font-weight="700">Active-learning updates (VLM seeding improves over time)</text>
+  <text x="90" y="1110" class="small t-muted">Periodically fine-tune / update the VLM on accumulated human annotations to produce better seeds for both tasks.</text>
+
+  <!-- Active learning panels -->
+  <rect x="90" y="1140" width="520" height="190" class="box" fill="var(--loop)"></rect>
+  <text x="110" y="1172" class="body t-ink" font-weight="700">Model update using collected annotations</text>
+  <text x="110" y="1198" class="small t-muted">Training signal: corrected object descriptions + final image descriptions</text>
+  <text x="110" y="1220" class="small t-muted">Batching: retrain after annotation batches (e.g., 1k images)</text>
+  <rect x="110" y="1240" width="480" height="70" class="chip" fill="#ffffff"></rect>
+  <text x="122" y="1262" class="small t-muted">Effect: higher-quality, longer, more detailed VLM seeds</text>
+  <text x="122" y="1284" class="small t-muted">Reduces human effort while preserving grounding via correction</text>
+
+  <rect x="630" y="1140" width="480" height="190" class="box" fill="var(--panel)"></rect>
+  <text x="650" y="1172" class="body t-ink" font-weight="700">Seeds re-enter the pipeline</text>
+  <text x="650" y="1198" class="small t-muted">Updated VLM generates improved:</text>
+  <text x="650" y="1220" class="small t-muted">• object captions (Task 1) and • global caption (Task 2)</text>
+  <rect x="650" y="1240" width="440" height="70" class="chip" fill="#ffffff"></rect>
+  <text x="662" y="1262" class="small t-muted">Human edits still required:</text>
+  <text x="662" y="1284" class="small t-muted">final authority is visual evidence + crowd-worker refinement</text>
+
+  <!-- Loop arrows -->
+  <!-- From outputs to model update -->
+  <path d="M350 990 C350 1080, 260 1095, 260 1140" class="arrow-loop" marker-end="url(#arrowHeadLoop)"></path>
+  <path d="M870 1020 C870 1090, 450 1080, 450 1140" class="arrow-loop" marker-end="url(#arrowHeadLoop)"></path>
+  <text x="308" y="1120" class="small t-accent4">accumulate</text>
+
+  <!-- From model update to seed boxes -->
+  <path d="M610 1235 C690 1235, 720 1130, 720 600" class="arrow-active" marker-end="url(#arrowHeadActive)"></path>
+  <path d="M610 1235 C520 1235, 500 1060, 500 610" class="arrow-active" marker-end="url(#arrowHeadActive)"></path>
+  <text x="630" y="1218" class="small t-accent">updated seeds</text>
+
+  <!-- Optional: clarity callouts -->
+  <rect x="90" y="1368" width="1020" height="46" class="box-soft" fill="#ffffff"></rect>
+  <text x="110" y="1396" class="small t-muted">
+    Key idea: VLM seeds provide starting coverage; humans correct hallucinations and add missing grounded details; sequential refinement yields one coherent description per image.
+  </text>
+
+  <!-- Caption area -->
+  <rect x="50" y="1380" width="1100" height="110" class="box-soft" fill="var(--panel)"></rect>
+  <text x="70" y="1420" class="caption t-ink" font-weight="700">Figure:</text>
+  <foreignObject x="130" y="1406" width="1000" height="80">
+    <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, Helvetica, sans-serif; font-size:14px; line-height:1.25; color:#1f2937;">
+      Overview of the ImageInWords (IIW) human-in-the-loop annotation pipeline: VLM-generated object captions seed crowd-worker correction into hallucination-free object descriptions, which alongside a seeded global caption guide iterative refinement into a single hyper-detailed image-level description, updated via active-learning loops.
+    </div>
+  </foreignObject>
+</svg>
+</div>
+</body>
+</html>

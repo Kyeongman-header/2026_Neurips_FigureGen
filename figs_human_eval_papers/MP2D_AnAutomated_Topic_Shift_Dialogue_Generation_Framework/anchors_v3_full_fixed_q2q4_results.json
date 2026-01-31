@@ -1,0 +1,1102 @@
+{
+  "paper_name": "MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework",
+  "mode": "full",
+  "evaluated_at": "2026-01-30T05:18:41.285812",
+  "note": "Re-scored Q2(Fidelity) and Q4(Design) with lenient strategy.",
+  "figure_evaluations": [
+    {
+      "figure_file": "MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+      "caption": "Figure 2: An overview of the MP2D framework. In the knowledge graph, paths are identified and passages are retrieved for entities within those paths. Then, the retrieved passages and their relations become the \"answers\", and a LLM generates \"questions\" corresponding to each answer to create dialogues.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Knowledge graph / KELM triplets (S, r, O) with relation sentence R', 'Path finding / finite walk construction over the KG (ϕ = {e1, R1, e2, ..., en})', 'Entity-by-entity querying along the path (qi = ei)', 'Passage retrieval for each entity (pi)', 'Passage truncation to k_i sentences (p_i -> p_i†)', 'Multi-passage construction by interleaving truncated passages with relation sentences (MP = {p1†, R1, p2†, R2, ..., pn†})', 'Segmentation of each truncated passage into sentence-sized answer units (s_j)', 'LLM/P2D question generation: generate a question for each answer sentence (q_j for s_j)', 'Per-passage dialogue creation (Di = {(q1,s1),...,(q_ki,s_ki)})', 'Topic transition via relation sentence Ri between passages/entities (including questions about Ri: QRi)', 'Iterative assembly into final multi-topic dialogue ({D1, QR1, R1, D2, ..., Dn})', 'Automatic post-processing phase (after question generation) to produce the final dialogue']\nContext: 3 Multi-Passage to Dialogue (MP2D)\nThe Multi-Passage to Dialogue (MP2D) framework represents a novel approach tailored to generating dialogues with topic shifts by incorporating mul-\ntiple textual passages. Through the utilization of a knowledge graph, MP2D extracts paths to es-\ntablish natural linkages among topics, facilitating smooth transitions within the dialogue. The frame-\nwork retrieves passages by querying each entity within these paths, forming a multi-passage struc-\nture by pairing these passages with sentences that describe the relationships between entities (§3.1). Subsequently, it segments the multi-passage into sentence-sized units to serve as answers. Leverag-\ning the capability of LLMs to generate contextually appropriate questions for each answer, MP2D em-\nploys LLMs as question generators in crafting dia-\nlogues (§3.2). An automatic post-processing phase follows, resulting in dialogues that seamlessly tran-\nsition between topics. Figure 2 provides an illustra-\ntive overview of the proposed framework.\n\n3.1 Find Path & Retrieve Passages\nIn our methodology’s initial phase, we navigate a knowledge graph to establish connections among diverse entities, determining discourse subjects. We utilize the KELM dataset (Agarwal et al., 2020), structured around an entity-driven knowl- edge graph. Within this graph, knowledge is ar- ranged into triplets (S, r, O): a subject entity S (e.g., \"Leonardo da Vinci\"), a relation r (e.g., \"painted\"), and an object entity O (e.g., \"Mona Lisa\"). The dataset additionally contains a rela- tion sentence, denoted as R, which provides a de- tailed narrative of the relationship between two entities, offering more context than the simple relation r. The MP2D framework leverages this component to reconstruct the knowledge graph K := (Si, Ri, Oi)N i=1 of N factual triplets. The framework randomly selects a particular (S, R, O∗) triplet, facilitating the connection of more than two entities by identifying an (O∗, R, O) where O∗becomes the subject. This process is con- ducted auto-regressively to construct the finite walk ϕ, iterating until it reaches a point where no fur- ther triplets exist for the last object to transition into a subject. Consequently, the walk ϕ is rep- resented as a path {S1, R1, O1 = S2, R2, O2 = S3, ..., On}, and by merging subjects and objects as entities denoted as e, the path is expressed as ϕ = {e1, R1, e2, R2, ..., en}.\nFor each entity ei identified along the path, us- ing it as a query qi results in the sequential re- trieval of passages pi, as described in Figure 2 (top- right). Each retrieved passage pi consists of mi sentences, denoted as pi = {s1, s2, ..., smi}. To prepare these passages for processing, we truncate each to a maximum length of ki sentences, result- ing in a truncated passage p† i = {s1, s2, ..., ski}, where ki = min(mi, random(3, 6))(ki ≪mi). Ul- timately, alongside the existing relation sentence R for a natural connection between the entities, a multi-passage MP = {p† 1, R1, p† 2, R2, ..., p† n} is constructed.\n\n3.2 Generate Questions\nUsing the retrieved multi-passage MP, a Passage-\nto-Dialogue (P2D) model is employed to auto-\nregressively generate questions for each sen-\ntence within the passage p† i = {s1, s2...ski} as an answer, thereby creating a per-passage dia-\nlogue, as illustrated at the bottom of Figure 2. In essence, for a given input passage p† i, the output dialog from the P2D model is Di = {(q1, s1), (q2, s2), . . . , (qki, ski)}, where qj repre-\nsents the generated question based on the answer sj. Subsequently, it naturally transitions to the sub-\nsequent topic through Ri while seamlessly incor-\nporating questions QRi about Ri and repeats this process iteratively. Ultimately, the multi-passage MP = {p† 1, R1, p† 2, ..., p† n} is transformed into a di-\nalogue that encapsulates natural topic shifts in the form {D1, QR1, R1, D2, ..., Dn}.\n\nWe employ an LLM as the question generator for MP2D. ... Therefore, during the question-generation process, an additional instruction indicating a change in topic is provided in topic shift turns; \"Note that the conversation topic has shifted to [next_topic] from [current_topic].\"",
+        "fidelity_based": "Lenient Consistency Report: [[{'element': 'Leonardo da Vinci -> Mona Lisa (path edge, Knowledge Graph)', 'status': 'Supported', 'evidence': 'The text explicitly describes KG triplets such as (\"Leonardo da Vinci\", relation like \"painted\", \"Mona Lisa\") when explaining the KG structure used by MP2D (§3.1). Figure 2 also illustrates an example path with these entities.'}, {'element': 'Mona Lisa -> Louvre (path edge, Knowledge Graph)', 'status': 'Supported', 'evidence': 'Although the snippet does not explicitly state the exact triplet (\"Mona Lisa\", ..., \"Louvre\"), it is a scientifically/plausibly valid KG relation (the Mona Lisa is housed at the Louvre) and fits the paper’s described mechanism of chaining entities along KG paths (§3.1). Under the implicit-knowledge rule, this is supported.'}, {'element': 'Leonardo da Vinci -> Leonardo da Vinci passage (retrieve passages for entity)', 'status': 'Supported', 'evidence': \"Section 3.1 states: “For each entity ei identified along the path, using it as a query qi results in the sequential retrieval of passages pi.” This directly supports retrieving a passage for the entity 'Leonardo da Vinci'.\"}, {'element': 'Mona Lisa -> Mona Lisa passage (retrieve passages for entity)', 'status': 'Supported', 'evidence': \"Same mechanism as §3.1: each entity along the KG path is used as a query to retrieve a corresponding passage from Wikipedia (passages pi). This supports retrieving a 'Mona Lisa' passage.\"}, {'element': 'Louvre -> Louvre passage (retrieve passages for entity)', 'status': 'Supported', 'evidence': \"Same as above: §3.1 describes passage retrieval for each entity in the path; Figure 2 explicitly shows entities (including 'Louvre') with retrieved passages.\"}, {'element': 'Multi-passage -> 1-Turn (generate questions)', 'status': 'Supported', 'evidence': 'Section 3.2 explains that MP2D uses the multi-passage structure and then a P2D/LLM question generator produces questions for each sentence-answer, yielding multi-turn dialogue (beginning at early turns). Figure 2’s depiction of producing turns from the multi-passage is consistent with this.'}, {'element': '1-Turn -> t-Turn (generate questions)', 'status': 'Supported', 'evidence': 'Section 3.2 describes autoregressive generation of question-answer pairs across sentences within passages, producing sequential turns in the dialogue (Di = {(q1,s1), (q2,s2), ...}). This supports progressing from early turns to later turns.'}, {'element': 't-Turn -> T-Turn (generate questions)', 'status': 'Supported', 'evidence': 'The dialogue is generated across all sentences/segments and iterated across multiple passages and relation sentences (§3.2), naturally extending from intermediate turn t to final turn T.'}, {'element': 'T-Turn -> Topic-shift Dialog (generate questions)', 'status': 'Supported', 'evidence': 'The core claim is that generating questions over multi-passage content plus relation sentences produces dialogues that ‘encapsulate natural topic shifts’ (§3.2) and Figure 2 is labeled as an overview of MP2D producing topic-shift dialogues.'}], [{'element': 'Leonardo da Vinci -> Mona Lisa (path edge, Knowledge Graph)', 'status': 'Supported', 'evidence': 'Even if not stated in the provided text chunk, the Leonardo da Vinci–Mona Lisa association is standard common knowledge and is a plausible example of a knowledge-graph edge used to illustrate multi-hop retrieval.'}, {'element': 'Mona Lisa -> Louvre (path edge, Knowledge Graph)', 'status': 'Supported', 'evidence': 'Not explicitly mentioned in the text chunk, but it is widely known that the Mona Lisa is housed in the Louvre; as an illustrative KG edge this is scientifically/plausibly consistent.'}, {'element': 'Leonardo da Vinci -> Leonardo da Vinci passage (retrieve passages for entity)', 'status': 'Supported', 'evidence': 'The text discusses using multi-passage content and processing it prior to LLM input; retrieving passages tied to entities is a plausible mechanism for assembling such multi-passage content (conceptual support under loose mapping).'}, {'element': 'Mona Lisa -> Mona Lisa passage (retrieve passages for entity)', 'status': 'Supported', 'evidence': 'Consistent with the described setup involving multi-passage content feeding into dialogue/question generation; entity-to-passage retrieval is a standard and plausible step in such pipelines.'}, {'element': 'Louvre -> Louvre passage (retrieve passages for entity)', 'status': 'Supported', 'evidence': \"As above, passage retrieval for entities is a plausible instantiation of 'multi-passage content' used for ConvQA/dialogue generation; the excerpt does not contradict such a step.\"}, {'element': 'Multi-passage -> 1-Turn (generate questions)', 'status': 'Supported', 'evidence': 'The text repeatedly refers to converting multi-passage content into conversational QA and evaluating accuracy per turn; generating an initial (1-turn) question from multi-passage content is consistent with that description.'}, {'element': '1-Turn -> t-Turn (generate questions)', 'status': 'Supported', 'evidence': 'The excerpt discusses multi-turn dialogue behavior (accuracy per turn, topic shift at each utterance turn), implying iterative turn-by-turn question generation.'}, {'element': 't-Turn -> T-Turn (generate questions)', 'status': 'Supported', 'evidence': 'Matches the stated evaluation framing over dialogue turns and the idea of continuing question generation across turns; no contradiction in the text.'}, {'element': 'T-Turn -> Topic-shift Dialog (generate questions)', 'status': 'Supported', 'evidence': 'The text focuses on topic-shift turns and MP2D-generated topic shift dialogues, including enhancing performance at topic shift turns; producing a topic-shift dialogue as the end product is aligned with the described goal.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 4,
+              "reason": "The target figure captures most major MP2D components described in §3: (1) KG-based path finding (“Find path from Knowledge Graph”) and linking multiple entities, (2) entity-wise passage retrieval (“Retrieve passages for each entities”), and (3) question generation producing a topic-shift dialogue (“Generate Questions” → “Topic-shift Dialog”). This aligns well with the evidence and is consistent with the paper’s Figure-2-style overview (also similar to Ref 1’s topic-shift dialogue depiction). However, several important procedural details from the evidence are omitted or only implicit: the explicit finite-walk/path notation ϕ = {e1,R1,...,en}; use of relation sentences Ri interleaved between passages to form MP = {p1†,R1,p2†,...}; passage truncation to ki sentences (p_i→p_i†); segmentation into sentence-level answer units s_j; per-passage dialogue Di={(qj,sj)}; explicit QRi questions about relation sentences; and the automatic post-processing phase. Thus it’s a high-level pipeline figure with good coverage but not most formulaic/stepwise components."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure is largely self-explanatory and communicates the end-to-end operating principle without the paper: (1) a path is found in a knowledge graph (entities connected in a chain), (2) passages are retrieved for each entity, and (3) questions/answers are generated to form a topic-shifting dialogue. This matches the evidence pipeline at a high level (KG path → per-entity retrieval → question generation → final multi-topic dialogue). The visual flow (three labeled panels, arrows, and the final “Topic-shift Dialog”) makes the intended process clear.\n\nHowever, some key procedural details from the evidence are not intelligible from the figure alone: the use of relation sentences R between entities as explicit transition turns (Ri/QRi), passage truncation to k_i sentences, segmentation into sentence-level answer units, and the iterative assembly/post-processing steps are only implied (or not shown). The bottom panel suggests multi-turn Q/A generation but does not make the per-sentence mapping (q_j for s_j) or the interleaving structure (p1†, R1, p2†, …) explicit. Thus, a viewer can understand the general principle, but not several defining mechanics of MP2D."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 3,
+              "reason": "The target figure captures the core MP2D pipeline at a high level: (1) path finding over a knowledge graph, (2) retrieving passages per entity, and (3) generating Q/A turns leading to a topic-shift dialogue. This aligns with the evidence elements about KG-based path construction and per-entity passage retrieval, and it visually resembles Ref 1’s notion of topic shifts and Ref 2’s entity-connector/transition idea.\n\nHowever, it omits several mid-to-late procedural details explicitly described in the paper: (a) use of KELM triplets with relation sentence R and explicit interleaving of truncated passages with relation sentences to form MP = {p1†, R1, p2†, ...}, (b) the truncation step to k_i sentences, (c) segmentation into sentence-sized answer units and generating a question for each sentence (it suggests Q/A generation but not sentence-level units), (d) explicit relation-question turns QRi and the instruction-based topic shift prompt, and (e) the automatic post-processing phase. Thus, while it summarizes major stages, it is not complete from beginning-to-end per the paper’s described components."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "No fatal hallucinations are evident. The depicted pipeline—(i) finding a KG path (e.g., Leonardo da Vinci → Mona Lisa → Louvre), (ii) retrieving a passage for each entity along the path, and (iii) generating multi-turn Q/A that yields topic-shift dialogue—matches the paper’s described MP2D mechanism (§3.1–§3.2) and is consistent with the provided evidence. The specific Mona Lisa–Louvre edge is not explicitly quoted but is a plausible illustrative KG edge and not contradicted by the paper; extra icons/visual styling are non-substantive."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "The depicted relations among components match the paper’s described MP2D pipeline: (1) selecting/chaining entities via KG paths, (2) retrieving passages for each entity along the path, and (3) generating multi-turn QA/dialogue from the multi-passage content culminating in topic-shift dialogue. The provided evidence explicitly supports the entity-to-passage retrieval mechanism and the multi-turn question generation process producing topic shifts. Any specific example edges (e.g., Mona Lisa→Louvre) are plausible illustrative KG links and do not contradict the method."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "All major components/methodology labels in the target figure align with the paper description and provided evidence: (i) finding a path from a Knowledge Graph, (ii) retrieving passages for each entity along that path, and (iii) generating multi-turn questions/answers culminating in a topic-shift dialogue. The specific example entities (Leonardo da Vinci → Mona Lisa → Louvre) and the per-entity passage retrieval are supported by §3.1/§3.2 and Figure 2 as summarized; no evidence indicates any contradicted or critically mislabeled component."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 5,
+              "reason": "The target figure is clearly schematized around the MP2D pipeline’s main contribution: (i) KG-based path finding across entities (Leonardo da Vinci → Mona Lisa → Louvre), (ii) per-entity passage retrieval, and (iii) question generation producing a topic-shift dialogue. It abstracts away implementation minutiae (e.g., exact truncation k_i, sentence-unit segmentation s_j, explicit QR_i turns, and post-processing) while preserving the core conceptual stages and their causal flow. This matches the evidence’s high-level steps and aligns with the style of the best-matching reference (Ref 3: KG→retrieval→topic shift dialogue) rather than depicting low-level model internals (Refs 1/2/4/5). Overall it foregrounds the framework contribution and omits trivial details appropriately."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "Yes. The figure closely matches and usefully supplements §3 MP2D as described in the text. It visually decomposes the pipeline into the same major stages: (1) path finding over a knowledge graph (left panel shows a KG walk linking entities like Leonardo da Vinci → Mona Lisa → Louvre, aligning with KELM triplets and finite-walk construction ϕ={e1,R1,e2,...}); (2) per-entity passage retrieval (right panel shows retrieving a passage snippet for each entity, consistent with querying qi=ei and obtaining pi); and (3) question generation and dialogue assembly (bottom panel shows multi-passage input, Q/A pairs generated per passage, and a final topic-shift dialogue), aligning with sentence-level answer units, LLM/P2D question generation, per-passage dialogues Di, and iterative assembly into a multi-topic dialogue. Even if not every sub-step is explicitly labeled (e.g., truncation to ki sentences, explicit insertion of relation sentences Ri and questions QRi, and post-processing), the overall flow and the role of KG relations in enabling topic shifts are clear and strongly consistent with the evidence. Compared to the reference figures, it functions similarly as a high-level method overview diagram and is well-suited as supplementary material for reader comprehension."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely focused on the core MP2D pipeline described in the evidence: KG path finding, per-entity passage retrieval, and question generation leading to topic-shift dialogue. Most visual components (entity icons, arrows, passage boxes, Q/A blocks) directly support these steps and are not purely decorative. However, there are some non-essential stylistic elements that add mild redundancy: repeated cartoon-style entity illustrations, decorative background panels/gradients, and heavy color-coding that is not explicitly tied to additional technical variables (e.g., k_i truncation, relation sentences R_i, post-processing). Compared with the reference figures, it is simpler and less cluttered than attention heatmaps (Ref 1) and detailed model-stack diagrams (Ref 2), but slightly more decorative than minimalist process diagrams (Refs 4–5). Overall it avoids major unrelated content, with minor aesthetic overhead."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.857,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The figure has a clear, published-paper style layout with an obvious left-to-right progression: (1) knowledge graph path finding on the left, (2) passage retrieval on the right, then a bottom section that continues left-to-right through multi-passage to multi-turn QA and ends at the topic-shift dialog output. Arrows, panel boundaries, and headings make the reading order immediately apparent within a 3-second glance."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "Mostly clean and readable, with connection arrows generally routed clearly between panels/steps. However, in the left knowledge-graph subfigure there are multiple arrows converging and crossing near the Mona Lisa/Leonardo nodes, creating a small tangle that slightly reduces immediate traceability under a quick glance. Overall still professional and easy to follow."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Functionally related components are grouped tightly: knowledge-graph path finding sits with its entities, passage retrieval is adjacent with corresponding entity icons, and question generation is consolidated below with the multi-turn flow. Visual proximity matches the left-to-right pipeline (KG → retrieval → generation) with clear panel boundaries and minimal cross-panel clutter, making the relationships obvious within a quick glance."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 5,
+              "reason": "Elements are laid out on clear horizontal bands and boxed panels with consistent spacing, margins, and centering. Nodes/icons within the knowledge-graph section and the multi-turn Q/A blocks follow an obvious grid, and arrows connect cleanly without creating visual drift. Any tiny variations (e.g., curved arrows and irregular icon shapes) don’t break the overall neat alignment or readability; it looks publication-ready."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 5,
+              "reason": "Clear visual hierarchy: the workflow is organized into three main panels (KG path finding, passage retrieval, question generation) with strong section headers and enclosing boxes that immediately stand out. Key entities (e.g., Mona Lisa, Louvre) are emphasized via larger icons and red outlines, and the bottom timeline uses repeated Q/A blocks and directional arrows to guide attention left-to-right. Line weights, spacing, and color coding consistently separate stages and make the main components identifiable within a quick glance."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 5,
+              "reason": "Margins look sufficient throughout: panels are clearly separated, text blocks and icons have comfortable padding inside rounded boxes, and there’s consistent whitespace between the top KG/path section and the bottom question-generation strip. Nothing feels cramped or touches borders; overall reads like a clean, published figure."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 5,
+              "reason": "Strong consistency across the figure: similar roles are encoded with repeated shapes and colors (e.g., entities as red-outlined nodes/icons, passages as rounded colored text boxes, and Q/A turns as repeated colored blocks). The pipeline sections use uniform panel framing, arrow styling, and typography, making the mapping between components clear at a quick glance. No mismatched encodings or confusing re-use of colors for different roles is apparent."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The target figure replaces many abstract processes with concrete visual metaphors: entities are shown as recognizable icons (e.g., Leonardo da Vinci portrait, Mona Lisa thumbnail, Louvre pyramid), retrieval is depicted as document/passage cards, and dialogue/question generation is represented by compact Q/A blocks and turn markers (1-turn, t-turn, T-turn) rather than verbose text. This aligns strongly with the reference evidence that uses symbolic blocks, icons, and simplified tokens to stand for model components and operations (e.g., pipeline modules, token blocks, Q/A widgets). However, some abstractions remain expressed primarily through text labels and schematic arrows (e.g., “Find path from Knowledge Graph,” “Retrieve passages,” “Generate Questions”), so the metaphorization is not maximal (not fully icon-driven), keeping it just below a top score."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a familiar NLP/LLM pipeline schematic style: boxed panels with rounded corners, left-to-right flow arrows, iconified entities, and color-coded text blocks. This layout closely resembles common research-diagram templates and is visually similar to multiple references (e.g., Ref 1 and Ref 4 in their modular stage-based organization; Ref 5 in its entity-centric retrieval-to-generation pipeline; and Ref 2 in its use of icons + stepwise subpanels). While the inclusion of a small knowledge-graph path panel and a multi-turn Q/A strip adds some compositional specificity, it does not constitute a distinctive or unusual visual language beyond standard academic infographic conventions."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 3,
+              "reason": "The target figure uses a task-driven, non-uniform layout that adapts to the method being explained: a top row with two distinct modules (“Find path from Knowledge Graph” and “Retrieve passages for each entities”) followed by a wide bottom workflow (“Generate Questions”) that changes structure (multi-passage → 1-turn → t-turn → T-turn → topic-shift dialog). This is more tailored than rigid, repeated panel layouts (e.g., Ref 4’s three symmetric stages). However, it still follows a fairly standard pipeline/box-and-arrow visual grammar similar to the evidence references (e.g., Ref 3 and Ref 5), with consistent rounded containers and left-to-right flow, so it does not strongly break away into a uniquely paper-specific layout."
+            }
+          ]
+        }
+      },
+      "weighted_total": 4.238,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.7512
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.757
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7252
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7275
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.757
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p3__score1.00.png",
+            "similarity": 0.7295
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.7512
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.757
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7252
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.61
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7131
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6801
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.5609
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.7512
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6801
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7163
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7275
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.7512
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6733
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7163
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6781
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.7512
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7389
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7043
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.6946
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p3__score1.00.png",
+            "similarity": 0.7295
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.765
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6801
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7275
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.757
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.6393
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.7153
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.757
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6928
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mission_Impossible_Language_Models/Mission_Impossible_Language_Models__p7__score0.95.png",
+            "similarity": 0.654
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7163
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.6393
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6564
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p1__score0.98.png",
+            "similarity": 0.7186
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7252
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.6832
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.765
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7043
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7252
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7275
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.765
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7163
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7147
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7389
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.6832
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7252
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.6935
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p3__score1.00.png",
+            "similarity": 0.7295
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6801
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p3__score1.00.png",
+            "similarity": 0.7295
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.757
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7275
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7389
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.757
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7275
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p3__score1.00.png",
+            "similarity": 0.7295
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.767
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.757
+          }
+        }
+      }
+    },
+    {
+      "figure_file": "MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+      "caption": "Figure 1: An example of a topic shift dialogue. The MP2D framework utilizes paths in a Knowledge Graph (KG) to extract entities and facilitates natural topic transitions based on the relations between these entities.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Knowledge Graph (KG) containing triplets (S, r, O) and relation sentences R', 'KG path extraction / navigation (walk/path ϕ = {e1, R1, e2, R2, ..., en})', 'Entity extraction/merging along the path (entities ei)', 'Passage retrieval module using each entity ei as a query qi to retrieve passages pi (or p†i)', 'Multi-passage construction module combining retrieved passages with relation sentences: MP = {p†1, R1, p†2, R2, ..., p†n}', 'Segmentation module that splits the multi-passage into sentence-sized units', 'Answer selection/creation: segmented sentences directly serve as answers', 'Question generator (LLM-based) that generates a suitable question for each answer', 'Dialogue assembly flow that pairs generated questions with answers to form a dialogue with topic shifts']\nContext: An example of a topic shift dialogue. The MP2D framework utilizes paths in a Knowledge Graph (KG) to extract entities and facilitates natural topic transitions based on the relations between these entities.\n\nTo emulate the dynamic nature of real-world conversations, we employ a knowledge graph to identify paths connecting various entities and their relations, as shown in Figure 1. By retrieving passages using entities in the path as queries, the passages and the relation sentences between entities form a multi-passage structure. This structure is then segmented into sentences, which directly serve as answers, and a question generator generates suitable questions to complete dialogues with natural topic transitions.\n\nThe Multi-Passage to Dialogue (MP2D) framework represents a novel approach tailored to generating dialogues with topic shifts by incorporating multiple textual passages. Through the utilization of a knowledge graph, MP2D extracts paths to establish natural linkages among topics, facilitating smooth transitions within the dialogue. The framework retrieves passages by querying each entity within these paths, forming a multi-passage structure by pairing these passages with sentences that describe the relationships between entities (§3.1). Subsequently, it segments the multi-passage into sentence-sized units to serve as answers. Leveraging the capability of LLMs to generate contextually appropriate questions for each answer, MP2D employs LLMs as question generators in crafting dialogues (§3.2).\n\nIn our methodology’s initial phase, we navigate a knowledge graph to establish connections among diverse entities, determining discourse subjects. Within this graph, knowledge is arranged into triplets (S, r, O): a subject entity S, a relation r, and an object entity O. The dataset additionally contains a relation sentence, denoted as R, which provides a detailed narrative of the relationship between two entities. [...] Consequently, the walk ϕ is represented as a path {S1, R1, O1 = S2, R2, O2 = S3, ..., On}, and by merging subjects and objects as entities denoted as e, the path is expressed as ϕ = {e1, R1, e2, R2, ..., en}. For each entity ei identified along the path, using it as a query qi results in the sequential retrieval of passages pi. [...] Ultimately, alongside the existing relation sentence R for a natural connection between the entities, a multi-passage MP = {p†1, R1, p†2, R2, ..., p†n} is constructed.",
+        "fidelity_based": "Lenient Consistency Report: [[{'element': 'KG', 'status': 'Supported', 'evidence': \"The text explicitly discusses leveraging a Knowledge Graph (KG) to identify paths connecting entities and to facilitate natural topic transitions (e.g., Figure 1 caption: 'utilizes paths in a Knowledge Graph (KG) to extract entities and facilitates natural topic transitions').\"}, {'element': 'Soccer', 'status': 'Supported', 'evidence': \"Chunk 1 contains the example dialogue content including 'What is Soccer?' and describes the figure as an example of a topic shift dialogue; the node label 'Soccer' matches this example content.\"}, {'element': 'World Cup', 'status': 'Supported', 'evidence': \"Chunk 1 includes 'What is World Cup ?' and mentions 'International soccer competitions include the FIFA World Cup'; thus the node 'World Cup' is explicitly present in the example.\"}, {'element': 'Messi', 'status': 'Supported', 'evidence': \"Chunk 1 includes 'Then who is Lionel Messi...' and mentions 'Lionel Messi is currently a soccer player...'; therefore the node 'Messi' is explicitly part of the example topic-shift dialogue.\"}, {'element': 'Soccer -> World Cup', 'status': 'Supported', 'evidence': \"The example text explicitly connects soccer and the FIFA World Cup (e.g., 'International soccer competitions include the FIFA World Cup'), making a directed relationship between 'Soccer' and 'World Cup' plausible and consistent with the described KG-path notion in Figure 1.\"}, {'element': 'World Cup -> Messi', 'status': 'Supported', 'evidence': 'The example dialogue shifts from discussing the World Cup to asking about Lionel Messi, which is consistent with a KG-path-based transition between entities; even if not a formal factual predicate in the prose, it is a plausible conversational/knowledge-graph transition and aligns with the stated purpose of Figure 1.'}, {'element': 'TOPIC SHIFT', 'status': 'Supported', 'evidence': \"The paper centers on topic shift dialogue generation, and the extracted example explicitly shows 'TOPIC SHIFT' markers between the example topics; the figure caption and surrounding text describe natural topic transitions, so the label is consistent.\"}, {'element': 'Soccer -> World Cup (label: TOPIC SHIFT)', 'status': 'Supported', 'evidence': \"The example indicates a topic transition from 'Soccer' to 'World Cup' with an explicit 'TOPIC SHIFT' marker; labeling that edge as 'TOPIC SHIFT' matches the depicted dialogue flow and the described function of Figure 1.\"}, {'element': 'World Cup -> Messi (label: TOPIC SHIFT)', 'status': 'Supported', 'evidence': \"The example shows a subsequent topic transition from 'World Cup' discussion to asking about Lionel Messi, indicated with 'TOPIC SHIFT'; labeling the edge accordingly is consistent with the example and the framework description.\"}], [{'element': 'KG', 'status': 'Supported', 'evidence': \"The figure label 'KG' can plausibly denote a knowledge graph representation used to illustrate topic transitions. The provided text discusses topic shifts and dialogue turns; using a KG-style schematic is a reasonable visual abstraction even if 'KG' is not explicitly named.\"}, {'element': 'Soccer', 'status': 'Supported', 'evidence': \"The text is about topic shift detection and gives examples of topic transitions; using an illustrative example topic like 'Soccer' is a plausible visualization choice and does not contradict anything.\"}, {'element': 'World Cup', 'status': 'Supported', 'evidence': \"As with 'Soccer', 'World Cup' serves as a plausible example node to demonstrate a topic transition in a dialogue/knowledge structure; the text supports the general concept of topic transitions.\"}, {'element': 'Messi', 'status': 'Supported', 'evidence': \"The figure’s use of 'Messi' is a plausible example entity connected to 'World Cup' for illustrating topic flow/shift. The text supports that topic shifts can occur between related entities/topics; no explicit contradiction exists.\"}, {'element': 'Soccer -> World Cup', 'status': 'Supported', 'evidence': 'Even though this exact relation is not stated in the text, it is common knowledge and scientifically/plausibly related. It also matches the paper’s general discussion of moving between topics in dialogue.'}, {'element': 'World Cup -> Messi', 'status': 'Supported', 'evidence': 'This relation is plausible/common knowledge and consistent with using a simple chain to illustrate topic progression. The text discusses topic shifts broadly and does not restrict what example topics can be used.'}, {'element': 'TOPIC SHIFT', 'status': 'Supported', 'evidence': \"The text repeatedly discusses 'topic shift' detection, evaluation per turn, and enhancing performance specifically at 'topic shift turns', directly supporting inclusion of a 'TOPIC SHIFT' label.\"}, {'element': 'Soccer -> World Cup (label: TOPIC SHIFT)', 'status': 'Supported', 'evidence': \"Labeling an edge as a 'TOPIC SHIFT' is consistent with the paper’s focus on detecting topic shifts at utterance turns. The figure appears to mark where a transition occurs; this is a plausible depiction of the described detection task.\"}, {'element': 'World Cup -> Messi (label: TOPIC SHIFT)', 'status': 'Supported', 'evidence': 'Similarly, marking this transition as a topic shift is consistent with the paper’s discussion of topic shift turns and their detection. The text does not specify exact example topics, so this illustrative mapping is acceptable.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 2,
+              "reason": "The target figure conveys the high-level idea of KG-driven topic shifts (a simple KG chain Soccer → World Cup → Messi and a multi-turn Q/A dialogue with topic-shift markers). However, it omits most major MP2D pipeline components described in the paper: (1) explicit KG triplets (S, r, O) and relation sentences R are not shown—edges are unlabeled and there are no relation sentences R1, R2; (2) KG path extraction/navigation ϕ is only implicit and not represented as ϕ = {e1, R1, e2, ...}; (3) entity extraction/merging along the path is not depicted; (4) the passage retrieval module using each entity ei as query qi to retrieve passages pi/p†i is not shown; (5) the multi-passage construction MP = {p†1, R1, p†2, ...} is not depicted; (6) the segmentation module into sentence-sized units is absent; (7) the design choice that segmented sentences directly serve as answers is not explicit; (8) the LLM-based question generator module is not shown as a component (only the resulting questions appear); (9) dialogue assembly flow is implicit. Compared with the more complete reference (Ref 5), the target is a simplified illustration of topic-shift behavior rather than coverage of the MP2D framework components/formulas."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 3,
+              "reason": "The figure communicates the high-level intuition: a KG provides related entities (Soccer → World Cup → Messi), and a dialogue proceeds with topic shifts where each question targets the next entity and the system answers with short explanatory snippets. This lets a reader infer that topic transitions are guided by KG relations.\n\nHowever, compared to the evidence, key operating components are not visually explicit: (i) KG path extraction/navigation is only implied by the arrowed KG strip; (ii) the passage retrieval step using each entity as a query is not shown; (iii) multi-passage construction (interleaving retrieved passages with relation sentences R1, R2, …) is absent; (iv) segmentation into sentence-level units as answers is not depicted; and (v) the LLM-based question generation module is only loosely suggested by bot icons, without clarifying inputs/outputs.\n\nRelative to Ref Fig. 4 (which explicitly shows KG path finding, per-entity retrieval, and question generation leading to a topic-shift dialogue), the target is more of an illustrative dialogue example than a self-contained system diagram. Thus, one can grasp the general principle, but not the full pipeline without reading the paper."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 2,
+              "reason": "The target figure captures only the high-level idea of KG-driven topic shifts via a simple entity chain (Soccer → World Cup → Messi) and corresponding Q/A turns. However, it omits most core pipeline components described in the paper: explicit KG triplets (S,r,O) with relation sentences R, path/walk notation ϕ, entity extraction/merging along the path, the passage retrieval step using each entity ei as query qi yielding passages pi/p†i, the multi-passage construction MP = {p†1, R1, ...}, segmentation into sentence-sized units, and the LLM-based question generation and dialogue assembly flow. Compared to the reference figure that shows KG path finding, per-entity retrieval, and question generation, the target is a simplified dialogue example rather than an end-to-end summary of the method from start to finish."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "No critical hallucination is evidenced. All key components in the target figure (KG-based path, the example entities Soccer/World Cup/Messi, and the TOPIC SHIFT markers/edges) are supported by the provided evidence as appearing in or being consistent with the paper’s example dialogue/figure description. Any remaining visual styling/icons function as non-substantive aids and are not contradicted by the text."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "All depicted relationships (KG path Soccer→World Cup→Messi and the edges marked as TOPIC SHIFT) are supported by the provided evidence: the paper explicitly describes using KG paths to enable natural topic transitions, and the example dialogue content includes Soccer, World Cup, and Lionel Messi with explicit topic-shift markers between these entities. No contradicted relationships are identified."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "All major component/method labels in the target figure are consistent with the paper content and the provided evidence. The use of “KG” aligns with the paper’s knowledge-graph-based path/transition framing, and the entity labels (“Soccer”, “World Cup”, “Messi”) are explicitly present in the example dialogue described. The “TOPIC SHIFT” labels correctly mark the transition points depicted in the example. No evidence indicates any contradicted or critically incorrect labeling."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is largely schematized around the paper’s main contribution: using a KG path to drive topic-shift dialogue generation (Soccer → World Cup → Messi) and showing the resulting Q/A turns with explicit “TOPIC SHIFT” markers. This aligns well with the evidence describing KG-based path navigation and dialogue assembly, and closely matches the visual style/intent of the reference figure that depicts “find path from KG → retrieve passages → generate questions → topic-shift dialogue.” However, it omits several key framework components that the evidence emphasizes—passage retrieval per entity, relation sentences R inserted between passages, multi-passage construction MP, and the segmentation step where sentences directly become answers. As a result, it captures the high-level idea but not the full MP2D pipeline, keeping it focused but slightly under-specified."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 4,
+              "reason": "The target figure serves well as supplementary material for the described MP2D pipeline by visually illustrating (i) KG-based topic linkage (Soccer → World Cup → Messi), (ii) sequential Q/A turns, and (iii) explicit topic shifts driven by KG relations. It aligns closely with the visual reference that shows “find path from KG → retrieve passages per entity → generate questions → topic-shift dialogue,” especially in conveying the high-level idea that a KG path induces smooth transitions.\n\nHowever, it is only a partial match to the paper’s specific modules: it does not depict passage retrieval per entity, the construction of a multi-passage interleaving retrieved passages with relation sentences (MP = {p†1, R1, p†2, …}), nor the segmentation step where sentence-sized units directly become answers. The figure implies retrieved evidence via response bubbles but omits the explicit multi-passage/segmentation structure emphasized in the text. Overall, it is clear and helpful for intuition about KG-driven topic shifting, but not fully faithful to the end-to-end MP2D process."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely non-redundant and stays focused on the core MP2D idea: KG-driven topic shifts across entities (Soccer → World Cup → Messi) with Q/A turns that reflect passage-based answers and LLM question generation. Compared to the most relevant reference (Ref 3), it is simpler and avoids extra pipeline blocks (e.g., explicit segmentation module, multi-passage construction notation, retrieval icons per entity). However, it still includes some mildly decorative/non-essential elements—multiple chatbot/agent icons, repeated ellipses, and repeated “TOPIC SHIFT” labels—which add visual clutter without adding new conceptual content. Overall, it avoids major unnecessary information but could be slightly more minimal."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The figure’s reading order is immediately clear: elements are arranged in stacked panels that flow top-to-bottom, and within the main dialogue portion the progression is left-to-right via sequential question/answer bubbles and downward continuation. Arrows and topic-shift markers reinforce the direction, with no confusing crossings or ambiguous start/end points."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 5,
+              "reason": "Connection lines are largely non-crossing and well-routed: arrows are separated by lanes, use mostly horizontal/vertical segments, and any overlaps are minimal and don’t create ambiguity. Overall reads cleanly within a quick glance and looks publication-quality."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Functionally related elements are grouped tightly: the KG strip sits directly above the corresponding dialogue turns; each topic-shift step keeps its icon/arrow, question bubble, and answer block adjacent; and sequential stages are laid out vertically with clear spacing. Visual connectors and consistent alignment make relationships immediately apparent within a quick glance."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 5,
+              "reason": "Elements align cleanly to an implied grid: the KG strip at the top is horizontally aligned, and the dialog blocks are stacked with consistent left margins, spacing, and box widths. Icons and topic-shift arrows are placed consistently within each row. Overall it reads as a polished, publication-quality figure with no noticeable misalignment affecting readability."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 5,
+              "reason": "The main components are immediately distinguishable: the KG strip at the top, the sequential dialog blocks below, and the topic-shift transitions. Key entities and section labels use larger/bolder typography and clear positioning, while arrows and spacing guide the reading order top-to-bottom. Color accents and iconography highlight the important nodes without clutter, so the hierarchy is obvious within a quick glance."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 5,
+              "reason": "Margins are consistently applied between the KG strip, dialogue bubbles, and topic-shift arrows; elements don’t feel cramped or overlapping. Spacing clearly separates sections while keeping a coherent flow, giving the figure a clean, publication-ready layout."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 5,
+              "reason": "Components with the same roles are encoded consistently throughout: entities/subjects are shown as grey item boxes with icons, relations as colored arrows/links (green/blue) repeated across steps, and dialogue turns use a uniform speech-bubble style. Topic-shift markers and KG node groupings keep the same shapes and colors wherever they appear. Overall the figure reads as clean, published-quality with no confusing role-color/shape swaps."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The Target Figure frequently replaces abstract concepts with concrete symbols: a dashed-box “KG” container, node icons (soccer ball, trophy, person silhouette) and colored arrows to encode relations/flow, plus a robot/chat icon to denote the assistant and simplified user silhouettes for interlocutors. “Topic shift” is also rendered as a repeated label paired with icon transitions rather than described abstractly. Compared with the references, it aligns strongly with Ref 2/5 where entities and relations are iconified and dialog state changes are visualized via pictograms; it is somewhat less metaphor-heavy than Ref 4 (emojis as actors) and Ref 1 (formal logic/abbreviations), and still relies on substantial natural-language text in chat bubbles, preventing a maximal score."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure follows a very common paper-figure template: a dashed KG box at the top, sequential chat-style QA bubbles with icons, arrows indicating topic shift, and minimal monochrome line-art. This layout and visual language closely resemble the reference figures’ established styles (pipeline/diagram + QA panels, KG-to-dialogue flow), offering little distinctive illustration style, typography, or composition beyond standard schematic conventions. Minor icon/arrow/color choices do not create a notably unique aesthetic."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure uses a largely uniform, template-like conversational layout: a KG strip at the top and then repeated QA blocks with similar spacing, typography, and icons across turns. While it includes a minor structural variation via the 'TOPIC SHIFT' separators and the initial KG context, it does not substantially depart from a consistent design scheme or introduce a paper-specific layout tailored to different content types (e.g., modular panels, distinct stages, or alternative visual encodings). Compared to the references, it lacks the multi-panel pipeline/stage breakdown seen in Ref 2 and Ref 4, and it is closer to a standardized dialogue depiction rather than an adaptable layout. Hence, adaptability is low-to-moderate."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.8,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6802
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6661
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7229
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6945
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6802
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6661
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6945
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6565
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6802
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7229
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6661
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6945
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.5808
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6945
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6231
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7229
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.5437
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6945
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.6417
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7229
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6459
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.6282
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6945
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7229
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6645
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6945
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6802
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6871
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6802
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.6384
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6459
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7229
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6231
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6802
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6945
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7229
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.6033
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6589
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6871
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7229
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6589
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mission_Impossible_Language_Models/Mission_Impossible_Language_Models__p7__score0.95.png",
+            "similarity": 0.6316
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6868
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7229
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.6033
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6945
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6508
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7229
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.662
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6493
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7229
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6802
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.6375
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.6746
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6871
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6868
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6589
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p4__score1.00.png",
+            "similarity": 0.651
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7229
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.6083
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6868
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p3__score1.00.png",
+            "similarity": 0.6583
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6945
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6645
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6945
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6802
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7229
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6945
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6945
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6868
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7229
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6945
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6641
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6945
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7512
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7229
+          }
+        }
+      }
+    }
+  ]
+}

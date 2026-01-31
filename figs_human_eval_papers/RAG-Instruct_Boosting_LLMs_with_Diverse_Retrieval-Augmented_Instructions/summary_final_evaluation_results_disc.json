@@ -1,0 +1,225 @@
+{
+  "paper_name": "RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions",
+  "evaluated_at": "2026-01-12T03:34:04.704062",
+  "figure_summary": "## 1. Core Contributions\n- Proposes **RAG-Instruct**, a **general synthetic-data generation method** that creates **RAG-specific instruction-following data** from an arbitrary source corpus (demonstrated on Wikipedia, yielding a **40K** dataset).\n- Introduces **five RAG paradigms (r0–r4)** that explicitly parameterize **query–document relationships** (usefulness and number of useful docs) to cover **diverse real-world RAG scenarios**, including noisy/helpless retrieval and multi-document reasoning.\n- Introduces **Instruction Simulation**, which uses **exemplar instructions from existing instruction datasets** (filtered to knowledge-intensive ones) to diversify **task type, phrasing, and difficulty**, while grounding content in retrieved corpus documents.\n- Empirically argues (via scenario-stratified evaluation and dataset comparisons) that balancing **scenario diversity + task diversity** yields stronger and more robust RAG behavior than prior RAG/long-context/RC datasets.\n\n## 2. Method Components & Relations relevant to figures\n- **Inputs / sources**\n  - A **corpus** \\(D\\) (e.g., Wikipedia).\n  - A pool of **synthetic instruction datasets** (e.g., ShareGPT, Alpaca, WizardLM-70K, LMSYS-Chat-1M, SlimOrca), used only as **exemplars**.\n- **Instruction Simulation pipeline (controls task diversity)**\n  - Use **GPT-4o filtering** to select **knowledge-intensive exemplar instructions** \\(q'\\) from those datasets.\n  - Randomly sample an exemplar \\(q' \\in Q\\) to **shape format/task requirements** of the new instruction.\n- **Retrieval / grounding (controls topicality)**\n  - Retrieve a set of **source documents** \\(D^* \\subset D\\) using the sampled exemplar \\(q'\\) (so \\(D^*\\) controls the **topic/content** that the generated instruction will be grounded in).\n  - Optionally add **noise documents** \\(D^{-}\\) unrelated to the target instruction to increase robustness.\n- **RAG paradigms (controls query–document relationship / scenario)**\n  - Sample a paradigm \\(r \\in \\{r0,\\dots,r4\\}\\) that constrains how \\(D^*\\) relates to the final instruction \\(q^*\\) (useless vs supporting vs explicit answer; single vs multi-doc).\n- **LLM-based synthesis step**\n  - Generate the final pair by conditioning on documents, exemplar instruction, and paradigm:  \n    \\[\n    (q^*, a^*) = \\text{LLM}(D^*, q', r)\n    \\]\n  - The resulting training instance is a RAG-style mapping: **\\(D^*, D^-, q^* \\rightarrow a^*\\)**, where the response \\(a^*\\) is intended to reference/use \\(D^*\\) as governed by \\(r\\).\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **make the data-generation recipe inspectable**: what inputs are used (corpus documents + exemplar instructions), what controls diversity (paradigm sampling + instruction simulation), and what outputs are produced (RAG instruction/answer pairs).\n- To **communicate the design rationale for diversity**: figures are meant to visually connect **(i) scenario diversity** (explicitly enumerated RAG paradigms) with **(ii) task/instruction diversity** (simulation from broad instruction datasets), showing how both are enforced in the synthesis process.\n- To **clarify conditioning variables in synthesis prompts**: how the prompt encodes the chosen RAG paradigm and how the exemplar instruction \\(q'\\) is injected to steer the generated instruction \\(q^*\\), while keeping it grounded in retrieved \\(D^*\\).\n- To provide an **at-a-glance conceptual map** of the method’s modules and their roles (filtering → retrieval → paradigm-conditioned synthesis), rather than detailed empirical results.\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide **complete empirical validation** (e.g., full benchmark coverage, ablations, statistical significance); those belong to tables/experiments rather than schematic figures.\n- Not intended to precisely quantify **topic distributions** or guarantee dataset representativeness; any topic visualization is illustrative of diversity, not a formal measurement.\n- Not intended to specify **retriever architecture, retrieval hyperparameters, or training objective details** beyond the high-level data flow (the figures depict synthesis logic, not system-level engineering).\n- Not intended to prove that generated answers are always **factually correct** or optimally grounded—figures show *how* grounding is prompted/structured, not correctness guarantees.",
+  "figure_evaluations": [
+    {
+      "figure_file": "RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p4__score0.95.png",
+      "caption": "Figure 3: The prompt of RAG-Instruct. <document> and <Simulated Instruction> represent input variables for the document and simulated instruction, respectively. (Blue text) indicates RAG Paradigms, illustrating the prompt for r4; other paradigms are shown in Appendix C.2. (Red text) represents Instruction Simulation.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 3.0,
+              "reason": "The figure concretely shows the core synthesis prompt variables aligned with the summary: a set of retrieved <Documents> (D*) and a <Simulated Instruction> exemplar (q'), plus an explicit RAG-paradigm constraint (shown for r4) guiding generation of (q*, a*). However, major method components from the summary are omitted here: it does not show the upstream GPT-4o filtering step for knowledge-intensive exemplars, the retrieval step that uses q' to obtain D*, the optional noise documents D−, the five-paradigm set (only r4 is depicted), the corpus/source-dataset inputs, nor the formal mapping D*, D−, q* → a* / (q*, a*) = LLM(D*, q', r)."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "As a prompt template, it is largely self-explanatory: it instructs an LLM to generate an English question q* and answer a* grounded in provided documents, and to match the task style of a provided simulated instruction, with the r4 paradigm emphasizing multi-document/multi-hop reasoning. A viewer can infer the operating principle of paradigm-conditioned, exemplar-steered generation from documents. Still, without the paper one cannot infer how <Documents> and <Simulated Instruction> are obtained (retrieval, filtering, corpus/exemplar pools) or how other paradigms differ."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure covers only a narrow slice of the overall paper content (the prompt for RAG-Instruct, specifically r4). It does not summarize the full method pipeline (filtering → retrieval → paradigm sampling → synthesis), the full r0–r4 taxonomy, the role of noise documents, the dataset scale (e.g., 40K) and sources, or the paper’s empirical argument about balancing scenario diversity and task diversity. Thus it is not a beginning-to-end summary, but an illustrative component."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 5.0,
+              "reason": "The figure shows a prompt template using <Documents> and a <Simulated Instruction>, plus explicit constraints labeled as a RAG paradigm (r4: multi-document/multi-hop reasoning). These elements align with the summary’s described conditioning variables (D*, q', r) and the instruction-simulation mechanism. No extra method modules, architectures, or unrelated formulas are introduced."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 5.0,
+              "reason": "Relationships are consistent with the summary: documents are the grounding source for generating (q*, a*), and the simulated instruction steers the style/task requirements while the chosen RAG paradigm constrains the document–query relationship (here, multi-document reasoning). The prompt’s instructions that a* should leverage information in the documents matches the stated goal of paradigm-conditioned synthesis grounded in retrieved documents."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Key components are labeled in line with the summary and caption: <document>/<Documents> corresponds to retrieved documents (D*), <Simulated Instruction> corresponds to the sampled exemplar instruction (q'), and the blue text is labeled as RAG Paradigms illustrating r4. The use of q* and a* matches the summary’s notation for generated instruction/answer."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is a schematized prompt template that highlights the core controllable variables described in the summary—input documents (<document>) and Instruction Simulation (<Simulated Instruction>)—and explicitly encodes one RAG paradigm (r4) requirements (multi-document/multi-hop reasoning). It focuses on the method’s key contribution (paradigm-conditioned synthesis + exemplar-driven instruction simulation) rather than unrelated implementation details. Slight deduction: it is still a fairly verbose block of text, which makes the ‘main contribution’ less instantly scannable than a more compact schematic."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "As a supplementary figure, it directly supports the caption and summary by showing how the synthesis step is operationalized in a prompt: documents are provided, the paradigm constraints are stated (blue), and the exemplar instruction used for simulation is injected (red). This matches the summary’s emphasis on clarifying conditioning variables and how r controls the query–document relationship while q' shapes task/phrasing."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The content is largely functional and tied to the core idea (prompt fields and constraints). There are no decorative graphics. Minor redundancy comes from generic quality statements (e.g., “accurate, detailed, comprehensive,” “ensure the quality”), which add length without adding much conceptual information about RAG-Instruct’s structure."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 2.0,
+              "reason": "The figure mainly presents a literal prompt template using textual tags (e.g., <Documents>, <document 1>, <Simulated Instruction>) and color cues for RAG paradigms (blue) and instruction simulation (red). These are abbreviations/markup rather than concrete icons or symbolic metaphors; abstract concepts are not substantially replaced with visual metaphors beyond minimal color highlighting."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Visually, it resembles a standard prompt screenshot/boxed text block with inline color emphasis. This is common in LLM/RAG papers for illustrating prompts and does not introduce a distinctive graphic style or uncommon visual encoding relative to typical templates."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 3.0,
+              "reason": "The layout is tailored to the paper’s need to make conditioning variables explicit (documents + simulated instruction + paradigm constraints) by embedding them directly in a prompt format and using color to separate paradigm rules from instruction simulation. While still largely a conventional text-box design, it is appropriately specialized to communicate the r4 multi-document reasoning constraint and the exemplar-driven instruction shaping described in the summary."
+            }
+          ]
+        },
+        "weighted_total": 2.933
+      }
+    },
+    {
+      "figure_file": "RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p3__score0.95.png",
+      "caption": "Figure 1: The process of synthesizing data with RAG-Instruct involves ensuring instruction data diversity through five RAG paradigms and Instruction Simulation. The visualization of the question topic is generated using Atlas.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure covers the main method modules described in the summary: (i) five RAG paradigms r0–r4 as a 2D grid parameterized by the relationship between retrieved documents D* and the target question q* (usefulness vs. explicitness; |D*|=1 vs. >=2), (ii) Instruction Simulation via sampling exemplar instructions q' from multiple instruction datasets after GPT-4o filtering for knowledge-intensive instructions, (iii) retrieval from a source corpus to form D*, (iv) paradigm-conditioned LLM synthesis producing (q*, a*), and (v) the final training mapping D*, D−, q* → a*. However, some specifics from the summary are not explicitly shown, such as the stated 40K dataset size, explicit notation that retrieval uses q' to get D*, and the optional addition mechanism for noise documents D− (D− appears only in the final target line without a clear generation step)."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "A reader can infer the general operating principle from the schematic alone: exemplar instructions are filtered (GPT-4o), a RAG paradigm r is sampled, documents D* are obtained from the corpus, and an LLM (RAG-Instruct) generates (q*, a*), yielding training instances. The paradigm table is especially informative for understanding scenario diversity. Some details remain ambiguous without the paper (e.g., whether retrieval is driven by q' versus q*, and how D− noise documents are constructed/inserted), but the high-level pipeline is clear."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 3.0,
+              "reason": "The figure summarizes the core data-generation recipe and the rationale of combining scenario diversity (r0–r4) with task diversity (Instruction Simulation), which aligns with the figures’ intended purpose in the summary. It does not attempt to summarize later empirical arguments (scenario-stratified evaluation, robustness claims vs. prior datasets) or dataset-scale outcomes (e.g., 40K), so it is not a complete beginning-to-end paper summary—rather a focused method overview plus an illustrative topic visualization (Atlas)."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure’s main modules match the summary: exemplar instruction datasets (SlimOrca/ShareGPT/Alpaca/etc.) → GPT-4o filtering for knowledge-intensive exemplars q′; retrieval from a source corpus to get D*; sampling one of five RAG paradigms r0–r4 defining the D*–q* relationship; LLM synthesis producing (q*, a*), with a target mapping D*, D−, q* → a*. The only notable extra element is the explicit ‘Question Topics’ visualization produced with Atlas; the summary allows illustrative topic visualizations and the caption states Atlas, so this is auxiliary and not a core-method hallucination."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 4.0,
+              "reason": "Relationships largely align with the described pipeline: q′ is selected via filtering, used to retrieve D*, and together with paradigm r conditions generation of (q*, a*); inclusion of optional noise docs D− is reflected in the target mapping. One ambiguity is that the diagram suggests GPT-4o is the synthesizing model generating (q*, a*), while the summary specifies an LLM-based synthesis step generically (not necessarily GPT-4o). If GPT-4o is only intended as the filter (per summary), this could be a mild mismatch, but it does not change the overall method structure."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Major labels correspond to the summary: 'RAG-Instruct', 'Instruction Simulation' with exemplar q′, 'GPT-4o Filter' for knowledge-intensive instructions, 'Source Documents' leading to D*, explicit 'RAG Paradigm r' with five paradigms r0–r4, and the output notation (q*, a*) plus 'Target D*, D−, q* → a*'. These names and symbols match the summary’s terminology and roles."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure foregrounds the main method components from the summary: (i) five RAG paradigms r0–r4 via the 2D grid (usefulness × number of useful docs), (ii) Instruction Simulation via filtering exemplar instructions from multiple instruction datasets, and (iii) synthesis conditioned on D*, q', and r to produce (q*, a*). Most visual space is devoted to these core ideas and their dataflow rather than low-level implementation details. However, the inclusion of the large Atlas topic map on the right slightly dilutes the schematic focus because it is not essential to understanding the generation recipe itself."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption/text, the figure provides an at-a-glance conceptual map consistent with the summary: corpus/source documents feed retrieval to form D*, exemplar instructions q' come from filtered pools, a paradigm r is sampled, and GPT-4o generates (q*, a*) with the final training mapping D*, D−, q* → a*. The labeling of r, q', D*, and (q*, a*) matches the paper’s described conditioning variables. Readability is somewhat reduced by small text (especially in the paradigm table and the dense topic visualization) and by mixed visual styles (icons + table + large scatter) that require more effort to parse."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The core pipeline elements (paradigm table + filtering/simulation + generation arrow flow) are largely non-redundant and directly support the claimed method structure. The right-side Atlas 'Question Topics' plot and decorative icons/rainbow add information not strictly necessary for the data-generation recipe; per the summary, topic visualization is only illustrative and not a core contribution. While not misleading about the method, it increases visual clutter and competes with the main schematic, lowering overall cleanliness."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The overall pipeline is predominantly left-to-right: diverse synthetic datasets → GPT-4o filter → knowledge-intensive instructions, and source documents + retrieval/paradigm signals converge into the central synthesis module → outputs → topic visualization on the far right. However, there are also vertical flows around the central module (e.g., D* and r feeding into the generator), making the reading path slightly mixed rather than strictly one direction."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Most connectors are clean and avoid crossings (left filter chain is linear; output arrow to the right is unobstructed). Near the center, multiple incoming arrows (D*, r, q′) converge on the synthesis block; while they largely do not cross, the convergence creates mild visual congestion that could be mistaken as crossings at a glance."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Modules that are functionally related per the summary are placed close together: the instruction-simulation components (exemplar datasets, GPT-4o filtering, q′) are grouped on the lower-left; the RAG paradigms (r0–r4 table) are on the left near the scenario-diversity label; the central generator combines retrieved documents D* with q′ and r and outputs (q*, a*), matching the described conditioning structure."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major components are aligned in sensible blocks (paradigm table, bottom-left instruction simulation row, central synthesis stack, right-side visualization). Some smaller labels and arrows around the central stack (e.g., D*, r, q′ annotations and the diversity callouts) are not perfectly grid-aligned, reducing the perceived neatness."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Key components stand out: the RAG paradigms table is large and prominent; the central synthesis module (RAG-Instruct/GPT-4o) is visually central; the output and target mapping are clearly indicated. Hierarchy is slightly diluted by multiple similarly salient annotations (scenario/task diversity callouts and icons) competing for attention."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "There is adequate whitespace within the left paradigm table and between the left/bottom modules, but the central area is tight: several arrows, labels (D*, r, q′), and the output text are packed together. The right topic map is separated well, yet the center’s dense packing reduces margin clarity where the core synthesis is depicted."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles are mostly consistent: the RAG paradigms are uniformly styled as table cells; the instruction datasets are shown as a set of icons/labels; GPT-4o steps use consistent iconography; arrows consistently denote flow. Consistency is slightly weakened by heterogeneous visual encodings (mix of icons, colored callout text, and varying typographic emphasis) without an explicit legend, though it does not obscure the method structure described in the summary."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces several abstract pipeline components from the summary with concrete visual tokens: dataset logos for exemplar pools, the GPT-4o icon for filtering/synthesis, a folder icon for the corpus/source documents D, and a small mascot-like icon marking the RAG-Instruct module. Color-coded labels (scenario diversity / paradigm / instruction simulation) and simple arrows act as symbolic cues for control knobs (r, q′) and data flow (D* → (q*, a*)). This is a fairly strong use of iconography/abbreviations to concretize the method modules described in the summary."
+            },
+            {
+              "question": "novelty",
+              "score": 3.0,
+              "reason": "The overall composition is a familiar method schematic (boxes/arrows) plus an embedding-style topic cloud labeled as Atlas visualization, which is somewhat distinctive relative to purely box-and-arrow templates. However, the visual language (icons + arrows + small table of paradigms) remains close to common ML paper conventions; the Atlas topic map adds some stylistic uniqueness but not a radically new aesthetic."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s core rationale from the summary—explicitly juxtaposing (i) scenario diversity via the r0–r4 paradigm grid (usefulness × #docs) with (ii) task diversity via instruction simulation from exemplar datasets, and then linking both into the synthesis step producing (q*, a*) and the target mapping D*, D−, q* → a*. Adding the separate 'Question Topics' Atlas panel supports the stated intent to visually communicate diversity, which is specific to this method rather than a uniform, generic architecture diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.867
+      }
+    }
+  ]
+}

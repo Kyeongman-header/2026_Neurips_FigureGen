@@ -1,0 +1,388 @@
+{
+  "paper_name": "Improve_Vision_Language_Model_Chain-of-thought_Reasoning",
+  "evaluated_at": "2026-01-12T02:13:37.596798",
+  "figure_summary": "## 1. Core Contributions\n- Proposes a **two-stage post-training strategy** to improve VLM chain-of-thought (CoT) reasoning when most available supervision is **short-answer only**: (i) GPT-4o CoT distillation for SFT, then (ii) outcome-reward alignment via **DPO** using correctness of the final answer.\n- Releases **SHAREGPT-4O-REASONING**, a **193k-example** multimodal CoT dataset distilled from 9 short-answer VQA-style datasets, filtered to match ground-truth answers.\n- Demonstrates that **training on direct (short) answers does not reliably transfer to CoT quality**, motivating explicit CoT supervision and subsequent preference-based alignment.\n- Uses **short-answer annotations as outcome rewards** to construct positive/negative rationale pairs from model-generated CoTs, aligning the model toward reasoning that yields correct answers without extra human preference labels.\n\n## 2. Method Components & Relations relevant to figures\n- **Data sources (short-answer VQA datasets across domains):**\n  - Commonsense/knowledge (A-OKVQA), charts (ChartQA), documents/text localization (DocVQA, InfoVQA, TextVQA), science (AI2D, SQA), math (MathVision, G-LLaVA).\n- **Stage A — CoT distillation (GPT-4o):**\n  - Input: image + question + short ground-truth answer.\n  - Output: generated **rationale + answer**, then **filter** examples where GPT-4o’s answer mismatches ground truth.\n  - Produces a CoT-heavy corpus (used later in SFT), contrasted against short direct-answer annotations.\n- **Stage B — Supervised fine-tuning (SFT):**\n  - Base: LLaMA3-LLaVA-NeXT-8B initialized from Open-LLaVA-NeXT weights.\n  - Mixed prompting formats to support **both**:\n    - **Direct prediction** prompts (short answer / option letter only).\n    - **CoT prediction** prompts (“Generate a reason first and then output…”), with standardized answer extraction marker (“### Answer:”).\n- **Stage C — Outcome-reward alignment with DPO:**\n  - The SFT model generates **multiple candidate CoT responses** per question.\n  - **Outcome judgment**: compare each candidate’s final answer to the short ground truth → label as correct/incorrect.\n  - Construct **(positive, negative)** response pairs and optimize **DPO loss** (policy vs reference, both initialized from SFT), pushing probability mass toward responses whose reasoning leads to correct outcomes.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **motivate the problem setting**: why short-answer supervision is insufficient for learning robust CoT reasoning, and why explicit reasoning supervision/alignment is needed.\n- To **visualize the proposed training pipeline**: how short annotations are reused both to (i) create CoT training data (distillation) and (ii) provide an outcome signal for preference-based alignment (DPO).\n- To **characterize the distilled dataset**: show the **breadth of reasoning domains** covered and the **length/structure differences** between CoT outputs and direct answers (i.e., why CoT is a distinct supervision signal).\n- To **clarify training data composition** for SFT experiments: what data sources and mixtures are used when training models intended to handle both direct answering and CoT-style responses.\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide a full **state-of-the-art comparison** across all benchmarks or exhaustive quantitative results (those are in experiments/appendices, not the conceptual figures).\n- Not intended to prove that any specific generated rationale is **faithful/causal** with respect to the model’s internal reasoning—correctness is treated primarily via **outcome matching** (final answer correctness), not guaranteed rationale validity.\n- Not intended to detail **implementation hyperparameters** beyond high-level choices (e.g., full prompts, training schedules, compute, architecture internals).\n- Not intended to establish that GPT-4o rationales are universally **error-free or unbiased**; figures illustrate usage and distributions/examples rather than a thorough audit of distillation quality.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+      "caption": "Figure 2: Distillation of examples from various VLM task domains, highlighting the specific reasoning capabilities.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "1.1",
+              "score": 2.0,
+              "reason": "The figure (captioned as distillation examples across VLM task domains) covers only a subset of the paper’s major method components. Visually it shows representative QA items with GPT-4o-style rationales and final answers across domains (e.g., world/common-sense, chart understanding, information localization, math), which aligns with Stage A distillation and the claim of breadth across domains. However, it omits other major components emphasized in the summary: the filtering step based on answer match, the SFT setup (mixed direct vs CoT prompting with an answer marker), and the DPO outcome-reward alignment pipeline (pair construction, policy/reference). Since the paper’s core contribution is a two-stage post-training strategy beyond just distillation, the figure does not include most major components."
+            },
+            {
+              "question": "1.2",
+              "score": 3.0,
+              "reason": "A reader can infer the figure is presenting distilled multimodal CoT supervision examples: each panel shows an image/chart, a question, a multi-sentence rationale, and a short final answer. This makes the idea of 'distilling reasoning examples from different task domains' understandable without the paper. However, the general operating principle of the full system in the summary (distillation → SFT with mixed formats → DPO using outcome correctness) is not recoverable from the figure alone; it reads as dataset examples rather than a pipeline."
+            },
+            {
+              "question": "1.3",
+              "score": 1.0,
+              "reason": "The figure does not summarize content from beginning to end of the paper. It focuses narrowly on qualitative distilled examples and domain coverage, but does not include the later stages (SFT training composition, direct-answer vs CoT prompting, outcome-reward/DPO alignment) nor the broader motivation/claims about short-answer supervision failing to transfer to CoT quality. As such, it is not a complete summary of the paper’s contributions or workflow."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "2.1",
+              "score": 4.0,
+              "reason": "The figure shows distilled examples in a consistent format (Question → Rationale → Answer) across four domains. This matches the summary’s Stage A distillation idea (GPT-4o generating rationale+answer) and the paper’s emphasis on domain breadth. However, the summary’s listed source datasets include A-OKVQA/ChartQA/DocVQA/InfoVQA/TextVQA/AI2D/SQA/MathVision/G-LLaVA, while the figure introduces domain panels titled \"World/Common Sense Knowledge,\" \"Chart Understanding,\" \"Information Localization in Industrial Document,\" and \"Math Reasoning\" without explicitly tying them to the named datasets. That mismatch is minor and does not introduce new method components, but it is still extra specificity not explicitly grounded in the summary."
+            },
+            {
+              "question": "2.2",
+              "score": 3.0,
+              "reason": "The figure correctly conveys that examples are distilled to produce rationales demonstrating different reasoning capabilities (aligning with the caption and the summary’s notion of a CoT-heavy corpus from multiple VQA domains). But it does not depict the key distillation relationship described in the summary—namely: input includes short ground-truth answer, GPT-4o generates rationale+answer, and then filtering retains only examples whose generated answer matches the ground truth. Since the figure is presented as \"Distillation\" yet omits the filtering/match-to-GT mechanism, the relationship is incomplete relative to the summary."
+            },
+            {
+              "question": "2.3",
+              "score": 3.0,
+              "reason": "Domain labels are generally consistent with the summary’s high-level domain categories (commonsense/knowledge, charts, documents/text localization, math). However, the figure’s labels do not match the dataset/component names explicitly mentioned in the summary (e.g., A-OKVQA, ChartQA, DocVQA/InfoVQA/TextVQA, MathVision/G-LLaVA), and it adds a specific phrasing (\"Industrial Document\") not stated in the summary. These are labeling/attribution ambiguities rather than incorrect method naming, but they reduce fidelity."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_Summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the paper’s core idea of distilling CoT-style rationales across multiple VLM task domains (as described in the summary). Each panel follows a consistent template (Question → Rationale → Answer) and highlights domain-specific reasoning (commonsense, charts, document/info localization, math), which aligns with the stated intent to show breadth of reasoning domains and CoT vs short-answer structure. However, the rationales are relatively verbose (notably the industrial document example), which makes the main takeaway slightly harder to grasp quickly."
+            },
+            {
+              "question": "3.2_Contextual_Match",
+              "score": 4.0,
+              "reason": "Given the caption (“Distillation of examples from various VLM task domains… reasoning capabilities”), the panels function well as supporting evidence: they concretely illustrate what a distilled example looks like and how reasoning varies by domain—consistent with the summary’s dataset characterization goal. Readability is reduced by small font and dense text blocks (especially in the long rationale), and the visual details of the chart/document images are hard to inspect at this resolution, which can limit comprehension without zooming."
+            },
+            {
+              "question": "3.3_Redundancy",
+              "score": 4.0,
+              "reason": "The content is largely non-decorative and directly tied to the claimed dataset breadth and CoT distillation outputs. The repeated Question/Rationale/Answer structure is helpful rather than redundant for comparing domains. Minor redundancy arises from overly detailed rationale prose that goes beyond what is needed to convey the capability (e.g., multi-sentence explanations and bullet points), but it does not introduce unrelated decorative elements or distract from the core message."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.714,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 3.0,
+              "reason": "The figure is organized as a 2×2 grid of domain panels (World/Common Sense Knowledge, Chart Understanding, Information Localization in Industrial Document, Math Reasoning). This supports scanning in a conventional reading order (left-to-right, top-to-bottom), but there is no explicit pipeline directionality (e.g., arrows) indicating a flow, which makes the intended direction only implicit."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "There are no connection lines or arrows between panels; therefore, there is no risk of line crossings. The panel boundaries cleanly separate content."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Within each panel, the closely related items (Question, image/visual evidence, Rationale, Answer) are grouped together, and the four domains are clearly separated into distinct blocks, matching the summary’s intent to highlight breadth across task domains. Minor proximity issues arise because text blocks (especially rationales) vary in length and can visually dominate, reducing the tight coupling to the corresponding visual evidence in some panels."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "The four panels are neatly aligned in a grid with consistent borders and header bars. Inside panels, the layout is mostly orderly, but internal text and images are not always aligned to a consistent internal grid (e.g., varying margins and text block starts across panels)."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 3.0,
+              "reason": "Domain headers are visually prominent (colored bars and bold titles), which helps emphasize the main components (the different reasoning domains). However, within each panel the hierarchy among Question vs Rationale vs Answer is mostly typographic and not strongly differentiated; long rationale text can overwhelm the key takeaway (the answer), making the most important outcome less salient."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "Panel-level separation is adequate, but within panels the content is dense: images and long rationales sit close to other text with limited whitespace, reducing readability. Some panels appear cramped due to long rationale paragraphs."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "All panels use consistent structural elements (domain header, 'Question:', 'Rationale:', 'Answer:' labels, similar typography). Color usage is consistent at the header level (distinct domain bars), and the repeated label format reinforces role consistency. Some inconsistency remains in how visual evidence is presented (photo vs chart vs diagram) and in rationale formatting (bullets/ellipsis vs paragraph), though this is partly inherent to the domains."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 2.0,
+              "reason": "The figure largely presents abstract concepts (task domains and reasoning types) through literal exemplars: screenshot-like VQA items with an image/chart plus 'Question/Rationale/Answer' text. It uses domain headers (e.g., 'World/Common Sense Knowledge', 'Chart Understanding') as labels rather than concrete icons/symbols/abbreviations to stand in for the concepts. This is a straightforward instantiation of the summary’s idea of multi-domain distillation examples, not a metaphorical encoding."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 2.0,
+              "reason": "Visually, it resembles a common paper template: a 2×2 grid of example panels with headers and Q/R/A blocks. While it aligns with the summary’s intent to highlight domain breadth and reasoning capabilities, the styling and composition do not introduce a distinctive visual language beyond conventional dataset-example showcases."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 3.0,
+              "reason": "The layout is moderately adapted to the paper’s message by grouping examples into distinct domains (commonsense, charts, industrial/document info localization, math), which matches the summary’s emphasis on breadth across VQA-style sources and reasoning capabilities. However, it does not break strongly from uniform design principles (still a standard grid with repeated text structure), and it does not visualize the two-stage pipeline or DPO pairing mechanism described elsewhere in the summary."
+            }
+          ]
+        },
+        "weighted_total": 3.076
+      }
+    },
+    {
+      "figure_file": "Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+      "caption": "Figure 1: The upper figure questions whether training exclusively on direct-answer prediction can effectively teach CoT prediction. In the lower figure, we leverage short annotation as outcome reward for reasoning alignment, allowing the model to improve with self-generated data.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 3.0,
+              "reason": "The figure captures the paper’s central motivation and one key method component: (A) questioning whether direct-answer supervision transfers to CoT, and (B) using short-answer correctness as an outcome reward signal to align model-generated rationales via a preference-like mechanism (positive vs negative rationale leading to correct vs wrong answer). However, it omits several major pipeline elements emphasized in the summary: GPT-4o CoT distillation and filtering (Stage A), SFT with mixed prompting formats and standardized answer marker (Stage B), and explicit DPO structure (policy vs reference, DPO loss) as described in Stage C. It also does not convey dataset sources/breadth (the 9 VQA datasets) or the released 193k-example dataset."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the visual alone, one can understand the operating principle at a high level: direct prediction gives only a short answer and may not teach reasoning; then the model generates multiple rationales/answers, an outcome judgment (correct vs wrong final answer) is used as feedback, and the system aligns toward the rationale associated with the correct outcome. The legend clarifies generation vs outcome judgment vs alignment. What is not intelligible without the paper is the exact training algorithm (explicitly DPO), how pairs are constructed in practice (e.g., multiple samples per question), and how this fits into the full two-stage post-training strategy including GPT-4o distillation and SFT."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure is not an end-to-end summary of the paper. It covers the motivation and the idea of outcome-reward alignment, but it does not summarize the full workflow described in the summary (distillation → SFT → DPO), the data construction/filtering process, the composition and breadth of the SHAREGPT-4O-REASONING dataset, nor the training setup details at the level mentioned (base model initialization, mixed prompt formats). Thus it is incomplete relative to the paper’s full narrative."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 5.0,
+              "reason": "The figure stays within the method elements described in the summary: direct-answer training vs CoT reasoning, using short annotated answers as an outcome reward, generating multiple rationales, outcome judgment by matching the final answer to ground truth, and aligning toward correct outcomes (consistent with DPO-based preference alignment). It does not introduce extra modules, losses, or formulas beyond these core ideas; the generic labels (generation, outcome judgment, feedback/alignment) are conventional and do not conflict with the summary."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 4.0,
+              "reason": "Relationships are largely faithful: (A) questions whether direct prediction transfers to underlying rationale/CoT, matching the paper’s motivation that short-answer supervision does not reliably improve CoT. (B) shows producing multiple rationales leading to different final answers, then using correctness (wrong vs correct answer) as the outcome signal to drive rationale alignment—consistent with constructing positive/negative pairs from model-generated CoTs and optimizing a preference objective. Minor omission: the figure does not explicitly depict DPO’s policy/reference models or the explicit (positive, negative) pairing step, so the alignment mechanism is shown at a higher level than the summary’s Stage C description."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 4.0,
+              "reason": "Major labels align with the summary’s terminology and intent (direct prediction, short annotated answer as outcome reward, rationale alignment, generation, outcome judgment). However, the figure caption/labels do not explicitly name key method identifiers from the summary (e.g., GPT-4o distillation, SFT, DPO), and instead use generic “feedback/alignment,” which is directionally correct but less precise than the paper’s stated components."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the paper’s main message: (A) questions whether direct-answer supervision alone teaches CoT, and (B) shows using short-answer labels as an outcome reward to align rationales. This matches the summary’s motivation and Stage C (outcome-based preference signal) at a conceptual level. However, the pipeline is simplified (e.g., it does not clearly show the prior GPT-4o CoT distillation/filtering stage described in the summary), which can make the overall two-stage post-training contribution feel partially represented."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "With the caption, the top panel clearly supports the motivation that direct prediction may not yield reliable CoT, and the bottom panel communicates the key idea of generating multiple rationales and using final-answer correctness (short annotation) to provide feedback/alignment—consistent with the summary’s outcome-reward alignment concept. Some labels are slightly ambiguous for a reader expecting the summary’s specifics (e.g., DPO is not explicitly named; ‘rationale alignment’ is not explicitly tied to preference optimization/policy-vs-reference), but it still functions well as a conceptual supplement."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The figure mostly avoids decorative clutter and uses a simple two-panel structure plus a small legend. Still, the bar chart in (A) introduces dataset-specific visual detail (food-item bars and numeric values) that is not essential to conveying the core methodological point (direct answer vs underlying rationale), and it slightly increases visual complexity without strengthening the pipeline explanation. The dashed ellipses and repeated ‘likely correct/incorrect’ annotations in (B) are somewhat redundant but not severely distracting."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The figure follows a clear left-to-right narrative in both panels: (A) moves from the VQA example on the left to “Training data with Direct Prediction” and then to the “Short Annotated Answer” on the right, matching the summary’s motivation about direct-answer supervision vs CoT. (B) similarly progresses from generated rationales on the left to alignment/outcome judgment on the right, consistent with the described outcome-reward alignment idea."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 3.0,
+              "reason": "In panel (B), multiple arrows (from the model icon to Rationale 1/2, then to predictions, and the curved orange feedback/ alignment indication) visually overlap and partially intersect, creating moderate clutter. While it does not fully obscure meaning, it reduces readability compared with a strictly non-crossing layout."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are mostly grouped: the VQA example and question are colocated (A), and in (B) each rationale is placed near its resulting prediction and correctness label, reflecting the summary’s positive/negative outcome pairing concept. The right-side legend is separated appropriately. However, the feedback/alignment arc covers a large area, slightly weakening local grouping."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major components align cleanly into two stacked panels with consistent baselines (top pipeline and bottom pipeline). Within (B), the two rationale rows are roughly parallel and aligned. Minor misalignment appears in the placement of dashed arrows, text labels (e.g., prediction text), and the large dashed feedback ellipse, which does not conform to a strict grid."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Panel titles (A/B) and the dashed horizontal divider create strong high-level hierarchy, and the final “Short Annotated Answer” in (A) is visually emphasized (large green number). In (B), correct vs wrong outcomes are highlighted via color (green/red). The legend is visually secondary. Some hierarchy competition arises from the large orange dashed ellipse and multiple arrow styles, which can draw attention away from the core outcome-judgment structure."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally adequate spacing between the two panels and between major blocks, preventing severe crowding. In (B), margins between arrows, labels, and the dashed feedback ellipse are tighter, and the ellipse encroaches on nearby text, slightly reducing clarity."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles use consistent visual conventions: rationales are labeled similarly (Rationale 1/2), predictions are shown with analogous dashed arrows, and outcomes use consistent color semantics (red for wrong, green for correct). The legend codifies arrow styles. Minor inconsistency comes from mixing several line styles (solid, dashed, dotted-like) and both black and orange arrows for related concepts, which can be slightly harder to parse at a glance."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 3.0,
+              "reason": "The figure uses a small robot icon to stand in for the VLM and uses visual cues (dashed arrows, orange dashed feedback loop, green/red correctness coloring, and question marks) to concretize otherwise abstract processes like “implicit rationale,” “outcome judgment,” and “alignment.” However, most concepts are still expressed in plain text labels (e.g., “Training data with Direct Prediction,” “Rationale alignment,” “Outcome judgement”), so the metaphor/iconography is only moderate rather than extensive."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 2.0,
+              "reason": "Visually it resembles a common ML paper schematic: a two-panel (A/B) didactic setup, arrows indicating data flow, and color-coded correct/incorrect outcomes. This matches the summary’s intent to motivate why direct-answer supervision is insufficient and to illustrate outcome-reward alignment with DPO-like pairing, but it does not introduce a particularly distinctive or uncommon graphical style beyond standard annotation and loop arrows."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific argument: the top panel directly poses the key question (whether direct-answer training yields CoT) using an example VQA-style counting question, then the bottom panel mirrors the proposed alignment idea by showing multiple self-generated rationales leading to different final answers and being selected via short-answer correctness. This problem→method narrative structure is well-adapted to the paper’s two-stage reasoning/alignment motivation rather than a generic pipeline-only diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.6
+      }
+    },
+    {
+      "figure_file": "Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p3__score0.95.png",
+      "caption": "Figure 4: The upper section displays the data sources used for the SFT experiments, while the lower section illustrates the data composition for model training.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 3.0,
+              "reason": "The figure covers the SFT-relevant data sources and mixtures mentioned in the summary: 193k CoT distillation data, 193k direct data, 450-sample CoT/direct formats, an additional 16k G-LLaVA QA+alignment set, and a small pretrain mix. However, it omits major method components central to the overall paper’s contributions—especially the two-stage post-training pipeline beyond SFT (notably the outcome-reward DPO alignment stage and how positive/negative pairs are constructed). Thus it is informative for data composition but not for the full method."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "As a standalone, the upper box clearly enumerates data buckets and sizes, and the lower section shows multiple fine-tuning configurations (e.g., different LLaVA-NeXT variants and a final 'LLaVA-Reasoner-SFT') with explicit mixtures of CoT, direct, format samples, and pretrain mix. One can understand the training-data composition and the experiment variants without reading the paper, but cannot infer the broader system operating principle (e.g., distillation process details and any subsequent alignment like DPO)."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure is not a beginning-to-end summary of the paper. It focuses on SFT experiment data sources and composition, but does not include the full proposed two-stage post-training strategy (distillation + DPO), the outcome-reward alignment mechanism, or the motivation that short-answer supervision fails to transfer to CoT quality. Therefore, it is incomplete relative to the paper’s overall narrative and contributions."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 3.0,
+              "reason": "The figure’s core elements (193k CoT distillation, 193k direct data, 450-sample formats, and an additional 16k G-LLaVA QA/alignment component) align with the summary’s described data sources and SFT data mixture concept. However, the inclusion of a specific 'Pretrain data mix: 2k data sampled from pre-train distribution' and repeated '2k PT mix' in the training rows is not mentioned in the provided summary; this adds an extra data component that could be implementation-specific and is unsupported by the summary."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 4.0,
+              "reason": "Relationships shown—separating data sources (upper) from model training compositions (lower), and mixing CoT-distilled data with direct-answer data and an additional alignment set for different SFT variants—are consistent with the summary’s description that SFT uses mixed prompting formats and combines CoT supervision with direct-answer supervision. The only uncertainty is the role/scale of the '2k pretrain mix,' whose linkage into every fine-tuning recipe cannot be confirmed from the summary."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 4.0,
+              "reason": "Major labels such as '193k CoT Distillation,' '193k Direct Data,' and '16k G-LLaVA QA and Alignment' match the summary’s dataset descriptions (CoT distilled corpus; short-answer datasets including G-LLaVA). The model-side labels (e.g., 'LLaVA-NeXT', 'LLaVA-Reasoner-SFT') are broadly consistent with the summary’s SFT stage on a LLaVA-NeXT/LLaMA3-LLaVA-NeXT-8B base, but some naming/variants and the explicit 'PT mix' labeling are not explicitly stated in the summary, making full label verification incomplete."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the paper’s training-data story: it cleanly separates (top) data sources and (bottom) how those sources are mixed across SFT variants. The main relevant components from the summary—CoT distillation corpus (193k), direct short-answer data (193k), additional CoT (G-LLaVA QA/alignment), and a pretrain-mix—are foregrounded. It does not attempt to show unrelated benchmark results or implementation details. Minor readability drag comes from multiple similar rows and small labels, which can make the key takeaway (how mixtures differ) slightly harder to extract at a glance."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "Given the caption (“upper: data sources … lower: data composition”), the visual matches well: the upper panel names the sources and sampling (e.g., 450 samples) and the lower panel lists model fine-tuning setups with color-coded composition. This supports the summary’s stated figure purpose of clarifying training data composition for SFT experiments. Some acronyms/terms (e.g., 'PT mix', 'Format Data') are not self-explained within the figure, so understanding depends on surrounding text, but it still functions adequately as supplementary material."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure largely avoids decorative elements and keeps to functional blocks, arrows, and color legends tied to data mixtures. Most information is relevant to the core idea of comparing CoT vs direct-answer supervision and their combinations in SFT. Slight redundancy arises from repeating very similar composition rows (multiple '450 sample' entries and repeated blocks), which could have been compressed, but it does not introduce unrelated content that would confuse the method structure."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure is organized top-to-bottom into two clear sections matching the caption: an upper 'Data Sources' box and a lower 'Model Fine-tuning' box. Within each row, the mixture components (CoT distillation, direct data, format data, PT mix, etc.) are laid out left-to-right, yielding an overall readable flow even though there are no explicit arrows indicating process order."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "There are no inter-module connector lines across the diagram; composition is shown via adjacent colored blocks and labels. As a result, the design fully avoids line crossings."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related items are grouped together: data sources are consolidated in the upper dashed box, and all training mixtures for different fine-tuning settings are stacked together in the lower dashed box. Within each training row, the blocks that jointly define the mixture are colocated."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Rows and blocks are mostly aligned to a consistent left margin, and the repeated mixture rows form a clean table-like structure. Minor misalignments (e.g., varying block widths and label placements across rows) reduce perfect grid regularity but do not harm readability."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The key structure (two sections: 'Data Sources' and 'Model Fine-tuning') is emphasized by dashed containers and bold headers. Important dataset components (e.g., '193k CoT Distillation' and '193k Direct Data') stand out via larger, saturated colored blocks compared to smaller auxiliary blocks, though hierarchy is conveyed more by layout than by strong visual weight differences."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "Elements generally have sufficient spacing within and between the two major sections, and each row is separated clearly. Some blocks and text appear tight within the dashed boundaries and between adjacent tokens, but crowding is limited."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Similar roles use consistent encodings: dataset types are represented as rounded colored rectangles with stable color semantics across the upper and lower sections (e.g., orange for CoT distillation, blue for direct data, gray for pretrain mix, green for additional CoT). Repeated mixture rows reuse the same shapes and legend-like labeling, supporting quick comparison."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 2.0,
+              "reason": "The figure mostly uses standard abbreviations and labels (e.g., “SFT”, “CoT”, “PT mix”, “193k”) and color-coded blocks to denote dataset portions. This replaces some abstract concepts (data composition) with simple visual tokens (colored rectangles), but it does not employ richer concrete icons/symbols beyond conventional legend-like encoding."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "Visually, it follows a common paper-template style: boxed sections (“Data Sources”, “Model Fine-tuning”), colored bars representing amounts, and a straightforward legend. This is consistent with typical dataset-mixture schematic figures and does not present a distinctive or unusually stylized visual approach beyond standard design conventions."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s needs described in the summary: it separates (top) data sources for SFT and (bottom) specific training mixtures across model variants, explicitly contrasting CoT-distilled data vs direct data vs format/additional CoT and pretrain mix. This directly supports the stated goal of clarifying training data composition and breaks from a one-size-fits-all pipeline diagram by focusing on composition comparisons across setups."
+            }
+          ]
+        },
+        "weighted_total": 3.552
+      }
+    }
+  ]
+}

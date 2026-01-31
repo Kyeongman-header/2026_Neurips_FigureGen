@@ -1,0 +1,246 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Instruction-dependent and undesirable biases diagram</title>
+<style>
+  body { margin: 0; background:#ffffff; }
+  #figure-root {
+    width: 1200px; height: 1500px;
+    margin: 0 auto;
+    position: relative;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #fff;
+  }
+  .panel-title { font-size: 26px; font-weight: 700; fill:#111; }
+  .panel-subtitle { font-size: 16px; fill:#333; }
+  .label { font-size: 16px; fill:#1a1a1a; }
+  .small { font-size: 14px; fill:#333; }
+  .tiny { font-size: 12.5px; fill:#444; }
+  .muted { fill:#666; }
+  .box { fill:#ffffff; stroke:#2b2b2b; stroke-width:2; }
+  .soft-box { fill:#fbfbfd; stroke:#2b2b2b; stroke-width:2; }
+  .callout { fill:#fff7f7; stroke:#a33; stroke-width:2; }
+  .note { fill:#f6fbff; stroke:#2a5caa; stroke-width:2; }
+  .divider { stroke:#c7c7c7; stroke-width:2; }
+  .arrow { stroke:#222; stroke-width:2.2; fill:none; }
+  .arrow-muted { stroke:#666; stroke-width:2; fill:none; }
+  .arrow-red { stroke:#a33; stroke-width:2.6; fill:none; }
+  .arrow-blue { stroke:#2a5caa; stroke-width:2.6; fill:none; }
+  .chip { fill:#f2f2f2; stroke:#444; stroke-width:1.6; }
+  .bar-outline { stroke:#333; stroke-width:1.6; fill:#fff; }
+  .gridline { stroke:#e1e1e1; stroke-width:1; }
+  .axis { stroke:#333; stroke-width:2; }
+  .tick { stroke:#333; stroke-width:1.4; }
+  .legend-swatch { stroke:#333; stroke-width:1.2; }
+  .caption-area { fill:#ffffff; stroke:#d0d0d0; stroke-width:1.5; }
+  .caption-text { font-size: 14px; fill:#111; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500">
+  <defs>
+    <marker id="arrowhead" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#222"></path>
+    </marker>
+    <marker id="arrowhead-muted" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#666"></path>
+    </marker>
+    <marker id="arrowhead-red" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#a33"></path>
+    </marker>
+    <marker id="arrowhead-blue" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#2a5caa"></path>
+    </marker>
+    <linearGradient id="biasGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f0f0f0"/>
+      <stop offset="100%" stop-color="#ffe5e5"/>
+    </linearGradient>
+    <linearGradient id="instGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f7fbff"/>
+      <stop offset="100%" stop-color="#eef5ff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Overall title -->
+  <text x="60" y="70" class="panel-title">Undesirable bias and instruction-dependent behavior in instruction-following LMs</text>
+  <text x="60" y="98" class="panel-subtitle">Two complementary failure modes: (A) biased label preference under ambiguous context; (B) inconsistent accuracy across synonymous zero-shot instructions</text>
+
+  <!-- Vertical divider between panels -->
+  <line x1="600" y1="120" x2="600" y2="1325" class="divider"/>
+
+  <!-- ================= LEFT PANEL (A) ================= -->
+  <text x="60" y="150" class="panel-title">A. Undesirable bias under ambiguous context</text>
+  <text x="60" y="178" class="panel-subtitle">Negative question + ambiguity → elevated probability for a minority-group label</text>
+
+  <!-- Input: context -->
+  <rect x="60" y="215" width="500" height="210" rx="14" class="soft-box"/>
+  <text x="85" y="247" class="label" font-weight="700">Ambiguous context (x)</text>
+  <text x="85" y="278" class="small">A customer enters a store. Another person is nearby.</text>
+  <text x="85" y="305" class="small">Something was misplaced, but it is unclear who did it.</text>
+  <text x="85" y="332" class="small">The description provides insufficient evidence about responsibility.</text>
+
+  <!-- Input: question/instruction -->
+  <rect x="60" y="445" width="500" height="165" rx="14" class="box"/>
+  <text x="85" y="477" class="label" font-weight="700">Negative question with candidate labels (ι, C)</text>
+  <text x="85" y="508" class="small">Question: “Who did <tspan font-weight="700">not</tspan> do it?”</text>
+  <text x="85" y="537" class="small">Candidates include a minority-group label and alternative options</text>
+  <text x="85" y="566" class="tiny muted">Example labels: minority-group label; majority-group label; “Can’t answer”</text>
+
+  <!-- Arrow to model -->
+  <path d="M 310 615 L 310 675" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <!-- Model box -->
+  <rect x="140" y="675" width="340" height="105" rx="14" fill="url(#biasGrad)" stroke="#2b2b2b" stroke-width="2"/>
+  <text x="170" y="715" class="label" font-weight="700">Instruction-following language model</text>
+  <text x="170" y="743" class="small muted">Predicts label probabilities: P(label | ι, x)</text>
+
+  <!-- Arrow to output distribution -->
+  <path d="M 310 785 L 310 835" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <!-- Output distribution -->
+  <rect x="60" y="835" width="500" height="330" rx="14" class="box"/>
+  <text x="85" y="867" class="label" font-weight="700">Output: label probability distribution</text>
+
+  <!-- Simple bars -->
+  <!-- Axes -->
+  <line x1="120" y1="1125" x2="520" y2="1125" class="axis"/>
+  <line x1="120" y1="910" x2="120" y2="1125" class="axis"/>
+  <!-- gridlines -->
+  <line x1="120" y1="1085" x2="520" y2="1085" class="gridline"/>
+  <line x1="120" y1="1045" x2="520" y2="1045" class="gridline"/>
+  <line x1="120" y1="1005" x2="520" y2="1005" class="gridline"/>
+  <line x1="120" y1="965" x2="520" y2="965" class="gridline"/>
+  <line x1="120" y1="925" x2="520" y2="925" class="gridline"/>
+
+  <text x="85" y="925" class="tiny muted">Higher</text>
+  <text x="85" y="1125" class="tiny muted">0</text>
+  <text x="405" y="1148" class="tiny muted">Probability (illustrative)</text>
+
+  <!-- Bars (fixed values) -->
+  <!-- minority-group label high under ambiguity -->
+  <rect x="140" y="955" width="330" height="38" fill="#f2b6b6" stroke="#9b2f2f" stroke-width="1.6"/>
+  <text x="140" y="945" class="small" font-weight="700">Minority-group label</text>
+  <text x="480" y="980" class="tiny" fill="#1a1a1a">0.66</text>
+
+  <rect x="140" y="1015" width="120" height="38" fill="#d9d9d9" stroke="#666" stroke-width="1.4"/>
+  <text x="140" y="1005" class="small">Majority-group label</text>
+  <text x="270" y="1040" class="tiny" fill="#1a1a1a">0.24</text>
+
+  <rect x="140" y="1075" width="50" height="38" fill="#eeeeee" stroke="#888" stroke-width="1.4"/>
+  <text x="140" y="1065" class="small">“Can’t answer”</text>
+  <text x="200" y="1100" class="tiny" fill="#1a1a1a">0.10</text>
+
+  <!-- Callout: undesirable bias -->
+  <rect x="95" y="1165" width="430" height="125" rx="14" class="callout"/>
+  <text x="120" y="1200" class="label" font-weight="700">Undesirable bias</text>
+  <text x="120" y="1228" class="small">Despite ambiguity, the model assigns a high probability to a</text>
+  <text x="120" y="1252" class="small">minority-group label when answering a negative question.</text>
+  <text x="120" y="1276" class="tiny muted">Bias can arise from spurious associations between labels and tokens/instructions.</text>
+
+  <!-- ================= RIGHT PANEL (B) ================= -->
+  <text x="640" y="150" class="panel-title">B. Instruction-dependent bias (Flan-T5-base)</text>
+  <text x="640" y="178" class="panel-subtitle">Synonymous zero-shot instructions → inconsistent accuracy across datasets</text>
+
+  <!-- Instruction set box -->
+  <rect x="640" y="215" width="500" height="230" rx="14" fill="url(#instGrad)" stroke="#2b2b2b" stroke-width="2"/>
+  <text x="665" y="247" class="label" font-weight="700">Synonymous zero-shot instructions (same task meaning)</text>
+
+  <!-- instruction chips -->
+  <rect x="665" y="270" width="455" height="36" rx="10" class="chip"/>
+  <text x="680" y="294" class="small">I1: “Choose the correct label for the example.”</text>
+
+  <rect x="665" y="312" width="455" height="36" rx="10" class="chip"/>
+  <text x="680" y="336" class="small">I2: “Given the input, decide which option is correct.”</text>
+
+  <rect x="665" y="354" width="455" height="36" rx="10" class="chip"/>
+  <text x="680" y="378" class="small">I3: “Read carefully and answer using the provided choices.”</text>
+
+  <text x="665" y="414" class="tiny muted">… multiple paraphrases; semantically equivalent instructions used for evaluation</text>
+
+  <!-- Arrow to evaluation -->
+  <path d="M 890 450 L 890 505" class="arrow-blue" marker-end="url(#arrowhead-blue)"/>
+
+  <!-- Evaluation box -->
+  <rect x="690" y="505" width="400" height="110" rx="14" class="box"/>
+  <text x="715" y="542" class="label" font-weight="700">Evaluate Flan-T5-base</text>
+  <text x="715" y="570" class="small">Compute accuracy for each instruction, then compare</text>
+  <text x="715" y="596" class="small">variation across instructions (inter-instruction gap)</text>
+
+  <!-- Arrow to small multiples -->
+  <path d="M 890 615 L 890 670" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <!-- Small-multiples: 4 datasets -->
+  <text x="640" y="705" class="label" font-weight="700">Observed inconsistency across instructions (illustrative patterns)</text>
+  <text x="640" y="730" class="tiny muted">Each mini-panel shows accuracy across 5 example paraphrases (I1–I5); large spread indicates instruction sensitivity.</text>
+
+  <!-- Mini panel 1: BBQ-SES -->
+  <rect x="640" y="755" width="235" height="220" rx="12" class="box"/>
+  <text x="655" y="784" class="small" font-weight="700">BBQ-SES</text>
+  <!-- axis -->
+  <line x1="665" y1="945" x2="860" y2="945" class="axis"/>
+  <line x1="665" y1="810" x2="665" y2="945" class="axis"/>
+  <!-- bars -->
+  <rect x="685" y="860" width="22" height="85" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="715" y="880" width="22" height="65" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="745" y="835" width="22" height="110" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="775" y="895" width="22" height="50" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="805" y="845" width="22" height="100" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <text x="685" y="967" class="tiny muted">I1 I2 I3 I4 I5</text>
+  <text x="655" y="1000" class="tiny muted">Spread: high</text>
+
+  <!-- Mini panel 2: BBQ-Age -->
+  <rect x="905" y="755" width="235" height="220" rx="12" class="box"/>
+  <text x="920" y="784" class="small" font-weight="700">BBQ-Age</text>
+  <line x1="930" y1="945" x2="1125" y2="945" class="axis"/>
+  <line x1="930" y1="810" x2="930" y2="945" class="axis"/>
+  <rect x="950" y="870" width="22" height="75" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="980" y="850" width="22" height="95" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="1010" y="900" width="22" height="45" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="1040" y="835" width="22" height="110" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="1070" y="885" width="22" height="60" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <text x="950" y="967" class="tiny muted">I1 I2 I3 I4 I5</text>
+  <text x="920" y="1000" class="tiny muted">Spread: high</text>
+
+  <!-- Mini panel 3: MRPC -->
+  <rect x="640" y="995" width="235" height="220" rx="12" class="box"/>
+  <text x="655" y="1024" class="small" font-weight="700">MRPC</text>
+  <line x1="665" y1="1185" x2="860" y2="1185" class="axis"/>
+  <line x1="665" y1="1050" x2="665" y2="1185" class="axis"/>
+  <rect x="685" y="1100" width="22" height="85" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="715" y="1080" width="22" height="105" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="745" y="1120" width="22" height="65" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="775" y="1070" width="22" height="115" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="805" y="1095" width="22" height="90" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <text x="685" y="1207" class="tiny muted">I1 I2 I3 I4 I5</text>
+  <text x="655" y="1240" class="tiny muted">Spread: moderate</text>
+
+  <!-- Mini panel 4: QNLI -->
+  <rect x="905" y="995" width="235" height="220" rx="12" class="box"/>
+  <text x="920" y="1024" class="small" font-weight="700">QNLI</text>
+  <line x1="930" y1="1185" x2="1125" y2="1185" class="axis"/>
+  <line x1="930" y1="1050" x2="930" y2="1185" class="axis"/>
+  <rect x="950" y="1090" width="22" height="95" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="980" y="1105" width="22" height="80" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="1010" y="1075" width="22" height="110" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="1040" y="1115" width="22" height="70" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <rect x="1070" y="1085" width="22" height="100" fill="#cfcfcf" stroke="#666" stroke-width="1"/>
+  <text x="950" y="1207" class="tiny muted">I1 I2 I3 I4 I5</text>
+  <text x="920" y="1240" class="tiny muted">Spread: moderate</text>
+
+  <!-- Callout: key message -->
+  <rect x="640" y="1255" width="500" height="150" rx="14" class="note"/>
+  <text x="665" y="1290" class="label" font-weight="700">Instruction-dependent bias / instability</text>
+  <text x="665" y="1318" class="small">Even when instructions are synonymous, the model’s accuracy varies</text>
+  <text x="665" y="1343" class="small">across paraphrases and datasets → inconsistent behavior driven by</text>
+  <text x="665" y="1368" class="small">instruction–label associations (inter-instruction gap).</text>
+
+  <!-- ================= CAPTION AREA ================= -->
+  <rect x="50" y="1415" width="1100" height="70" rx="10" class="caption-area"/>
+  <text x="70" y="1444" class="caption-text">
+    Illustration of undesirable and instruction-dependent biases in instruction-following language models: ambiguous contexts elicit high probability for a minority-group label in negative questions, and Flan-T5-base exhibits inconsistent accuracy across synonymous zero-shot instructions on multiple datasets.
+  </text>
+</svg>
+</div>
+</body>
+</html>

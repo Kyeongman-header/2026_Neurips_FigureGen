@@ -1,0 +1,261 @@
+{
+  "paper_name": "Reverse_Thinking_Makes_LLMs_Stronger_Reasoners",
+  "evaluated_at": "2026-01-12T03:41:38.555873",
+  "figure_summary": "## 1. Core Contributions\n- Introduces **Reverse-Enhanced Thinking (REVTHINK)**: a training-time framework that teaches LLMs *bidirectional* reasoning by pairing standard forward Chain-of-Thought (CoT) with **reverse thinking** (backward question + backward reasoning).\n- Proposes a **teacher-driven data augmentation + filtering** pipeline that constructs structured quadruples \\((Q, R_f, Q_b, R_b)\\) and keeps only samples with (i) correct forward reasoning and (ii) forward–backward consistency.\n- Trains a student model via **multi-task objectives** that jointly learn forward reasoning, backward-question generation, and backward reasoning—aiming to improve *forward* test-time performance without increasing test-time compute.\n\n## 2. Method Components & Relations relevant to figures\n- **Actors / modules**\n  - **Teacher LLM (black-box)**: prompted to generate structured reasoning artifacts (forward reasoning, backward question, backward reasoning); also used to validate consistency.\n  - **Filtering/validation step**:\n    - Forward reasoning correctness checked against **ground-truth answer**.\n    - Backward consistency checked by **teacher-based validation** (i.e., whether backward reasoning/question aligns with the original question).\n  - **Student LLM**: trained on the augmented structured data using multi-task learning.\n\n- **Key data objects (as depicted)**\n  - Original dataset: \\(D=\\{(Q^{(i)},A^{(i)})\\}_{i=1}^n\\)\n  - Augmented dataset: \\(D_{aug}=\\{(Q^{(i)},R_f^{(i)},Q_b^{(i)},R_b^{(i)})\\}_{i=1}^n\\)\n\n- **Training objectives / data flows (central to figure schematics)**\n  - (a) **Forward reasoning generation:** \\(Q \\rightarrow R_f\\)\n  - (b) **Backward question generation:** \\(Q \\rightarrow Q_b\\)\n  - (c) **Backward reasoning generation:** \\(Q_b \\rightarrow R_b\\)\n  - These are trained **jointly** (multi-task), with the intent that learning reverse components regularizes/strengthens forward reasoning.\n\n- **Baseline relation highlighted**\n  - **SKD (Symbolic Knowledge Distillation)** is depicted as **unidirectional**: uses teacher-generated correct forward reasoning only (question → forward reasoning), without backward-question/backward-reasoning tasks.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **visually formalize “bidirectional reasoning”** as an explicit training signal: show that REVTHINK adds reverse-thinking artifacts and objectives beyond standard forward-only distillation.\n- To clarify the **two-stage pipeline**: (1) teacher-based generation + filtering of structured forward/backward reasoning, then (2) student multi-task training; and to emphasize that **test-time remains forward-only** (zero-shot-like compute).\n- To contrast REVTHINK against SKD by illustrating the **missing reverse path** in unidirectional distillation and motivating why additional tasks (backward question/reasoning) are expected to improve forward reasoning.\n\n## 4. What Figures are NOT intended to show\n- Not a proof of *why* reverse thinking works mechanistically (no theoretical derivation of improvement; figures are schematic/process-oriented).\n- Not a detailed depiction of all experimental results across datasets/models (the figures shown focus on method comparison and pipeline, not comprehensive performance breakdowns).\n- Not an exhaustive account of implementation specifics (e.g., exact prompts, hyperparameters, loss weighting, or the full validation procedure); figures abstract these into “generate” and “filter/validate” blocks.\n- Not a test-time verification/consistency-checking method: the depicted goal is **training-time internalization** of backward reasoning, not running backward reasoning at inference.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Reverse_Thinking_Makes_LLMs_Stronger_Reasoners__p0__score0.98.png",
+      "caption": "Figure 1: Comparison between symbolic knowledge distillation (SKD) and our method. (1) the teacher model generates multiple reasoning chains for a given question, (2) SKD supervised fine-tunes on the correct reasoning chains, and (3) our method incorporates bidirectional reasoning, learning from both Q-to-A and Ato-Q using our multi-task objectives.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure covers the major high-level components emphasized in the summary: a teacher LLM generating multiple reasoning chains; SKD as unidirectional distillation using only forward reasoning; and REVTHINK as bidirectional learning with three multi-task objectives (a) Q→forward reasoning, (b) Q→backward question, and (c) backward question→backward reasoning. However, it omits several summary-mentioned structural details such as the explicit augmented quadruple notation (Q, R_f, Q_b, R_b), the original/augmented dataset symbols (D, D_aug), and the teacher-driven filtering/validation criteria (forward correctness vs ground-truth answer and forward–backward consistency checks)."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the visual layout and labels alone, a reader can infer the operating principle: teacher produces reasoning chains; SKD trains a student on correct forward chains; REVTHINK adds a reverse direction with backward question/reasoning and trains jointly via (a)+(b)+(c). The unidirectional vs bidirectional contrast is clear. What is not fully intelligible standalone is how ‘correct’ chains are selected (filtering/validation against ground truth and consistency), and what exactly the reverse path represents (the summary specifies structured artifacts and consistency validation, which are not visually explicit)."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure is a method-comparison schematic rather than a beginning-to-end summary. It does not depict the full two-stage pipeline described in the summary (teacher generation plus explicit filtering/validation producing D_aug, then student multi-task training), nor does it include dataset/formula definitions or clarify the ‘no extra test-time compute/forward-only inference’ point. It also does not summarize broader paper content beyond the SKD vs REVTHINK training setup (e.g., any experimental scope), consistent with being a focused Figure 1 comparison."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 3.0,
+              "reason": "The main pipeline elements match the summary (teacher generates reasoning chains; SKD uses correct forward reasoning; REVTHINK adds bidirectional objectives with backward question and backward reasoning). However, the figure introduces quantitative gains (+6.69%, +13.53%) and explicit check/cross marks on multiple chains; these result-style annotations and selection markings are not mentioned in the provided summary and are not necessary to the method schematic (though they do not redefine the core method structure)."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 4.0,
+              "reason": "Relationships largely align with the summary: (1) teacher produces reasoning artifacts; (2) SKD is unidirectional SFT on forward reasoning; (3) REVTHINK trains via multi-task objectives combining (a) Q→forward reasoning, (b) Q→backward question, and (c) backward question→backward reasoning. The caption’s phrasing \"learning from both Q-to-A and A-to-Q\" is a slight imprecision relative to the summary (which specifies Q→Q_b and Q_b→R_b, not explicitly A→Q), but the visual itself depicts backward question/reasoning rather than directly using A."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Major components and methodologies are labeled consistently with the summary: Teacher LLM (T), Student LLM (S), SKD (unidirectional), and Reverse-Enhanced Thinking/REVTHINK (bidirectional) with objectives (a), (b), (c) corresponding to forward reasoning, backward question generation, and backward reasoning."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The schematic is tightly centered on the paper’s main contribution: it contrasts SKD (forward-only distillation) with REVTHINK (bidirectional training). The three numbered panels map cleanly onto the summary’s key components: teacher generates multiple chains, SKD selects correct forward reasoning for SFT, and REVTHINK adds backward-question and backward-reasoning objectives alongside forward reasoning (a/b/c). It avoids diving into implementation specifics (prompts, losses, filtering internals), consistent with the summary’s stated figure intent."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption/text, the figure is largely self-explanatory: roles (Teacher LLM T, Student LLM S), directionality (unidirectional vs bidirectional), and the three objectives (a)(b)(c) are visually indicated and align with the summary’s training-time pipeline and contrast to SKD. Minor clarity gaps remain because the summary emphasizes teacher-driven filtering/validation with ground-truth and forward–backward consistency, but this figure focuses on comparison and objectives rather than explicitly depicting the filtering/validation step—so readers may need text to connect the method to the full two-stage pipeline."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure is mostly free of decorative clutter: icons and colored chains serve functional roles (questions vs reasoning direction, correct vs incorrect chains). The only potentially unnecessary elements are the green percentage gains (+6.69%, +13.53%), which are not part of the core method structure described in the summary and add result-like information to a method schematic. They do not confuse the method, but they are not essential for conveying the main idea."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "All three panels read clearly left-to-right: inputs (Question / Backward Question) flow via arrows through Teacher/SFT/Objectives to outputs (Reasoning Chains / Student LLM). This matches the summary’s pipeline comparison (teacher generation → distillation vs bidirectional objectives)."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Most connectors are straight and non-overlapping. The only mild complexity is in the bottom panel where the bracket and the (a)/(b)/(c) annotations sit near multiple arrows, but actual arrow crossings are largely avoided and do not impede tracing the forward vs reverse paths."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related elements are clustered: each panel groups the relevant modules (e.g., Question + Forward Reasoning + SFT + Student for SKD; Question/Backward Question with corresponding reasoning lines feeding into the shared objectives for REVTHINK). The juxtaposition across panels supports the stated SKD vs bidirectional contrast."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Within each panel, icons, arrows, and boxes are mostly aligned on clear horizontal lanes. Minor misalignment appears in the bottom panel due to dual lanes (forward and backward) and the right-side objectives block, but the layout remains grid-like and readable."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The figure establishes hierarchy via numbered section headers (1–3), panel separation, and emphasizing the student outcome (+6.69% vs +13.53%) and 'Unidirectional' vs 'Bidirectional' labels. However, the central methodological novelty (multi-task objectives with (a)(b)(c)) could stand out more strongly than the auxiliary percentage callouts."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is adequate whitespace between the three panels and between most elements inside panels. The bottom panel is denser (two lanes plus bracket plus objectives), making margins tighter around the bracket/annotations, but not to the point of crowding that prevents comprehension."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Consistent visual encoding is used across panels: the teacher and student are shown as similarly styled LLM boxes (distinguished by labels T vs S), questions use consistent document icons, and reasoning chains use consistent dot-and-arrow motifs. The forward/backward distinction is consistently reinforced with separate lanes and color differences without changing shapes arbitrarily."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 3.0,
+              "reason": "The figure replaces abstract processes with simple, concrete symbols: document icons for questions (including a distinct icon for the backward question), rounded boxes for Teacher/Student LLMs, and node-chain glyphs to denote reasoning chains with green checks/red crosses to indicate filtering/selection. These metaphors align with the summary’s teacher generation + filtering and student training flow, but remain fairly generic (no richer symbolic encoding beyond arrows, chains, and pass/fail marks)."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 2.0,
+              "reason": "Visually it follows a common ML-method schematic template: left-to-right pipeline, boxed modules, arrows, and color-coded pathways. The bidirectional aspect is conveyed by adding a backward branch and labels (a)(b)(c), but the overall style and iconography are standard rather than distinctive."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s central comparison (SKD unidirectional vs REVTHINK bidirectional) by stacking three numbered panels: (1) teacher generates multiple chains, (2) SKD trains on correct forward chains only, (3) REVTHINK adds backward-question and backward-reasoning tasks under a unified multi-task objective. The explicit separation of forward vs reverse paths and the grouped objective annotation (a)+(b)+(c) directly matches the summary’s method structure and makes the contrast clear, going beyond a one-size-fits-all single pipeline diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.819
+      }
+    },
+    {
+      "figure_file": "Reverse_Thinking_Makes_LLMs_Stronger_Reasoners__p3__score1.00.png",
+      "caption": "Figure 2: REVTHINK consists of two stages: (1) Data augmentation and (2) Student model learning. First, given a dataset D = {(Q(i), A(i))}ni=1, we augment it by prompting the teacher model to generate forward reasoning, backward question, and backward reasoning. We keep instances only with correct forward reasoning (validated by the ground truth) and consistent forward-backward reasoning (validated by the teacher model). This yields an augmented dataset Daug = (Q(i), R (i) f , Q (i) b , R (i) b )ni=1. Next, we train the student model with three objectives: Q → Rf , Q → Qb and Qb → Rb, enabling the student to reason in both directions during training. At test time, the student model performs only forward reasoning, making test-time compute as efficient as zero-shot prompting.",
+      "scores": {
+        "Informativeness": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 5.0,
+              "reason": "The figure covers all major components and relations described in the summary/caption: original dataset D={(Q,A)}, teacher LLM generating the structured quadruple (Q, R_f, Q_b, R_b), the two filtering conditions (forward reasoning correctness via ground truth; forward–backward consistency via teacher validation), the resulting augmented dataset D_aug, and the student’s three multi-task objectives (Q→R_f, Q→Q_b, Q_b→R_b). It also indicates the two-stage pipeline (augmentation/filtering then student learning), matching the core method structure."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "A reader can infer the overall operating principle from the diagram alone: teacher generates forward reasoning and reverse-thinking artifacts, filtered data forms D_aug, and the student is trained with three objectives. However, some operational details are only hinted at rather than fully explicit in-figure (e.g., the exact mechanics of the teacher-based consistency validation and the explicit note that test-time is forward-only), so full understanding without any text is slightly limited."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 3.0,
+              "reason": "The figure is complete for summarizing the paper’s central method (REVTHINK pipeline and objectives), which is the main focus per summary. But it does not summarize the broader paper end-to-end (e.g., comparisons such as the SKD unidirectional baseline depiction, experimental scope/results across datasets/models), which the summary indicates exist but are not intended to be covered by this particular schematic."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 5.0,
+              "reason": "The figure shows exactly the components described: original dataset D with (Q, A); a teacher LLM generating forward reasoning R_f, backward question Q_b, and backward reasoning R_b; a filtering step that removes incorrect R_f and inconsistent (Q, R_f, Q_b, R_b) based on ground-truth and teacher validation; production of D_aug with (Q, R_f, Q_b, R_b); and student multi-task objectives Q→R_f, Q→Q_b, Q_b→R_b. The included example question/answers are illustrative and do not introduce new methodological elements beyond the summary/caption."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 5.0,
+              "reason": "Relationships/flows match the summary: teacher-driven augmentation produces R_f, Q_b, R_b from Q; filtering is applied before forming D_aug; student training uses three objectives corresponding to the three mappings, enabling bidirectional learning during training. The diagram’s ordering (augmentation → filtering → student objectives) aligns with the two-stage pipeline described."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Major components and data objects are labeled consistently with the summary/caption: Teacher (LLM T), Student (LLM S), dataset D, augmented dataset D_aug, Original Question Q, Forward Reasoning R_f, Backward Question Q_b, Backward Reasoning R_b, and the three objectives. No mislabeled method names or swapped symbols are evident."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The figure is schematized around the paper’s main contribution: a two-stage REVTHINK pipeline (teacher-driven augmentation + filtering, then student multi-task learning). It visually instantiates the key structured objects (Q, Rf, Qb, Rb), the augmented dataset D_aug, and the three training objectives (Q→Rf, Q→Qb, Qb→Rb) without drifting into implementation details (e.g., prompts, hyperparameters), matching the summary’s intended figure purpose."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "With the caption/text, the figure functions well as supplementary material: the left-to-right flow clearly maps from dataset D to teacher generation, filtering criteria (incorrect Rf; inconsistent (Q,Rf,Qb,Rb)), and then student training with the three losses, plus an explicit note that the student is used for forward reasoning at test time. Minor readability friction comes from dense example text inside the boxes (full multiple-choice question and reasoning sentences), which is illustrative but slightly heavy for quick scanning."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "It avoids decorative elements and stays focused on core method structure. The concrete QA example inside the augmentation blocks is somewhat verbose/redundant relative to the abstract pipeline (it increases visual clutter and competes with the high-level flow), but it does not introduce unrelated content or alter the claimed method components."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure’s process is primarily left-to-right: Dataset D and Teacher (LLM T) on the left, teacher-generated artifacts in the top band, then Filtering, then Student (LLM S) and the multi-task objectives on the right. Within the top band there is also a mild top-to-bottom grouping (Q/Rf on left, Qb/Rb on right), but the overall pipeline direction remains clear."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "Connection lines are simple and largely non-overlapping: a single arrow from dataset to teacher-generation area, a downward arrow from teacher outputs to filtering, and a clean left-to-right arrow to the student. The three objective arrows in the training block are parallel and do not cross."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Modules that belong together are co-located: teacher-generated items (Q, Rf, Qb, Rb) are grouped in the ‘Reverse-Enhanced Data Augmentation’ region; filtering is directly beneath the augmentation stage; student and its three learning objectives are adjacent. This matches the two-stage pipeline described in the summary (augmentation/filtering → student multi-task training)."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Most nodes appear aligned to an implicit grid: the four teacher outputs are arranged as two columns and two rows; the student block and the objective block are aligned horizontally. Minor misalignments exist (e.g., small offsets between some boxes and arrows, and the filtering box not perfectly aligned with the student/objectives row), but overall neatness is strong."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The two main stages are visually distinguished with large colored background panels and clear headings (‘Reverse-Enhanced Data Augmentation’ and ‘Student’s Bidirectional Learning Objectives’), consistent with the summary’s two-stage emphasis. The filtering step is separated and labeled. However, the test-time ‘forward-only’ aspect highlighted in the summary/caption is not visually emphasized as a distinct stage, slightly weakening end-to-end hierarchy."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally adequate spacing between boxes and arrows, and the grouped regions provide padding. Some areas are moderately dense (notably the example text inside Q/Rf/Qb/Rb and the compact objective block), which could reduce readability at smaller sizes, but inter-module margins remain sufficient."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Similar roles use consistent visual encodings: question boxes (Q and Qb) share a style, reasoning boxes (Rf and Rb) share another, and corresponding colors are reused in the training objectives. Teacher and student are represented consistently as LLM blocks, and arrows indicate mappings in a uniform manner."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 3.0,
+              "reason": "The figure uses concrete icons and abbreviations to stand in for abstract components described in the summary: a dataset/document icon for D and D_aug, labeled boxes for Teacher LLM (LLM T) and Student LLM (LLM S), and symbolic arrows for the three mappings (Q→R_f, Q→Q_b, Q_b→R_b). However, most concepts are still represented as standard labeled rectangles and equations rather than richer metaphors; the main abstraction reduction comes from concise notation and a single worked QA example."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 2.0,
+              "reason": "Visually, this is a conventional method schematic: two-stage pipeline with rounded boxes, arrows, a filtering gate, and a loss/objective bracket. This matches common templates for depicting data augmentation + training objectives and does not introduce a distinctive visual style beyond typical color-coding and iconography."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific bidirectional-training claim from the summary: it explicitly separates (1) teacher-driven generation of the structured quadruple (Q, R_f, Q_b, R_b), (2) filtering for correctness and forward–backward consistency, and (3) student multi-task objectives in a grouped loss block showing the three directed tasks. Including a concrete forward/backward question–answer example directly supports the idea of pairing forward CoT with reverse thinking, making the schematic more adapted than a generic distillation diagram."
+            }
+          ]
+        },
+        "weighted_total": 4.152
+      }
+    }
+  ]
+}

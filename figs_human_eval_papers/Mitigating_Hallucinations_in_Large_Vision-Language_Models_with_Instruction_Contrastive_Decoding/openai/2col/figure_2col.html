@@ -1,0 +1,707 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Contrastive Decoding Overview + Results Table</title>
+<style>
+  body { margin: 0; background: #ffffff; font-family: Arial, Helvetica, sans-serif; }
+  #figure-root { width: 1800px; height: 1200px; margin: 0 auto; position: relative; background: #fff; }
+  svg { width: 1800px; height: 1200px; display: block; }
+  .panel-title { font-size: 26px; font-weight: 700; fill: #111; }
+  .subtitle { font-size: 16px; fill: #333; }
+  .eq { font-size: 16px; fill: #222; }
+  .small { font-size: 14px; fill: #333; }
+  .tiny { font-size: 12px; fill: #444; }
+  .mono { font-family: "Arial", Helvetica, sans-serif; letter-spacing: 0.1px; }
+  .box { fill: #ffffff; stroke: #222; stroke-width: 2; }
+  .softbox { fill: #f7f8fb; stroke: #222; stroke-width: 2; }
+  .accent { fill: #eef6ff; stroke: #1f4e79; stroke-width: 2; }
+  .disturb { fill: #fff3f0; stroke: #8a2e2e; stroke-width: 2; }
+  .proc { fill: #f2fff4; stroke: #2e6b3a; stroke-width: 2; }
+  .arrow { stroke: #222; stroke-width: 2.5; fill: none; }
+  .arrowThin { stroke: #333; stroke-width: 2; fill: none; }
+  .dashed { stroke-dasharray: 7 6; }
+  .label { font-size: 16px; fill: #111; font-weight: 600; }
+  .label2 { font-size: 14px; fill: #222; font-weight: 600; }
+  .note { font-size: 13px; fill: #333; }
+  .math { font-size: 16px; fill: #111; font-style: italic; }
+  .headerCell { fill: #f1f3f6; stroke: #333; stroke-width: 1.5; }
+  .cell { fill: #ffffff; stroke: #333; stroke-width: 1.2; }
+  .methodCell { fill: #fbfbfd; stroke: #333; stroke-width: 1.2; }
+  .groupCell { fill: #f7f9fc; stroke: #333; stroke-width: 1.2; }
+  .tableText { font-size: 12px; fill: #111; }
+  .tableHead { font-size: 12px; fill: #111; font-weight: 700; }
+  .tableGroup { font-size: 12px; fill: #111; font-weight: 700; }
+  .captionBox { fill: #ffffff; stroke: #222; stroke-width: 1.5; }
+  .captionText { font-size: 14px; fill: #111; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200">
+  <defs>
+    <marker id="arrowhead" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#222"></path>
+    </marker>
+    <marker id="arrowheadThin" markerWidth="10" markerHeight="8" refX="8.5" refY="4" orient="auto">
+      <path d="M 0 0 L 10 4 L 0 8 z" fill="#333"></path>
+    </marker>
+  </defs>
+
+  <!-- Layout guides (invisible) -->
+  <!-- Top: formulation diagram (0..640). Bottom: table + caption (640..1200). -->
+
+  <!-- ===================== -->
+  <!-- Panel A: Formulation -->
+  <!-- ===================== -->
+  <text x="60" y="70" class="panel-title">Proposed Contrastive Decoding Formulation (Eqs. 1–7)</text>
+  <text x="60" y="100" class="subtitle">Clean input and disturbed input are combined by λ-weighted logits, with decoding restricted to a candidate set V(y).</text>
+
+  <!-- Left inputs -->
+  <rect x="70" y="150" width="420" height="130" rx="16" class="accent"/>
+  <text x="90" y="185" class="label">Clean input</text>
+  <text x="90" y="215" class="eq mono">X : image</text>
+  <text x="90" y="240" class="eq mono">Q : question / prompt</text>
+  <text x="90" y="265" class="eq mono">⟨X, Q⟩</text>
+
+  <rect x="70" y="310" width="420" height="150" rx="16" class="disturb"/>
+  <text x="90" y="345" class="label">Disturbed input (optional)</text>
+  <text x="90" y="375" class="eq mono">X̄ : disturbance of X</text>
+  <text x="90" y="400" class="eq mono">⟨X̄, Q⟩</text>
+  <text x="90" y="430" class="small">Eq. (4): X̃ = [X, X̄] if disturbance exists, otherwise X̃ = X</text>
+
+  <!-- Middle: Corresponding module -->
+  <rect x="560" y="165" width="520" height="180" rx="18" class="softbox"/>
+  <text x="585" y="200" class="label">Corresponding module</text>
+  <text x="585" y="230" class="eq mono">Z = Q(X, Q, X̄)  (1)</text>
+  <text x="585" y="258" class="small">Produces alignment/correspondence signal Z from clean + disturbed context.</text>
+
+  <!-- Middle: LLM decoding -->
+  <rect x="560" y="380" width="520" height="220" rx="18" class="proc"/>
+  <text x="585" y="415" class="label">LLM decoding</text>
+  <text x="585" y="445" class="eq mono">Y = LLM(H, X̃)  (2)</text>
+  <text x="585" y="473" class="eq mono">p(Y | X, X̄) = ∏<tspan baseline-shift="sub" font-size="12">y</tspan> p(y | H, X̃, y&lt;t)  (3)</text>
+  <text x="585" y="502" class="small">H: intermediate representation (e.g., vision-language features).</text>
+  <text x="585" y="532" class="small">Compute token logits for clean and disturbed contexts.</text>
+
+  <!-- Right: Contrastive logit combination -->
+  <rect x="1150" y="170" width="590" height="180" rx="18" class="softbox"/>
+  <text x="1175" y="205" class="label">λ-weighted contrastive logits</text>
+  <text x="1175" y="235" class="eq mono">p(Y | X, X̄) = ∏<tspan baseline-shift="sub" font-size="12">y</tspan> ( p(y|X̃, y&lt;t) − λ p(y|X̄, y&lt;t) )  (5)</text>
+  <text x="1175" y="265" class="eq mono">y ~ softmax( logit(y|X̃, y&lt;t) − λ logit(y|X̄, y&lt;t) )  (6)</text>
+  <text x="1175" y="295" class="small">λ controls how strongly the disturbed signal is subtracted.</text>
+
+  <!-- Right: Candidate set restriction -->
+  <rect x="1150" y="380" width="590" height="220" rx="18" class="box"/>
+  <text x="1175" y="415" class="label">Restricted candidate set</text>
+  <text x="1175" y="448" class="eq mono">subject to  y ∈ V(y)  (6)</text>
+  <text x="1175" y="478" class="eq mono">V(y) = { y ∈ V : p(y|X̃, y&lt;t) ≥ α · max p(token|X̃, y&lt;t) }  (7)</text>
+  <text x="1175" y="510" class="small">α filters low-probability candidates under the clean context.</text>
+  <text x="1175" y="542" class="small">Decoding uses contrastive logits but only among candidates V(y).</text>
+
+  <!-- Arrows -->
+  <path d="M 490 215 C 520 215, 530 215, 560 215" class="arrow" marker-end="url(#arrowhead)"/>
+  <path d="M 490 385 C 520 385, 530 405, 560 430" class="arrow" marker-end="url(#arrowhead)"/>
+  <path d="M 1080 470 C 1110 470, 1120 260, 1150 260" class="arrowThin dashed" marker-end="url(#arrowheadThin)"/>
+  <path d="M 1080 520 C 1110 520, 1120 500, 1150 500" class="arrow" marker-end="url(#arrowhead)"/>
+  <path d="M 1445 350 C 1445 360, 1445 365, 1445 380" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <!-- Small legend for clean/disturbed -->
+  <rect x="70" y="500" width="420" height="100" rx="14" class="box"/>
+  <text x="90" y="532" class="label2">Legend</text>
+  <rect x="90" y="550" width="18" height="18" class="accent"/>
+  <text x="118" y="565" class="note">Clean context (X, Q)</text>
+  <rect x="260" y="550" width="18" height="18" class="disturb"/>
+  <text x="288" y="565" class="note">Disturbed context (X̄, Q)</text>
+
+  <!-- ===================== -->
+  <!-- Panel B: Results table -->
+  <!-- ===================== -->
+  <text x="60" y="680" class="panel-title">Quantitative Results</text>
+  <text x="60" y="710" class="subtitle">Accuracy, Precision, Recall, and F1 for default, +vcd, and +icd across MSCOCO, A-OKVQA, and GQA (Random/Popular/Adversarial) with two backbones.</text>
+
+  <!-- Table geometry -->
+  <!-- Table origin -->
+  <!-- x0=60, y0=740; width=1680; height=370 (fits above caption area) -->
+  <!-- Column widths: Dataset 120, Setting 120, Method 90, miniGPT4(4*95=380), InstructBLIP(4*95=380), total=120+120+90+380+380=1090; expand with padding columns? We'll use 1680 by widening metric cols to 140 each: 8*140=1120, plus 330=1450; still short. Use 8*160=1280 plus 330=1610. Add 70 margin inside. -->
+  <!-- Final widths: Dataset 140, Setting 140, Method 110, metrics 8*160=1280 => total 1670 -->
+  <!-- Height: header1 34, header2 34, rows 27*? Actually 27 rows (3 datasets*3 settings*3 methods)=27. Row height 12? We'll do 16 rows? Need fit 370: if row=12 impossible. Let's do row height 12+? We'll set row height 12? Readable at 12 font. Use row height 12? We'll do 12px text; row height 12? Not enough. We'll do row height 12 text with 20 row height. 27*20=540 too big. We will paginate by grouping with compact rows: row height 14 -> 378 for 27 rows plus headers 68 => 446 too big. Solution: show a condensed table with all rows but smaller row height 11 and font 11: 27*12=324 plus 68=392, close; increase table height to 400 (available 1200-760-90caption=350). We'll allocate caption at 1120..1200 (80px). So table max height 1120-740=380. We'll keep 27 rows * 11 = 297 plus headers 60 = 357 fits. -->
+  <!-- Use row height 11 but with padding; Let's set rowH=11 and text size 11, baseline at y+8. -->
+
+  <!-- Table frame -->
+  <rect x="60" y="740" width="1670" height="380" rx="10" class="box"/>
+
+  <!-- Column x positions -->
+  <!-- x: 60 | dataset140 ->200 | setting140 ->340 | method110 ->450 | then 8 metrics*160 -->
+  <!-- metrics start 450; m1..m8 -->
+  <!-- m1 450-610, m2 610-770, m3 770-930, m4 930-1090, m5 1090-1250, m6 1250-1410, m7 1410-1570, m8 1570-1730 -->
+  <!-- table right at 1730; within frame width 1670 (60..1730) ok -->
+
+  <!-- Header row 1 -->
+  <rect x="60" y="740" width="140" height="34" class="headerCell"/>
+  <rect x="200" y="740" width="140" height="34" class="headerCell"/>
+  <rect x="340" y="740" width="110" height="34" class="headerCell"/>
+  <rect x="450" y="740" width="640" height="34" class="headerCell"/>
+  <rect x="1090" y="740" width="640" height="34" class="headerCell"/>
+
+  <text x="130" y="762" text-anchor="middle" class="tableHead">Dataset</text>
+  <text x="270" y="762" text-anchor="middle" class="tableHead">Setting</text>
+  <text x="395" y="762" text-anchor="middle" class="tableHead">Method</text>
+  <text x="770" y="762" text-anchor="middle" class="tableHead">miniGPT4 Backbone</text>
+  <text x="1410" y="762" text-anchor="middle" class="tableHead">InstructBLIP Backbone</text>
+
+  <!-- Header row 2 -->
+  <rect x="60" y="774" width="140" height="34" class="headerCell"/>
+  <rect x="200" y="774" width="140" height="34" class="headerCell"/>
+  <rect x="340" y="774" width="110" height="34" class="headerCell"/>
+
+  <!-- metric headers -->
+  <!-- miniGPT4 -->
+  <rect x="450" y="774" width="160" height="34" class="headerCell"/>
+  <rect x="610" y="774" width="160" height="34" class="headerCell"/>
+  <rect x="770" y="774" width="160" height="34" class="headerCell"/>
+  <rect x="930" y="774" width="160" height="34" class="headerCell"/>
+  <!-- InstructBLIP -->
+  <rect x="1090" y="774" width="160" height="34" class="headerCell"/>
+  <rect x="1250" y="774" width="160" height="34" class="headerCell"/>
+  <rect x="1410" y="774" width="160" height="34" class="headerCell"/>
+  <rect x="1570" y="774" width="160" height="34" class="headerCell"/>
+
+  <text x="530" y="796" text-anchor="middle" class="tableHead">Accuracy</text>
+  <text x="690" y="796" text-anchor="middle" class="tableHead">Precision</text>
+  <text x="850" y="796" text-anchor="middle" class="tableHead">Recall</text>
+  <text x="1010" y="796" text-anchor="middle" class="tableHead">F1</text>
+
+  <text x="1170" y="796" text-anchor="middle" class="tableHead">Accuracy</text>
+  <text x="1330" y="796" text-anchor="middle" class="tableHead">Precision</text>
+  <text x="1490" y="796" text-anchor="middle" class="tableHead">Recall</text>
+  <text x="1650" y="796" text-anchor="middle" class="tableHead">F1</text>
+
+  <!-- Data rows -->
+  <!-- Row settings -->
+  <!-- yStart=808, rowH=11, rowBoxH=11? We'll use 11 height but draw 12 to avoid gaps; -->
+  <!-- Use rowHeight=11+? We'll set rowH=11, rectH=11, text at y+8. -->
+  <!-- Helper: functionally hardcode all rows with y increments of 11. -->
+  <!-- We'll also add group shading for dataset name cells by repeating dataset label each row (cleaner and deterministic). -->
+
+  <!-- Row 1 y=808 -->
+  <!-- MSCOCO Random -->
+  <g>
+    <!-- y=808 -->
+    <rect x="60" y="808" width="140" height="11" class="groupCell"/>
+    <rect x="200" y="808" width="140" height="11" class="groupCell"/>
+    <rect x="340" y="808" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="808" width="160" height="11" class="cell"/><rect x="610" y="808" width="160" height="11" class="cell"/><rect x="770" y="808" width="160" height="11" class="cell"/><rect x="930" y="808" width="160" height="11" class="cell"/>
+    <rect x="1090" y="808" width="160" height="11" class="cell"/><rect x="1250" y="808" width="160" height="11" class="cell"/><rect x="1410" y="808" width="160" height="11" class="cell"/><rect x="1570" y="808" width="160" height="11" class="cell"/>
+    <text x="130" y="816" text-anchor="middle" class="tableGroup">MSCOCO</text>
+    <text x="270" y="816" text-anchor="middle" class="tableText">Random</text>
+    <text x="395" y="816" text-anchor="middle" class="tableText">default</text>
+    <text x="530" y="816" text-anchor="middle" class="tableText">67.04</text>
+    <text x="690" y="816" text-anchor="middle" class="tableText">69.06</text>
+    <text x="850" y="816" text-anchor="middle" class="tableText">66.54</text>
+    <text x="1010" y="816" text-anchor="middle" class="tableText">67.77</text>
+    <text x="1170" y="816" text-anchor="middle" class="tableText">80.71</text>
+    <text x="1330" y="816" text-anchor="middle" class="tableText">81.67</text>
+    <text x="1490" y="816" text-anchor="middle" class="tableText">79.19</text>
+    <text x="1650" y="816" text-anchor="middle" class="tableText">80.41</text>
+  </g>
+
+  <!-- Row 2 y=819 -->
+  <g>
+    <rect x="60" y="819" width="140" height="11" class="cell"/>
+    <rect x="200" y="819" width="140" height="11" class="cell"/>
+    <rect x="340" y="819" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="819" width="160" height="11" class="cell"/><rect x="610" y="819" width="160" height="11" class="cell"/><rect x="770" y="819" width="160" height="11" class="cell"/><rect x="930" y="819" width="160" height="11" class="cell"/>
+    <rect x="1090" y="819" width="160" height="11" class="cell"/><rect x="1250" y="819" width="160" height="11" class="cell"/><rect x="1410" y="819" width="160" height="11" class="cell"/><rect x="1570" y="819" width="160" height="11" class="cell"/>
+    <text x="130" y="827" text-anchor="middle" class="tableText"></text>
+    <text x="270" y="827" text-anchor="middle" class="tableText"></text>
+    <text x="395" y="827" text-anchor="middle" class="tableText">+vcd</text>
+    <text x="530" y="827" text-anchor="middle" class="tableText">69.60</text>
+    <text x="690" y="827" text-anchor="middle" class="tableText">72.76</text>
+    <text x="850" y="827" text-anchor="middle" class="tableText">66.73</text>
+    <text x="1010" y="827" text-anchor="middle" class="tableText">69.62</text>
+    <text x="1170" y="827" text-anchor="middle" class="tableText">84.53</text>
+    <text x="1330" y="827" text-anchor="middle" class="tableText">88.55</text>
+    <text x="1490" y="827" text-anchor="middle" class="tableText">79.32</text>
+    <text x="1650" y="827" text-anchor="middle" class="tableText">83.68</text>
+  </g>
+
+  <!-- Row 3 y=830 -->
+  <g>
+    <rect x="60" y="830" width="140" height="11" class="cell"/>
+    <rect x="200" y="830" width="140" height="11" class="cell"/>
+    <rect x="340" y="830" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="830" width="160" height="11" class="cell"/><rect x="610" y="830" width="160" height="11" class="cell"/><rect x="770" y="830" width="160" height="11" class="cell"/><rect x="930" y="830" width="160" height="11" class="cell"/>
+    <rect x="1090" y="830" width="160" height="11" class="cell"/><rect x="1250" y="830" width="160" height="11" class="cell"/><rect x="1410" y="830" width="160" height="11" class="cell"/><rect x="1570" y="830" width="160" height="11" class="cell"/>
+    <text x="395" y="838" text-anchor="middle" class="tableText">+icd</text>
+    <text x="530" y="838" text-anchor="middle" class="tableText">73.51</text>
+    <text x="690" y="838" text-anchor="middle" class="tableText">74.36</text>
+    <text x="850" y="838" text-anchor="middle" class="tableText">76.87</text>
+    <text x="1010" y="838" text-anchor="middle" class="tableText">75.60</text>
+    <text x="1170" y="838" text-anchor="middle" class="tableText">86.43</text>
+    <text x="1330" y="838" text-anchor="middle" class="tableText">92.01</text>
+    <text x="1490" y="838" text-anchor="middle" class="tableText">80.73</text>
+    <text x="1650" y="838" text-anchor="middle" class="tableText">85.61</text>
+  </g>
+
+  <!-- MSCOCO Popular -->
+  <!-- Row 4 y=841 -->
+  <g>
+    <rect x="60" y="841" width="140" height="11" class="groupCell"/>
+    <rect x="200" y="841" width="140" height="11" class="groupCell"/>
+    <rect x="340" y="841" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="841" width="160" height="11" class="cell"/><rect x="610" y="841" width="160" height="11" class="cell"/><rect x="770" y="841" width="160" height="11" class="cell"/><rect x="930" y="841" width="160" height="11" class="cell"/>
+    <rect x="1090" y="841" width="160" height="11" class="cell"/><rect x="1250" y="841" width="160" height="11" class="cell"/><rect x="1410" y="841" width="160" height="11" class="cell"/><rect x="1570" y="841" width="160" height="11" class="cell"/>
+    <text x="130" y="849" text-anchor="middle" class="tableText"> </text>
+    <text x="270" y="849" text-anchor="middle" class="tableText">Popular</text>
+    <text x="395" y="849" text-anchor="middle" class="tableText">default</text>
+    <text x="530" y="849" text-anchor="middle" class="tableText">60.89</text>
+    <text x="690" y="849" text-anchor="middle" class="tableText">61.34</text>
+    <text x="850" y="849" text-anchor="middle" class="tableText">65.74</text>
+    <text x="1010" y="849" text-anchor="middle" class="tableText">63.46</text>
+    <text x="1170" y="849" text-anchor="middle" class="tableText">78.22</text>
+    <text x="1330" y="849" text-anchor="middle" class="tableText">77.87</text>
+    <text x="1490" y="849" text-anchor="middle" class="tableText">78.85</text>
+    <text x="1650" y="849" text-anchor="middle" class="tableText">78.36</text>
+  </g>
+
+  <!-- Row 5 y=852 -->
+  <g>
+    <rect x="60" y="852" width="140" height="11" class="cell"/>
+    <rect x="200" y="852" width="140" height="11" class="cell"/>
+    <rect x="340" y="852" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="852" width="160" height="11" class="cell"/><rect x="610" y="852" width="160" height="11" class="cell"/><rect x="770" y="852" width="160" height="11" class="cell"/><rect x="930" y="852" width="160" height="11" class="cell"/>
+    <rect x="1090" y="852" width="160" height="11" class="cell"/><rect x="1250" y="852" width="160" height="11" class="cell"/><rect x="1410" y="852" width="160" height="11" class="cell"/><rect x="1570" y="852" width="160" height="11" class="cell"/>
+    <text x="395" y="860" text-anchor="middle" class="tableText">+vcd</text>
+    <text x="530" y="860" text-anchor="middle" class="tableText">62.91</text>
+    <text x="690" y="860" text-anchor="middle" class="tableText">63.69</text>
+    <text x="850" y="860" text-anchor="middle" class="tableText">64.81</text>
+    <text x="1010" y="860" text-anchor="middle" class="tableText">64.24</text>
+    <text x="1170" y="860" text-anchor="middle" class="tableText">81.47</text>
+    <text x="1330" y="860" text-anchor="middle" class="tableText">82.89</text>
+    <text x="1490" y="860" text-anchor="middle" class="tableText">79.32</text>
+    <text x="1650" y="860" text-anchor="middle" class="tableText">81.07</text>
+  </g>
+
+  <!-- Row 6 y=863 -->
+  <g>
+    <rect x="60" y="863" width="140" height="11" class="cell"/>
+    <rect x="200" y="863" width="140" height="11" class="cell"/>
+    <rect x="340" y="863" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="863" width="160" height="11" class="cell"/><rect x="610" y="863" width="160" height="11" class="cell"/><rect x="770" y="863" width="160" height="11" class="cell"/><rect x="930" y="863" width="160" height="11" class="cell"/>
+    <rect x="1090" y="863" width="160" height="11" class="cell"/><rect x="1250" y="863" width="160" height="11" class="cell"/><rect x="1410" y="863" width="160" height="11" class="cell"/><rect x="1570" y="863" width="160" height="11" class="cell"/>
+    <text x="395" y="871" text-anchor="middle" class="tableText">+icd</text>
+    <text x="530" y="871" text-anchor="middle" class="tableText">67.61</text>
+    <text x="690" y="871" text-anchor="middle" class="tableText">66.69</text>
+    <text x="850" y="871" text-anchor="middle" class="tableText">76.87</text>
+    <text x="1010" y="871" text-anchor="middle" class="tableText">71.42</text>
+    <text x="1170" y="871" text-anchor="middle" class="tableText">82.93</text>
+    <text x="1330" y="871" text-anchor="middle" class="tableText">84.45</text>
+    <text x="1490" y="871" text-anchor="middle" class="tableText">80.73</text>
+    <text x="1650" y="871" text-anchor="middle" class="tableText">82.55</text>
+  </g>
+
+  <!-- MSCOCO Adversarial -->
+  <!-- Row 7 y=874 -->
+  <g>
+    <rect x="60" y="874" width="140" height="11" class="groupCell"/>
+    <rect x="200" y="874" width="140" height="11" class="groupCell"/>
+    <rect x="340" y="874" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="874" width="160" height="11" class="cell"/><rect x="610" y="874" width="160" height="11" class="cell"/><rect x="770" y="874" width="160" height="11" class="cell"/><rect x="930" y="874" width="160" height="11" class="cell"/>
+    <rect x="1090" y="874" width="160" height="11" class="cell"/><rect x="1250" y="874" width="160" height="11" class="cell"/><rect x="1410" y="874" width="160" height="11" class="cell"/><rect x="1570" y="874" width="160" height="11" class="cell"/>
+    <text x="270" y="882" text-anchor="middle" class="tableText">Adversarial</text>
+    <text x="395" y="882" text-anchor="middle" class="tableText">default</text>
+    <text x="530" y="882" text-anchor="middle" class="tableText">59.42</text>
+    <text x="690" y="882" text-anchor="middle" class="tableText">59.64</text>
+    <text x="850" y="882" text-anchor="middle" class="tableText">64.45</text>
+    <text x="1010" y="882" text-anchor="middle" class="tableText">61.95</text>
+    <text x="1170" y="882" text-anchor="middle" class="tableText">75.84</text>
+    <text x="1330" y="882" text-anchor="middle" class="tableText">74.30</text>
+    <text x="1490" y="882" text-anchor="middle" class="tableText">79.03</text>
+    <text x="1650" y="882" text-anchor="middle" class="tableText">76.59</text>
+  </g>
+
+  <!-- Row 8 y=885 -->
+  <g>
+    <rect x="60" y="885" width="140" height="11" class="cell"/>
+    <rect x="200" y="885" width="140" height="11" class="cell"/>
+    <rect x="340" y="885" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="885" width="160" height="11" class="cell"/><rect x="610" y="885" width="160" height="11" class="cell"/><rect x="770" y="885" width="160" height="11" class="cell"/><rect x="930" y="885" width="160" height="11" class="cell"/>
+    <rect x="1090" y="885" width="160" height="11" class="cell"/><rect x="1250" y="885" width="160" height="11" class="cell"/><rect x="1410" y="885" width="160" height="11" class="cell"/><rect x="1570" y="885" width="160" height="11" class="cell"/>
+    <text x="395" y="893" text-anchor="middle" class="tableText">+vcd</text>
+    <text x="530" y="893" text-anchor="middle" class="tableText">62.07</text>
+    <text x="690" y="893" text-anchor="middle" class="tableText">62.15</text>
+    <text x="850" y="893" text-anchor="middle" class="tableText">66.76</text>
+    <text x="1010" y="893" text-anchor="middle" class="tableText">64.37</text>
+    <text x="1170" y="893" text-anchor="middle" class="tableText">79.56</text>
+    <text x="1330" y="893" text-anchor="middle" class="tableText">79.67</text>
+    <text x="1490" y="893" text-anchor="middle" class="tableText">79.39</text>
+    <text x="1650" y="893" text-anchor="middle" class="tableText">79.52</text>
+  </g>
+
+  <!-- Row 9 y=896 -->
+  <g>
+    <rect x="60" y="896" width="140" height="11" class="cell"/>
+    <rect x="200" y="896" width="140" height="11" class="cell"/>
+    <rect x="340" y="896" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="896" width="160" height="11" class="cell"/><rect x="610" y="896" width="160" height="11" class="cell"/><rect x="770" y="896" width="160" height="11" class="cell"/><rect x="930" y="896" width="160" height="11" class="cell"/>
+    <rect x="1090" y="896" width="160" height="11" class="cell"/><rect x="1250" y="896" width="160" height="11" class="cell"/><rect x="1410" y="896" width="160" height="11" class="cell"/><rect x="1570" y="896" width="160" height="11" class="cell"/>
+    <text x="395" y="904" text-anchor="middle" class="tableText">+icd</text>
+    <text x="530" y="904" text-anchor="middle" class="tableText">64.36</text>
+    <text x="690" y="904" text-anchor="middle" class="tableText">63.68</text>
+    <text x="850" y="904" text-anchor="middle" class="tableText">75.11</text>
+    <text x="1010" y="904" text-anchor="middle" class="tableText">68.93</text>
+    <text x="1170" y="904" text-anchor="middle" class="tableText">80.87</text>
+    <text x="1330" y="904" text-anchor="middle" class="tableText">80.95</text>
+    <text x="1490" y="904" text-anchor="middle" class="tableText">80.73</text>
+    <text x="1650" y="904" text-anchor="middle" class="tableText">80.84</text>
+  </g>
+
+  <!-- A-OKVQA Random -->
+  <!-- Row 10 y=907 -->
+  <g>
+    <rect x="60" y="907" width="140" height="11" class="groupCell"/>
+    <rect x="200" y="907" width="140" height="11" class="groupCell"/>
+    <rect x="340" y="907" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="907" width="160" height="11" class="cell"/><rect x="610" y="907" width="160" height="11" class="cell"/><rect x="770" y="907" width="160" height="11" class="cell"/><rect x="930" y="907" width="160" height="11" class="cell"/>
+    <rect x="1090" y="907" width="160" height="11" class="cell"/><rect x="1250" y="907" width="160" height="11" class="cell"/><rect x="1410" y="907" width="160" height="11" class="cell"/><rect x="1570" y="907" width="160" height="11" class="cell"/>
+    <text x="130" y="915" text-anchor="middle" class="tableGroup">A-OKVQA</text>
+    <text x="270" y="915" text-anchor="middle" class="tableText">Random</text>
+    <text x="395" y="915" text-anchor="middle" class="tableText">default</text>
+    <text x="530" y="915" text-anchor="middle" class="tableText">64.79</text>
+    <text x="690" y="915" text-anchor="middle" class="tableText">65.26</text>
+    <text x="850" y="915" text-anchor="middle" class="tableText">65.73</text>
+    <text x="1010" y="915" text-anchor="middle" class="tableText">65.50</text>
+    <text x="1170" y="915" text-anchor="middle" class="tableText">80.91</text>
+    <text x="1330" y="915" text-anchor="middle" class="tableText">77.97</text>
+    <text x="1490" y="915" text-anchor="middle" class="tableText">86.16</text>
+    <text x="1650" y="915" text-anchor="middle" class="tableText">81.86</text>
+  </g>
+
+  <!-- Row 11 y=918 -->
+  <g>
+    <rect x="60" y="918" width="140" height="11" class="cell"/>
+    <rect x="200" y="918" width="140" height="11" class="cell"/>
+    <rect x="340" y="918" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="918" width="160" height="11" class="cell"/><rect x="610" y="918" width="160" height="11" class="cell"/><rect x="770" y="918" width="160" height="11" class="cell"/><rect x="930" y="918" width="160" height="11" class="cell"/>
+    <rect x="1090" y="918" width="160" height="11" class="cell"/><rect x="1250" y="918" width="160" height="11" class="cell"/><rect x="1410" y="918" width="160" height="11" class="cell"/><rect x="1570" y="918" width="160" height="11" class="cell"/>
+    <text x="395" y="926" text-anchor="middle" class="tableText">+vcd</text>
+    <text x="530" y="926" text-anchor="middle" class="tableText">66.68</text>
+    <text x="690" y="926" text-anchor="middle" class="tableText">66.47</text>
+    <text x="850" y="926" text-anchor="middle" class="tableText">68.21</text>
+    <text x="1010" y="926" text-anchor="middle" class="tableText">67.33</text>
+    <text x="1170" y="926" text-anchor="middle" class="tableText">84.11</text>
+    <text x="1330" y="926" text-anchor="middle" class="tableText">82.21</text>
+    <text x="1490" y="926" text-anchor="middle" class="tableText">87.05</text>
+    <text x="1650" y="926" text-anchor="middle" class="tableText">84.56</text>
+  </g>
+
+  <!-- Row 12 y=929 -->
+  <g>
+    <rect x="60" y="929" width="140" height="11" class="cell"/>
+    <rect x="200" y="929" width="140" height="11" class="cell"/>
+    <rect x="340" y="929" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="929" width="160" height="11" class="cell"/><rect x="610" y="929" width="160" height="11" class="cell"/><rect x="770" y="929" width="160" height="11" class="cell"/><rect x="930" y="929" width="160" height="11" class="cell"/>
+    <rect x="1090" y="929" width="160" height="11" class="cell"/><rect x="1250" y="929" width="160" height="11" class="cell"/><rect x="1410" y="929" width="160" height="11" class="cell"/><rect x="1570" y="929" width="160" height="11" class="cell"/>
+    <text x="395" y="937" text-anchor="middle" class="tableText">+icd</text>
+    <text x="530" y="937" text-anchor="middle" class="tableText">69.04</text>
+    <text x="690" y="937" text-anchor="middle" class="tableText">68.50</text>
+    <text x="850" y="937" text-anchor="middle" class="tableText">77.04</text>
+    <text x="1010" y="937" text-anchor="middle" class="tableText">72.52</text>
+    <text x="1170" y="937" text-anchor="middle" class="tableText">85.82</text>
+    <text x="1330" y="937" text-anchor="middle" class="tableText">83.80</text>
+    <text x="1490" y="937" text-anchor="middle" class="tableText">88.94</text>
+    <text x="1650" y="937" text-anchor="middle" class="tableText">86.29</text>
+  </g>
+
+  <!-- A-OKVQA Popular -->
+  <!-- Row 13 y=940 -->
+  <g>
+    <rect x="60" y="940" width="140" height="11" class="groupCell"/>
+    <rect x="200" y="940" width="140" height="11" class="groupCell"/>
+    <rect x="340" y="940" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="940" width="160" height="11" class="cell"/><rect x="610" y="940" width="160" height="11" class="cell"/><rect x="770" y="940" width="160" height="11" class="cell"/><rect x="930" y="940" width="160" height="11" class="cell"/>
+    <rect x="1090" y="940" width="160" height="11" class="cell"/><rect x="1250" y="940" width="160" height="11" class="cell"/><rect x="1410" y="940" width="160" height="11" class="cell"/><rect x="1570" y="940" width="160" height="11" class="cell"/>
+    <text x="270" y="948" text-anchor="middle" class="tableText">Popular</text>
+    <text x="395" y="948" text-anchor="middle" class="tableText">default</text>
+    <text x="530" y="948" text-anchor="middle" class="tableText">60.75</text>
+    <text x="690" y="948" text-anchor="middle" class="tableText">60.67</text>
+    <text x="850" y="948" text-anchor="middle" class="tableText">68.84</text>
+    <text x="1010" y="948" text-anchor="middle" class="tableText">64.50</text>
+    <text x="1170" y="948" text-anchor="middle" class="tableText">76.19</text>
+    <text x="1330" y="948" text-anchor="middle" class="tableText">72.16</text>
+    <text x="1490" y="948" text-anchor="middle" class="tableText">85.28</text>
+    <text x="1650" y="948" text-anchor="middle" class="tableText">78.17</text>
+  </g>
+
+  <!-- Row 14 y=951 -->
+  <g>
+    <rect x="60" y="951" width="140" height="11" class="cell"/>
+    <rect x="200" y="951" width="140" height="11" class="cell"/>
+    <rect x="340" y="951" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="951" width="160" height="11" class="cell"/><rect x="610" y="951" width="160" height="11" class="cell"/><rect x="770" y="951" width="160" height="11" class="cell"/><rect x="930" y="951" width="160" height="11" class="cell"/>
+    <rect x="1090" y="951" width="160" height="11" class="cell"/><rect x="1250" y="951" width="160" height="11" class="cell"/><rect x="1410" y="951" width="160" height="11" class="cell"/><rect x="1570" y="951" width="160" height="11" class="cell"/>
+    <text x="395" y="959" text-anchor="middle" class="tableText">+vcd</text>
+    <text x="530" y="959" text-anchor="middle" class="tableText">62.22</text>
+    <text x="690" y="959" text-anchor="middle" class="tableText">62.23</text>
+    <text x="850" y="959" text-anchor="middle" class="tableText">68.55</text>
+    <text x="1010" y="959" text-anchor="middle" class="tableText">65.24</text>
+    <text x="1170" y="959" text-anchor="middle" class="tableText">79.78</text>
+    <text x="1330" y="959" text-anchor="middle" class="tableText">76.00</text>
+    <text x="1490" y="959" text-anchor="middle" class="tableText">87.05</text>
+    <text x="1650" y="959" text-anchor="middle" class="tableText">81.15</text>
+  </g>
+
+  <!-- Row 15 y=962 -->
+  <g>
+    <rect x="60" y="962" width="140" height="11" class="cell"/>
+    <rect x="200" y="962" width="140" height="11" class="cell"/>
+    <rect x="340" y="962" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="962" width="160" height="11" class="cell"/><rect x="610" y="962" width="160" height="11" class="cell"/><rect x="770" y="962" width="160" height="11" class="cell"/><rect x="930" y="962" width="160" height="11" class="cell"/>
+    <rect x="1090" y="962" width="160" height="11" class="cell"/><rect x="1250" y="962" width="160" height="11" class="cell"/><rect x="1410" y="962" width="160" height="11" class="cell"/><rect x="1570" y="962" width="160" height="11" class="cell"/>
+    <text x="395" y="970" text-anchor="middle" class="tableText">+icd</text>
+    <text x="530" y="970" text-anchor="middle" class="tableText">62.81</text>
+    <text x="690" y="970" text-anchor="middle" class="tableText">61.62</text>
+    <text x="850" y="970" text-anchor="middle" class="tableText">75.78</text>
+    <text x="1010" y="970" text-anchor="middle" class="tableText">67.97</text>
+    <text x="1170" y="970" text-anchor="middle" class="tableText">81.64</text>
+    <text x="1330" y="970" text-anchor="middle" class="tableText">78.50</text>
+    <text x="1490" y="970" text-anchor="middle" class="tableText">88.77</text>
+    <text x="1650" y="970" text-anchor="middle" class="tableText">83.32</text>
+  </g>
+
+  <!-- A-OKVQA Adversarial -->
+  <!-- Row 16 y=973 -->
+  <g>
+    <rect x="60" y="973" width="140" height="11" class="groupCell"/>
+    <rect x="200" y="973" width="140" height="11" class="groupCell"/>
+    <rect x="340" y="973" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="973" width="160" height="11" class="cell"/><rect x="610" y="973" width="160" height="11" class="cell"/><rect x="770" y="973" width="160" height="11" class="cell"/><rect x="930" y="973" width="160" height="11" class="cell"/>
+    <rect x="1090" y="973" width="160" height="11" class="cell"/><rect x="1250" y="973" width="160" height="11" class="cell"/><rect x="1410" y="973" width="160" height="11" class="cell"/><rect x="1570" y="973" width="160" height="11" class="cell"/>
+    <text x="270" y="981" text-anchor="middle" class="tableText">Adversarial</text>
+    <text x="395" y="981" text-anchor="middle" class="tableText">default</text>
+    <text x="530" y="981" text-anchor="middle" class="tableText">58.88</text>
+    <text x="690" y="981" text-anchor="middle" class="tableText">58.56</text>
+    <text x="850" y="981" text-anchor="middle" class="tableText">68.50</text>
+    <text x="1010" y="981" text-anchor="middle" class="tableText">63.14</text>
+    <text x="1170" y="981" text-anchor="middle" class="tableText">70.71</text>
+    <text x="1330" y="981" text-anchor="middle" class="tableText">65.91</text>
+    <text x="1490" y="981" text-anchor="middle" class="tableText">85.83</text>
+    <text x="1650" y="981" text-anchor="middle" class="tableText">75.56</text>
+  </g>
+
+  <!-- Row 17 y=984 -->
+  <g>
+    <rect x="60" y="984" width="140" height="11" class="cell"/>
+    <rect x="200" y="984" width="140" height="11" class="cell"/>
+    <rect x="340" y="984" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="984" width="160" height="11" class="cell"/><rect x="610" y="984" width="160" height="11" class="cell"/><rect x="770" y="984" width="160" height="11" class="cell"/><rect x="930" y="984" width="160" height="11" class="cell"/>
+    <rect x="1090" y="984" width="160" height="11" class="cell"/><rect x="1250" y="984" width="160" height="11" class="cell"/><rect x="1410" y="984" width="160" height="11" class="cell"/><rect x="1570" y="984" width="160" height="11" class="cell"/>
+    <text x="395" y="992" text-anchor="middle" class="tableText">+vcd</text>
+    <text x="530" y="992" text-anchor="middle" class="tableText">60.67</text>
+    <text x="690" y="992" text-anchor="middle" class="tableText">60.56</text>
+    <text x="850" y="992" text-anchor="middle" class="tableText">68.47</text>
+    <text x="1010" y="992" text-anchor="middle" class="tableText">64.28</text>
+    <text x="1170" y="992" text-anchor="middle" class="tableText">74.33</text>
+    <text x="1330" y="992" text-anchor="middle" class="tableText">69.46</text>
+    <text x="1490" y="992" text-anchor="middle" class="tableText">86.87</text>
+    <text x="1650" y="992" text-anchor="middle" class="tableText">77.19</text>
+  </g>
+
+  <!-- Row 18 y=995 -->
+  <g>
+    <rect x="60" y="995" width="140" height="11" class="cell"/>
+    <rect x="200" y="995" width="140" height="11" class="cell"/>
+    <rect x="340" y="995" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="995" width="160" height="11" class="cell"/><rect x="610" y="995" width="160" height="11" class="cell"/><rect x="770" y="995" width="160" height="11" class="cell"/><rect x="930" y="995" width="160" height="11" class="cell"/>
+    <rect x="1090" y="995" width="160" height="11" class="cell"/><rect x="1250" y="995" width="160" height="11" class="cell"/><rect x="1410" y="995" width="160" height="11" class="cell"/><rect x="1570" y="995" width="160" height="11" class="cell"/>
+    <text x="395" y="1003" text-anchor="middle" class="tableText">+icd</text>
+    <text x="530" y="1003" text-anchor="middle" class="tableText">60.71</text>
+    <text x="690" y="1003" text-anchor="middle" class="tableText">59.27</text>
+    <text x="850" y="1003" text-anchor="middle" class="tableText">77.68</text>
+    <text x="1010" y="1003" text-anchor="middle" class="tableText">67.24</text>
+    <text x="1170" y="1003" text-anchor="middle" class="tableText">74.42</text>
+    <text x="1330" y="1003" text-anchor="middle" class="tableText">70.24</text>
+    <text x="1490" y="1003" text-anchor="middle" class="tableText">88.93</text>
+    <text x="1650" y="1003" text-anchor="middle" class="tableText">78.48</text>
+  </g>
+
+  <!-- GQA Random -->
+  <!-- Row 19 y=1006 -->
+  <g>
+    <rect x="60" y="1006" width="140" height="11" class="groupCell"/>
+    <rect x="200" y="1006" width="140" height="11" class="groupCell"/>
+    <rect x="340" y="1006" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="1006" width="160" height="11" class="cell"/><rect x="610" y="1006" width="160" height="11" class="cell"/><rect x="770" y="1006" width="160" height="11" class="cell"/><rect x="930" y="1006" width="160" height="11" class="cell"/>
+    <rect x="1090" y="1006" width="160" height="11" class="cell"/><rect x="1250" y="1006" width="160" height="11" class="cell"/><rect x="1410" y="1006" width="160" height="11" class="cell"/><rect x="1570" y="1006" width="160" height="11" class="cell"/>
+    <text x="130" y="1014" text-anchor="middle" class="tableGroup">GQA</text>
+    <text x="270" y="1014" text-anchor="middle" class="tableText">Random</text>
+    <text x="395" y="1014" text-anchor="middle" class="tableText">default</text>
+    <text x="530" y="1014" text-anchor="middle" class="tableText">65.13</text>
+    <text x="690" y="1014" text-anchor="middle" class="tableText">65.38</text>
+    <text x="850" y="1014" text-anchor="middle" class="tableText">66.77</text>
+    <text x="1010" y="1014" text-anchor="middle" class="tableText">66.07</text>
+    <text x="1170" y="1014" text-anchor="middle" class="tableText">79.75</text>
+    <text x="1330" y="1014" text-anchor="middle" class="tableText">77.14</text>
+    <text x="1490" y="1014" text-anchor="middle" class="tableText">84.29</text>
+    <text x="1650" y="1014" text-anchor="middle" class="tableText">80.56</text>
+  </g>
+
+  <!-- Row 20 y=1017 -->
+  <g>
+    <rect x="60" y="1017" width="140" height="11" class="cell"/>
+    <rect x="200" y="1017" width="140" height="11" class="cell"/>
+    <rect x="340" y="1017" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="1017" width="160" height="11" class="cell"/><rect x="610" y="1017" width="160" height="11" class="cell"/><rect x="770" y="1017" width="160" height="11" class="cell"/><rect x="930" y="1017" width="160" height="11" class="cell"/>
+    <rect x="1090" y="1017" width="160" height="11" class="cell"/><rect x="1250" y="1017" width="160" height="11" class="cell"/><rect x="1410" y="1017" width="160" height="11" class="cell"/><rect x="1570" y="1017" width="160" height="11" class="cell"/>
+    <text x="395" y="1025" text-anchor="middle" class="tableText">+vcd</text>
+    <text x="530" y="1025" text-anchor="middle" class="tableText">67.08</text>
+    <text x="690" y="1025" text-anchor="middle" class="tableText">68.30</text>
+    <text x="850" y="1025" text-anchor="middle" class="tableText">69.04</text>
+    <text x="1010" y="1025" text-anchor="middle" class="tableText">68.67</text>
+    <text x="1170" y="1025" text-anchor="middle" class="tableText">83.69</text>
+    <text x="1330" y="1025" text-anchor="middle" class="tableText">81.84</text>
+    <text x="1490" y="1025" text-anchor="middle" class="tableText">86.61</text>
+    <text x="1650" y="1025" text-anchor="middle" class="tableText">84.16</text>
+  </g>
+
+  <!-- Row 21 y=1028 -->
+  <g>
+    <rect x="60" y="1028" width="140" height="11" class="cell"/>
+    <rect x="200" y="1028" width="140" height="11" class="cell"/>
+    <rect x="340" y="1028" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="1028" width="160" height="11" class="cell"/><rect x="610" y="1028" width="160" height="11" class="cell"/><rect x="770" y="1028" width="160" height="11" class="cell"/><rect x="930" y="1028" width="160" height="11" class="cell"/>
+    <rect x="1090" y="1028" width="160" height="11" class="cell"/><rect x="1250" y="1028" width="160" height="11" class="cell"/><rect x="1410" y="1028" width="160" height="11" class="cell"/><rect x="1570" y="1028" width="160" height="11" class="cell"/>
+    <text x="395" y="1036" text-anchor="middle" class="tableText">+icd</text>
+    <text x="530" y="1036" text-anchor="middle" class="tableText">72.24</text>
+    <text x="690" y="1036" text-anchor="middle" class="tableText">75.08</text>
+    <text x="850" y="1036" text-anchor="middle" class="tableText">79.54</text>
+    <text x="1010" y="1036" text-anchor="middle" class="tableText">77.24</text>
+    <text x="1170" y="1036" text-anchor="middle" class="tableText">85.10</text>
+    <text x="1330" y="1036" text-anchor="middle" class="tableText">84.21</text>
+    <text x="1490" y="1036" text-anchor="middle" class="tableText">86.40</text>
+    <text x="1650" y="1036" text-anchor="middle" class="tableText">85.29</text>
+  </g>
+
+  <!-- GQA Popular -->
+  <!-- Row 22 y=1039 -->
+  <g>
+    <rect x="60" y="1039" width="140" height="11" class="groupCell"/>
+    <rect x="200" y="1039" width="140" height="11" class="groupCell"/>
+    <rect x="340" y="1039" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="1039" width="160" height="11" class="cell"/><rect x="610" y="1039" width="160" height="11" class="cell"/><rect x="770" y="1039" width="160" height="11" class="cell"/><rect x="930" y="1039" width="160" height="11" class="cell"/>
+    <rect x="1090" y="1039" width="160" height="11" class="cell"/><rect x="1250" y="1039" width="160" height="11" class="cell"/><rect x="1410" y="1039" width="160" height="11" class="cell"/><rect x="1570" y="1039" width="160" height="11" class="cell"/>
+    <text x="270" y="1047" text-anchor="middle" class="tableText">Popular</text>
+    <text x="395" y="1047" text-anchor="middle" class="tableText">default</text>
+    <text x="530" y="1047" text-anchor="middle" class="tableText">57.19</text>
+    <text x="690" y="1047" text-anchor="middle" class="tableText">58.55</text>
+    <text x="850" y="1047" text-anchor="middle" class="tableText">60.81</text>
+    <text x="1010" y="1047" text-anchor="middle" class="tableText">59.66</text>
+    <text x="1170" y="1047" text-anchor="middle" class="tableText">73.87</text>
+    <text x="1330" y="1047" text-anchor="middle" class="tableText">60.63</text>
+    <text x="1490" y="1047" text-anchor="middle" class="tableText">84.69</text>
+    <text x="1650" y="1047" text-anchor="middle" class="tableText">76.42</text>
+  </g>
+
+  <!-- Row 23 y=1050 -->
+  <g>
+    <rect x="60" y="1050" width="140" height="11" class="cell"/>
+    <rect x="200" y="1050" width="140" height="11" class="cell"/>
+    <rect x="340" y="1050" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="1050" width="160" height="11" class="cell"/><rect x="610" y="1050" width="160" height="11" class="cell"/><rect x="770" y="1050" width="160" height="11" class="cell"/><rect x="930" y="1050" width="160" height="11" class="cell"/>
+    <rect x="1090" y="1050" width="160" height="11" class="cell"/><rect x="1250" y="1050" width="160" height="11" class="cell"/><rect x="1410" y="1050" width="160" height="11" class="cell"/><rect x="1570" y="1050" width="160" height="11" class="cell"/>
+    <text x="395" y="1058" text-anchor="middle" class="tableText">+vcd</text>
+    <text x="530" y="1058" text-anchor="middle" class="tableText">62.14</text>
+    <text x="690" y="1058" text-anchor="middle" class="tableText">61.14</text>
+    <text x="850" y="1058" text-anchor="middle" class="tableText">72.26</text>
+    <text x="1010" y="1058" text-anchor="middle" class="tableText">66.24</text>
+    <text x="1170" y="1058" text-anchor="middle" class="tableText">78.57</text>
+    <text x="1330" y="1058" text-anchor="middle" class="tableText">74.62</text>
+    <text x="1490" y="1058" text-anchor="middle" class="tableText">86.61</text>
+    <text x="1650" y="1058" text-anchor="middle" class="tableText">80.17</text>
+  </g>
+
+  <!-- Row 24 y=1061 -->
+  <g>
+    <rect x="60" y="1061" width="140" height="11" class="cell"/>
+    <rect x="200" y="1061" width="140" height="11" class="cell"/>
+    <rect x="340" y="1061" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="1061" width="160" height="11" class="cell"/><rect x="610" y="1061" width="160" height="11" class="cell"/><rect x="770" y="1061" width="160" height="11" class="cell"/><rect x="930" y="1061" width="160" height="11" class="cell"/>
+    <rect x="1090" y="1061" width="160" height="11" class="cell"/><rect x="1250" y="1061" width="160" height="11" class="cell"/><rect x="1410" y="1061" width="160" height="11" class="cell"/><rect x="1570" y="1061" width="160" height="11" class="cell"/>
+    <text x="395" y="1069" text-anchor="middle" class="tableText">+icd</text>
+    <text x="530" y="1069" text-anchor="middle" class="tableText">62.84</text>
+    <text x="690" y="1069" text-anchor="middle" class="tableText">61.09</text>
+    <text x="850" y="1069" text-anchor="middle" class="tableText">80.54</text>
+    <text x="1010" y="1069" text-anchor="middle" class="tableText">69.48</text>
+    <text x="1170" y="1069" text-anchor="middle" class="tableText">78.80</text>
+    <text x="1330" y="1069" text-anchor="middle" class="tableText">75.15</text>
+    <text x="1490" y="1069" text-anchor="middle" class="tableText">87.53</text>
+    <text x="1650" y="1069" text-anchor="middle" class="tableText">80.87</text>
+  </g>
+
+  <!-- GQA Adversarial -->
+  <!-- Row 25 y=1072 -->
+  <g>
+    <rect x="60" y="1072" width="140" height="11" class="groupCell"/>
+    <rect x="200" y="1072" width="140" height="11" class="groupCell"/>
+    <rect x="340" y="1072" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="1072" width="160" height="11" class="cell"/><rect x="610" y="1072" width="160" height="11" class="cell"/><rect x="770" y="1072" width="160" height="11" class="cell"/><rect x="930" y="1072" width="160" height="11" class="cell"/>
+    <rect x="1090" y="1072" width="160" height="11" class="cell"/><rect x="1250" y="1072" width="160" height="11" class="cell"/><rect x="1410" y="1072" width="160" height="11" class="cell"/><rect x="1570" y="1072" width="160" height="11" class="cell"/>
+    <text x="270" y="1080" text-anchor="middle" class="tableText">Adversarial</text>
+    <text x="395" y="1080" text-anchor="middle" class="tableText">default</text>
+    <text x="530" y="1080" text-anchor="middle" class="tableText">56.75</text>
+    <text x="690" y="1080" text-anchor="middle" class="tableText">56.26</text>
+    <text x="850" y="1080" text-anchor="middle" class="tableText">67.99</text>
+    <text x="1010" y="1080" text-anchor="middle" class="tableText">61.57</text>
+    <text x="1170" y="1080" text-anchor="middle" class="tableText">70.56</text>
+    <text x="1330" y="1080" text-anchor="middle" class="tableText">66.12</text>
+    <text x="1490" y="1080" text-anchor="middle" class="tableText">84.33</text>
+    <text x="1650" y="1080" text-anchor="middle" class="tableText">74.12</text>
+  </g>
+
+  <!-- Row 26 y=1083 -->
+  <g>
+    <rect x="60" y="1083" width="140" height="11" class="cell"/>
+    <rect x="200" y="1083" width="140" height="11" class="cell"/>
+    <rect x="340" y="1083" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="1083" width="160" height="11" class="cell"/><rect x="610" y="1083" width="160" height="11" class="cell"/><rect x="770" y="1083" width="160" height="11" class="cell"/><rect x="930" y="1083" width="160" height="11" class="cell"/>
+    <rect x="1090" y="1083" width="160" height="11" class="cell"/><rect x="1250" y="1083" width="160" height="11" class="cell"/><rect x="1410" y="1083" width="160" height="11" class="cell"/><rect x="1570" y="1083" width="160" height="11" class="cell"/>
+    <text x="395" y="1091" text-anchor="middle" class="tableText">+vcd</text>
+    <text x="530" y="1091" text-anchor="middle" class="tableText">57.78</text>
+    <text x="690" y="1091" text-anchor="middle" class="tableText">57.70</text>
+    <text x="850" y="1091" text-anchor="middle" class="tableText">69.82</text>
+    <text x="1010" y="1091" text-anchor="middle" class="tableText">63.18</text>
+    <text x="1170" y="1091" text-anchor="middle" class="tableText">75.08</text>
+    <text x="1330" y="1091" text-anchor="middle" class="tableText">70.59</text>
+    <text x="1490" y="1091" text-anchor="middle" class="tableText">85.99</text>
+    <text x="1650" y="1091" text-anchor="middle" class="tableText">77.53</text>
+  </g>
+
+  <!-- Row 27 y=1094 -->
+  <g>
+    <rect x="60" y="1094" width="140" height="11" class="cell"/>
+    <rect x="200" y="1094" width="140" height="11" class="cell"/>
+    <rect x="340" y="1094" width="110" height="11" class="methodCell"/>
+    <rect x="450" y="1094" width="160" height="11" class="cell"/><rect x="610" y="1094" width="160" height="11" class="cell"/><rect x="770" y="1094" width="160" height="11" class="cell"/><rect x="930" y="1094" width="160" height="11" class="cell"/>
+    <rect x="1090" y="1094" width="160" height="11" class="cell"/><rect x="1250" y="1094" width="160" height="11" class="cell"/><rect x="1410" y="1094" width="160" height="11" class="cell"/><rect x="1570" y="1094" width="160" height="11" class="cell"/>
+    <text x="395" y="1102" text-anchor="middle" class="tableText">+icd</text>
+    <text x="530" y="1102" text-anchor="middle" class="tableText">59.64</text>
+    <text x="690" y="1102" text-anchor="middle" class="tableText">58.21</text>
+    <text x="850" y="1102" text-anchor="middle" class="tableText">76.81</text>
+    <text x="1010" y="1102" text-anchor="middle" class="tableText">66.23</text>
+    <text x="1170" y="1102" text-anchor="middle" class="tableText">75.17</text>
+    <text x="1330" y="1102" text-anchor="middle" class="tableText">70.59</text>
+    <text x="1490" y="1102" text-anchor="middle" class="tableText">86.27</text>
+    <text x="1650" y="1102" text-anchor="middle" class="tableText">77.65</text>
+  </g>
+
+  <!-- ===================== -->
+  <!-- Caption area (exact text) -->
+  <!-- ===================== -->
+  <rect x="60" y="1130" width="1670" height="50" rx="10" class="captionBox"/>
+  <text x="75" y="1160" class="captionText">
+    Overview of the proposed contrastive decoding formulation (Eqs. 1–7), combining a clean and disturbed input via λ-weighted logits and a restricted candidate set V(y). Table reports accuracy, precision, recall, and F1 for default, +vcd, and +icd on MSCOCO, A-OKVQA, and GQA (Random/Popular/Adversarial) using miniGPT4 and InstructBLIP backbones.
+  </text>
+</svg>
+</div>
+</body>
+</html>

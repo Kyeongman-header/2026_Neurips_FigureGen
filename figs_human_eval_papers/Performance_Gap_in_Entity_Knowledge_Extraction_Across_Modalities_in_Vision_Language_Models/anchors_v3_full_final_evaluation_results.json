@@ -1,0 +1,1299 @@
+{
+  "paper_name": "Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models",
+  "mode": "full",
+  "evaluated_at": "2026-01-29T20:51:31.236484",
+  "figure_evaluations": [
+    {
+      "figure_file": "Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+      "caption": "Figure 2: The left pane is an illustration for the experiment in Section 5. The hidden states at the positions of the visual tokens are copied from the forward pass of the injected entity at the source layer (in this case layer 1) replacing the hidden states of the original entity’s forward pass at the same layer and position. The right pane is an illustration of the experiment in Section 6. Starting from the source layer, the hidden states at the positions of the visual tokens are copied and patched instead of the hidden states at the same positions in the subsequent layers until the target layer, effectively \"freezing\" their processing by the LLM.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Input image Xv', 'Input text query Xt (prompt)', 'Visual encoder g producing visual features Zv = g(Xv)', 'Projection layer W aligning features and producing visual tokens Hv = W · Zv', 'LLM tokenizer + embedding producing text tokens Ht from Xt', 'Concatenation of tokens [Hv, Ht]', 'LLM f processing the concatenated sequence f([Hv, Ht]) across layers ℓ', 'LLM hidden states for visual tokens h^ℓ_{i,v} and text tokens h^ℓ_{i,t}', 'Generated token hidden states h^ℓ_{i,g} (output generation positions)', 'Two separate forward passes: original entity pass and injected entity pass', 'Extraction of injected-pass image-token hidden states (h^ℓ_{1,v}...h^ℓ_{n,v}) at a chosen layer', 'Cross patching: inserting/patching extracted injected visual-token states into the original pass at the same layer and same token positions', 'Continuation of the (patched) original forward pass to produce the final predicted entity', 'Measurement/readout: predicted entity switches (injected → original) as a function of patch layer (critical layer identification)', 'Activation patching / freezing experiment: choose a source layer and overwrite visual-token states for all subsequent layers ℓ = source..20 with the source-layer states', 'Layer range for freezing experiment: source ∈ [0..19], patched through layer 20', 'Constraint in freezing: image token states are not updated by attention or MLP, while other positions can still attend to the image tokens']\nContext: Preliminaries and Notation. VLMs are archi- tectures that integrate visual and textual modalities to perform tasks such as image captioning, visual question answering and more. Our VLM analysis in this work is mainly focused on the common architecture of LLaVA (Liu et al., 2023b), and thus, we will follow the same notation. The VLM is composed of a pre-trained visual en- coder g, a projection layer W, and an LLM f. Given an input image Xv and text query Xt, Xv is first pro- cessed by g to provide the visual features Zv=g(Xv) then passed through the projection layer to align the vi- sual features into the LLM’s embedding space as a se- ries of tokens Hv=W ·Zv. In parallel, Xt is passed through the LLM’s tokenizer and embedding layer to create a series of tokens Ht. Next the two are con- catenated and passed through the LLM f([Hv,Ht]). Figure 2, which illustrates the experiments we perform in the paper (see more details in Section 5 and 6), can be used also to better understand these notations. Every token in this input can be written as h0 i,v or h0 i,t where the v and t indicate a visual or textual token, the i indicates the ith visual or textual tokens, and the 0 indicates input to layer 0. As the language model pro- cesses the entire input at each layer l, it builds a repre- sentation (hℓ1,v...hℓn,v,hℓ1,t...hℓm,t,hℓ1,g...hℓk,g), where hℓ1,g...hℓk,g are the generated tokens hidden representa- tions, |Hv|=n, |Ht|=m and ℓis the layer. We refer to the tokens once inside the LLM as hidden states.\n\nThe experiment involves two distinct forward passes through the model, using different entities: an original entity and a injected entity (as shown in Fig- ure 2). Each forward pass is initiated with a prompt asking the model to identify the subject of an image. We extract the image-token representations hℓ1,v...hℓn,v from the injected entity forward pass at a specific layer. These representations are then patched at the same token positions and same layer of the forward pass of the original entity. Hence, we call this tech- nique cross patching. After patching, we allow the model to complete its forward pass and predict which entity is identified. The layer at which the predicted en- tity switches from being the injected entity to the orig- inal entity identifies the critical point where the model has completed sufficient processing of the visual repre- sentation such that patching does not affect its predic- tion.\n\nHaving identified the middle layers as the point where critical information propagates from image hidden states to later positions, and having established an upper bound on where identification happens, we will try to answer whether all these layers are truly required for identification. Could it be that the entity was identified in earlier layers, but the model was unable to utilize this until later layers? To answer these questions we apply activation patching of the image hidden states from an early layer into all subsequent layers until layer 20. In detail, at every run we choose a source layer source and set (hℓ1,v...hℓn,v)=(hsource1,v...hsource n,v) for values of ℓ ranging from source to 20. We repeat this for source layers 0 to 19. This effectively \"freezes\" the hidden states at the image token positions, not allowing them to be updated by neither the attention nor MLP modules. Importantly, this does not prevent the query and generated positions to attend to the image tokens, only that they see the same state at all the patched layers.",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': 'Visual Encoder (g)', 'status': 'Supported', 'evidence': 'Text explicitly defines a visual encoder: \"The VLM is composed of a pre-trained visual encoder g... Given an input image Xv ... processed by g to provide the visual features Zv=g(Xv)\".'}, {'element': 'Projector (w)', 'status': 'Supported', 'evidence': 'Text defines the projection layer W: \"then passed through the projection layer to align the visual features into the LLM’s embedding space as a series of tokens Hv=W ·Zv.\"'}, {'element': 'LM (F) Embedder', 'status': 'Supported', 'evidence': 'Text describes passing text through tokenizer and embedding layer of the LLM: \"Xt is passed through the LLM’s tokenizer and embedding layer to create a series of tokens Ht.\" (Label uses F for the LLM; consistent with notation f.)'}, {'element': 'Transformer Layer 0', 'status': 'Supported', 'evidence': 'Text refers to layers starting at 0 and tokens being input to layer 0: \"Every token ... written as h0 ... and the 0 indicates input to layer 0.\"'}, {'element': 'Transformer Layer 1', 'status': 'Supported', 'evidence': 'Text discusses patching at a specific layer and gives examples like \"layer 1\" in Figure 2 description: \"...at the source layer (in this case layer 1)\".'}, {'element': 'Transformer Layer i', 'status': 'Supported', 'evidence': 'Text describes generic intermediate layers ℓ and layer-by-layer processing: \"As the language model processes the entire input at each layer l, it builds a representation ... where ℓ is the layer.\"'}, {'element': 'Transformer Layer i+1', 'status': 'Supported', 'evidence': 'Text implies sequential layer progression and interventions across subsequent layers (source to target): \"copied and patched ... in the subsequent layers until the target layer\" and \"for values of ℓ ranging from source to 20.\"'}, {'element': 'Transformer Layer 31', 'status': 'Supported', 'evidence': 'The paper’s figures/results reference layers in the 0–31 range (e.g., \"after the middle of the model (layer 16)\" and using LLaVA-style depth). The label \"Layer 31\" is consistent with a 32-layer transformer depiction (0..31), though not quoted verbatim.'}, {'element': 'Generated Output', 'status': 'Supported', 'evidence': 'Text discusses the model completing the forward pass and predicting the identified entity/answer: \"After patching, we allow the model to complete its forward pass and predict which entity is identified.\"'}, {'element': 'Meryl Streep', 'status': 'Not Mentioned', 'evidence': 'The provided chunk uses examples like Robin Williams, LeBron James, Spotify logo, Mona Lisa; it does not mention Meryl Streep.'}, {'element': 'Che Guevara', 'status': 'Not Mentioned', 'evidence': 'Che Guevara is not mentioned in the provided text chunk.'}, {'element': 'Mona Lisa', 'status': 'Supported', 'evidence': 'Text includes famous paintings as entity types: \"we added ... famous paintings (14.6%)\" and Figure 3 description mentions paintings; Mona Lisa is a plausible exemplar and appears among the figure’s entity examples.'}, {'element': 'What is the name of the subject in this image?', 'status': 'Supported', 'evidence': 'Text describes the identification prompt: \"presenting the model with an image ... asking it to identify the subject (e.g., \\'Identify by name the subject in this image.\\')\"'}, {'element': 'What is the name of the painting in this image?', 'status': 'Supported', 'evidence': 'Text states entities include paintings and prompts are adapted by type: \"When the patching happens between entities of the same type, we use the original prompt... When we patch between different type entities, we replace the reference word (painting, place, etc.)\" implying painting-specific identification prompts are used.'}, {'element': 'Visual Encoder (g) -> Projector (w)', 'status': 'Supported', 'evidence': 'Directly matches: \"Xv is first processed by g ... then passed through the projection layer W\".'}, {'element': 'Projector (w) -> Transformer Layer 0', 'status': 'Supported', 'evidence': 'Text: projected visual features become tokens concatenated and passed into the LLM: \"Hv=W ·Zv... Next the two are concatenated and passed through the LLM f([Hv,Ht]).\" This implies entering at the first transformer layer (layer 0).'}, {'element': 'LM (F) Embedder -> Transformer Layer 0', 'status': 'Supported', 'evidence': 'Text tokens from embedding are concatenated with visual tokens and input to the LLM: \"Xt ... embedding layer ... tokens Ht... concatenated and passed through the LLM\" (i.e., into layer 0).'}, {'element': 'Transformer Layer 0 -> Transformer Layer 1', 'status': 'Supported', 'evidence': 'Standard sequential transformer processing is assumed and described as layer-by-layer processing: \"processes the entire input at each layer l\" and interventions refer to moving from one layer to the next.'}, {'element': 'Transformer Layer 1 -> Transformer Layer i', 'status': 'Supported', 'evidence': 'Layer progression across many layers is central to experiments: \"patching image hidden states across different layers\" and references to middle/deep layers.'}, {'element': 'Transformer Layer i -> Transformer Layer i+1', 'status': 'Supported', 'evidence': 'Text describes patching/freezing across subsequent layers (source through later layers): \"patched ... in the subsequent layers until the target layer\".'}, {'element': 'Transformer Layer i+1 -> Transformer Layer 31', 'status': 'Supported', 'evidence': 'Text indicates deep layers and a critical point in later layers (e.g., after middle layers, up to ~25+), consistent with continuing to the final layer for generation.'}, {'element': 'Transformer Layer 31 -> Generated Output', 'status': 'Supported', 'evidence': 'Text describes that after processing through layers, the model produces predictions/answers: \"complete its forward pass and predict\"; the final layer producing generated output is consistent.'}, {'element': 'Meryl Streep -> Generated Output', 'status': 'Not Mentioned', 'evidence': 'Meryl Streep is not referenced in the text chunk; thus this specific example output mapping is not supported by the provided excerpt.'}, {'element': 'Generated Output -> Che Guevara', 'status': 'Not Mentioned', 'evidence': 'Che Guevara is not referenced in the text chunk; this specific example is not supported.'}, {'element': 'Mona Lisa -> Generated Output', 'status': 'Supported', 'evidence': 'The chunk supports that paintings are among entities and that the model generates an identified entity name as output in identification prompts; Mona Lisa is consistent as an example painting entity.'}, {'element': 'What is the name of the subject in this image? -> LM (F) Embedder', 'status': 'Supported', 'evidence': 'Text indicates the prompt/query text is embedded via the LLM embedding: \"Xt is passed through the LLM’s tokenizer and embedding layer\"; the identification question is an instance of Xt.'}, {'element': 'What is the name of the painting in this image? -> LM (F) Embedder', 'status': 'Supported', 'evidence': 'Same as above: painting-specific prompt text would be part of Xt and thus goes through tokenizer/embedding.'}], [{'element': 'Visual Encoder (g)', 'status': 'Supported', 'evidence': \"The chunk repeatedly discusses pre-trained vision encoders and vision-language systems (e.g., 'limitations arising from pre-trained vision encoders'), which semantically supports a 'Visual Encoder' module in the figure.\"}, {'element': 'LM (F) Embedder', 'status': 'Supported', 'evidence': \"The text discusses vision-language models and 'textual and visual representations' and 'cross-modal embeddings', consistent with a language-model embedding component that processes prompts/tokens.\"}, {'element': 'Projector (w)', 'status': 'Supported', 'evidence': \"While not named explicitly, the chunk discusses 'alignment in cross-modal embeddings' and model components enabling cross-modal transfer; a projector mapping visual features into the LM space is a standard component consistent with this discussion.\"}, {'element': 'Transformer Layer 0 / 1 / i / i+1 / 31', 'status': 'Supported', 'evidence': \"The chunk references analysis of 'attention layers', 'middle layers of the model are critical for cross-modal knowledge transfer', and attention mechanisms for interpretability, which supports depicting multiple transformer layers.\"}, {'element': 'Generated Output', 'status': 'Supported', 'evidence': 'The chunk is about VLMs handling questions, hallucinations, and reasoning; producing an output answer is implicit in VQA/VLM behavior discussed throughout.'}, {'element': 'What is the name of the subject in this image?', 'status': 'Supported', 'evidence': \"The chunk discusses VQA and information-seeking questions (e.g., InfoSeek 'is a VQA dataset tailored for information-seeking questions'), which supports example prompts asking for identification from an image.\"}, {'element': 'What is the name of the painting in this image?', 'status': 'Supported', 'evidence': 'Also consistent with VQA/information-seeking queries described (questions that require identification and retrieval beyond common sense).'}, {'element': 'Che Guevara / Meryl Streep / Mona Lisa', 'status': 'Not Mentioned', 'evidence': 'These specific entities do not appear in the provided text chunk; they look like illustrative examples rather than concepts supported by the chunk.'}, {'element': 'Visual Encoder (g) -> Projector (w)', 'status': 'Supported', 'evidence': 'The text emphasizes cross-modal embedding alignment and the role of vision encoders; a visual feature mapping into the language space via a projector is a standard implied mechanism in such systems.'}, {'element': 'Projector (w) -> Transformer Layer 0', 'status': 'Supported', 'evidence': \"Consistent with the general VLM pipeline implied by discussion of internal information flow and transformer layers ('attention layers', 'hidden states').\"}, {'element': 'LM (F) Embedder -> Transformer Layer 0', 'status': 'Supported', 'evidence': 'The chunk discusses textual representations and transformer attention layers; feeding embedded text tokens into the transformer stack is consistent with this.'}, {'element': 'Transformer Layer 0 -> Transformer Layer 1 -> ... -> Transformer Layer 31', 'status': 'Supported', 'evidence': \"The chunk mentions layer-wise phenomena (e.g., 'middle layers of the model are critical for cross-modal knowledge transfer'), supporting a sequential stack of transformer layers.\"}, {'element': 'Transformer Layer 31 -> Generated Output', 'status': 'Supported', 'evidence': 'Output generation after processing through transformer layers is consistent with the VLM/VQA setting and discussion of decision-making and hallucinations.'}, {'element': 'What is the name of the subject in this image? -> LM (F) Embedder', 'status': 'Supported', 'evidence': 'The chunk’s VQA framing supports that questions/prompts are encoded as text inputs to the language component.'}, {'element': 'What is the name of the painting in this image? -> LM (F) Embedder', 'status': 'Supported', 'evidence': 'Same justification as above: information-seeking VQA questions are encoded as text.'}, {'element': 'Meryl Streep -> Generated Output', 'status': 'Not Mentioned', 'evidence': 'The chunk does not mention Meryl Streep or any specific example answers; this appears to be an illustrative output example not grounded in the provided text.'}, {'element': 'Mona Lisa -> Generated Output', 'status': 'Not Mentioned', 'evidence': 'The chunk does not mention Mona Lisa; thus the specific example is not supported by the text segment.'}, {'element': 'Generated Output -> Che Guevara', 'status': 'Not Mentioned', 'evidence': 'The chunk does not mention Che Guevara; any specific output-to-entity linkage is not described in the text.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 4,
+              "reason": "The target figure captures most of the core pipeline and experimental procedure described in the evidence: (i) image input → visual encoder g → projection W producing visual tokens, (ii) text prompt → LM embedder producing text tokens, (iii) concatenation and processing through stacked transformer/LLM layers with per-layer hidden states, (iv) two separate forward passes (original vs injected entity) and (v) cross-patching of injected visual-token hidden states into the original pass at a chosen intermediate layer followed by continuing the forward pass and observing whether the predicted entity changes. However, it omits or only weakly specifies several evidence details: it does not explicitly denote the extracted injected-pass image-token states as h^ℓ_{1,v}...h^ℓ_{n,v} nor the generated-token hidden states h^ℓ_{i,g}; it also does not clearly depict the layer-sweep/readout used for identifying a 'critical layer' (prediction switch as a function of patch layer), and the separate activation-freezing experiment (overwriting visual-token states from source..20 with fixed states while allowing other tokens to attend) is not shown in the target figure (only cross-patching is). Thus, coverage is strong for cross-patching but incomplete for the freezing/overwrite experiment and some notation-specific elements."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure largely communicates the system’s operating principle without needing the paper: it shows (i) the VLM pipeline (visual encoder g → projector W → visual tokens; text embedding → text tokens; concatenation into transformer layers), (ii) two forward passes with different entities (original vs injected), (iii) extraction of injected image-token hidden states at an intermediate layer and cross-patching them into the original pass at the same layer/positions (red arrows), and (iv) a second manipulation akin to freezing/overwriting image-token states across subsequent layers (right panel with repeated green patched tokens). This aligns well with the evidence description (two-pass setup, layer-specific extraction, cross-patching, continuation to prediction, and freezing across layers).\n\nLimitations preventing a perfect score: the measurement objective (entity switch vs patch layer / ‘critical layer’ identification) is only implied via the “Generated Output” boxes and not explicitly plotted or stated; notation is somewhat informal (layer indices, hv/ht/hg, ℓ) relative to the text; and the freezing condition (“image tokens not updated by attention/MLP, but others can attend”) is not explicitly annotated, only suggested by repeated copied states. Still, overall the general mechanism is understandable from the figure alone."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 3,
+              "reason": "The target figure captures the core preliminaries/notation pipeline (visual encoder g, projector W producing visual tokens Hv, text embedding/tokens Ht, concatenation and transformer layers with per-layer hidden states) and illustrates the two-forward-pass setup with cross patching (extract injected visual-token states at layer i and insert into the original pass at the same layer/positions, then continue to the output switch). It also includes the freezing/activation-patching idea in the right panel (reusing/overwriting image-token states across layers). However, it is not fully complete relative to the described text: it does not explicitly depict generated-token hidden states h^ℓ_{i,g}, does not clearly mark that only image-token states are frozen while other positions can still attend to them, and the freezing range/source-layer sweep (source ∈ [0..19], patched through layer 20) is not specified (layer indices shown are illustrative/inconsistent, e.g., ‘Layer 31’). Thus it summarizes the main experiments but omits some end-to-end procedural details and constraints."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 3,
+              "reason": "The target figure’s main architectural components (visual encoder g, projector W, LLM embedder, layered transformer stack 0..31, and generated output) and the intervention/patching notion across layers are supported by the provided evidence, and are also consistent with the reference figures’ VLM pipeline depictions. However, the figure introduces specific illustrative entities/IO mappings (e.g., “Meryl Streep = Generated Output = Che Guevara”) that are explicitly not mentioned in the provided text chunks, making them unsupported additions. Additionally, while “Layer 31” is plausible for a 32-layer model, it is not directly quoted in the excerpt (supported only indirectly), so it is mildly speculative. Overall: mostly consistent, but includes some unsupported example content, hence moderate hallucination risk."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 4,
+              "reason": "The target figure accurately captures the core VLM computation and intervention relations supported by the provided evidence: image → visual encoder g → projector W → visual tokens Hv; text prompt → tokenizer/embedding → text tokens Ht; concatenation and sequential processing through transformer layers (0…31) leading to generated output. It also reflects the paper’s described layer-wise patching mechanism (copying hidden states from a source run and patching them into a target run across subsequent layers). However, two aspects reduce relation correctness relative to the evidence: (i) the specific entity examples and mapping (\"Meryl Streep\" and \"Che Guevara\") are not grounded in the provided text chunk, so the depicted input/output relation for those examples is not supported; and (ii) while a 0–31 stack is plausible for a 32-layer model, explicit support for “Layer 31” is indirect in the excerpt. Overall, the major component relationships are correct, with minor issues tied to unsupported illustrative examples and weakly evidenced layer indexing."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 4,
+              "reason": "Most major components/methodology labels in the Target Figure align with the paper description and are accurately named: the Visual Encoder (g), Projector (W/w) mapping Zv to Hv, LM/LLM embedder producing text tokens Ht, and a multi-layer transformer stack with layer indexing starting at 0 (and proceeding sequentially) are all supported by the provided evidence. The intervention/patching depiction across layers is also consistent with the described layer-wise patching procedure. The main label-level weakness is the use of specific entity names in the figure (e.g., “Meryl Streep”, “Che Guevara”) that are not mentioned in the provided text excerpts, making those example labels not verifiable from the evidence. Additionally, explicitly labeling the final layer as “Transformer Layer 31” is plausible for a 32-layer model but is not directly quoted in the excerpts, so it is only indirectly supported."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 5,
+              "reason": "The target figure is strongly schematized around the paper’s main experimental contribution—two forward passes (original vs injected), extraction of injected visual-token hidden states at a chosen layer, cross-layer patching into the original pass, and the layer-wise notion of a ‘switch’/critical layer. It abstracts the VLM pipeline to the essential modules (visual encoder, projector, LM embedding, transformer layers) and highlights only the token types and the intervention (patch arrows / freezing-like repeated states), without unnecessary implementation minutiae (exact tensor shapes, loss functions, dataset details). Compared to the evidence, it preserves the key objects (Hv/Ht, per-layer hidden states, patch at same positions/layer, continuation to output) and visually emphasizes the intervention mechanism rather than trivial details."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "The target figure closely matches the paper’s described setup and serves as effective supplementary material for understanding the cross-patching and freezing (activation patching) experiments. It explicitly depicts: (i) the standard VLM pipeline (visual encoder g → projector W → visual tokens Hv; tokenizer/embedding → text tokens Ht; concatenation into the LLM), (ii) two distinct forward passes (original vs. injected entity) with extraction of injected-pass visual-token hidden states at a chosen layer, (iii) cross patching by inserting those extracted visual-token states into the original pass at the same layer/positions and continuing the forward pass to observe output-entity switches by patch layer, and (iv) a separate panel illustrating “freezing” of image-token states across subsequent layers (overwriting h^ℓ_{i,v} with a fixed source-layer state), while other tokens still propagate. Compared to the provided reference figures (which are more generic MLLM pipeline/attention plots), this target is more directly aligned with the specific notation and experimental procedure described in the evidence text, and would substantially aid comprehension when reading the corresponding sections/caption."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely focused on the core experimental setup described in the evidence: two forward passes (original vs injected), extraction of injected-pass visual-token states at a chosen layer, patching into the original pass, and a separate freezing/activation-patching variant across subsequent layers. It uses minimal text (entity names, layer labels, module blocks) and schematic token blocks that directly support these ideas. However, it includes some potentially unnecessary detail/repetition (e.g., multiple layer stacks with many token squares, illustrative example entities like “Meryl Streep/Che Guevara/Mona Lisa”) that could be considered mildly decorative or more specific than needed for conveying the general method, though they remain relevant as examples rather than unrelated ornamentation."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.714,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 4,
+              "reason": "The Target Figure primarily reads bottom-to-top within each panel (visual encoder/projector at the bottom progressing upward through transformer layers to the generated output at the top). There is also a secondary left-to-right organization across the two main panels (left example → right example), but the dominant flow is vertical. This is consistent with several reference figures that depict pipelines progressing left-to-right across blocks, yet the Target’s key computation stack is clearly top-to-bottom/bottom-to-top rather than a pure left-to-right flow."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 2,
+              "reason": "The target figure includes multiple connection/flow lines that cross or overlap. In the left panel, several red curved connections between token blocks intersect each other, creating noticeable crossings. In the right panel, the curved arrows/links largely avoid intersections, but the overall figure still contains prominent crossed links compared with the cleaner routing in the reference figures where connections are mostly separated or routed to minimize intersections."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "Functionally related components are generally co-located: each pipeline stacks Visual Encoder → Projector → LM(Embedder) → transformer layers in a tight vertical grouping, and the input images/questions are placed directly beneath the corresponding encoder. The left panel’s two compared pipelines are also arranged side-by-side to support comparison. However, some relationships are less proximal than ideal: cross-layer interactions are indicated by long red arrows spanning across a wide region, and the top-level labels (“Meryl Streep? / Generated Output? / Che Guevara”) sit above the transformer stacks rather than adjacent to the specific output head/decoding module, slightly weakening proximity compared to the best reference layouts where related boxes and their connections are more tightly clustered."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall alignment is strong: most token blocks, transformer-layer bars, and module boxes (Visual Encoder/Projector/LM Embedder) line up consistently across rows and columns, giving a clear grid structure similar to the reference figures’ structured layouts. Minor misalignments remain—some token squares and annotation elements (e.g., curved arrows, red attention arcs, and small labels) break strict vertical/horizontal alignment, and spacing between certain columns is not perfectly uniform—so it’s not as grid-perfect as the best-aligned reference examples."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 4,
+              "reason": "The target figure establishes a clear hierarchy through layout and sizing: two large side-by-side panels dominate, each with a prominent top ‘Generated Output’ header and stacked ‘Transformer Layer’ bands that read as the main structure. Color blocks (visual tokens vs. text tokens) and bold layer bars help the key components pop similarly to the reference/evidence figures. However, the figure is visually dense with many similarly sized token squares and repeated labels across layers; this repetition reduces salience of the most important elements (e.g., the specific cross-image comparison vs. the layer stack), so the hierarchy is strong but not maximally distinct."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "The target figure generally provides sufficient whitespace: the two main panels are clearly separated, internal layer rows are evenly spaced, and there is adequate padding around the bottom visual encoder blocks and captions. Compared with the reference figures, it maintains a similar comfortable margin and avoids dense crowding. However, a few areas feel tight—especially the top header row where labels (e.g., \"Meryl Streep?\", \"Generated Output\", \"Che Guevara\") sit close to the border and each other, and some mid-layer token blocks/annotations (red curved arrows) reduce perceived breathing room. Overall margins are good but not uniformly generous."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 4,
+              "reason": "The target figure is largely consistent in using the same shapes and colors for the same roles across both panels: transformer layers are shown as black horizontal bars with repeated token blocks above, the visual encoder/projector are consistently orange boxes, and the LM embedder is a gray box. However, there are some role/color ambiguities that reduce full consistency: token block colors vary (green/blue/brown/red) without a clearly stated legend, and the left panel introduces red attention arcs and multiple input cases while the right panel uses green patterned tokens and curved arrows—these are not reused symmetrically for analogous operations, making similar roles appear with different visual treatments. Overall, consistency is strong but not perfect."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The target figure heavily replaces abstract model operations with concrete visual metaphors: token sequences are shown as colored blocks; layer-wise processing is depicted as stacked bands; information flow/attention or influence is represented with arrows and red connecting curves; modules are labeled with compact abbreviations (e.g., Visual Encoder (g), Projector (w), LM (f) Embedder). These choices make internal transformer mechanics more concrete, similar to the reference figures that use icons/blocks/arrows to stand in for components and processes. However, the figure still relies substantially on textual labels like “Transformer Layer i+1/31” and lacks as many distinct symbolic icons as some references (e.g., detector/robot or knowledge-graph entity icons), so it’s not maximal."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 3,
+              "reason": "The target figure largely follows a common vision-language/transformer schematic template (stacked transformer layers, token blocks, arrows, encoder/projector/LM modules) seen in the reference evidence figures. Its slight novelty comes from the specific visual-token emphasis (green highlighted patches) and the side-by-side contrast of two scenarios (e.g., celebrity identification vs. Mona Lisa painting identification) with red attention-like connections, which gives it a more customized, paper-specific narrative. However, the overall layout, iconography, and styling remain conventional for ML pipeline diagrams rather than distinctly unique."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure largely follows a generic, uniform transformer-pipeline schematic (stacked layers, token blocks, arrows, repeated modules) similar to the provided references. While it splits into two panels (left: two identities; right: Mona Lisa) and adds minor case-specific cues (green “visual” token highlights, example images, and question text), the overall layout remains template-like rather than being notably adapted to a unique narrative flow or paper-specific structure. It does not significantly break away from common VLM/transformer diagram conventions seen in the evidence set."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.743,
+      "used_anchor_paths": {
+        "q1.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q1.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "1.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q1.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "1.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q2.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q2.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q2.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q3.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q3.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "1.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q3.3": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "1.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q4.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q4.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q4.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q4.4": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q4.5": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q4.6": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q4.7": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q5.1": [
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "1.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q5.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "1.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ],
+        "q5.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.765
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "1.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7357
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7208
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7201
+          }
+        ]
+      }
+    },
+    {
+      "figure_file": "Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p1__score1.00.png",
+      "caption": "Figure 1: Illustration of our motivating observation. The model successfully extracts its knowledge about the entity when the entity is represented in text. It further successfully identifies the entity in the image, but it fails to combine the two.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Input image Xv', 'Input text query Xt', 'Vision encoder g processing Xv -> visual features Zv = g(Xv)', 'Projection layer W aligning visual features -> visual tokens Hv = W·Zv (into LLM embedding space)', 'LLM tokenizer + embedding processing Xt -> text tokens Ht', 'Concatenation of tokens [Hv, Ht]', 'LLM f processing concatenated tokens f([Hv, Ht]) to produce output/generated tokens (answer)', 'Information flow path from visual hidden states (h^ℓ_{1,v}...h^ℓ_{n,v}) to textual/query tokens and generated tokens', 'Two-hop reasoning pipeline for visual representation: (1) visual entity identification/recognition from image, then (2) factual knowledge extraction/QA about the recognized entity', 'Comparison condition: textual representation of entity vs visual representation of entity (performance gap context)']\nContext: Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 29095–29108 July 27 - August 1, 2025 ©2025 Association for Computational Linguistics Performance Gap in Entity Knowledge Extraction Across Modalities in Vision Language Models Ido Cohen Daniela Gottesman Mor Geva Raja Giryes Tel Aviv University {idoc@mail, gottesman3@mail, morgeva@tauex, raja@tauex}.tau.ac.il Abstract Vision-language models (VLMs) excel at extract- ing and reasoning about information from im- ages. Yet, their capacity to leverage internal knowledge about specific entities remains under- explored. This work investigates the disparity in model performance when answering factual ques- tions about an entity described in text versus de- picted in an image. Our results reveal a significant accuracy drop — reaching 18% for some models — when the entity is presented visually instead of textually. To study this gap we present POPVQA, a dataset which allows separating entity recogni- tion and question answering, and use it to bench- mark several models. We hypothesize that this decline arises from limitations in how information flows from image tokens to query tokens. Thus, we use mechanistic interpretability tools to reveal that, although image tokens are preprocessed by the vision encoder, meaningful information flow from these tokens occurs only in the much deeper layers.\n\nPreliminaries and Notation. VLMs are archi- tectures that integrate visual and textual modalities to perform tasks such as image captioning, visual question answering and more. Our VLM analysis in this work is mainly focused on the common architecture of LLaVA (Liu et al., 2023b), and thus, we will follow the same notation. The VLM is composed of a pre-trained visual en- coder g, a projection layer W, and an LLM f. Given an input image Xv and text query Xt, Xv is first pro- cessed by g to provide the visual features Zv=g(Xv) then passed through the projection layer to align the vi- sual features into the LLM’s embedding space as a se- ries of tokens Hv=W ·Zv. In parallel, Xt is passed through the LLM’s tokenizer and embedding layer to create a series of tokens Ht. Next the two are con- catenated and passed through the LLM f([Hv,Ht]). ... In our experiments we focus on how information flows from the visual hidden states (hℓ1,v...hℓn,v) to the textual and generated tokens.\n\nFor example, if the subject of a question is a notable figure, say Robin Williams, we can ask the model \"Who is Robin William’s spouse?\", which we refer to as a textual representation. Or we can provide the model with an image of Robin Williams and ask “Who is the spouse of the subject in this image?”, which we refer to as a visual representation. The second case may be viewed as a two-hop reasoning task. First, the model must recognize the entity visually—identification. Next, it must connect this recognized entity to its stored factual knowledge—extraction. Figure 1 provides an example where the model contains the knowledge to answer the question, but fails to extract it when provided with a visual representation.\n\nWe start by quantifying the model’s performance gap in entity knowledge extraction when presented with visual versus textual representations of entities. ... The subsequent experiments aim at explaining this gap and suggest that the reason for this bigger challenge is that the model needs to use part of its capacity to first identify the subject in the image and only then it can answer the question with the remaining capacity. Thus, as the model is of a fixed depth, once the model identifies the entity, it becomes a question of extracting the answer within the limits of the ‘remaining compute’ of the model.",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': 'Input', 'status': 'Supported', 'evidence': \"The chunk describes two kinds of inputs: a text query alone vs an image plus a reformulated query (e.g., “Given an input image Xv and text query Xt...”). This supports an 'Input' label in the figure.\"}, {'element': 'Output', 'status': 'Supported', 'evidence': \"The paper discusses model outputs as predicted answers/names (e.g., model returns the correct name; model answers factual questions). This matches an 'Output' label.\"}, {'element': 'Meaning', 'status': 'Supported', 'evidence': \"The paper frames the task as entity identification plus factual knowledge extraction and investigates information flow/representation; a 'Meaning' node is consistent with this conceptual explanation.\"}, {'element': 'Who is the spouse of Robin Williams?', 'status': 'Supported', 'evidence': \"Explicitly in text: “For example, the triplet (Robin Williams, spouse, Marsha Garces) is transformed into the question, 'Who is the spouse of Robin Williams?'”\"}, {'element': 'Marsha Garces', 'status': 'Supported', 'evidence': \"Explicitly in text: “(Robin Williams, spouse, Marsha Garces)... answer 'Marsha Garces'.”\"}, {'element': 'Identify by name the subject of this image', 'status': 'Supported', 'evidence': \"The chunk describes the identification prompt: “presenting the model with an image... with a prompt asking it to identify the subject (e.g., 'Identify by name the subject in this image.')”\"}, {'element': 'Robin Williams', 'status': 'Supported', 'evidence': 'Used throughout as the motivating example entity, both for textual representation and as an image subject to be identified.'}, {'element': 'Who is the spouse of the subject of this image?', 'status': 'Supported', 'evidence': 'Explicitly in text: providing an image of Robin Williams and asking “Who is the spouse of the subject in this image?”, described as the visual representation formulation.'}, {'element': 'Knowledge Extracted', 'status': 'Supported', 'evidence': \"The paper’s core task is 'entity knowledge extraction' and 'retrieving factual knowledge' once the entity is identified; thus a node labeled 'Knowledge Extracted' matches the described process.\"}, {'element': 'Entity Identified', 'status': 'Supported', 'evidence': \"The paper repeatedly isolates 'identification of an entity based on an image' and evaluates whether the model 'returns the correct name'—this corresponds to 'Entity Identified'.\"}, {'element': 'Failure', 'status': 'Supported', 'evidence': \"Figure 1 is described as: “the model ... successfully identifies the entity in the image, but it fails to combine the two.” That is a failure case consistent with a 'Failure' label.\"}, {'element': 'Who is the spouse of Robin Williams? -> Marsha Garces', 'status': 'Supported', 'evidence': 'Direct QA pair in the dataset construction: spouse question for Robin Williams has answer Marsha Garces.'}, {'element': 'Marsha Garces -> Knowledge Extracted', 'status': 'Supported', 'evidence': \"Semantically, 'Marsha Garces' is the extracted factual knowledge for the spouse relation; the chunk frames this as knowledge extraction from internal knowledge.\"}, {'element': 'Identify by name the subject of this image -> Robin Williams', 'status': 'Supported', 'evidence': 'The motivating example explicitly uses an image of Robin Williams and an identification step (entity recognition), matching this mapping.'}, {'element': 'Robin Williams -> Entity Identified', 'status': 'Supported', 'evidence': \"If the model outputs 'Robin Williams' for the identification prompt, the entity is considered identified (“Entities for which the model returns the correct name are considered identified.”).\"}, {'element': 'Who is the spouse of the subject of this image? -> Amanda Seyfried', 'status': 'Not Mentioned', 'evidence': 'The chunk’s spouse example for Robin Williams maps to Marsha Garces, and no part mentions Amanda Seyfried as an output for that question. The paper does discuss wrong answers generally, but does not cite Amanda Seyfried.'}, {'element': 'Amanda Seyfried -> Failure', 'status': 'Not Mentioned', 'evidence': 'While the paper discusses failure to extract the spouse in the visual case, it does not mention Amanda Seyfried as the specific erroneous answer.'}], [{'element': 'Input', 'status': 'Not Mentioned', 'evidence': \"The chunk discusses prior work, datasets, and analysis methods for VLMs, but does not describe a figure with explicit 'Input'/'Output' components.\"}, {'element': 'Output', 'status': 'Not Mentioned', 'evidence': \"No explicit 'Output' label or diagrammatic I/O pipeline is described in the provided text.\"}, {'element': 'Meaning', 'status': 'Not Mentioned', 'evidence': \"The chunk does not mention a figure label 'Meaning' or a specific module called 'Meaning'.\"}, {'element': 'Knowledge Extracted', 'status': 'Not Mentioned', 'evidence': \"While the text talks about 'factual retrieval' and 'knowledge-intensive queries' in general, it does not label a component as 'Knowledge Extracted' nor depict that step in a diagram.\"}, {'element': 'Entity Identified', 'status': 'Not Mentioned', 'evidence': \"The text conceptually mentions 'identification of the entity' as part of a two-hop process, but does not present a figure element explicitly named 'Entity Identified'.\"}, {'element': 'Failure', 'status': 'Not Mentioned', 'evidence': \"The text mentions VLMs 'struggle' and 'hallucinations' broadly, but there is no explicit figure node/label called 'Failure' described.\"}, {'element': 'Who is the spouse of Robin Williams? -> Marsha Garces', 'status': 'Not Mentioned', 'evidence': 'The chunk does not include this example or any specific factual query about Robin Williams/Marsha Garces; it only generally discusses knowledge-intensive VQA and two-hop reasoning.'}, {'element': 'Identify by name the subject of this image -> Robin Williams', 'status': 'Not Mentioned', 'evidence': \"The text notes that the dataset requires 'identification of the entity' in a two-hop process, but it does not provide this concrete example (image subject = Robin Williams).\"}, {'element': 'Who is the spouse of the subject of this image? -> Amanda Seyfried', 'status': 'Not Mentioned', 'evidence': 'No such example appears in the text; while the text discusses failures/struggles on knowledge questions, it does not mention this specific incorrect answer or entity.'}, {'element': 'Marsha Garces -> Knowledge Extracted', 'status': 'Not Mentioned', 'evidence': \"The chunk does not include any entity-to-'knowledge extracted' mapping; it only describes the concept of factual retrieval in a two-hop design.\"}, {'element': 'Robin Williams -> Entity Identified', 'status': 'Not Mentioned', 'evidence': \"Although 'identification of the entity' is mentioned conceptually, the specific entity 'Robin Williams' and the explicit mapping to an 'Entity Identified' node are not in the provided text.\"}, {'element': 'Amanda Seyfried -> Failure', 'status': 'Not Mentioned', 'evidence': \"The chunk discusses hallucinations and model struggles in general, but does not mention 'Amanda Seyfried' or depict an explicit failure node tied to that answer.\"}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 3,
+              "reason": "The target figure captures the paper’s core conceptual comparison and the two-hop framing: it contrasts a textual entity mention (direct factual QA succeeds) with a visual entity representation, explicitly separating (i) entity identification (“Identify by name…”) from (ii) factual knowledge extraction (“Who is the spouse…”) and illustrating the performance gap/failure in the visual case. However, it omits most of the architectural/notation components emphasized in the evidence (Xv, Xt, g, W, Zv, Hv, Ht, concatenation [Hv,Ht], LLM f processing, and the stated information-flow path from visual hidden states to query/generated tokens). It also does not visualize the mechanistic interpretability claim about meaningful flow only in deeper layers. Relative to reference figures that diagram pipelines/modules, this is a simplified behavioral example rather than a component/formula-level depiction."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure is largely understandable on its own: it contrasts a text-based entity query (correct factual extraction) with a two-hop visual-query setting, explicitly separating (i) entity identification (“Identify by name the subject of this image” → correct) from (ii) factual QA about the image subject (“Who is the spouse…?” → failure). The checkmarks/cross and the three input–output rows make the core operating principle (performance gap when entity is visual vs textual) clear without needing the paper. Compared to the evidence, it faithfully depicts the two-hop pipeline and the visual-vs-text comparison condition, but it does not convey the architectural details emphasized in the text (vision encoder/projection, token concatenation, information-flow-from-visual-hidden-states). Thus it is standalone-intelligible for the high-level phenomenon, but not for the mechanistic explanation."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 2,
+              "reason": "The target figure captures only a narrow illustrative example of the paper’s core phenomenon: the performance gap between textual vs visual entity representations, framed as a two-hop process (entity identification then factual QA), and shows success on the textual case vs failure on the visual case. However, it omits most of the paper’s end-to-end content: the VLM architecture/notation (Xv, Xt, g, W, Hv/Ht concatenation, f([Hv,Ht])), the explicit focus on information flow from visual hidden states to query/generated tokens across layers, the mechanistic interpretability finding that meaningful flow emerges only in deeper layers, and the broader experimental setup (POPVQA dataset and benchmarking) and quantitative gap (e.g., up to 18%). Thus it is not a comprehensive summary from beginning to end, but rather a partial motivational/example figure."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 3,
+              "reason": "The target figure is mostly grounded in the paper’s described example pipeline: (i) text-only query “Who is the spouse of Robin Williams?” → “Marsha Garces” and (ii) image identification prompt “Identify by name the subject of this image” → “Robin Williams,” both of which are explicitly supported by the provided evidence. It also aligns with the paper’s stated failure mode (model identifies the entity but fails to combine it with the knowledge query). However, the specific erroneous output “Amanda Seyfried” for “Who is the spouse of the subject of this image?” is not mentioned in the provided text and appears to be an invented concrete failure instance (even if representative). Thus, the figure contains a notable hallucinated component while the rest is consistent, yielding a mid score."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 3,
+              "reason": "The target figure correctly reflects the paper’s key causal/relational structure: (i) text-only factual question → correct factual answer (knowledge extracted), (ii) image identification prompt → correct entity name (entity identified), and (iii) visual-representation question (about the subject in the image) can fail even when identification succeeds—matching the described “fails to combine the two” phenomenon. However, the specific erroneous output “Amanda Seyfried” is not supported by the provided evidence (the paper describes failure generically and does not cite that particular wrong answer). Thus the high-level relations are accurate, but one concrete relation/example in the failure path is not evidenced, lowering confidence."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 4,
+              "reason": "Major component labels in the Target Figure (Input/Output/Meaning, and the intermediate notions ‘Entity Identified’ and ‘Knowledge Extracted’) are consistent with the paper’s described setup: textual vs visual query formulations, explicit entity identification, and subsequent factual knowledge extraction. The example QA pair ‘Who is the spouse of Robin Williams? → Marsha Garces’ and the identification prompt are explicitly supported. However, the specific erroneous output ‘Amanda Seyfried’ is not mentioned in the provided evidence (the paper notes failures but not that particular wrong name), so labeling that concrete outcome as the failure case is not fully grounded in the text."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 5,
+              "reason": "The target figure is highly schematized around the paper’s main contribution: it isolates the core phenomenon (performance gap in factual QA when the entity is provided visually vs textually) and explicitly decomposes it into the two-hop pipeline implied by the paper (entity identification/recognition vs knowledge extraction). It uses a minimal, task-focused setup (three queries: textual entity QA, explicit identification, and visual-entity QA) and clearly marks outcomes (success vs failure) to emphasize the gap. It avoids architectural/training minutiae (e.g., g/W/f token flow diagrams) and dataset-specific or mechanistic interpretability details, which are not necessary for communicating the central finding."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "The target figure closely matches and reinforces the paper’s core setup and claims: it contrasts textual vs visual representations of the same entity (Robin Williams), frames the visual case as a two-hop pipeline (entity identification then factual QA), and illustrates the observed performance gap/failure mode (correct spouse when named in text; correct identification of the person from the image; incorrect spouse when queried via the image). As supplementary material, it is immediately interpretable and aligns with the evidence description of separating recognition from extraction and the motivation that visual-to-text information transfer is a bottleneck. Compared to the reference figures (which are more generic pipeline diagrams), the target is more directly tied to the paper’s example and experimental contrast, making it highly effective contextually."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely non-redundant: it contains only the minimal components needed to convey the paper’s core idea of a modality-based performance gap and the implied two-hop pipeline (textual query succeeds; visual identification succeeds; visual QA fails). The layout is simple (three rows: inputs/outputs/meaning) and directly tied to the evidence (text vs image representation; entity identification vs knowledge extraction). Minor redundancy/unnecessary elements include repeated use of the same face image in two rows and decorative icons (robot, green checks/red X) that are not strictly required, though they do aid quick comprehension without adding unrelated information."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The target figure is organized in three vertical columns labeled “Input” (left), “Output” (center), and “Meaning” (right). The content progresses horizontally from left to right via this columnar structure, matching the common left-to-right flow seen in the reference figures."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 5,
+              "reason": "The target figure uses simple horizontal row-wise associations without any drawn connection lines between elements, so there are no intersecting connectors. Compared to the references (which include multiple arrows/curved links that can potentially cross), the target’s layout avoids crossings entirely by design."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "The target figure places the three functionally related columns—Input, Output, and Meaning—adjacent in a single horizontal row, so each input example is immediately aligned with its corresponding output and evaluation (check/cross), supporting fast mapping. This matches the proximity principle seen in the references where query/retrieval/generation or question/answer/memory elements are grouped closely. Minor proximity issues remain: the small robot icon is not clearly integrated with a specific module (it sits between input and output without explicit grouping), and the subject thumbnail images on the left are repeated and slightly separated from the relevant text prompts, which weakens the tight coupling of “image subject” with the associated input lines."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "The layout largely follows a clear two-column grid: the three input boxes on the left are vertically stacked and aligned, and the corresponding output boxes on the right are similarly stacked with consistent left edges and spacing. The rightmost “Meaning” labels also align well in a vertical column. Minor misalignments remain: the small face icons on the left are not perfectly aligned with the associated text boxes, and the check/cross indicators and some text baselines in the Output/Meaning columns show slight vertical offsets, preventing a perfect grid-like alignment."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 3,
+              "reason": "The Target figure has a clear left-to-right structure and labeled columns (Input/Output/Meaning), which helps establish a basic hierarchy. However, compared with the reference figures, the most important elements do not stand out strongly: headings are similar in weight to body text, the three rows are visually equivalent (no emphasis on the key success/failure case), and there is limited use of size/thickness/position to guide attention. The checks/crosses and green/red meaning text provide some salience, but overall the hierarchy is moderate rather than strong."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "The target figure maintains generally sufficient margins: each row (input/output/meaning) is separated with clear whitespace, and the main content is not cramped against the canvas edges. Horizontal spacing between the three columns is also adequate for legibility. However, a few localized areas feel tight (e.g., the small avatar images close to the left input boxes, and the check/cross icons near the output text), making the margin consistency slightly weaker than the best reference examples that use more uniform padding."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 3,
+              "reason": "Partially consistent. The figure uses the same rounded-rectangle shape for all text blocks and maintains a left-to-right structure (inputs on the left, outputs in the middle, meaning/labels on the right). However, components with similar roles are not consistently encoded by both shape and color: (1) all three left-side prompts (question vs identification vs image-conditioned question) share the same box style with no color cue to distinguish roles, unlike the reference figures that use distinct colors for query/answer/retrieved facts; (2) the three output boxes also share the same style even though they correspond to different tasks; and (3) success/failure is consistently marked with green check vs red cross, but this role is conveyed mainly via icons/text color rather than a consistent component color/shape scheme across the whole pipeline."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 3,
+              "reason": "The target figure uses some concrete icons to stand in for abstract concepts: a small robot icon to denote the model/agent, a green check and red cross to encode correctness vs failure, and a face photo as a shorthand for the entity in the image. However, most abstract notions (input/output/meaning; tasks like “identify by name”; knowledge extraction/entity identification) are expressed primarily with text rather than being replaced by symbolic metaphors. Compared to the evidence figures, it has less systematic icon-based encoding (e.g., no dedicated pictograms for retrieval/memory/conflict, fewer color-coded legend-like mappings), but it is more metaphorical than text-only designs. Overall, metaphor use is moderate."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a common schematic template seen in the references: left-to-right flow with labeled boxes (“Input/Output/Meaning”), checkmark/cross status indicators, and a small assistant/robot icon. Its visual language (rounded rectangles, simple arrows/structure, minimal palette with green/red correctness cues) closely matches standard ML pipeline illustrations present in the evidence. The only mildly distinguishing element is the hand-drawn/marker-like typography and sketchy lines, but this is a superficial stylistic tweak rather than a notably novel or unique design."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure adopts a simple three-column structure (“Input / Output / Meaning”) with repeated rows and minimal visual hierarchy. Compared to the evidence figures, which use paper-specific layouts (multi-stage pipelines, retrieval/memory modules, arrows, legends, and multi-panel composition) tailored to explain mechanisms, the target remains a generic tabular depiction. It does not meaningfully break away from uniform design principles or introduce layout elements (flow, modules, annotations, or paneling) that are clearly adapted to a specific method beyond basic pass/fail marking."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.467,
+      "used_anchor_paths": {
+        "q1.1": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q1.2": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q1.3": [
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q2.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q2.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q2.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q3.1": [
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q3.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q3.3": [
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q4.1": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q4.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q4.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q4.4": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q4.5": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q4.6": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q4.7": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q5.1": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q5.2": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ],
+        "q5.3": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7226
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7151
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7036
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6995
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6941
+          }
+        ]
+      }
+    }
+  ]
+}

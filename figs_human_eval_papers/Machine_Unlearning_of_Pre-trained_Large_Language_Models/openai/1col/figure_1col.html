@@ -1,0 +1,280 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Process overview for unlearning pre-trained LLMs</title>
+<style>
+  :root{
+    --w:1200px;
+    --h:1500px;
+    --pad:40px;
+    --caption-h:140px;
+    --fg:#1f2937;
+    --muted:#6b7280;
+    --line:#9aa4b2;
+    --panel:#eef2f7;
+    --panel2:#f7f9fc;
+    --accent:#2563eb;
+    --accent2:#0ea5e9;
+    --warn:#b45309;
+    --forget:#b91c1c;
+    --retain:#047857;
+  }
+  html, body { margin:0; padding:0; background:#ffffff; }
+  #figure-root{
+    width:var(--w);
+    height:var(--h);
+    box-sizing:border-box;
+    font-family: Arial, Helvetica, sans-serif;
+    position: relative;
+    margin: 0 auto;
+    background: #ffffff;
+  }
+  .caption{
+    position:absolute;
+    left:0;
+    bottom:0;
+    width:100%;
+    height:var(--caption-h);
+    box-sizing:border-box;
+    padding:14px 44px;
+    border-top: 1px solid #d1d7e0;
+    background:#ffffff;
+    color:#111827;
+    font-size:16px;
+    line-height:1.35;
+  }
+  .caption .label{
+    font-weight:700;
+    margin-right:10px;
+  }
+  .caption .text{
+    font-weight:400;
+  }
+  /* SVG text color must use fill, not color */
+  .tTitle { font-size:28px; font-weight:700; fill: var(--fg); }
+  .tSub   { font-size:16px; font-weight:400; fill: var(--muted); }
+  .tH     { font-size:18px; font-weight:700; fill: var(--fg); }
+  .t      { font-size:16px; font-weight:400; fill: var(--fg); }
+  .tSmall { font-size:14px; font-weight:400; fill: var(--fg); }
+  .tTiny  { font-size:13px; font-weight:400; fill: var(--muted); }
+  .tMono  { font-size:14px; font-family: "Arial", Helvetica, sans-serif; fill: var(--fg); }
+  .tBadge { font-size:13px; font-weight:700; fill:#ffffff; }
+
+  .box { fill: #ffffff; stroke: #c6ceda; stroke-width:2; rx:14; ry:14; }
+  .panel { fill: var(--panel); stroke:#c6ceda; stroke-width:2; rx:16; ry:16; }
+  .panel2 { fill: var(--panel2); stroke:#c6ceda; stroke-width:2; rx:16; ry:16; }
+  .note { fill:#ffffff; stroke:#c6ceda; stroke-width:1.5; rx:12; ry:12; }
+  .chip { fill:#ffffff; stroke:#c6ceda; stroke-width:1.5; rx:999; ry:999; }
+
+  .arrow { stroke: #4b5563; stroke-width:2.5; fill:none; marker-end:url(#arrow); }
+  .arrowThin { stroke: #6b7280; stroke-width:2; fill:none; marker-end:url(#arrow); }
+  .arrowAccent { stroke: var(--accent); stroke-width:3; fill:none; marker-end:url(#arrowAccent); }
+  .arrowDashed { stroke: #6b7280; stroke-width:2.2; fill:none; stroke-dasharray:8 6; marker-end:url(#arrow); }
+
+  .bracket { stroke:#6b7280; stroke-width:2.2; fill:none; }
+  .divider { stroke:#c6ceda; stroke-width:2; }
+
+  .badgeForget { fill: var(--forget); }
+  .badgeRetain { fill: var(--retain); }
+  .badgeApprox { fill: var(--accent2); }
+  .badgeVanilla{ fill: #374151; }
+  .badgeUnl    { fill: var(--accent); }
+
+  .kpi { fill:#ffffff; stroke:#c6ceda; stroke-width:1.5; rx:12; ry:12; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+  <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500">
+    <defs>
+      <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 z" fill="#4b5563"></path>
+      </marker>
+      <marker id="arrowAccent" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 z" fill="#2563eb"></path>
+      </marker>
+    </defs>
+
+    <!-- Title -->
+    <text x="600" y="70" text-anchor="middle" class="tTitle">Unlearning pre-trained LLMs under data removal requests</text>
+    <text x="600" y="102" text-anchor="middle" class="tSub">Vanilla pre-training → designate forget set U → first-order approximate unlearning → evaluate against approximate-retraining baseline</text>
+
+    <!-- Global panels -->
+    <rect x="50" y="140" width="1100" height="1180" class="panel"></rect>
+
+    <!-- Left: Data and vanilla model -->
+    <rect x="90" y="190" width="460" height="500" class="panel2"></rect>
+    <text x="120" y="225" class="tH">1) Starting point (vanilla pre-training)</text>
+
+    <!-- Corpus D -->
+    <rect x="120" y="255" width="400" height="140" class="box"></rect>
+    <rect x="120" y="255" width="120" height="32" rx="10" ry="10" class="badgeVanilla"></rect>
+    <text x="180" y="277" text-anchor="middle" class="tBadge">CORPUS</text>
+    <text x="265" y="283" class="tH">Training corpus D</text>
+    <text x="140" y="318" class="t">Large-scale pre-training data</text>
+    <text x="140" y="344" class="tSmall">Contains future removal requests (copyright / private / sensitive)</text>
+
+    <!-- Partition D into U and D\U -->
+    <rect x="120" y="420" width="400" height="245" class="box"></rect>
+    <text x="140" y="450" class="tH">Data partition for a request</text>
+
+    <!-- U chip -->
+    <rect x="150" y="480" width="170" height="46" class="chip"></rect>
+    <rect x="150" y="480" width="52" height="46" rx="999" ry="999" class="badgeForget"></rect>
+    <text x="176" y="510" text-anchor="middle" class="tBadge">U</text>
+    <text x="214" y="510" class="t">Forget set</text>
+    <text x="150" y="548" class="tSmall">Requested to be removed</text>
+
+    <!-- D\U chip -->
+    <rect x="150" y="580" width="260" height="46" class="chip"></rect>
+    <rect x="150" y="580" width="95" height="46" rx="999" ry="999" class="badgeRetain"></rect>
+    <text x="198" y="610" text-anchor="middle" class="tBadge">D\U</text>
+    <text x="255" y="610" class="t">Retain data</text>
+    <text x="150" y="648" class="tSmall">Utility should be preserved</text>
+
+    <!-- Vanilla model -->
+    <rect x="90" y="715" width="460" height="310" class="panel2"></rect>
+    <text x="120" y="750" class="tH">2) Vanilla model M</text>
+
+    <rect x="120" y="785" width="400" height="195" class="box"></rect>
+    <rect x="120" y="785" width="155" height="32" rx="10" ry="10" class="badgeVanilla"></rect>
+    <text x="197" y="807" text-anchor="middle" class="tBadge">VANILLA</text>
+    <text x="290" y="812" class="tH">Pre-trained LLM trained on D</text>
+    <text x="140" y="850" class="t">Objective: next-token prediction</text>
+    <text x="140" y="876" class="tSmall">M = A(D)</text>
+    <text x="140" y="910" class="tSmall">Removal request specifies forget set U ⊂ D</text>
+
+    <!-- Arrow D to Vanilla -->
+    <path d="M320,395 L320,785" class="arrow"></path>
+
+    <!-- Middle: Approximate unlearning (first-order) -->
+    <rect x="590" y="190" width="560" height="835" class="panel2"></rect>
+    <text x="620" y="225" class="tH">3) First-order approximate unlearning update</text>
+    <text x="620" y="252" class="tTiny">Efficient gradient-based update to forget U while preserving performance on D\U</text>
+
+    <!-- Unlearning algorithm box -->
+    <rect x="620" y="280" width="500" height="235" class="box"></rect>
+    <rect x="620" y="280" width="205" height="32" rx="10" ry="10" class="badgeUnl"></rect>
+    <text x="723" y="302" text-anchor="middle" class="tBadge">UNLEARNING</text>
+    <text x="845" y="307" class="tH">Update M → M′ (approx.)</text>
+
+    <!-- Equation-like text -->
+    <text x="645" y="348" class="tSmall">Update uses first-order information (gradients), e.g.:</text>
+    <text x="645" y="375" class="tMono">• increase loss on U (forget)  +  preserve utility on retain subset R ⊆ D\U</text>
+    <text x="645" y="402" class="tMono">• implemented with gradient ascent on U and (optional) descent / KL constraint on R</text>
+
+    <!-- Method family -->
+    <rect x="645" y="425" width="450" height="70" class="note"></rect>
+    <text x="665" y="452" class="tSmall">Examples (instances of the unified objective):</text>
+    <text x="665" y="478" class="tSmall">Gradient ascent on U; random-label fine-tuning; adversarial tokens; ascent+descent / KL on R</text>
+
+    <!-- Inputs to unlearning: M, U, R -->
+    <rect x="620" y="540" width="500" height="170" class="box"></rect>
+    <text x="645" y="572" class="tH">Inputs</text>
+
+    <rect x="645" y="595" width="140" height="44" class="chip"></rect>
+    <rect x="645" y="595" width="60" height="44" rx="999" ry="999" class="badgeVanilla"></rect>
+    <text x="675" y="623" text-anchor="middle" class="tBadge">M</text>
+    <text x="718" y="623" class="tSmall">Vanilla model</text>
+
+    <rect x="805" y="595" width="140" height="44" class="chip"></rect>
+    <rect x="805" y="595" width="60" height="44" rx="999" ry="999" class="badgeForget"></rect>
+    <text x="835" y="623" text-anchor="middle" class="tBadge">U</text>
+    <text x="878" y="623" class="tSmall">Forget set</text>
+
+    <rect x="965" y="595" width="155" height="44" class="chip"></rect>
+    <rect x="965" y="595" width="70" height="44" rx="999" ry="999" class="badgeRetain"></rect>
+    <text x="1000" y="623" text-anchor="middle" class="tBadge">R</text>
+    <text x="1044" y="623" class="tSmall">Retain subset</text>
+
+    <text x="645" y="675" class="tTiny">Goal: degrade performance on U; keep performance on D\U similar to vanilla</text>
+
+    <!-- Output unlearned model -->
+    <rect x="620" y="740" width="500" height="240" class="box"></rect>
+    <rect x="620" y="740" width="220" height="32" rx="10" ry="10" class="badgeUnl"></rect>
+    <text x="730" y="762" text-anchor="middle" class="tBadge">OUTPUT</text>
+    <text x="860" y="767" class="tH">Unlearned model M′</text>
+
+    <rect x="645" y="795" width="455" height="160" class="note"></rect>
+    <text x="665" y="822" class="tSmall">Desired empirical behavior</text>
+    <text x="665" y="848" class="tSmall">• On forget set U: behaves like a model that never saw U</text>
+    <text x="665" y="874" class="tSmall">• On retain data D\U: preserves utility (perplexity / accuracy)</text>
+    <text x="665" y="900" class="tSmall">• On general downstream tasks: minimal degradation</text>
+
+    <!-- Arrow from vanilla model to unlearning -->
+    <path d="M520,882 L620,620" class="arrow"></path>
+    <text x="565" y="730" text-anchor="middle" class="tTiny">removal request + update</text>
+
+    <!-- Bracket from U and D\U to unlearning inputs -->
+    <path d="M520,510 L560,510 L560,610 L620,610" class="arrowThin"></path>
+    <path d="M410,603 L560,603" class="arrowThin"></path>
+
+    <!-- Right bottom: Approximate retraining evaluation baseline -->
+    <rect x="90" y="1055" width="1060" height="245" class="panel2"></rect>
+    <text x="120" y="1090" class="tH">4) Evaluation baseline: approximate retraining (surrogate for retrain on D\U)</text>
+    <text x="120" y="1117" class="tTiny">Since exact retraining on D\U is impractical for LLMs, use an in-distribution unseen “approximate set” to estimate the retrained model’s behavior on U.</text>
+
+    <!-- Baseline blocks -->
+    <rect x="120" y="1145" width="330" height="130" class="box"></rect>
+    <rect x="120" y="1145" width="165" height="32" rx="10" ry="10" class="badgeApprox"></rect>
+    <text x="202" y="1167" text-anchor="middle" class="tBadge">APPROX SET</text>
+    <text x="305" y="1172" class="tH">Unseen in-domain data A</text>
+    <text x="140" y="1208" class="tSmall">Same domain as U, but not in training</text>
+    <text x="140" y="1234" class="tSmall">Proxy target: vanilla performance on A</text>
+
+    <rect x="470" y="1145" width="330" height="130" class="box"></rect>
+    <rect x="470" y="1145" width="185" height="32" rx="10" ry="10" class="badgeVanilla"></rect>
+    <text x="562" y="1167" text-anchor="middle" class="tBadge">VANILLA</text>
+    <text x="650" y="1172" class="tH">Measure M on A</text>
+    <text x="490" y="1208" class="tSmall">Estimate retrained model’s level on U</text>
+    <text x="490" y="1234" class="tSmall">Guides unlearning strength (LR / steps)</text>
+
+    <rect x="820" y="1145" width="310" height="130" class="box"></rect>
+    <rect x="820" y="1145" width="170" height="32" rx="10" ry="10" class="badgeUnl"></rect>
+    <text x="905" y="1167" text-anchor="middle" class="tBadge">COMPARE</text>
+    <text x="1010" y="1172" class="tH">Evaluate M′</text>
+    <text x="840" y="1208" class="tSmall">Check: M′ on U ≈ M on A</text>
+    <text x="840" y="1234" class="tSmall">and M′ on D\U ≈ M on D\U</text>
+
+    <!-- Arrows in baseline -->
+    <path d="M450,1210 L470,1210" class="arrow"></path>
+    <path d="M800,1210 L820,1210" class="arrow"></path>
+
+    <!-- Link unlearned model to evaluation -->
+    <path d="M870,980 L975,1145" class="arrowAccent"></path>
+    <text x="935" y="1068" text-anchor="middle" class="tTiny">unlearned model M′</text>
+
+    <!-- Metrics callout -->
+    <rect x="120" y="1285" width="1010" height="28" fill="none"></rect>
+    <rect x="120" y="1310" width="1010" height="0" class="divider"></rect>
+
+    <rect x="120" y="1330" width="320" height="95" class="kpi"></rect>
+    <text x="140" y="1360" class="tSmall"><tspan font-weight="700">Forget effectiveness</tspan> (U)</text>
+    <text x="140" y="1386" class="tTiny">Higher loss / perplexity; reduced extraction</text>
+    <text x="140" y="1410" class="tTiny">Optionally assess with membership inference</text>
+
+    <rect x="460" y="1330" width="330" height="95" class="kpi"></rect>
+    <text x="480" y="1360" class="tSmall"><tspan font-weight="700">Retain utility</tspan> (D\U)</text>
+    <text x="480" y="1386" class="tTiny">Maintain perplexity / accuracy on retained data</text>
+    <text x="480" y="1410" class="tTiny">Avoid catastrophic forgetting</text>
+
+    <rect x="810" y="1330" width="320" height="95" class="kpi"></rect>
+    <text x="830" y="1360" class="tSmall"><tspan font-weight="700">General capability</tspan></text>
+    <text x="830" y="1386" class="tTiny">Downstream benchmarks (e.g., MMLU, ARC)</text>
+    <text x="830" y="1410" class="tTiny">Minimal degradation vs. vanilla</text>
+
+    <!-- Outer flow arrows -->
+    <path d="M550,840 L590,840" class="arrow"></path>
+    <text x="570" y="825" text-anchor="middle" class="tTiny">apply update</text>
+
+    <!-- subtle footer note -->
+    <text x="600" y="146" text-anchor="middle" class="tTiny">One-column figure; fixed-layout schematic (not to scale)</text>
+  </svg>
+
+  <div class="caption">
+    <span class="label">Figure:</span>
+    <span class="text">Process overview for unlearning pre-trained LLMs in response to data removal requests: a vanilla model trained on corpus D is updated to forget set U while preserving performance on retain data D\U, using first-order approximate unlearning and an approximate-retraining evaluation baseline.</span>
+  </div>
+</div>
+</body>
+</html>

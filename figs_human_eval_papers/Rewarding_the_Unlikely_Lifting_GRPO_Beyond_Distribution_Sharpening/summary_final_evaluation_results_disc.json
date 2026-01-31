@@ -1,0 +1,134 @@
+{
+  "paper_name": "Rewarding_the_Unlikely_Lifting_GRPO_Beyond_Distribution_Sharpening",
+  "evaluated_at": "2026-01-12T03:42:48.543190",
+  "figure_summary": "## 1. Core Contributions\n- Identify and empirically demonstrate a **degenerate rank bias in GRPO** for formal theorem proving: updates disproportionately reinforce **already high-probability** correct trajectories while neglecting **rare-but-correct** ones, yielding **distribution sharpening** and degraded **pass@N at large N**.\n- Propose **Unlikeliness Reward**: an explicit reweighting scheme that **up-weights low-probability correct solutions**, intended to counteract rank bias and improve **multi-sample success** (pass@N across wide N).\n- Reveal a complementary mitigation via a “mundane” hyperparameter: the **number of PPO/GRPO epochs (updates) per batch**, where increasing epochs can amplify learning signal for **unlikely** sequences after likely ones saturate.\n- Combine these insights into a revised GRPO training recipe for Lean theorem proving, aiming for **improved pass@N** and competitive benchmark performance (per abstract).\n\n## 2. Method Components & Relations relevant to figures\n- **Setting / signals**\n  - Input theorem statement: \\(x\\)\n  - Model (policy): \\(\\pi_\\theta(y\\mid x)\\) producing proof candidates \\(y\\)\n  - Perfect verifier / reward: \\(R(x,y)\\in\\{0,1\\}\\) (Lean checks proof correctness)\n  - Evaluation: **pass@N** = probability at least one of \\(N\\) independent samples verifies.\n- **GRPO training loop (as depicted/quantified by figures)**\n  - Sample a **group** \\(\\{y_i\\}_{i=1}^G \\sim \\pi_{\\theta_{\\text{old}}}(\\cdot\\mid x)\\)\n  - Compute rewards \\(r_i = R(x,y_i)\\)\n  - Compute **group-normalized advantage**:\n    \\[\n    A_i = \\frac{r_i - \\text{mean}(r_{1:G})}{\\text{std}(r_{1:G})}\n    \\]\n  - Update policy via a **PPO-style clipped ratio objective** with KL regularization to a reference policy \\(\\pi_{\\text{ref}}\\):\n    - Likelihood ratio \\(\\frac{\\pi_\\theta(y_i\\mid x)}{\\pi_{\\theta_{\\text{old}}}(y_i\\mid x)}\\) is clipped to \\([1-\\epsilon, 1+\\epsilon]\\)\n    - KL penalty coefficient \\(\\beta\\)\n  - Practical detail affecting plotted outcomes: when all rewards in a group are identical (all 0 or all 1), **advantages are 0**, yielding no learning signal (except KL); they also use a **buffer/dynamic sampling trick** to focus updates on nonzero-advantage samples.\n- **Mechanism under investigation (what the figures are about)**\n  - **Rank bias**: because training updates saturate high-likelihood correct samples quickly (via clipping / optimization dynamics), GRPO tends to keep amplifying what is already common rather than increasing mass on **rare correct proofs**, reducing diversity and harming pass@N for large N.\n  - **Unlikeliness reward (UR)**: modifies how correct samples contribute so that **lower-probability correct** trajectories receive stronger positive learning signal (conceptually “lifting” the tail), countering rank bias.\n  - **PPO epochs per batch**: more epochs introduce additional gradient steps; the paper claims this can shift learning toward **low-likelihood** sequences after high-likelihood ones have saturated.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **visualize the gap** between improving single-sample accuracy and improving **multi-sample (pass@N)** performance, highlighting that GRPO can **hurt** large-N sampling even while helping small N.\n- To illustrate the **conceptual diagnosis** (rank bias → distribution sharpening) and the **intended effect** of proposed mitigations (UR and epoch tuning) as shifting probability mass toward **unlikely-but-correct** solutions.\n- To provide **quantitative curves** (pass@N vs N; predicted pass@N changes under simplified assumptions) that make clear **why** merely boosting already-likely correct solutions yields diminishing returns at large N, motivating methods that increase probability of **rare** correct trajectories.\n\n## 4. What Figures are NOT intended to show\n- Not intended to establish general RL superiority or overall SOTA across tasks; the focus is specifically on **pass@N behavior** and **distribution shaping** in theorem proving with a verifier.\n- Not intended to provide a full ablation of all engineering choices (dataset curation, dynamic sampling buffer, truncation length, framework details), except insofar as they affect the observed pass@N trends.\n- Not intended to claim that GRPO cannot improve expected reward or pass@1; rather, they target the claim that GRPO may **fail to improve—and can worsen—large-N success** due to rank bias.\n- Not intended to replace formal proofs of convergence/optimality; analytical plots rely on **simplifying assumptions** (e.g., early-training approximation, clipping-bound saturation) to explain trends rather than deliver tight theory.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Rewarding_the_Unlikely_Lifting_GRPO_Beyond_Distribution_Sharpening__p0__score0.90.png",
+      "caption": "Figure 1: We identify a rank bias in GRPO in which model updates only reinforce already probable solutions and fail to surface new ones. This sharpens the distribution and impairs pass@N performance for large N. Our unlikeliness reward addresses rank bias by explicitly encouraging uplifting low-probability correct solutions.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 2.0,
+              "reason": "The figure covers the key conceptual components highlighted in the caption/summary: theorem input x, multiple correct proofs y1..yG, and the qualitative effect of GRPO vs GRPO+Unlikeliness in shifting probability mass (distribution sharpening vs uplifting low-probability correct solutions), tied to pass@N intuition (dashed line for inclusion in N samples). However, it omits major method/formula details explicitly emphasized in the summary as central to GRPO training and the diagnosed mechanism: group-normalized advantage formula, PPO-style clipped ratio objective, KL regularization to a reference policy, the no-signal identical-reward case, and the stated complementary mitigation via increasing PPO/GRPO epochs per batch. Thus it is not covering 'all major components or formulas' of the described method."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "Without reading the paper, one can grasp the high-level operating principle relevant to the paper’s claim: a base model assigns probabilities to multiple correct trajectories; GRPO training concentrates probability on already-likely proofs (sharpening) so fewer distinct proofs are likely to appear when sampling N times; the unlikeliness reward counteracts this by raising probabilities of rare correct proofs, increasing diversity and improving large-N pass@N. The main limitation is that the mechanism is conveyed qualitatively; the optimization/advantage computation that causes the bias is not explained in-figure, so the 'why' behind the bias is not fully self-contained."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure summarizes a specific mid-level narrative (rank bias → distribution sharpening → worse pass@N at large N; UR mitigates by uplifting low-probability correct solutions). It does not attempt to summarize the full paper arc 'from beginning to end' as described in the summary: it lacks depiction of the GRPO loop (sampling group, rewards, normalization), evaluation details beyond a heuristic N-sampling threshold, the epoch-per-batch mitigation, and other practical details (e.g., zero-advantage groups/buffer trick) that the summary notes as affecting outcomes. Therefore it is not a complete end-to-end summary of the paper."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure stays aligned with the summary’s core elements: theorem input x, multiple correct proofs y_i, and qualitative probability mass changes under Base Model, GRPO, and GRPO+Unlikeliness Reward. It does not introduce new objectives (e.g., clipped ratio, KL term, explicit advantage formula) beyond what the summary says figures aim to convey (rank bias → distribution sharpening; UR uplifting low-probability correct solutions). The only extra element is the dashed line indicating being “likely to be included in N samples,” which is a conventional visualization of pass@N intuition and not a new method component."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 4.0,
+              "reason": "Relationships depicted match the summary: GRPO increases probability on already-high-probability correct trajectories (distribution sharpening), while UR increases relative mass on low-probability correct proofs (tail uplifting), which is intended to improve pass@N for large N. However, the figure is purely conceptual and does not show the mechanism details that cause rank bias (clipping/optimization saturation, group-normalized advantages, zero-advantage groups), so it cannot fully substantiate the claimed causal pathway—though it does not contradict it."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled consistently with the summary/caption: Theorem x, Correct Proofs y1…yG, Base Model π0(y|x), GRPO πGRPO(y|x), and GRPO-Unlikeliness πGRPO-UR(y|x). These match the described methods (GRPO and the Unlikeliness Reward modification) without misnaming or introducing unsupported modules."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The schematic directly depicts the main contribution described in the summary/caption: (i) a set of correct proofs y1..yG with different probabilities, (ii) how GRPO amplifies already-likely solutions (distribution sharpening), and (iii) how the proposed Unlikeliness Reward instead lifts low-probability correct solutions. It avoids delving into secondary implementation details (e.g., clipping formula, KL term, buffer trick), keeping focus on the rank-bias mechanism and mitigation."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a companion to the caption/text, the figure provides an intuitive, step-by-step visual mapping from theorem x to candidate correct proofs and then to three policy distributions (base, GRPO, GRPO+UR), aligning well with the summary’s explanation of pass@N degradation via sharpening and UR’s tail-upweighting. However, the link to pass@N is only implied via the dashed 'likely to be included in N samples' threshold and not explicitly connected to pass@N curves or a quantitative example, which slightly limits standalone clarity."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 5.0,
+              "reason": "The visual elements are minimal and purpose-driven: the theorem box provides context, the proof stack indicates multiple correct trajectories, and the bar charts plus dashed inclusion threshold convey the probability-mass shift central to the claim. There are no decorative graphics or extraneous annotations that distract from the rank-bias vs. UR contrast."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.286,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure has a clear top-to-bottom narrative consistent with the summary: theorem statement at the top, then correct proof samples, then three stacked distributions (Base Model → GRPO → GRPO-Unlikeliness) showing the effect of rank bias and the proposed mitigation. The internal flow is not left-to-right, but the vertical progression is visually unambiguous."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "There are essentially no connector lines between modules; the plot relies on spatial layout and labeling. As a result, there are no line crossings that could reduce readability."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are placed close: the theorem and proof candidates are near the top as inputs/outputs of sampling, and the three distributions are stacked closely for direct comparison (base vs GRPO vs UR), which matches the summary’s emphasis on distribution sharpening vs tail uplifting. The dashed 'likely to be included in N samples' threshold is positioned between the sample depiction and the distributions, reasonably linking the concept to the plots."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "The three distribution panels are aligned vertically with consistent axes styling and category positions (g1, g2, ..., gG-1, gG), supporting comparison. Minor alignment imperfections remain (e.g., text blocks and dashed threshold not perfectly on a single grid), but overall the layout is neat."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The key comparison (Base vs GRPO vs GRPO-Unlikeliness) is emphasized via repeated panel structure and prominent labels, making the core claim (rank bias then correction) stand out. However, there is limited use of stronger visual hierarchy (e.g., size/weight/color emphasis) to highlight the main takeaway beyond the repeated panels."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "Elements have adequate spacing: the top theorem box, the proof stack, and each distribution plot are separated enough to avoid crowding, and labels are readable. Margins are slightly tight near the panel boundaries, but not to the point of confusion."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Similar roles are depicted consistently: each policy distribution uses the same bar-chart style, with analogous coloring conventions to show probability mass across candidates. The three panels share the same visual grammar, supporting the summary’s intended comparison of distribution sharpening (GRPO) versus lifting low-probability correct solutions (UR)."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces much of the abstraction (policy distributions over trajectories) with concrete, domain-specific icons: a boxed Lean theorem statement (x), stacked proof-script boxes for multiple correct proofs (y1…yG), and bar-chart “probability mass” sketches per method. The dashed threshold for “likely to be included in N samples” is a simple but concrete visual proxy for pass@N behavior. It’s still fairly literal (distributions as bars) rather than a more metaphorical illustration, so it doesn’t reach the highest score."
+            },
+            {
+              "question": "novelty",
+              "score": 3.0,
+              "reason": "The overall visual language (three small bar-chart panels comparing base vs GRPO vs GRPO+UR, with an added horizontal threshold line) is a common explanatory template in ML papers. The Lean-specific theorem/proof boxes and the stacked-proof depiction add some distinctive flavor aligned with the theorem-proving setting, but the style itself remains conventional."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific claim about rank bias and tail uplift: it explicitly contrasts how probability mass shifts across multiple correct proofs, and connects that to multi-sample inclusion via the dashed N-sampling threshold. The three-tier comparison (Base → GRPO sharpening → GRPO-UR tail lifting) is purpose-built for the contribution rather than a generic pipeline diagram, while still following readable, standard design constraints."
+            }
+          ]
+        },
+        "weighted_total": 3.924
+      }
+    }
+  ]
+}

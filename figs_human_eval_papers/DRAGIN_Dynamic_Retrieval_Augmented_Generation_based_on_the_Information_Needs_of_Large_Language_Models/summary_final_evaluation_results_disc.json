@@ -1,0 +1,245 @@
+{
+  "paper_name": "DRAGIN_Dynamic_Retrieval_Augmented_Generation_based_on_the_Information_Needs_of_Large_Language_Models",
+  "evaluated_at": "2026-01-12T01:05:41.252865",
+  "figure_summary": "## 1. Core Contributions\n- Proposes **DRAGIN**, a **dynamic retrieval-augmented generation** framework that decides **when** to retrieve and **what** to retrieve based on the LLM’s *real-time information needs* during generation.\n- Introduces **RIND (Real-time Information Needs Detection)** to trigger retrieval using a token-level score combining **uncertainty**, **downstream influence**, and **semantic significance** (stopword filtering), rather than fixed intervals or simple confidence thresholds.\n- Introduces **QFS (Query Formulation based on Self-attention)** to construct retrieval queries by leveraging the LLM’s **self-attention over the entire context**, addressing the limitation of using only the most recent tokens/sentence.\n- Positions DRAGIN as **lightweight and training-free**, intended to plug into Transformer LLMs without extra fine-tuning or prompt engineering.\n\n## 2. Method Components & Relations relevant to figures\n- **Key modules**\n  - **LLM generation loop** (token-by-token / continued generation).\n  - **RIND**: computes token-wise retrieval-trigger scores.\n  - **Retrieval module**: called only when triggered; returns external passages.\n  - **QFS**: forms the retrieval query from the generation context using self-attention signals.\n  - **Augmented continuation**: LLM continues generation conditioned on retrieved text.\n\n- **Key relations / data flows / scoring**\n  - For each generated token \\(t_i\\):\n    - **Uncertainty** via entropy \\(H_i\\) over the next-token distribution.\n    - **Influence on later tokens** via maximum future attention \\(a_{\\max}(i)=\\max_{j>i}A_{i,j}\\) (from the last Transformer layer).\n    - **Semantic filter** \\(s_i\\in\\{0,1\\}\\) to downweight stopwords.\n  - **RIND trigger score**:\n    \\[\n    S_{\\text{RIND}}(t_i)=H_i\\cdot a_{\\max}(i)\\cdot s_i\n    \\]\n  - **Trigger condition**: retrieval activates if **any** \\(S_{\\text{RIND}}(t_i)>\\theta\\) among generated tokens so far.\n  - After triggering:\n    - **QFS** uses **self-attention across the whole context** to select/weight terms for the query (intended to reflect the LLM’s information need beyond the most recent tokens).\n    - Retrieved documents are appended/inserted as **external knowledge** for continued generation.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **visualize the dynamic RAG control loop**: generation → detect information need → retrieve → augment → continue generation.\n- To clarify **what signals DRAGIN uses** (entropy/uncertainty, attention-based influence, semantic filtering) and how they combine into a **single retrieval-trigger score** with a **threshold-based decision**.\n- To convey the conceptual motivation that **information needs can originate from anywhere in the context**, motivating **attention-based query formulation** rather than “last sentence/last tokens” heuristics.\n- To provide **at-a-glance comparability** of DRAGIN versus prior dynamic RAG baselines in terms of the two decision axes: **when to retrieve** and **what to retrieve** (as suggested by the presence of a baseline overview table).\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide a full theoretical proof that entropy/attention/stopword filtering are optimal indicators of information need; they illustrate the *design*, not a guarantee.\n- Not intended to isolate retrieval quality, corpus effects, or retriever architecture performance independently; retrieval is treated as a module in a broader pipeline.\n- Not intended to depict training or fine-tuning procedures (the method is framed as **training-free**); figures focus on **inference-time control and query formation**.\n- Not intended to fully specify all implementation details of QFS beyond its reliance on self-attention (the figures convey the idea of using context-wide attention, not every computational step).",
+  "figure_evaluations": [
+    {
+      "figure_file": "DRAGIN_Dynamic_Retrieval_Augmented_Generation_based_on_the_Information_Needs_of_Large_Language_Models__p5__score0.60.png",
+      "caption": "Table 1: A comparative overview of our selected Retrieval-Augmented Generation baselines.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "content_coverage",
+              "score": 2.0,
+              "reason": "The table covers a limited slice of the summary: it contrasts baselines (SR-RAG, FL-RAG, FS-RAG, FLARE) and DRAGIN along the two decision axes explicitly mentioned in the summary (when to retrieve, what to retrieve). However, it omits major method content described in the summary, including RIND’s token-level trigger score components (entropy/uncertainty, max future attention/influence, stopword semantic filter), the formula S_RIND(t_i)=H_i·a_max(i)·s_i, the threshold trigger condition, and the retrieval/augmentation loop. Thus it does not include most major components/formulas of the proposed method."
+            },
+            {
+              "question": "standalone_intelligibility",
+              "score": 3.0,
+              "reason": "As a standalone figure, it is intelligible for understanding the high-level comparative principle: different methods decide retrieval timing (before generation / per n tokens / per sentence / low token probability / token importance & uncertainty) and query formulation (initial input / last tokens/sentence / attention over entire context). But it does not explain how DRAGIN computes “token importance and uncertainty” or how attention is used for QFS, so the operating mechanism remains only a coarse overview."
+            },
+            {
+              "question": "completeness",
+              "score": 1.0,
+              "reason": "The figure is only a baseline overview table and does not summarize the paper from beginning to end per the summary. It lacks the core DRAGIN pipeline depiction (generation → RIND detection → retrieval → augmented continuation), the detailed scoring/threshold decision logic, and any other key described relations; therefore it is far from a complete summary of the work."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The table presents a baseline overview comparing methods along the two axes \"Timing for Retrieval\" and \"Query Formulation,\" which the summary explicitly anticipates (at-a-glance comparability of DRAGIN vs prior dynamic RAG baselines on when/what to retrieve). The listed baselines (SR-RAG, FL-RAG, FS-RAG, FLARE) are not explicitly named in the provided summary, but they function as auxiliary comparative entries and do not alter the core claimed method structure of DRAGIN; thus only a minor penalty."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 5.0,
+              "reason": "The DRAGIN row aligns with the summary’s stated decision axes: retrieval timing depends on generated tokens’ uncertainty/importance (consistent with RIND using uncertainty and attention-based influence plus semantic filtering), and query formulation uses the LLM’s attention over the entire context (consistent with QFS relying on context-wide self-attention). The table’s framing correctly matches the summary’s conceptual comparison of \"when\" and \"what\" to retrieve."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Key labeling for the paper’s method is accurate: \"DRAGIN\" is named correctly, and its query formulation is described as using \"LLM’s attention over the entire context,\" matching QFS as summarized. The comparative column headers (timing/query formulation) match the summary’s stated comparison dimensions."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The table is highly schematized around the core conceptual comparison emphasized in the summary: the two decision axes in dynamic RAG—\"when to retrieve\" (timing) and \"what to retrieve\" (query formulation). Each baseline and DRAGIN are summarized in short, high-signal phrases without drifting into implementation details that the summary says are not the figure’s goal (e.g., retriever architecture, training)."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "Given the caption ('comparative overview of selected RAG baselines') and the summary’s explicit expectation of a baseline overview table along the two axes, this figure cleanly supports the paper’s narrative. It makes the intended contrast immediately readable: DRAGIN’s retrieval timing depends on token-level uncertainty/importance signals, and its query formulation uses attention over the entire context, aligning with the stated contributions (RIND/QFS motivation) at a conceptual level."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 5.0,
+              "reason": "The visual contains no decorative elements, extraneous columns, or unrelated metrics. Content is tightly limited to method names and the two core dimensions. The typography and layout are plain and functional, and every entry contributes directly to understanding the claimed positioning of DRAGIN relative to baselines."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.714,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The figure is a table with a clear left-to-right reading order across columns (baseline name → timing for retrieval → query formulation), matching the summary’s intent to compare baselines along two decision axes."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "As a tabular layout, there are no connection lines or arrows; thus there is no line crossing and no visual clutter from links."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Each method’s two properties (when to retrieve, what/query formulation) are placed in the same row, keeping functionally related information grouped tightly and facilitating row-wise comparison as suggested in the summary."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 5.0,
+              "reason": "Rows and columns are neatly aligned with consistent cell boundaries and text alignment, creating a strong grid structure typical of well-formatted comparison tables."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Column headers (“Timing for Retrieval”, “Query Formulation”) clearly distinguish structure, and the DRAGIN row label is visually emphasized (bold). However, there is limited additional hierarchy (e.g., no shading or typographic emphasis for key cells) beyond boldface."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "Cell spacing appears adequate for readability, though some entries (notably the DRAGIN timing/query descriptions) are multi-line and relatively dense, making vertical whitespace tighter than ideal."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "All baselines are represented uniformly as rows with the same column schema and consistent typography; similar roles (methods) and attributes (timing, query) are encoded consistently without shape/color inconsistencies."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 1.0,
+              "reason": "The figure is a plain comparative table listing baseline names and textual descriptions of two decision axes (timing for retrieval, query formulation). It does not replace abstract concepts (e.g., uncertainty, attention, information-need triggering) with concrete icons, symbols, or visual metaphors; it relies almost entirely on words/abbreviations."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "A baseline overview table is a common, conventional template in ML papers. While the two-axis framing ('when to retrieve' vs 'what/query formulation') is aligned with the summary’s intended comparability, the visual style itself is standard and not meaningfully differentiated from typical tables."
+            },
+            {
+              "question": "adaptability",
+              "score": 3.0,
+              "reason": "The layout is adapted to the paper’s specific comparative point by organizing methods along the two key decision axes emphasized in the summary (timing and query formulation), enabling at-a-glance comparison. However, it still follows uniform tabular design principles rather than breaking into a more tailored visual structure."
+            }
+          ]
+        },
+        "weighted_total": 3.676
+      }
+    },
+    {
+      "figure_file": "DRAGIN_Dynamic_Retrieval_Augmented_Generation_based_on_the_Information_Needs_of_Large_Language_Models__p2__score1.00.png",
+      "caption": "Figure 1: An illustration of our DRAGIN framework.",
+      "scores": {
+        "Informativeness": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "1_1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure covers the main pipeline modules described in the summary: token-by-token LLM generation, RIND (real-time information need detection), a threshold-based trigger decision (\"All S_RIND < θ\" vs \"Any S_RIND > θ\"), QFS (query formulation based on self-attention over the context), a retrieval module, and continued generation conditioned on retrieved knowledge. It also visualizes the three RIND factors (uncertainty H_i, attention-based influence a_max(i), and semantic filter s_i) and their multiplicative combination into S_RIND. However, it does not explicitly write the full formula S_RIND(t_i)=H_i·a_max(i)·s_i nor explicitly define a_max(i)=max_{j>i}A_{i,j}; instead it implies them via the table-like computation and labels."
+            },
+            {
+              "question": "1_2_standalone_intelligibility",
+              "score": 5.0,
+              "reason": "The operating principle is understandable from the diagram alone: the LLM generates; RIND scores tokens to decide whether retrieval is needed; if any score exceeds a threshold, QFS builds a query from context/self-attention, retrieval is performed, and the LLM continues generation with added external knowledge. The branching logic and data flow are clearly indicated with arrows and threshold conditions, and the example (Einstein/University of Zurich) concretely demonstrates when retrieval is triggered and what query is formed."
+            },
+            {
+              "question": "1_3_completeness",
+              "score": 3.0,
+              "reason": "As an illustrative framework figure, it summarizes the core inference-time loop and the two key innovations (RIND for when to retrieve; QFS for what to retrieve), matching the summary’s intended purpose. But it is not a full paper-wide summary: it omits broader context such as comparisons to baselines (the summary suggests a baseline overview table may exist elsewhere), the explicit claim of being lightweight/training-free (not shown visually), and other end-to-end paper elements beyond the method schematic."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure includes the core DRAGIN components and signals described in the summary: an LLM generation loop, RIND with token-level signals (uncertainty/entropy H_i, attention-based influence a_max(i), semantic filter s_i), a combined trigger score S_RIND with a threshold decision, QFS for query formulation using self-attention over the context, a retrieval module, and continued generation with retrieved knowledge. It also provides an illustrative example query and retrieved content; these examples are not specified in the summary but are conventional and do not introduce new method components. However, the figure shows explicit numeric per-token values for H_i and a_max(i) without the summary specifying such concrete computations/visualization, which is minor but still not a new component."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 4.0,
+              "reason": "Relationships align with the summary: generation proceeds token-by-token; RIND computes token-wise scores from H_i, a_max(i), and s_i; retrieval triggers when any token exceeds a threshold (shown via 'All S_RIND < θ' vs 'Any S_RIND > θ'); upon triggering, QFS forms a query from the whole context via self-attention, which is sent to the retrieval module; retrieved external knowledge is then used for continued generation. One slight ambiguity is that the trigger condition is depicted over a short token window, while the summary states 'among generated tokens so far'; this is likely just an illustration, not a structural mismatch."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Major modules are labeled consistently with the summary: 'RIND: Real-time Information Need Detection', 'QFS: Query Formulation based on Self-attention', 'Retrieval Module', and LLM generation/continued generation. The signal labels H_i, a_max(i), s_i, and the combined S_RIND correspond to the described uncertainty, future-attention influence, semantic stopword filter, and trigger score."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The overall control flow is primarily top-to-bottom: input prompt and initial generation at the top, then RIND scoring, then the branch decision, then QFS, retrieval, and continued generation at the bottom. The branch labels (“All S_RIND < θ” vs “Any S_RIND > θ”) introduce a slight left/right reading component, but the main pipeline direction is clear and consistent with the dynamic RAG loop in the summary."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Connections largely avoid crossings: the vertical arrows within RIND and the sequential arrows from QFS → Retrieval → Continued Generation are clean. The only potential visual clutter is around the branching/merging lines near the threshold decision (left path for ‘All < θ’ and right path for ‘Any > θ’), but these lines do not meaningfully tangle or obscure the method structure described in the summary."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related modules are grouped: RIND is a single boxed panel containing the three signals (H_i, a_max(i), s_i) and their combination into S_RIND, matching the summary’s definition. QFS is placed immediately after the trigger decision, and Retrieval sits directly under QFS, followed by the augmented continuation, reflecting the intended generation→detect→retrieve→augment→continue loop."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major blocks (RIND panel, QFS panel, Retrieval module, continued generation panel) are vertically aligned on an implicit central axis and spaced regularly. Inside the RIND panel, the per-token columns and score boxes are fairly grid-like, though the branching lines and side labels make the layout slightly less strictly grid-aligned."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Key components stand out via distinct boxed regions and headings (RIND and QFS panels are clearly labeled), and the pipeline stages are separated by arrows. However, the figure gives strong visual emphasis to the RIND internals (numbers and per-token scoring), which may slightly outweigh the high-level DRAGIN loop; still, the main modules and their order remain salient."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between the main panels and arrows, keeping stages distinguishable. Some regions are dense—particularly the RIND scoring table and the QFS highlighted spans—but the density supports the summary’s goal of showing token-level triggering and attention-based query formation without severe overlap."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar types of elements are represented consistently: modules are boxed with titled headers, and process steps are connected with uniform arrows. Color use is mostly systematic (e.g., distinct panel colors for RIND/QFS/continuation), though semantic emphasis coloring (red highlights for salient tokens) is mixed with structural coloring, which can slightly blur the role of color as purely structural encoding."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 3.0,
+              "reason": "The figure mostly uses standard block-diagram components (LLM, RIND, QFS, Retrieval Module) and mathematical abbreviations (H_i, a_max(i), s_i, S_RIND) that directly match the summary’s formalism rather than replacing abstractions with rich concrete metaphors. There are light iconographic cues (e.g., LLM swirl, magnifier for retrieval) and color emphasis on salient tokens, but these serve as conventional UI-like symbols rather than a metaphorical visualization of ‘information need’."
+            },
+            {
+              "question": "novelty",
+              "score": 3.0,
+              "reason": "Compared to common RAG pipeline schematics, the figure is somewhat distinctive in showing token-level triggering evidence (a mini table of H_i, a_max(i), s_i multiplied into S_RIND with a threshold decision) and then transitioning into query formulation and retrieval. However, the overall style remains a familiar academic template (stacked rounded boxes, arrows, highlighted text), without a notably unique artistic or diagrammatic language beyond the token-level scoring depiction that is already implied by the method."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to DRAGIN’s specific ‘when to retrieve’ and ‘what to retrieve’ claims in the summary: it explicitly visualizes (1) continued generation, (2) RIND’s token-wise score factors and the ‘any S_RIND > θ’ trigger condition, and (3) QFS using broader context to form a query, before retrieval and augmented continuation. This departs from a generic one-shot RAG diagram by embedding the real-time control loop and token-level decision evidence in the flow."
+            }
+          ]
+        },
+        "weighted_total": 3.162
+      }
+    }
+  ]
+}

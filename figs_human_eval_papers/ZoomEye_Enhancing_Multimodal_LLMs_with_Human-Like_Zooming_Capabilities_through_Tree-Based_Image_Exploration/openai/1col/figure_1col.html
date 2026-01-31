@@ -1,0 +1,307 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Overview of Zoom Eye vision-level reasoning</title>
+<style>
+  body { margin: 0; background: #ffffff; }
+  #figure-root { width: 1200px; height: 1500px; margin: 0 auto; position: relative; font-family: Arial, Helvetica, sans-serif; }
+  .caption-wrap {
+    position: absolute; left: 0; bottom: 0;
+    width: 1200px; height: 140px;
+    border-top: 1px solid #d0d0d0;
+    box-sizing: border-box;
+    padding: 14px 28px 12px 28px;
+    background: #fff;
+  }
+  .caption-title { font-size: 13px; color: #111; line-height: 1.35; }
+  .caption-text { font-size: 13px; color: #111; line-height: 1.35; }
+  svg { display: block; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-label="Overview diagram of conventional MLLM reasoning versus Zoom Eye tree-search zooming.">
+  <defs>
+    <!-- Arrowheads -->
+    <marker id="arrow" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,5 L0,10 Z" fill="#333"/>
+    </marker>
+    <marker id="arrowLight" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L12,5 L0,10 Z" fill="#666"/>
+    </marker>
+
+    <!-- Subtle drop shadow (deterministic, minimal) -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feOffset dx="0" dy="1" result="off"/>
+      <feGaussianBlur in="off" stdDeviation="1.2" result="blur"/>
+      <feColorMatrix in="blur" type="matrix"
+        values="0 0 0 0 0
+                0 0 0 0 0
+                0 0 0 0 0
+                0 0 0 0.18 0" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Styles -->
+    <style>
+      .panel { fill: #ffffff; stroke: #cfcfcf; stroke-width: 1.2; }
+      .panelHeader { fill: #f7f7f7; stroke: #cfcfcf; stroke-width: 1.2; }
+      .hTitle { font-size: 20px; font-weight: 700; fill: #111; }
+      .subTitle { font-size: 15px; font-weight: 700; fill: #111; }
+      .note { font-size: 13px; fill: #333; }
+      .small { font-size: 12px; fill: #333; }
+      .tiny { font-size: 11px; fill: #333; }
+      .label { font-size: 13px; fill: #222; }
+      .labelBold { font-size: 13px; font-weight: 700; fill: #222; }
+      .mono { font-family: Arial, Helvetica, sans-serif; }
+      .box { fill: #ffffff; stroke: #3a3a3a; stroke-width: 1.2; }
+      .boxSoft { fill: #fbfbfb; stroke: #b7b7b7; stroke-width: 1.1; }
+      .boxBlue { fill: #f3f7ff; stroke: #3f6fb6; stroke-width: 1.3; }
+      .boxGreen { fill: #f3fff6; stroke: #2f7a46; stroke-width: 1.3; }
+      .boxOrange { fill: #fff7f0; stroke: #a85a14; stroke-width: 1.3; }
+      .arrow { stroke: #333; stroke-width: 1.3; fill: none; marker-end: url(#arrow); }
+      .arrowLight { stroke: #666; stroke-width: 1.2; fill: none; marker-end: url(#arrowLight); }
+      .dashed { stroke-dasharray: 6 4; }
+      .divider { stroke: #d6d6d6; stroke-width: 1.1; }
+      .callout { fill: #ffffff; stroke: #888; stroke-width: 1.1; }
+      .redRect { fill: none; stroke: #cc2b2b; stroke-width: 3; }
+      .gridLine { stroke: #e4e4e4; stroke-width: 1; }
+      .imgFrame { fill: #ffffff; stroke: #9f9f9f; stroke-width: 1.2; }
+      .imgHeader { fill: #f5f5f5; stroke: #9f9f9f; stroke-width: 1.2; }
+      .imgTag { font-size: 12px; font-weight: 700; fill: #333; }
+      .iconObj { fill: #7d8b99; stroke: #5f6a75; stroke-width: 1; }
+      .iconObj2 { fill: #b3c4d6; stroke: #6a7c8e; stroke-width: 1; }
+      .iconFine { fill: #cc2b2b; stroke: #8f1d1d; stroke-width: 0.9; }
+      .confBarBg { fill: #efefef; stroke: #c9c9c9; stroke-width: 1; }
+      .confBarFill { fill: #2f7a46; }
+      .confBarFillLow { fill: #cc2b2b; }
+      .confBarFillMid { fill: #a85a14; }
+      .chip { fill: #ffffff; stroke: #bdbdbd; stroke-width: 1; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1200" height="1500" fill="#ffffff"/>
+
+  <!-- Top-level title -->
+  <text x="600" y="46" text-anchor="middle" class="hTitle">Zoom Eye: Vision-level Reasoning via Confidence-Guided Zooming</text>
+  <line x1="40" y1="66" x2="1160" y2="66" class="divider"/>
+
+  <!-- PANEL LAYOUT: two stacked panels (Top: conventional, Bottom: Zoom Eye tree search) -->
+  <!-- Top Panel -->
+  <rect x="40" y="90" width="1120" height="600" rx="10" ry="10" class="panel" filter="url(#shadow)"/>
+  <rect x="40" y="90" width="1120" height="54" rx="10" ry="10" class="panelHeader"/>
+  <text x="60" y="124" class="subTitle">Top: Conventional MLLM reasoning (static resized image)</text>
+
+  <!-- Top panel content: left image, center pipeline, right outcome -->
+  <!-- Left: "High-resolution image" -->
+  <rect x="70" y="170" width="360" height="270" rx="8" ry="8" class="imgFrame"/>
+  <rect x="70" y="170" width="360" height="34" rx="8" ry="8" class="imgHeader"/>
+  <text x="90" y="192" class="imgTag">Input image (high-resolution)</text>
+
+  <!-- Synthetic "scene" inside image -->
+  <rect x="92" y="220" width="316" height="200" fill="#fbfbfb" stroke="#d2d2d2" stroke-width="1"/>
+  <!-- dominant object -->
+  <ellipse cx="180" cy="300" rx="48" ry="36" class="iconObj"/>
+  <rect x="158" y="330" width="44" height="58" rx="10" class="iconObj2"/>
+  <circle cx="168" cy="292" r="5" fill="#4b5560"/>
+  <circle cx="192" cy="292" r="5" fill="#4b5560"/>
+  <path d="M168,312 Q180,320 192,312" stroke="#4b5560" stroke-width="2" fill="none"/>
+  <text x="180" y="410" text-anchor="middle" class="tiny">Dominant object</text>
+
+  <!-- fine detail: small sign with tiny text -->
+  <rect x="320" y="250" width="64" height="40" fill="#ffffff" stroke="#888" stroke-width="1"/>
+  <rect x="326" y="256" width="52" height="8" fill="#f0f0f0" stroke="#d0d0d0" stroke-width="0.6"/>
+  <line x1="328" y1="270" x2="376" y2="270" stroke="#9a9a9a" stroke-width="1"/>
+  <line x1="328" y1="277" x2="372" y2="277" stroke="#9a9a9a" stroke-width="1"/>
+  <line x1="328" y1="284" x2="366" y2="284" stroke="#9a9a9a" stroke-width="1"/>
+  <text x="352" y="308" text-anchor="middle" class="tiny">Fine detail</text>
+  <text x="352" y="322" text-anchor="middle" class="tiny">(small)</text>
+
+  <!-- Middle: resize + encoder + LLM -->
+  <rect x="470" y="190" width="250" height="64" rx="10" ry="10" class="boxSoft"/>
+  <text x="595" y="218" text-anchor="middle" class="labelBold">Resize to fixed resolution</text>
+  <text x="595" y="241" text-anchor="middle" class="small">Static visual input</text>
+
+  <path d="M430,305 L470,222" class="arrow"/>
+  <text x="446" y="270" class="small">downsample</text>
+
+  <rect x="470" y="290" width="250" height="78" rx="10" ry="10" class="boxBlue"/>
+  <text x="595" y="322" text-anchor="middle" class="labelBold">Vision encoder</text>
+  <text x="595" y="345" text-anchor="middle" class="small">visual tokens</text>
+
+  <line x1="595" y1="254" x2="595" y2="290" class="arrow"/>
+
+  <rect x="470" y="410" width="250" height="100" rx="10" ry="10" class="box"/>
+  <text x="595" y="444" text-anchor="middle" class="labelBold">LLM reasoning</text>
+  <text x="595" y="468" text-anchor="middle" class="small">text-level inference</text>
+  <text x="595" y="490" text-anchor="middle" class="small">image perception unchanged</text>
+
+  <line x1="595" y1="368" x2="595" y2="410" class="arrow"/>
+
+  <!-- Right: Outcome -->
+  <rect x="760" y="170" width="370" height="340" rx="10" ry="10" class="boxSoft"/>
+  <text x="945" y="200" text-anchor="middle" class="labelBold">Typical outcome</text>
+
+  <rect x="790" y="224" width="310" height="116" rx="10" ry="10" class="chip"/>
+  <text x="810" y="250" class="labelBold">Recognizes dominant objects</text>
+  <text x="810" y="276" class="label">• correct coarse description</text>
+  <text x="810" y="300" class="label">• good global context</text>
+
+  <rect x="790" y="356" width="310" height="136" rx="10" ry="10" class="chip"/>
+  <text x="810" y="382" class="labelBold">Misses fine details</text>
+  <text x="810" y="408" class="label">• small cues blurred by resizing</text>
+  <text x="810" y="432" class="label">• low confidence in detailed answers</text>
+  <text x="810" y="456" class="label">• cannot actively re-focus</text>
+
+  <path d="M720,460 L760,340" class="arrowLight"/>
+  <text x="730" y="398" class="small">prediction</text>
+
+  <!-- Small side callout about "static" -->
+  <rect x="470" y="540" width="660" height="120" rx="10" ry="10" class="callout"/>
+  <text x="490" y="568" class="labelBold">Limitation of static perception</text>
+  <text x="490" y="594" class="label">The model reasons only over a single resized view, so missing details cannot be recovered during inference.</text>
+  <text x="490" y="620" class="label">Result: dominant objects are captured, but small or dense cues are often overlooked.</text>
+
+  <!-- Bottom Panel -->
+  <rect x="40" y="720" width="1120" height="620" rx="10" ry="10" class="panel" filter="url(#shadow)"/>
+  <rect x="40" y="720" width="1120" height="54" rx="10" ry="10" class="panelHeader"/>
+  <text x="60" y="754" class="subTitle">Bottom: Zoom Eye tree-search zooming (confidence-guided node selection + stopping criterion)</text>
+
+  <!-- Bottom panel left: tree representation + zoom patches -->
+  <rect x="70" y="800" width="520" height="510" rx="10" ry="10" class="boxSoft"/>
+  <text x="330" y="830" text-anchor="middle" class="labelBold">Image as a hierarchical tree of patches</text>
+
+  <!-- Root image (global view) -->
+  <rect x="105" y="855" width="250" height="180" rx="8" ry="8" class="imgFrame"/>
+  <rect x="105" y="855" width="250" height="30" rx="8" ry="8" class="imgHeader"/>
+  <text x="118" y="875" class="imgTag">Root node (global)</text>
+  <rect x="120" y="895" width="220" height="130" fill="#fbfbfb" stroke="#d2d2d2" stroke-width="1"/>
+  <!-- same dominant object but smaller -->
+  <ellipse cx="185" cy="953" rx="26" ry="20" class="iconObj"/>
+  <rect x="173" y="970" width="24" height="34" rx="8" class="iconObj2"/>
+  <!-- fine detail location on global -->
+  <rect x="300" y="915" width="34" height="24" fill="#ffffff" stroke="#888" stroke-width="1"/>
+  <line x1="304" y1="928" x2="330" y2="928" stroke="#9a9a9a" stroke-width="1"/>
+  <line x1="304" y1="934" x2="328" y2="934" stroke="#9a9a9a" stroke-width="1"/>
+  <!-- red focus rectangle indicates candidate zoom region -->
+  <rect x="282" y="905" width="62" height="44" class="redRect"/>
+
+  <!-- Four child patches (depth 1) -->
+  <text x="420" y="880" class="labelBold">Depth 1: split into 4 sub-patches</text>
+
+  <rect x="380" y="895" width="88" height="66" rx="6" ry="6" class="imgFrame"/>
+  <rect x="478" y="895" width="88" height="66" rx="6" ry="6" class="imgFrame"/>
+  <rect x="380" y="970" width="88" height="66" rx="6" ry="6" class="imgFrame"/>
+  <rect x="478" y="970" width="88" height="66" rx="6" ry="6" class="imgFrame"/>
+
+  <!-- miniature contents -->
+  <rect x="388" y="903" width="72" height="50" fill="#fbfbfb" stroke="#e0e0e0" stroke-width="1"/>
+  <rect x="486" y="903" width="72" height="50" fill="#fbfbfb" stroke="#e0e0e0" stroke-width="1"/>
+  <rect x="388" y="978" width="72" height="50" fill="#fbfbfb" stroke="#e0e0e0" stroke-width="1"/>
+  <rect x="486" y="978" width="72" height="50" fill="#fbfbfb" stroke="#e0e0e0" stroke-width="1"/>
+
+  <!-- indicate the "fine detail" is in top-right child -->
+  <rect x="514" y="914" width="28" height="18" fill="#ffffff" stroke="#888" stroke-width="1"/>
+  <line x1="517" y1="924" x2="540" y2="924" stroke="#9a9a9a" stroke-width="1"/>
+  <line x1="517" y1="929" x2="536" y2="929" stroke="#9a9a9a" stroke-width="1"/>
+  <rect x="486" y="903" width="72" height="50" fill="none" stroke="#cc2b2b" stroke-width="2.2"/>
+
+  <!-- connect root to children -->
+  <path d="M355,945 L380,928" class="arrowLight"/>
+  <path d="M355,945 L478,928" class="arrowLight"/>
+  <path d="M355,945 L380,1003" class="arrowLight"/>
+  <path d="M355,945 L478,1003" class="arrowLight"/>
+
+  <!-- Depth 2 zoomed-in patch (selected) -->
+  <text x="330" y="1085" text-anchor="middle" class="labelBold">Selected node: zoom in for fine detail</text>
+  <rect x="140" y="1105" width="430" height="180" rx="10" ry="10" class="imgFrame"/>
+  <rect x="140" y="1105" width="430" height="32" rx="10" ry="10" class="imgHeader"/>
+  <text x="155" y="1126" class="imgTag">Deeper node (higher zoom)</text>
+  <rect x="160" y="1147" width="390" height="125" fill="#fbfbfb" stroke="#d2d2d2" stroke-width="1"/>
+  <!-- show clear fine detail -->
+  <rect x="360" y="1172" width="140" height="70" fill="#ffffff" stroke="#666" stroke-width="1.2"/>
+  <rect x="370" y="1182" width="120" height="12" fill="#f0f0f0" stroke="#d0d0d0" stroke-width="0.8"/>
+  <text x="430" y="1214" text-anchor="middle" class="labelBold" fill="#cc2b2b">Readable cue</text>
+  <line x1="374" y1="1226" x2="486" y2="1226" stroke="#7b7b7b" stroke-width="1.4"/>
+  <line x1="374" y1="1238" x2="474" y2="1238" stroke="#7b7b7b" stroke-width="1.4"/>
+  <line x1="374" y1="1250" x2="462" y2="1250" stroke="#7b7b7b" stroke-width="1.4"/>
+
+  <!-- arrow from selected child to deeper node -->
+  <path d="M522,961 L515,1105" class="arrow"/>
+
+  <!-- Bottom panel right: Search algorithm flow with confidence-guided selection and stop -->
+  <rect x="620" y="800" width="510" height="510" rx="10" ry="10" class="boxSoft"/>
+  <text x="875" y="830" text-anchor="middle" class="labelBold">Confidence-guided tree search loop</text>
+
+  <!-- Step boxes -->
+  <rect x="650" y="860" width="450" height="74" rx="10" ry="10" class="boxGreen"/>
+  <text x="675" y="888" class="labelBold">1) Start at root (global view)</text>
+  <text x="675" y="912" class="label">Generate visual cues relevant to the question</text>
+
+  <rect x="650" y="952" width="450" height="98" rx="10" ry="10" class="boxBlue"/>
+  <text x="675" y="980" class="labelBold">2) Score candidate nodes</text>
+  <text x="675" y="1004" class="label">Existing confidence: “Is the cue present here?”</text>
+  <text x="675" y="1028" class="label">Latent confidence: “Could it appear if we zoom further?”</text>
+
+  <!-- Confidence bars -->
+  <text x="675" y="1070" class="small">Example node priorities (higher is visited earlier):</text>
+  <rect x="675" y="1082" width="390" height="18" rx="4" ry="4" class="confBarBg"/>
+  <rect x="675" y="1082" width="110" height="18" rx="4" ry="4" class="confBarFillLow"/>
+  <text x="1075" y="1096" text-anchor="end" class="tiny">low</text>
+  <rect x="675" y="1108" width="390" height="18" rx="4" ry="4" class="confBarBg"/>
+  <rect x="675" y="1108" width="220" height="18" rx="4" ry="4" class="confBarFillMid"/>
+  <rect x="675" y="1134" width="390" height="18" rx="4" ry="4" class="confBarBg"/>
+  <rect x="675" y="1134" width="330" height="18" rx="4" ry="4" class="confBarFill"/>
+  <text x="1075" y="1122" text-anchor="end" class="tiny">mid</text>
+  <text x="1075" y="1148" text-anchor="end" class="tiny">high</text>
+
+  <rect x="650" y="1165" width="450" height="78" rx="10" ry="10" class="boxOrange"/>
+  <text x="675" y="1193" class="labelBold">3) Select next node to visit</text>
+  <text x="675" y="1217" class="label">Choose the highest-priority patch; zoom in/out via backtracking</text>
+
+  <rect x="650" y="1255" width="450" height="86" rx="10" ry="10" class="box"/>
+  <text x="675" y="1283" class="labelBold">4) Stop when answering confidence is sufficient</text>
+  <text x="675" y="1307" class="label">Ask: “Could you answer the question now?”</text>
+
+  <!-- Stop condition meter -->
+  <text x="675" y="1330" class="small">Answering confidence</text>
+  <rect x="675" y="1340" width="310" height="18" rx="4" ry="4" class="confBarBg"/>
+  <rect x="675" y="1340" width="260" height="18" rx="4" ry="4" class="confBarFill"/>
+  <line x1="926" y1="1338" x2="926" y2="1360" stroke="#333" stroke-width="1.2"/>
+  <text x="934" y="1354" class="tiny">threshold τ</text>
+
+  <!-- Loop arrows -->
+  <path d="M875,934 L875,952" class="arrow"/>
+  <path d="M875,1050 L875,1165" class="arrow"/>
+  <path d="M875,1243 L875,1255" class="arrow"/>
+  <!-- back to scoring if not enough -->
+  <path d="M1100,1298 C1140,1298 1140,1000 1100,1000" class="arrowLight dashed"/>
+  <text x="1030" y="1010" class="tiny">if confidence &lt; τ, continue search</text>
+
+  <!-- Final response arrow to output -->
+  <rect x="650" y="1370" width="450" height="70" rx="10" ry="10" class="boxGreen"/>
+  <text x="675" y="1398" class="labelBold">5) Final response</text>
+  <text x="675" y="1422" class="label">Answer using visual information gathered from visited patches</text>
+
+  <!-- Legend-like mapping between panels -->
+  <line x1="40" y1="700" x2="1160" y2="700" class="divider"/>
+  <text x="60" y="684" class="note">Key contrast: static image perception (top) vs. active zoom exploration with confidence-guided selection and stopping (bottom).</text>
+
+  <!-- Caption separator line within SVG above caption area -->
+  <line x1="0" y1="1350" x2="1200" y2="1350" class="divider"/>
+</svg>
+
+<div class="caption-wrap" aria-label="Figure caption">
+  <div class="caption-text">
+    Overview of Zoom Eye vision-level reasoning. Top: conventional MLLM reasoning on a static resized image captures dominant objects but misses fine details; bottom: tree-search zooming explores image patches via confidence-guided node selection and stops when answering confidence is sufficient.
+  </div>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,134 @@
+{
+  "paper_name": "Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals",
+  "evaluated_at": "2026-01-12T00:58:41.225725",
+  "figure_summary": "## 1. Core Contributions\n- Introduces a **“competition of mechanisms”** framing: rather than isolating one mechanism (e.g., factual recall), the paper traces **how multiple mechanisms jointly contribute and one becomes dominant** in the final next-token prediction.\n- Studies a concrete two-mechanism competition: **(i) factual knowledge recall** (primarily associated with **MLP layers**) vs. **(ii) in-context counterfactual adaptation** (linked to **copy/induction behavior in attention heads**).\n- Uses two complementary interpretability tools—**logit inspection (logit lens)** and **localized attention modification**—to **locate where in the network** (layers/positions/heads) each mechanism appears and where their influence shifts.\n- Claims controllability: identifies **high-leverage attention entries** whose up-weighting can **substantially strengthen the factual mechanism**.\n\n## 2. Method Components & Relations relevant to figures\n- **Task/prompt structure (source of competing signals):**\n  - Build prompts of the form: **“Redefine: c. f₁:k−1 ___”**, where:\n    - **c** provides a *counterfactual* attribute (should drive the completion),\n    - **f** repeats the factual statement prefix (tempts factual recall),\n    - Competition is measured by the relative preference for **t_fact** vs **t_cofa** as the next token.\n- **Model internals inspected (residual stream decomposition):**\n  - Autoregressive LLM residual stream updates per layer:\n    - \\(x^{l} = x^{l-1} + a^{l} + m^{l}\\)\n    - attention block \\(a^{l}(\\mathrm{norm}(\\cdot))\\), then MLP block \\(m^{l}(\\mathrm{norm}(\\cdot))\\).\n  - Figures are expected to attribute mechanism strength to **specific components** (attention vs MLP), **layers**, and **token positions** (e.g., subject/attribute/last position).\n- **Readout used for mechanism tracing (logit inspection / logit lens):**\n  - Project intermediate states via **unembedding \\(W_U\\)** to obtain logits for the two competitor tokens **t_fact** and **t_cofa** at different layers/positions/components.\n  - Figures likely plot “rise/fall” dynamics of these two logits across depth or across component outputs.\n- **Causal intervention used to test/control mechanism competition (attention modification):**\n  - Modify a **specific attention weight entry** (post-softmax) in head \\(h\\), layer \\(l\\):\n    - \\(A^{l}_{h}[i,j] \\leftarrow \\alpha \\cdot A^{l}_{h}[i,j]\\) for \\(j<i\\).\n  - Figures are expected to show that **changing a localized attention entry** shifts the relative dominance of factual vs counterfactual token logits, indicating a **causal control point** for a mechanism.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **make the competition visible**: show that both factual recall and counterfactual-following signals are present and **compete across layers/components**, rather than one mechanism acting in isolation.\n- To **localize where mechanisms “live” and where they act**: depict which **model parts** (MLPs vs attention), **depth ranges**, and **token positions** carry factual vs counterfactual information and how that information is routed to the prediction position.\n- To support a **mechanistic narrative of information flow**: illustrate how internal representations shift from encoding facts/counterfacts at specific positions to being **written to the last token position** that drives next-token prediction.\n- To demonstrate **intervention sensitivity and controllability**: provide evidence that **small, targeted attention modifications** can systematically change which mechanism dominates, implying certain attention entries/heads function as levers in the competition.\n\n## 4. What Figures are NOT intended to show\n- Not intended as a benchmark-style claim of **overall task performance** or general accuracy across many NLP tasks; the focus is mechanistic tracing, not SOTA evaluation.\n- Not intended to prove a unique, universally correct causal graph for all LLMs; the figures support **specific traced pathways** under this prompt setup and these two mechanisms.\n- Not intended to validate logit lens as perfectly faithful in early layers (the text notes known limitations); figures use it as a practical interpretability probe, not a guarantee of ground-truth feature importance.\n- Not intended to discover *all* mechanisms in LLMs; the figures are scoped to **two well-studied mechanisms** and their interaction under **fact vs counterfactual** prompting.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+      "caption": "Figure 1: Top: An example showing that LLMs can fail to recognize the correct mechanism when multiple possible mechanisms exist. Bottom: Our mechanistic inspection of where and how the competition of mechanisms takes place within the LLMs.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_Content_Coverage",
+              "score": 2.0,
+              "reason": "The figure conveys the two competing mechanisms (factual knowledge recall vs counterfactual/in-context adaptation) and qualitatively localizes them to MLPs vs attention/induction, which matches the summary’s core framing. However, it omits several major method/formal components emphasized in the summary: the explicit prompt template “Redefine: c. f₁:k−1 ___”, the residual stream decomposition x^l = x^{l−1} + a^l + m^l with norm(), the logit-lens readout via unembedding W_U comparing logits for t_fact vs t_cofa across layers/positions/components, and the precise attention-weight intervention A^l_h[i,j] <- α·A^l_h[i,j]. Thus, key formulas and quantitative tracing elements are not included."
+            },
+            {
+              "question": "1.2_Standalone_Intelligibility",
+              "score": 4.0,
+              "reason": "A reader can understand the high-level operating principle from the visual alone: an example prompt sets up a conflict between a factual completion and a counterfactual completion; two mechanisms are named; and a schematic shows their influence flowing through different parts of the model to a final prediction, with an apparent layer locality (e.g., ‘Attention layer 5–9’ vs ‘10,11’). While it is clear conceptually, the figure does not by itself explain the concrete measurement procedure (logit inspection) or the causal control method (localized attention modification), so the mechanistic ‘how measured’ details are not standalone."
+            },
+            {
+              "question": "1.3_Completeness",
+              "score": 2.0,
+              "reason": "The figure summarizes the paper’s central narrative (competition of mechanisms and where they occur) but does not cover the end-to-end methodological story described in the summary: it lacks the explicit competition metric via t_fact vs t_cofa logits, the across-depth/position plotting implied by logit lens, and the controllability claim demonstrated via targeted attention-entry scaling. Therefore it is not a complete visual summary of the paper from setup through analysis to intervention-based evidence."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure mainly contains elements described in the summary: a two-mechanism setup (factual recall vs counterfactual adaptation), localization to MLP vs attention, layer ranges, and a schematic of information flow to the final prediction. It introduces specific layer indices (e.g., 'MLP layer 0', 'Attention layer 5–9', 'Attention layer 10,11') that are not explicitly stated in the summary; however, these are presented as illustrative localization details and do not add new method components beyond the summary’s scope."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 4.0,
+              "reason": "Relationships match the summary’s mechanistic narrative: factual knowledge is associated with MLPs ('Knowledge Recall'), counterfactual/induction is associated with attention ('Induction Circuit'), and both compete to influence the final next-token prediction. The diagram’s flow from earlier token positions through intermediate positions to the last-position prediction is consistent with the summary’s intended purpose. The only potential mismatch is the precise attribution of which attention layers correspond to counterfactual vs factual tokens, which is more specific than the summary."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Major labels align with the summary’s terminology and framing: 'Factual knowledge recall', 'Counterfactual statement comprehension', 'Induction Circuit', 'Competition of Mechanisms', and the mapping to MLP vs attention blocks. No major methods are mislabeled relative to the summary (e.g., it does not misname logit lens or attention modification, though they are not explicitly depicted here)."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "summarization",
+              "score": 4.0,
+              "reason": "The figure foregrounds the paper’s main contribution—\"competition of mechanisms\"—by contrasting factual recall vs in-context counterfactual adaptation and then schematizing an internal pathway view (MLP/knowledge recall vs attention/induction) leading to a next-token choice. It stays mostly at the right abstraction level (mechanisms, layers, token flow) rather than low-level implementation details, though some specifics (e.g., exact layer ranges like attention layer 5–9 and 10–11) slightly increase detail density without being strictly necessary for the top-level message."
+            },
+            {
+              "question": "contextual_match",
+              "score": 4.0,
+              "reason": "Given the caption and summary, the top panel provides an intuitive failure case (wrong mechanism dominates), and the bottom panel maps cleanly onto the described interpretability narrative: factual recall associated with MLPs, counterfactual adaptation associated with attention induction/copy behavior, and the idea of dominance shifting into the final prediction. However, the figure does not visibly depict the two specific tools highlighted in the summary (logit lens readouts of t_fact vs t_cofa across layers/positions, and localized attention entry reweighting A[i,j] ← α·A[i,j]); instead it presents a conceptual diagram, so it functions well as a high-level supplement but is less directly aligned with the stated methodological probes."
+            },
+            {
+              "question": "redundancy",
+              "score": 3.0,
+              "reason": "The diagram largely avoids decorative clutter and keeps elements relevant (prompt, two mechanisms, routing to prediction). Still, there are some potentially redundant or mildly distracting elements: repeated \"Knowledge Recall MLP layer 0\" boxes, multiple icons (user/robot/gears), and an \"Intermediate positions\" block that is not explicitly tied to a concrete measurement in the summary. These do not change the core claim, but they add visual load relative to the central mechanism-competition story."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.714,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure’s narrative largely flows top-to-bottom (example at top, mechanistic inspection at bottom) and within the bottom panel flows left-to-right toward “Final Prediction.” Some arrows (e.g., vertical drops into “Intermediate positions” and diagonals into the token modules) introduce mild ambiguity but do not break the overall progression."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 3.0,
+              "reason": "Most connections are routed cleanly, but there are a few visually tight intersections/near-crossings around the central “Intermediate positions” hub where blue and red arrows converge and then diverge to the bottom token modules, making it harder to follow which pathway corresponds to factual recall (MLP-associated) vs induction/counterfactual (attention-associated)."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related components are generally grouped: the two “Knowledge Recall” (MLP) blocks sit near the factual pathway, the “Induction Circuit” (attention) is placed between the counterfactual cue and the central hub, and the competing token readouts (counterfactual vs factual) are adjacent with an explicit VS marker. This supports the summary’s two-mechanism competition framing."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major blocks align reasonably on an implicit grid: left-side prompt tokens in a column, a central hub, and right-side outputs. Minor misalignments exist (different baselines for the duplicated prompt fragments and slightly uneven arrow anchoring), but overall layout is neat."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The hierarchy of concepts is visually clear: the top example is separated from the bottom mechanistic diagram; the bottom has a central ‘Intermediate positions’ hub and a prominent final ‘Competition of Mechanisms’ region leading to ‘Final Prediction.’ Competing mechanisms are distinguished by color (blue vs red) and labeled layers/roles, helping main components stand out."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "While whitespace is generally adequate, several regions feel dense—especially the bottom competition area where the two token modules, the VS badge, and multiple arrows are close together. This slightly reduces readability of the exact causal paths and leverage points implied by the summary."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Consistent visual encoding is used: blue for the factual/knowledge-recall pathway and red for the counterfactual/induction pathway; similar module types (knowledge recall boxes, token boxes) share shapes and styling. One minor inconsistency is that ‘Intermediate positions’ uses a different neutral style without a matching scheme for other residual-stream-like nodes, but it does not seriously harm interpretability."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces abstract ideas (mechanisms competing inside an LLM) with concrete icons and visual metaphors: user/chat silhouettes, a robot head for the model, and gear icons to denote mechanisms. It also uses color-coded pathway arrows (blue for factual recall, red for counterfactual/induction) and a prominent “VS” badge to concretize competition between t_fact and t_cofa, aligning with the paper’s competition framing."
+            },
+            {
+              "question": "novelty",
+              "score": 3.0,
+              "reason": "The split structure (top illustrative failure case; bottom mechanistic pathway diagram) is somewhat distinctive, and the explicit ‘competition’ visualization is more bespoke than a generic block diagram. However, the overall styling relies on common conventions—rounded boxes, arrows, and standard iconography—so it’s not highly unique relative to typical interpretability/mechanistic-circuit figures."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the specific narrative in the summary: it first motivates the problem with a counterfactual-vs-factual prompt example, then maps two mechanisms to different internal components (MLP ‘knowledge recall’ vs attention ‘induction/copy’) and shows their convergence to the final prediction as a competition. This departs from a uniform ‘method pipeline’ template by emphasizing the mechanism rivalry and where it manifests, matching the paper’s intended figure purpose."
+            }
+          ]
+        },
+        "weighted_total": 3.61
+      }
+    }
+  ]
+}

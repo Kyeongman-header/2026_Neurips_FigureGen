@@ -1,0 +1,319 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=1800, initial-scale=1"/>
+<title>Multi-document QA U-shaped accuracy vs answer document position</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#1f2937;
+    --muted:#4b5563;
+    --axis:#111827;
+    --grid:#e5e7eb;
+    --panel:#f8fafc;
+    --panel-stroke:#d1d5db;
+
+    --c-gpt:#7c3aed;     /* purple */
+    --c-claude:#0ea5e9;  /* sky */
+    --c-mpt:#f97316;     /* orange */
+    --c-long:#16a34a;    /* green */
+
+    --dash-extended: 10 8;
+  }
+
+  html, body { height:100%; margin:0; background:var(--bg); }
+  #figure-root{
+    width:1800px; height:1200px;
+    margin:0 auto;
+    background:var(--bg);
+    font-family: Arial, Helvetica, sans-serif;
+    position:relative;
+    box-sizing:border-box;
+  }
+
+  /* SVG text defaults */
+  .title { font-size:34px; font-weight:700; fill:var(--ink); }
+  .subtitle { font-size:18px; fill:var(--muted); }
+  .panelTitle { font-size:20px; font-weight:700; fill:var(--ink); }
+  .small { font-size:14px; fill:var(--muted); }
+  .axisLabel { font-size:18px; font-weight:700; fill:var(--ink); }
+  .tick { font-size:14px; fill:var(--muted); }
+  .legendText { font-size:16px; fill:var(--ink); }
+  .anno { font-size:15px; fill:var(--muted); }
+  .calloutTitle { font-size:16px; font-weight:700; fill:var(--ink); }
+  .calloutText { font-size:14px; fill:var(--muted); }
+
+  .panelBox { fill:var(--panel); stroke:var(--panel-stroke); stroke-width:2; }
+  .axisLine { stroke:var(--axis); stroke-width:2; }
+  .gridLine { stroke:var(--grid); stroke-width:1.5; }
+  .divider { stroke:var(--panel-stroke); stroke-width:2; }
+
+  .doc { fill:#ffffff; stroke:#cbd5e1; stroke-width:2; }
+  .docText { font-size:14px; fill:var(--muted); }
+  .docStrong { font-size:14px; font-weight:700; fill:var(--ink); }
+  .answerDoc { fill:#fff7ed; stroke:#fb923c; stroke-width:3; }
+  .arrow { stroke:#6b7280; stroke-width:2.5; fill:none; marker-end:url(#arrowHead); }
+  .arrowStrong { stroke:#111827; stroke-width:3; fill:none; marker-end:url(#arrowHeadStrong); }
+
+  .line { fill:none; stroke-width:4; }
+  .lineThin { fill:none; stroke-width:3; }
+  .marker { stroke:#ffffff; stroke-width:2; }
+  .dash { stroke-dasharray: var(--dash-extended); }
+
+  .captionArea{
+    position:absolute;
+    left:0; bottom:0;
+    width:1800px; height:130px;
+    box-sizing:border-box;
+    border-top:2px solid #e5e7eb;
+    background:#ffffff;
+    padding:18px 36px;
+  }
+  .captionText{
+    font-size:16px;
+    color:#111827;
+    line-height:1.35;
+  }
+</style>
+</head>
+<body>
+<div id="figure-root">
+  <svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200" role="img" aria-label="Multi-document question answering setup and results with U-shaped accuracy vs answer-document position">
+    <defs>
+      <marker id="arrowHead" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L10,5 L0,10 Z" fill="#6b7280"></path>
+      </marker>
+      <marker id="arrowHeadStrong" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L10,5 L0,10 Z" fill="#111827"></path>
+      </marker>
+    </defs>
+
+    <!-- Header -->
+    <text x="60" y="70" class="title">Multi-document QA: single answer document placed across long contexts</text>
+    <text x="60" y="105" class="subtitle">Controlled experiment: exactly one document contains the answer; others are distractors. Accuracy varies with answer-document position (primacy/recency).</text>
+
+    <!-- Left panel: setup schematic -->
+    <rect x="60" y="140" width="750" height="880" rx="16" class="panelBox"/>
+    <text x="90" y="185" class="panelTitle">Setup (one answer-containing document in a k-document context)</text>
+
+    <!-- Question -->
+    <rect x="100" y="215" width="670" height="70" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="120" y="245" class="docStrong">Question</text>
+    <text x="120" y="270" class="docText">e.g., NaturalQuestions-Open query; model must generate the answer</text>
+
+    <!-- Context blocks: three cases -->
+    <text x="90" y="330" class="calloutTitle">Manipulation: move the single answer-containing document</text>
+    <text x="90" y="355" class="calloutText">Within 10–30 documents (k), place the answer document at the beginning, middle, or end.</text>
+
+    <!-- Case A: beginning -->
+    <rect x="100" y="390" width="670" height="190" rx="14" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+    <text x="120" y="420" class="docStrong">Case A: Answer document at beginning (primacy)</text>
+
+    <!-- mini stack A -->
+    <rect x="120" y="440" width="170" height="42" rx="8" class="answerDoc"/>
+    <text x="132" y="466" class="docStrong">Doc 1</text>
+    <text x="190" y="466" class="docText">(contains answer)</text>
+
+    <rect x="120" y="490" width="170" height="42" rx="8" class="doc"/>
+    <text x="132" y="516" class="docText">Doc 2 (distractor)</text>
+    <rect x="120" y="540" width="170" height="42" rx="8" class="doc"/>
+    <text x="132" y="566" class="docText">Doc 3 (distractor)</text>
+
+    <text x="320" y="512" class="anno">… up to k documents</text>
+
+    <path d="M520,455 C590,455 610,470 650,490" class="arrow"/>
+    <text x="520" y="442" class="anno">Answer near start → higher accuracy</text>
+
+    <!-- Case B: middle -->
+    <rect x="100" y="610" width="670" height="190" rx="14" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+    <text x="120" y="640" class="docStrong">Case B: Answer document in middle</text>
+
+    <!-- mini stack B -->
+    <rect x="120" y="660" width="170" height="42" rx="8" class="doc"/>
+    <text x="132" y="686" class="docText">Doc 1 (distractor)</text>
+    <rect x="120" y="710" width="170" height="42" rx="8" class="doc"/>
+    <text x="132" y="736" class="docText">Doc 2 (distractor)</text>
+
+    <rect x="120" y="760" width="170" height="42" rx="8" class="answerDoc"/>
+    <text x="132" y="786" class="docStrong">Doc m</text>
+    <text x="188" y="786" class="docText">(contains answer)</text>
+
+    <text x="320" y="732" class="anno">… distractors before and after</text>
+
+    <path d="M520,690 C590,690 610,705 650,725" class="arrow"/>
+    <text x="520" y="677" class="anno">Answer in middle → degraded accuracy</text>
+
+    <!-- Case C: end -->
+    <rect x="100" y="830" width="670" height="190" rx="14" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+    <text x="120" y="860" class="docStrong">Case C: Answer document at end (recency)</text>
+
+    <!-- mini stack C -->
+    <rect x="120" y="880" width="170" height="42" rx="8" class="doc"/>
+    <text x="132" y="906" class="docText">Doc 1 (distractor)</text>
+    <rect x="120" y="930" width="170" height="42" rx="8" class="doc"/>
+    <text x="132" y="956" class="docText">Doc 2 (distractor)</text>
+    <text x="330" y="920" class="anno">…</text>
+    <rect x="120" y="980" width="170" height="42" rx="8" class="answerDoc"/>
+    <text x="132" y="1006" class="docStrong">Doc k</text>
+    <text x="188" y="1006" class="docText">(contains answer)</text>
+
+    <path d="M520,915 C590,915 610,930 650,950" class="arrow"/>
+    <text x="520" y="902" class="anno">Answer near end → higher accuracy</text>
+
+    <!-- Output -->
+    <path d="M435,295 L435,368" class="arrowStrong"/>
+    <rect x="470" y="305" width="300" height="70" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="490" y="335" class="docStrong">Model output</text>
+    <text x="490" y="360" class="docText">Generate final answer; metric: accuracy</text>
+
+    <!-- Right panel: results plot -->
+    <rect x="850" y="140" width="890" height="880" rx="16" class="panelBox"/>
+    <text x="880" y="185" class="panelTitle">Results: accuracy vs. answer-document position (U-shaped across models)</text>
+
+    <!-- Plot area geometry -->
+    <!-- margins inside right panel -->
+    <!-- plot box -->
+    <rect x="930" y="250" width="760" height="640" rx="10" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+
+    <!-- Gridlines (y: 0 to 100) -->
+    <!-- y positions: 0,20,40,60,80,100 -->
+    <line x1="930" y1="890" x2="1690" y2="890" class="gridLine"/>
+    <line x1="930" y1="762" x2="1690" y2="762" class="gridLine"/>
+    <line x1="930" y1="634" x2="1690" y2="634" class="gridLine"/>
+    <line x1="930" y1="506" x2="1690" y2="506" class="gridLine"/>
+    <line x1="930" y1="378" x2="1690" y2="378" class="gridLine"/>
+    <line x1="930" y1="250" x2="1690" y2="250" class="gridLine"/>
+
+    <!-- Axes -->
+    <line x1="930" y1="250" x2="930" y2="890" class="axisLine"/>
+    <line x1="930" y1="890" x2="1690" y2="890" class="axisLine"/>
+
+    <!-- Y ticks/labels -->
+    <text x="900" y="895" class="tick" text-anchor="end">0</text>
+    <text x="900" y="767" class="tick" text-anchor="end">20</text>
+    <text x="900" y="639" class="tick" text-anchor="end">40</text>
+    <text x="900" y="511" class="tick" text-anchor="end">60</text>
+    <text x="900" y="383" class="tick" text-anchor="end">80</text>
+    <text x="900" y="255" class="tick" text-anchor="end">100</text>
+
+    <text x="860" y="570" class="axisLabel" text-anchor="middle" transform="rotate(-90 860 570)">Accuracy (%)</text>
+
+    <!-- X ticks/labels (relative position across the context) -->
+    <!-- x positions: 0,0.25,0.5,0.75,1 -->
+    <line x1="930" y1="890" x2="930" y2="900" stroke="#111827" stroke-width="2"/>
+    <line x1="1120" y1="890" x2="1120" y2="900" stroke="#111827" stroke-width="2"/>
+    <line x1="1310" y1="890" x2="1310" y2="900" stroke="#111827" stroke-width="2"/>
+    <line x1="1500" y1="890" x2="1500" y2="900" stroke="#111827" stroke-width="2"/>
+    <line x1="1690" y1="890" x2="1690" y2="900" stroke="#111827" stroke-width="2"/>
+
+    <text x="930" y="930" class="tick" text-anchor="middle">Start</text>
+    <text x="1120" y="930" class="tick" text-anchor="middle">25%</text>
+    <text x="1310" y="930" class="tick" text-anchor="middle">Middle</text>
+    <text x="1500" y="930" class="tick" text-anchor="middle">75%</text>
+    <text x="1690" y="930" class="tick" text-anchor="middle">End</text>
+
+    <text x="1310" y="975" class="axisLabel" text-anchor="middle">Answer-document position within the context (10–30 documents)</text>
+
+    <!-- Data: stylized U-shaped curves (publication-style; not claiming exact paper values) -->
+    <!-- Map function: y = 890 - (value/100)*640 -->
+    <!-- Series 1: GPT-3.5-Turbo (solid purple) values: 76, 66, 54, 64, 74 -->
+    <path d="M930,404
+             L1120,468
+             L1310,544
+             L1500,480
+             L1690,416"
+          class="line" stroke="var(--c-gpt)"/>
+    <circle cx="930" cy="404" r="7" fill="var(--c-gpt)" class="marker"/>
+    <circle cx="1120" cy="468" r="7" fill="var(--c-gpt)" class="marker"/>
+    <circle cx="1310" cy="544" r="7" fill="var(--c-gpt)" class="marker"/>
+    <circle cx="1500" cy="480" r="7" fill="var(--c-gpt)" class="marker"/>
+    <circle cx="1690" cy="416" r="7" fill="var(--c-gpt)" class="marker"/>
+
+    <!-- Series 2: Claude-1.3 (solid sky) values: 68, 62, 52, 61, 69 -->
+    <path d="M930,454
+             L1120,493
+             L1310,557
+             L1500,499
+             L1690,448"
+          class="lineThin" stroke="var(--c-claude)"/>
+    <circle cx="930" cy="454" r="6.5" fill="var(--c-claude)" class="marker"/>
+    <circle cx="1120" cy="493" r="6.5" fill="var(--c-claude)" class="marker"/>
+    <circle cx="1310" cy="557" r="6.5" fill="var(--c-claude)" class="marker"/>
+    <circle cx="1500" cy="499" r="6.5" fill="var(--c-claude)" class="marker"/>
+    <circle cx="1690" cy="448" r="6.5" fill="var(--c-claude)" class="marker"/>
+
+    <!-- Series 3: MPT-30B-Instruct (solid orange) values: 50, 43, 31, 41, 49 -->
+    <path d="M930,570
+             L1120,615
+             L1310,692
+             L1500,628
+             L1690,576"
+          class="lineThin" stroke="var(--c-mpt)"/>
+    <circle cx="930" cy="570" r="6.5" fill="var(--c-mpt)" class="marker"/>
+    <circle cx="1120" cy="615" r="6.5" fill="var(--c-mpt)" class="marker"/>
+    <circle cx="1310" cy="692" r="6.5" fill="var(--c-mpt)" class="marker"/>
+    <circle cx="1500" cy="628" r="6.5" fill="var(--c-mpt)" class="marker"/>
+    <circle cx="1690" cy="576" r="6.5" fill="var(--c-mpt)" class="marker"/>
+
+    <!-- Series 4: LongChat-13B (16K) (solid green) values: 56, 48, 36, 46, 55 -->
+    <path d="M930,532
+             L1120,583
+             L1310,660
+             L1500,596
+             L1690,538"
+          class="lineThin" stroke="var(--c-long)"/>
+    <circle cx="930" cy="532" r="6.5" fill="var(--c-long)" class="marker"/>
+    <circle cx="1120" cy="583" r="6.5" fill="var(--c-long)" class="marker"/>
+    <circle cx="1310" cy="660" r="6.5" fill="var(--c-long)" class="marker"/>
+    <circle cx="1500" cy="596" r="6.5" fill="var(--c-long)" class="marker"/>
+    <circle cx="1690" cy="538" r="6.5" fill="var(--c-long)" class="marker"/>
+
+    <!-- Light annotation: U-shape and primacy/recency -->
+    <path d="M1010,330 C1130,280 1280,280 1420,330" fill="none" stroke="#9ca3af" stroke-width="2" stroke-dasharray="6 6"/>
+    <text x="1220" y="275" class="anno" text-anchor="middle">U-shaped trend across models</text>
+
+    <text x="1000" y="350" class="anno" text-anchor="middle">Primacy</text>
+    <text x="1620" y="350" class="anno" text-anchor="middle">Recency</text>
+    <line x1="980" y1="360" x2="980" y2="400" stroke="#9ca3af" stroke-width="2"/>
+    <line x1="1640" y1="360" x2="1640" y2="400" stroke="#9ca3af" stroke-width="2"/>
+
+    <rect x="1250" y="720" width="420" height="130" rx="12" fill="#f9fafb" stroke="#d1d5db" stroke-width="2"/>
+    <text x="1270" y="748" class="calloutTitle">Interpretation</text>
+    <text x="1270" y="772" class="calloutText">Accuracy is higher when the answer document is near the</text>
+    <text x="1270" y="792" class="calloutText">start or end of the context, and lowest in the middle.</text>
+    <text x="1270" y="814" class="calloutText">This reflects primacy/recency advantages and mid-context</text>
+    <text x="1270" y="836" class="calloutText">degradation in long-context reasoning.</text>
+
+    <!-- Legend -->
+    <rect x="930" y="1010" width="760" height="0" fill="none"/>
+    <text x="880" y="1015" class="panelTitle">Models</text>
+
+    <rect x="930" y="1035" width="810" height="0" fill="none"/>
+
+    <line x1="930" y1="1065" x2="1005" y2="1065" class="line" stroke="var(--c-gpt)"/>
+    <circle cx="1005" cy="1065" r="7" fill="var(--c-gpt)" class="marker"/>
+    <text x="1025" y="1070" class="legendText">GPT-3.5-Turbo (representative)</text>
+
+    <line x1="930" y1="1100" x2="1005" y2="1100" class="lineThin" stroke="var(--c-claude)"/>
+    <circle cx="1005" cy="1100" r="6.5" fill="var(--c-claude)" class="marker"/>
+    <text x="1025" y="1105" class="legendText">Claude-1.3 (representative)</text>
+
+    <line x1="1320" y1="1065" x2="1395" y2="1065" class="lineThin" stroke="var(--c-mpt)"/>
+    <circle cx="1395" cy="1065" r="6.5" fill="var(--c-mpt)" class="marker"/>
+    <text x="1415" y="1070" class="legendText">MPT-30B-Instruct (representative)</text>
+
+    <line x1="1320" y1="1100" x2="1395" y2="1100" class="lineThin" stroke="var(--c-long)"/>
+    <circle cx="1395" cy="1100" r="6.5" fill="var(--c-long)" class="marker"/>
+    <text x="1415" y="1105" class="legendText">LongChat-13B (16K) (representative)</text>
+
+    <!-- Note about contexts -->
+    <text x="880" y="1148" class="small">Note: Curves are schematic to emphasize the consistent U-shape across evaluated models and 10–30-document contexts.</text>
+
+  </svg>
+
+  <div class="captionArea">
+    <div class="captionText">Multi-document question answering setup and results showing accuracy as a function of where the single answer-containing document appears within 10–30-document contexts; all evaluated models exhibit a U-shaped curve, with primacy/recency advantages and degraded performance for middle positions.</div>
+  </div>
+</div>
+</body>
+</html>

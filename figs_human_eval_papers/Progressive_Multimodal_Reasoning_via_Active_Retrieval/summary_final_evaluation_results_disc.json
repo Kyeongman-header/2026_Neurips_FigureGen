@@ -1,0 +1,388 @@
+{
+  "paper_name": "Progressive_Multimodal_Reasoning_via_Active_Retrieval",
+  "evaluated_at": "2026-01-12T03:29:13.954557",
+  "figure_summary": "## 1. Core Contributions\n- Proposes **AR-MCTS**, a general framework that improves **multi-step multimodal reasoning** by combining **Monte Carlo Tree Search (MCTS)** with **step-wise active retrieval** during reasoning-path expansion.\n- Introduces a **hybrid-modal reasoning retrieval corpus** (general + math-specific; text-only + multimodal) intended to supply **high-quality, step-relevant “problem-solving insights”** to MLLMs.\n- Uses MCTS to **automatically produce step-wise reasoning annotations** and then **progressively align a multimodal Process Reward Model (PRM)** via **curriculum training objectives** (including step-wise DPO and SFT) for **process-level verification**.\n- Frames a key limitation of prior MCTS-for-reasoning approaches in multimodal settings: success depends on both **expansion** and **simulation** (Eq. 1), and **self-sampling/beam expansion** is unreliable under multimodal misalignment.\n\n## 2. Method Components & Relations relevant to figures\n- **Hybrid-Modal Retrieval Corpus (D_H)**  \n  - Built from **general reasoning sources** (Wikipedia en/zh, COIG) and **math reasoning sources** (GSM8K, MATH, MathVista, MathVerse, MathVision, We-Math).  \n  - Data prepared as retrievable units (e.g., chunking/cleaning; multimodal samples retain image paths; math samples concatenate question/solution/answer).\n- **Unified Multimodal Retrieval Module**  \n  - Given multimodal query **Q_m**, retrieves candidate insights **r** from **D_H**.  \n  - Includes **knowledge concept filtering** to select “key problem-solving insights” (i.e., the subset intended to be most useful for the current step).\n- **AR-MCTS Search Procedure (sentence-level MCTS as MDP)**  \n  - Treats each decoded intermediate step **y_i** as a **state s_i** (leaf node); sampling the next step is an **action a_i**.  \n  - Uses **UCB** (Eq. 2) for selection.  \n  - Key intervention: during **expansion**, instead of relying on model-only beam/self-sampling, AR-MCTS **actively retrieves step-relevant insights** and conditions the generator on them to expand the tree with higher-quality/diverse candidates.\n- **Training / Alignment to PRM (progressive objectives)**  \n  - MCTS-derived step-wise quality signals define supervision: each step’s “quality” is defined as its **potential to deduce the correct answer**.  \n  - These step-wise annotations are then used to **align a PRM** via staged objectives (mentioned: **step-wise DPO + SFT**) so that the PRM can later provide **fine-grained verification**.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **visualize the system decomposition** of AR-MCTS into (i) the retrieval infrastructure (corpus + retrieval module) and (ii) the MCTS-based reasoning/annotation loop.\n- To show **where retrieval is inserted into MCTS** (specifically the **expansion** stage) and how this yields **step-wise, retrieval-conditioned reasoning trajectories** suitable for downstream PRM alignment.\n- To substantiate that the approach is supported by a **purpose-built hybrid retrieval corpus**, and to communicate its **composition/coverage** as an enabling resource for step-wise multimodal reasoning support.\n- To depict the **end-to-end data flow**: multimodal query → retrieval of insights → MCTS step-wise reasoning generation/evaluation/backprop → collected step annotations → PRM alignment/verification.\n\n## 4. What Figures are NOT intended to show\n- They are not meant to provide a complete proof of correctness of MCTS, UCB, or the theoretical model in Eq. (1); figures mainly illustrate **mechanism and flow**, not formal guarantees.\n- They are not intended to demonstrate full benchmark performance or statistical significance; quantitative results belong to experiments, not the schematic/corpus/module figures.\n- They are not meant to claim the retrieved insights are always correct or sufficient; retrieval is shown as a **heuristic support mechanism**, not an oracle.\n- They are not intended to fully specify all implementation details (e.g., exact retriever architecture, chunking parameters, filtering thresholds, or PRM training hyperparameters), only the **conceptual components and their interactions**.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Progressive_Multimodal_Reasoning_via_Active_Retrieval__p5__score1.00.png",
+      "caption": "Figure 3: Our AR-MCTS: The retrieval module actively retrieves key insights at each step of the MCTS process",
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_Content_Coverage",
+              "score": 4.0,
+              "reason": "The figure clearly visualizes the core mechanism stated in the summary: step-wise active retrieval is inserted into the MCTS expansion process (query evolves from Question → Question+Step1 → Question+ΣStep_i, with retrieved insights shown at each stage), producing multiple candidate next-step states (s1,* then s2,*) and receiving step-wise evaluation signals (shown as PRM scores and per-branch results). However, it omits several major components/formal elements mentioned in the summary, such as the UCB selection rule (Eq. 2), the explicit MCTS phases (selection/expansion/simulation/backprop), and any depiction of the hybrid-modal corpus construction/composition (D_H) or concept filtering."
+            },
+            {
+              "question": "1.2_Standalone_Intelligibility",
+              "score": 4.0,
+              "reason": "Without reading the paper, a viewer can largely infer the operating principle: at each reasoning step, the system retrieves external “insights” conditioned on the current partial solution, expands multiple candidate continuations in a tree, and assigns scores that guide progress toward a final state/answer (s^N with a final PRM score). That said, the exact role of the displayed 'Result (i,j)' labels, how candidates are selected/updated (no UCB/visit counts), and what the PRM score precisely represents (process-level verification vs. reward for MCTS) are not fully self-contained, reducing complete standalone clarity."
+            },
+            {
+              "question": "1.3_Completeness",
+              "score": 2.0,
+              "reason": "The figure is focused on a mid-pipeline schematic of AR-MCTS with retrieval during step-wise expansion and PRM scoring. It does not summarize the broader paper arc described in the summary: creation and coverage of the hybrid-modal retrieval corpus (general + math, text + multimodal), automatic production of step-wise annotations via MCTS, and the progressive PRM alignment/training objectives (step-wise DPO + SFT/curriculum). Thus it is not an end-to-end summary from beginning to end of the work, but rather a targeted depiction of one central mechanism."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 4.0,
+              "reason": "The figure’s main elements align with the summary: step-wise retrieval of “key insights” during MCTS, tree expansion over intermediate steps (states), and PRM scoring per step/trajectory. It does introduce details not explicitly stated in the summary—e.g., the explicit query formulations like “Question + Step_1” and especially “Question + \\u22c3_{i=1}^{n-1} Step_i”, plus the per-edge labels “Result (x,y)”—but these appear auxiliary to illustrating step-wise conditioning and do not alter the core claimed method structure (retrieval inserted into expansion + PRM-based evaluation)."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 5.0,
+              "reason": "Relationships match the summary’s flow: a multimodal question triggers retrieval; retrieved insights are used at each step to guide expansion to multiple candidate next-step states; successive steps form a trajectory; a PRM provides process-level scores (shown as “PRM Score 1/2/…/N”) over steps/paths. This correctly reflects the stated intent that retrieval is inserted specifically into MCTS expansion to yield higher-quality/diverse candidates and produce step-wise annotations usable for PRM alignment/verification."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Major labels are consistent with the summary: the method is presented as AR-MCTS; the top panels are labeled as queries with retrieved insights (consistent with step-wise active retrieval); nodes are labeled as step states (s_{0,0}, s_{1,*}, s_{2,*}, s^N), matching the summary’s framing of intermediate steps as states; and the use of “PRM Score” aligns with the Process Reward Model component for process-level verification."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The schematic centers on the main contribution described in the summary: inserting step-wise active retrieval into the MCTS expansion loop. It clearly shows the progression from initial query to query+step_i retrieval, branching expansions, and PRM scoring per step. Minor ambiguity remains because standard MCTS phases (selection/expansion/simulation/backprop) are not explicitly labeled, so the viewer must infer that the depicted branching corresponds to expansion."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "Given the caption and summary, the figure works well to contextualize how retrieval is performed at each step (Query, then Query+Step1, then accumulated steps) and how candidates are evaluated by a PRM score, matching the described end-to-end flow (multimodal query → retrieved insights → MCTS reasoning trajectories → step-wise scoring/annotations). Readability is somewhat reduced by small text inside the example retrieved-insight cards and lack of explicit module boundaries (e.g., retrieval module vs. generator vs. PRM), which could make it harder as a standalone supplementary figure."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The visual elements (retrieved insight cards, branching tree edges, and PRM scores) are largely functional and aligned with the core idea of retrieval-conditioned expansion and step-wise evaluation. The repeated large ‘retrieved insights’ panels are somewhat redundant and visually heavy, and the dotted/curved connector lines plus ellipses add mild clutter, but they do not introduce unrelated decorative content or distract from the main mechanism."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 5.0,
+              "reason": "The figure has a clear left-to-right progression consistent with the summary’s end-to-end flow: initial multimodal query + retrieved insights (left) → step-wise expansion to next states with retrieved insights (middle) → later steps and final PRM score (right). The sequential panels labeled with progressively accumulated steps reinforce directionality."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 3.0,
+              "reason": "Within each step panel, multiple dashed/curved connectors from the retrieved-insight box to several candidate child states create noticeable line overlap and near-crossings. While not severely tangled, these connections reduce clarity compared to a cleaner fan-out or routed layout, especially around the middle panel where several arcs converge."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are placed close: each panel groups (i) the retrieved-insights box and (ii) the resulting candidate states for that expansion step, matching the summary’s claim that retrieval is inserted at each expansion. However, PRM score labels are somewhat detached from the specific edges/states they summarize, weakening tight coupling."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "Major components are aligned in columns/panels and the candidate state nodes form mostly vertical stacks, suggesting an underlying grid. Minor misalignments appear in the placement of numeric scores and curved arrows, and the final rightmost PRM score placement is slightly less grid-consistent than the earlier panels."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "Primary components stand out: the three large retrieved-insights panels dominate the top row, and the step/state nodes and PRM scores are visually emphasized via color and size differences. Still, the figure does not strongly differentiate ‘retrieval module’ vs ‘MCTS process’ as distinct named blocks; hierarchy relies more on spatial grouping than explicit framing."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between the three main panels and between node stacks, preventing severe crowding. Some local tightness occurs where multiple curved connectors exit the retrieved-insight boxes toward several children, making those regions feel slightly compressed."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 4.0,
+              "reason": "Similar roles are represented consistently: states use uniform circular nodes with consistent color styling; retrieved items are consistently shown as stacked cards; and PRM-related values use consistent numeric annotations. A minor inconsistency is that edge styles (solid vs dashed, varying thickness/colors) encode multiple notions (selection/trajectory/score) without an explicit legend, which can weaken consistent interpretation."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure uses compact visual tokens (state circles labeled s_{i,j}, arrowed edges for transitions, stacked ‘Retrieved Insights’ cards) to concretize the abstract AR-MCTS process and step-wise retrieval described in the summary. However, it remains largely schematic/diagrammatic rather than employing richer metaphorical icons or symbolic substitutions beyond standard graph/MCTS notation."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "Integrating retrieval ‘cards’ above each MCTS stage and explicitly showing the query evolving from ‘Question’ to ‘Question + Step_1’ to cumulative steps aligns with the paper’s key intervention (retrieval inserted at expansion each step) and is somewhat distinctive. Still, the overall look (pipeline panels + tree/graph edges + scores) follows common ML system-figure templates without a notably unique visual style."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the specific mechanism in the summary: it is organized temporally across steps, with retrieval shown as step-conditioned inputs per stage and PRM scores displayed alongside the expanding state nodes, matching the end-to-end flow (query → retrieval insights → step-wise MCTS expansion → PRM verification signals). This breaks from a generic single-block pipeline by emphasizing repeated, step-wise retrieval-conditioning within the search loop."
+            }
+          ]
+        },
+        "weighted_total": 3.867
+      }
+    },
+    {
+      "figure_file": "Progressive_Multimodal_Reasoning_via_Active_Retrieval__p2__score0.95.png",
+      "caption": "Figure 1: The statistics of our hybrid retrieval corpus.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "content_coverage",
+              "score": 4.0,
+              "reason": "The figure provides corpus-level statistics for the proposed Hybrid-Modal Retrieval Corpus (D_H), which is explicitly a major method component in the summary. It covers the key stated composition dimensions: general reasoning sources (Wikipedia en/zh, COIG) and math-specific sources (GSM8K, MATH, MathVista, MathVerse, MathVision, We-Math), and it distinguishes text-only vs multimodal for the math-specific portion. However, it does not include other major method components mentioned in the summary (unified retrieval module, concept filtering, AR-MCTS procedure/UCB, PRM alignment objectives), so coverage is strong for the corpus contribution but incomplete for the overall framework."
+            },
+            {
+              "question": "standalone_intelligibility",
+              "score": 3.0,
+              "reason": "As a standalone, the figure clearly communicates what datasets constitute the hybrid retrieval corpus and their relative sizes/percentages, including modality grouping for math-specific knowledge. But it does not explain how the corpus is used (step-wise active retrieval in MCTS expansion, filtering, or downstream PRM alignment). Thus one can understand the corpus composition from the figure alone, but not the general operating principle of AR-MCTS."
+            },
+            {
+              "question": "completeness",
+              "score": 2.0,
+              "reason": "The figure focuses narrowly on corpus statistics and does not summarize the end-to-end pipeline described in the summary (multimodal query to retrieval of insights to MCTS search/annotation to PRM progressive alignment). It captures only an enabling resource (D_H) rather than content spanning the paper from method flow through training/alignment."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure focuses on corpus composition/statistics (general reasoning sources: Wikipedia zh-CN, Wikipedia en-US, COIG; math-specific: GSM8K, MATH; multimodal: MathVista, MathVerse, MathVision, We-Math), which matches the summary’s described hybrid-modal retrieval corpus (D_H). It also provides counts/percentages, which are not explicitly listed in the summary but are consistent with the caption’s purpose (“statistics”) and do not introduce new method components or formulas."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 5.0,
+              "reason": "The figure correctly represents D_H as a hybrid corpus composed of (i) general reasoning knowledge (Wikipedia en/zh, COIG) and (ii) mathematics-specific reasoning knowledge split into text-only (GSM8K, MATH) and multi-modal (MathVista/MathVerse/MathVision/We-Math), aligning with the summary’s stated corpus structure and sources."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Component/source labels in the figure (e.g., “Hybrid-Modal Reasoning Retrieval Corpus,” “General Reasoning Knowledge,” “Mathematics-Specific Reasoning Knowledge,” and dataset/source names: Wikipedia (zh-CN), Wikipedia (en-US), COIG, GSM8K, MATH, MathVista, MathVerse, MathVision, We-Math) match the names explicitly mentioned in the summary."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the main point in the caption/summary: the composition of the Hybrid-Modal Retrieval Corpus (D_H). The concentric ring chart communicates the high-level split (general vs math-specific; text-only vs multimodal) without diving into implementation details. Minor readability cost comes from having many segment labels curved along the rings, which can be harder to scan quickly."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "It functions well with the caption “statistics of our hybrid retrieval corpus” and matches the summary’s description of D_H sources (Wikipedia en/zh, COIG, GSM8K, MATH, MathVista/Verse/Vision, We-Math). The accompanying table provides counts and percentages, making the figure self-contained as a supplementary explanation of corpus coverage."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The visual and the right-side table are both relevant to the core idea (corpus composition), and there are no decorative elements. However, there is some mild redundancy because the ring chart and the table encode overlapping information (categories plus proportions), and the dense labeling on the rings slightly increases clutter without adding new conceptual structure beyond what the table already states."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The figure reads clearly left-to-right: a corpus composition visualization on the left (nested donut chart) and corresponding dataset breakdown/statistics on the right (grouped legend with counts/percentages). This supports the caption’s goal of presenting corpus statistics."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "There are no connecting lines or arrows in this statistics figure; thus, there is no risk of line crossings. The separation between chart and legend avoids visual entanglement."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are placed near each other: the donut segments (sources) are paired with a nearby right-side list that groups sources into General vs Mathematics-Specific and Text-Only vs Multi-Modal. However, the mapping between specific donut slices and the right-side entries relies primarily on color/labels rather than adjacency, which slightly reduces immediate association."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 5.0,
+              "reason": "The right-side legend is neatly aligned in rows with consistent columns for dataset name, count, and percentage. The chart is centered and balanced relative to the legend, giving a clean two-column layout."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The main component (“Hybrid-Modal Reasoning Retrieval Corpus”) is emphasized via central placement and bold text in the donut’s center, and the legend uses clear section headers (“General Reasoning Knowledge”, “Mathematics-Specific Reasoning Knowledge”, plus subheaders). The hierarchy is strong, though the relative importance of General vs Math-specific is not additionally emphasized beyond grouping."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is adequate whitespace between the donut chart and the right-side legend, and within legend rows. Some donut labels along arcs appear close to segment boundaries and are angled, which can make them feel slightly cramped even if not overlapping."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles are represented consistently: datasets use colored squares in the legend and correspondingly colored regions in the donut; section headers are typographically consistent. Minor inconsistency arises because the donut uses curved/rotated text on segments while the legend uses standard horizontal text, making cross-referencing slightly less uniform."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 2.0,
+              "reason": "The figure uses standard abbreviations (e.g., GSM8K, MATH, Wiki(en-US/zh-CN), COIG) and color coding to represent dataset components, but it does not replace abstract ideas (hybrid-modal corpus composition/statistics) with concrete icons or symbolic metaphors beyond a conventional donut/ring chart."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Visually, it follows a common dataset-statistics template: a multi-ring donut chart plus a legend-like table listing counts and percentages. This aligns with the summary’s goal of communicating corpus composition/coverage, but the style is not notably distinctive or unconventional."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 3.0,
+              "reason": "The nested-ring layout usefully encodes the corpus hierarchy implied by the summary (general vs math-specific; text-only vs multimodal) in a compact way, which is reasonably tailored to the paper’s hybrid-corpus contribution. However, it still largely adheres to standard infographic conventions rather than breaking strongly from uniform design principles."
+            }
+          ]
+        },
+        "weighted_total": 3.752
+      }
+    },
+    {
+      "figure_file": "Progressive_Multimodal_Reasoning_via_Active_Retrieval__p3__score1.00.png",
+      "caption": "Figure 2: The pipeline of our unified multimodal retrieval module.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_Content_Coverage",
+              "score": 4.0,
+              "reason": "The figure clearly covers the major elements of the paper’s retrieval subsystem described in the summary: a Hybrid-Modal Retrieval Corpus (with text-only and multimodal knowledge), a Unified Multimodal Retrieval Module (with both cross-modal and text-to-text retrieval), and the knowledge concept filtering step that yields Top-K step-relevant knowledge/insights. However, it does not depict inputs/outputs explicitly (e.g., the multimodal query Q_m, retrieved insights r) or any retrieval scoring/selection details, which are mentioned conceptually in the summary."
+            },
+            {
+              "question": "1.2_Standalone_Intelligibility",
+              "score": 4.0,
+              "reason": "As a pipeline schematic, it is largely understandable on its own: it shows the flow from a hybrid corpus through two retrieval pathways into a concept-filtering stage and then to a ranked Top-K knowledge output. That said, the figure does not explicitly state what the query is (step-wise multimodal query Q_m) nor that the output is intended as “problem-solving insights” for a specific reasoning step, so the operational purpose in the broader method is only partially inferable."
+            },
+            {
+              "question": "1.3_Completeness",
+              "score": 1.0,
+              "reason": "The figure is not a beginning-to-end summary of the paper; it only depicts the unified multimodal retrieval module. It omits the AR-MCTS procedure (selection/expansion/simulation/backprop, UCB), the insertion of retrieval into MCTS expansion, the generation of step-wise annotations, and the progressive PRM alignment objectives (step-wise DPO/SFT), all of which are core contributions in the summary."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1",
+              "score": 4.0,
+              "reason": "The figure depicts a unified multimodal retrieval pipeline consisting of a Hybrid-Modal Retrieval Corpus feeding a Multimodal Retrieval Module (with Cross-Modal and Text-to-Text retrievers), followed by Knowledge Concept Filtering and outputting Top-K knowledge. These components align with the summary’s description of the hybrid corpus, unified retrieval module, and concept filtering. No extra formulas are introduced. Minor potential over-specificity: explicitly splitting retrievers into “Cross-Modal” vs “Text-to-Text” is not stated verbatim in the summary, but it is a conventional decomposition that does not alter the core method claims."
+            },
+            {
+              "question": "2.2",
+              "score": 5.0,
+              "reason": "The relationships match the summary: the hybrid-modal corpus (general+math; text-only+multimodal) is the retrieval source; the retrieval module retrieves candidate insights; knowledge concept filtering selects key problem-solving insights; the output is a filtered Top-K set. This corresponds to the described flow “Q_m → retrieve r from D_H → concept filtering → key insights.”"
+            },
+            {
+              "question": "2.3",
+              "score": 4.0,
+              "reason": "Major labels are consistent with the summary: “Hybrid-Modal Retrieval Corpus,” “Multimodal Retrieval Module,” and “Knowledge Concept Filtering” directly match. The output label “Top-K Knowledge” is compatible with “candidate insights r / key problem-solving insights.” The only slight mismatch is that the summary does not explicitly name the internal retrievers as “Cross-Modal Retriever” and “Text-to-Text Retriever,” though the naming is plausible and not contradictory."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "summarization",
+              "score": 4.0,
+              "reason": "The schematic is compact and focused on the main intended contribution for this figure: a unified multimodal retrieval pipeline over a hybrid-modal corpus, with a retriever stage and a subsequent knowledge concept filtering stage that yields top-K “knowledge/insights.” It avoids deep implementation details (e.g., retriever architecture internals, filtering thresholds), consistent with the summary’s intent for conceptual flow."
+            },
+            {
+              "question": "contextual_match",
+              "score": 4.0,
+              "reason": "Given the caption (“pipeline of our unified multimodal retrieval module”) and the summary’s description (hybrid-modal corpus D_H → multimodal query retrieval → concept filtering → key step-relevant insights), the figure is understandable as a supplementary diagram. The left-to-right flow (corpus → retrieval module → filtering → top-K outputs) aligns well with the described module’s role, though it does not explicitly show the multimodal query input Q_m, which would strengthen context."
+            },
+            {
+              "question": "redundancy",
+              "score": 4.0,
+              "reason": "The figure contains minimal decorative content and primarily uses functional blocks and arrows. The small example “question” card on the right is slightly extra but still serves to illustrate the nature of retrieved items/insights; it does not introduce method structure beyond what the summary claims. Overall, it avoids unrelated information."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.286,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 5.0,
+              "reason": "The pipeline reads clearly left-to-right: Hybrid-Modal Retrieval Corpus → Multimodal Retrieval Module → Knowledge Concept Filtering → Top-K Knowledge. This matches the summary’s described flow from corpus + retrieval module to filtered step-relevant insights."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 5.0,
+              "reason": "Connection lines are minimal and do not cross. Each block connects straightforwardly to the next stage, preserving visual readability."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 4.0,
+              "reason": "Closely related items are grouped: corpus sources are co-located in the left block, and the two retrievers (cross-modal, text-to-text) are co-located in the retrieval-module block. The filtering stage is adjacent to the retrieval module, consistent with the summary’s “retrieve then concept-filter” description."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "Major blocks are aligned in a clean horizontal row, and the subcomponents inside blocks are stacked consistently. Minor misalignment is implied by differing internal box sizes/spacing (e.g., nested items not perfectly grid-aligned), but overall alignment is neat."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "Primary stages are visually distinguished as larger framed modules, while subcomponents are smaller internal boxes. The final output (Top-K Knowledge) is visually emphasized by a stacked-card graphic, helping indicate output salience, though stage prominence is fairly uniform without strong size/contrast differences among the main blocks."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is adequate whitespace between the main blocks and sufficient internal padding so labels are readable. The rightmost output illustration is close enough to be associated with the pipeline but not cramped; margins are generally comfortable."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 4.0,
+              "reason": "Similar roles are represented consistently: modules as framed containers, submodules as rounded rectangles, and a consistent color scheme (e.g., greens for multimodal/knowledge, blues for text). However, the color semantics are not explicitly keyed, and the output uses a different visual metaphor (stacked cards), slightly reducing uniformity."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 3.0,
+              "reason": "The figure replaces abstract retrieval concepts with simple, concrete visual tokens: stacked boxes for the hybrid-modal corpus and retrieval submodules, an explicit funnel/icon for “knowledge concept filtering,” and a stack of document/cards representing “Top-K knowledge.” This is moderately metaphorical (clear iconography but minimal symbolic abstraction beyond standard flowchart elements) and aligns with the summary’s components (D_H, unified retrieval, concept filtering, step-relevant insights)."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "Visually, it follows a common pipeline/flowchart template: left-to-right boxes, arrows, and a generic output stack. The color-coding (green/blue) and the funnel icon add slight differentiation, but the overall style is conventional for module schematics and does not present a notably unique visual language beyond standard system diagrams described in the summary."
+            },
+            {
+              "question": "adaptability",
+              "score": 3.0,
+              "reason": "The layout is tailored to the paper’s specific retrieval story by explicitly separating the hybrid-modal corpus into “multimodal” vs “text-only” knowledge and pairing them with “cross-modal” vs “text-to-text” retrievers, then isolating “knowledge concept filtering” before producing “Top-K knowledge.” This decomposition matches the summary’s unified multimodal retrieval module and its filtering step, indicating some adaptation to the method rather than a purely generic single-retriever block—though it still largely adheres to uniform left-to-right design conventions."
+            }
+          ]
+        },
+        "weighted_total": 3.657
+      }
+    }
+  ]
+}

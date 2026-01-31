@@ -1,0 +1,239 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Overview of Authority Bias in RAG</title>
+<style>
+  body { margin: 0; background: #ffffff; font-family: Arial, Helvetica, sans-serif; }
+  #figure-root { width: 1200px; height: 1500px; margin: 0 auto; position: relative; background: #fff; }
+  svg { width: 1200px; height: 1500px; display: block; }
+
+  .panel-title { font-size: 22px; font-weight: 700; fill: #111; }
+  .section-title { font-size: 18px; font-weight: 700; fill: #111; }
+  .label { font-size: 16px; fill: #222; }
+  .small { font-size: 14px; fill: #333; }
+  .tiny { font-size: 12px; fill: #444; }
+  .mono { font-family: "Arial", Helvetica, sans-serif; letter-spacing: 0.2px; }
+  .muted { fill: #555; }
+  .emph { font-weight: 700; fill: #111; }
+
+  .box { fill: #ffffff; stroke: #222; stroke-width: 2; }
+  .box-soft { fill: #fbfbfd; stroke: #222; stroke-width: 2; }
+  .box-accent-user { fill: #fff7f7; stroke: #b32020; stroke-width: 2.5; }
+  .box-accent-db { fill: #f6fbff; stroke: #1d5fa7; stroke-width: 2.5; }
+  .box-accent-mid { fill: #f7fbf7; stroke: #2d7a2d; stroke-width: 2.5; }
+  .box-accent-metric { fill: #fffdf5; stroke: #8a6d00; stroke-width: 2.5; }
+
+  .chip { fill: #f2f2f2; stroke: #666; stroke-width: 1.5; }
+  .chip-user { fill: #ffecec; stroke: #b32020; stroke-width: 1.5; }
+  .chip-db { fill: #eaf4ff; stroke: #1d5fa7; stroke-width: 1.5; }
+  .chip-mid { fill: #eaf7ea; stroke: #2d7a2d; stroke-width: 1.5; }
+  .chip-metric { fill: #fff5d6; stroke: #8a6d00; stroke-width: 1.5; }
+
+  .arrow { stroke: #222; stroke-width: 2.2; fill: none; }
+  .arrow-thin { stroke: #333; stroke-width: 1.8; fill: none; }
+  .arrow-user { stroke: #b32020; stroke-width: 2.6; fill: none; }
+  .arrow-db { stroke: #1d5fa7; stroke-width: 2.6; fill: none; }
+  .arrow-mid { stroke: #2d7a2d; stroke-width: 2.6; fill: none; }
+  .dash { stroke-dasharray: 7 6; }
+
+  .legend-text { font-size: 13px; fill: #333; }
+  .caption-bg { fill: #ffffff; stroke: #bbb; stroke-width: 1.5; }
+  .caption { font-size: 14px; fill: #111; }
+  .divider { stroke: #d0d0d0; stroke-width: 1.2; }
+
+  .callout { fill: #ffffff; stroke: #666; stroke-width: 1.6; }
+  .callout-title { font-size: 14px; font-weight: 700; fill: #111; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-label="Overview diagram of Authority Bias in retrieval-augmented generation (RAG), ABDD construction, metrics, and CDEQ mitigation.">
+  <defs>
+    <marker id="arrowhead" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#222"/>
+    </marker>
+    <marker id="arrowhead-user" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#b32020"/>
+    </marker>
+    <marker id="arrowhead-db" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#1d5fa7"/>
+    </marker>
+    <marker id="arrowhead-mid" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#2d7a2d"/>
+    </marker>
+    <marker id="arrowhead-metric" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#8a6d00"/>
+    </marker>
+  </defs>
+
+  <!-- Top title -->
+  <text x="60" y="60" class="panel-title">Authority Bias in Retrieval-Augmented Generation (RAG): overview, dataset construction, metrics, and mitigation</text>
+  <line x1="60" y1="78" x2="1140" y2="78" class="divider"/>
+
+  <!-- Legend -->
+  <rect x="60" y="95" width="1080" height="70" rx="10" class="box-soft"/>
+  <rect x="85" y="115" width="180" height="32" rx="16" class="chip-user"/>
+  <text x="175" y="136" text-anchor="middle" class="legend-text">User-provided context</text>
+  <rect x="285" y="115" width="190" height="32" rx="16" class="chip-db"/>
+  <text x="380" y="136" text-anchor="middle" class="legend-text">Retrieved DB evidence</text>
+  <rect x="495" y="115" width="160" height="32" rx="16" class="chip-mid"/>
+  <text x="575" y="136" text-anchor="middle" class="legend-text">CDEQ modules</text>
+  <rect x="675" y="115" width="170" height="32" rx="16" class="chip-metric"/>
+  <text x="760" y="136" text-anchor="middle" class="legend-text">Bias metrics</text>
+  <path d="M 885 131 L 955 131" class="arrow-user" marker-end="url(#arrowhead-user)"/>
+  <text x="965" y="136" class="legend-text">Preferential following (authority)</text>
+
+  <!-- Section A: RAG with conflict and authority bias -->
+  <text x="60" y="210" class="section-title">A. Where Authority Bias arises: conflicting knowledge in RAG</text>
+
+  <!-- User Query + Context box -->
+  <rect x="60" y="240" width="520" height="300" rx="14" class="box-accent-user"/>
+  <text x="80" y="272" class="label emph">User prompt (q) + user-provided context (cᵤ)</text>
+
+  <rect x="85" y="295" width="470" height="95" rx="10" class="box"/>
+  <text x="105" y="323" class="small emph">Query + appended context</text>
+  <text x="105" y="350" class="small">q: “Question about an entity in a passage”</text>
+  <text x="105" y="375" class="small">cᵤ: a plausible paragraph containing an answer (may be wrong)</text>
+
+  <rect x="85" y="410" width="470" height="110" rx="10" class="box"/>
+  <text x="105" y="438" class="small emph">Authority signal (implicit)</text>
+  <text x="105" y="464" class="small">Human user is treated as an “authority” source</text>
+  <text x="105" y="490" class="small">Bias observed: model over-trusts cᵤ even when it conflicts</text>
+
+  <!-- Database retrieval box -->
+  <rect x="620" y="240" width="520" height="300" rx="14" class="box-accent-db"/>
+  <text x="640" y="272" class="label emph">Retriever + external database evidence (c_d)</text>
+
+  <rect x="645" y="295" width="470" height="95" rx="10" class="box"/>
+  <text x="665" y="323" class="small emph">Retriever output</text>
+  <text x="665" y="350" class="small">c_d: relevant evidence paragraph retrieved from database</text>
+  <text x="665" y="375" class="small">May be correct; may be noisy in the wild</text>
+
+  <rect x="645" y="410" width="470" height="110" rx="10" class="box"/>
+  <text x="665" y="438" class="small emph">Conflict setting</text>
+  <text x="665" y="464" class="small">cᵤ and c_d can contradict on the target answer entity</text>
+  <text x="665" y="490" class="small">RAG generator must synthesize both sources</text>
+
+  <!-- Generator box -->
+  <rect x="240" y="575" width="720" height="200" rx="16" class="box"/>
+  <text x="260" y="610" class="label emph">LLM generator M(q, cᵤ, c_d)</text>
+
+  <!-- Two arrows into generator -->
+  <path d="M 320 540 L 420 575" class="arrow-user" marker-end="url(#arrowhead-user)"/>
+  <text x="250" y="565" class="tiny" text-anchor="start">input: user context</text>
+
+  <path d="M 880 540 L 780 575" class="arrow-db" marker-end="url(#arrowhead-db)"/>
+  <text x="955" y="565" class="tiny" text-anchor="end">input: DB evidence</text>
+
+  <!-- Output and bias callout -->
+  <rect x="260" y="630" width="680" height="120" rx="12" class="box-soft"/>
+  <text x="280" y="658" class="small emph">Observed behavior under conflict:</text>
+  <text x="280" y="685" class="small">When cᵤ and c_d disagree, the output tends to follow cᵤ (user authority)</text>
+  <text x="280" y="712" class="small">Consequence: reduced RAG factuality; vulnerability to adversarial user context</text>
+
+  <path d="M 600 775 L 600 835" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <rect x="210" y="845" width="780" height="140" rx="14" class="box-accent-user"/>
+  <text x="600" y="878" text-anchor="middle" class="label emph">Authority Bias (definition in this paper)</text>
+  <text x="240" y="910" class="small">LLM shows undue preference for user-provided knowledge source over database evidence</text>
+  <text x="240" y="938" class="small">Distinct from sycophancy: not driven by user emotions/preferences; explicit multi-source conflict</text>
+  <text x="240" y="966" class="small">Measured as differences in bias metrics when c = cᵤ vs c = c_d</text>
+
+  <!-- Section divider -->
+  <line x1="60" y1="1025" x2="1140" y2="1025" class="divider"/>
+
+  <!-- Section B: ABDD construction -->
+  <text x="60" y="1070" class="section-title">B. ABDD: conflict construction for controlled evaluation (derived from SQuAD)</text>
+
+  <!-- ABDD pipeline boxes -->
+  <rect x="60" y="1100" width="540" height="300" rx="14" class="box"/>
+  <text x="80" y="1132" class="label emph">ABDD conflict construction</text>
+
+  <rect x="85" y="1155" width="490" height="70" rx="10" class="box-soft"/>
+  <text x="105" y="1183" class="small emph">1) Start from SQuAD QA instance</text>
+  <text x="105" y="1208" class="small mono">(q, c, a) with answer a located in context c</text>
+
+  <rect x="85" y="1235" width="490" height="82" rx="10" class="box-soft"/>
+  <text x="105" y="1263" class="small emph">2) Entity analysis + substitution (Wikipedia)</text>
+  <text x="105" y="1288" class="small">Named-entity category; replace answer with conflict entity</text>
+  <text x="105" y="1313" class="small">Substitution types: Alias / Corpus / Typeswap</text>
+
+  <rect x="85" y="1327" width="490" height="60" rx="10" class="box-soft"/>
+  <text x="105" y="1355" class="small emph">3) Rewrite for near-equivalent passages</text>
+  <text x="105" y="1380" class="small">Rewrite one passage so only answer sentence differs (≈80% similarity)</text>
+
+  <!-- Output contexts -->
+  <rect x="620" y="1100" width="520" height="300" rx="14" class="box"/>
+  <text x="640" y="1132" class="label emph">Resulting ABDD instance</text>
+
+  <rect x="645" y="1155" width="470" height="105" rx="10" class="box-accent-db"/>
+  <text x="665" y="1183" class="small emph">Database evidence paragraph (c_d)</text>
+  <text x="665" y="1208" class="small">Contains answer a (fact-consistent) or ¬a (conflict) depending on setup</text>
+  <text x="665" y="1233" class="small">Used as retrieved context in RAG</text>
+
+  <rect x="645" y="1275" width="470" height="105" rx="10" class="box-accent-user"/>
+  <text x="665" y="1303" class="small emph">User-provided paragraph (cᵤ)</text>
+  <text x="665" y="1328" class="small">Semantically similar; differs at the answer entity (may be wrong)</text>
+  <text x="665" y="1353" class="small">Injected into the prompt as user context</text>
+
+  <!-- arrows between ABDD steps -->
+  <path d="M 600 1250 L 620 1250" class="arrow-thin" marker-end="url(#arrowhead)"/>
+  <text x="610" y="1230" class="tiny" text-anchor="middle">two contexts</text>
+
+  <!-- Section divider -->
+  <line x1="60" y1="1420" x2="1140" y2="1420" class="divider"/>
+
+  <!-- Section C: Metrics and mitigation (stacked to fit before caption area) -->
+  <text x="60" y="1460" class="section-title">C. Measurement and mitigation summary</text>
+
+  <!-- Metrics box (left) -->
+  <rect x="60" y="1485" width="540" height="330" rx="14" class="box-accent-metric"/>
+  <text x="80" y="1517" class="label emph">Proposed bias metrics (compare user vs database)</text>
+
+  <rect x="85" y="1540" width="490" height="85" rx="10" class="box-soft"/>
+  <text x="105" y="1568" class="small emph">① Inaccuracy Ratio (R)</text>
+  <text x="105" y="1593" class="small">P(M(q, c, ¬c) ≠ a | I(c) ⊕ I(¬c)=1): probability of following wrong source under conflict</text>
+
+  <rect x="85" y="1635" width="490" height="80" rx="10" class="box-soft"/>
+  <text x="105" y="1663" class="small emph">② Correctiveness Ratio (R_c)</text>
+  <text x="105" y="1688" class="small">Probability model corrects an initially wrong answer after adding factual context</text>
+
+  <rect x="85" y="1725" width="490" height="80" rx="10" class="box-soft"/>
+  <text x="105" y="1753" class="small emph">③ Misleading Ratio (R_m)</text>
+  <text x="105" y="1778" class="small">Probability model is misled into a wrong answer after adding conflicting context</text>
+
+  <rect x="85" y="1815" width="490" height="70" rx="10" class="box"/>
+  <text x="105" y="1843" class="small emph">Authority Bias score</text>
+  <text x="105" y="1868" class="small mono">B = |R_u − R_d| for R ∈ {R, R_c, R_m}</text>
+
+  <!-- Mitigation box (right) -->
+  <rect x="620" y="1485" width="520" height="330" rx="14" class="box-accent-mid"/>
+  <text x="640" y="1517" class="label emph">CDEQ mitigation (Conflict Detection Enhanced Query)</text>
+
+  <rect x="645" y="1540" width="470" height="80" rx="10" class="box-soft"/>
+  <text x="665" y="1568" class="small emph">Step 1: Conflict localization</text>
+  <text x="665" y="1593" class="small">Split paragraphs into sentences; find highly relevant yet contradictory sentence pairs</text>
+
+  <rect x="645" y="1630" width="470" height="90" rx="10" class="box-soft"/>
+  <text x="665" y="1658" class="small emph">Step 2: Factuality detection</text>
+  <text x="665" y="1683" class="small">Decompose into atomic facts; retrieve evidence via external tools/search</text>
+  <text x="665" y="1708" class="small">Assign factuality scores based on evidence quality and match</text>
+
+  <rect x="645" y="1730" width="470" height="85" rx="10" class="box"/>
+  <text x="665" y="1758" class="small emph">Step 3: Enhanced query to generator</text>
+  <text x="665" y="1783" class="small">Provide localized conflicts + factuality scores to reduce undue reliance on user authority</text>
+
+  <!-- Connector from metrics to mitigation -->
+  <path d="M 600 1650 L 620 1650" class="arrow-thin dash" marker-end="url(#arrowhead)"/>
+  <text x="610" y="1630" class="tiny" text-anchor="middle">guided by evaluation</text>
+
+  <!-- Caption area -->
+  <rect x="60" y="1405" width="1080" height="0" fill="none"/>
+  <rect x="60" y="1885" width="1080" height="95" rx="10" class="caption-bg"/>
+  <text x="80" y="1915" class="caption">
+    Overview of Authority Bias in retrieval-augmented generation (RAG): external database evidence may conflict with user-provided context, yet LLMs preferentially follow user authority. The figure also summarizes ABDD conflict construction, proposed bias metrics, and CDEQ-based mitigation via conflict localization and factuality scoring.
+  </text>
+</svg>
+</div>
+</body>
+</html>

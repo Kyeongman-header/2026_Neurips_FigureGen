@@ -1,0 +1,134 @@
+{
+  "paper_name": "Interpretable_Preferences_via_Multi-Objective_Reward_Modeling_and_Mixture-of-Experts",
+  "evaluated_at": "2026-01-12T02:17:46.496664",
+  "figure_summary": "## 1. Core Contributions\n- Proposes **ArmoRM**: an **absolute-rating, multi-objective reward model** trained via **k-dimensional regression** on human-interpretable objectives (e.g., honesty, verbosity, safety), instead of only pairwise Bradley–Terry preference fitting.\n- Introduces a **mixture-of-experts (MoE)-style scalarization**: a **context-conditioned gating network** that produces nonnegative weights over objectives to convert the multi-objective reward vector into a **single scalar score** for ranking/comparison.\n- Demonstrates that the resulting **ArmoRM + gating** setup can be **both interpretable (objective decomposition)** and **high-performing** as a reward model (e.g., strong RewardBench results reported in the paper).\n\n## 2. Method Components & Relations relevant to figures\n- **Backbone feature extractor (LLM)**: a decoder-only LLM processes the concatenated prompt–response sequence \\(x \\oplus y\\); the **final-layer hidden state of the last token** is used as a feature vector \\(f_\\theta(x \\oplus y)\\in \\mathbb{R}^d\\).\n- **Multi-objective regression head (ArmoRM outputs)**:\n  - A linear layer \\(w \\in \\mathbb{R}^{d \\times k}\\) maps features to **k objective scores** (predicted rating vector).\n  - Training uses **squared error regression** to match absolute ratings:\n    \\[\n    \\min_{\\theta,w}\\; \\mathbb{E}_{(x,y,r)\\sim D}\\;\\|w^\\top f_\\theta(x\\oplus y)-r\\|_2^2\n    \\]\n- **Gating / scalarization layer (MoE-style)**:\n  - A gating network \\(g_\\phi(\\cdot)\\) outputs a **simplex weight vector** over objectives (nonnegative weights summing to 1), conditioned on the context (described as conditioned on the prompt \\(x\\); implemented “on top of the ArmoRM”).\n  - The scalar reward used for ranking is intended to be a **weighted combination** of the objective scores, with weights varying by context (e.g., higher weight on safety for risky prompts).\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To visually communicate the **model architecture as a decomposable, interpretable reward pipeline**: tokens → LLM representation → **separate objective scores** → **context-dependent gating weights** → **single scalar reward**.\n- To emphasize the **separation of concerns**: (i) learning objective-specific predictors from absolute ratings, and (ii) learning how to **combine objectives adaptively** (rather than fixed linear weights) to support different prompt contexts.\n- To illustrate **interpretability/steerability hooks**: the figure-level decomposition is meant to make clear *why* a response scores highly (which objectives contribute, and by how much), enabling inspection and potential mitigation of biases (e.g., verbosity bias) through the weighting mechanism.\n\n## 4. What Figures are NOT intended to show\n- Not meant to provide a **full RLHF training pipeline** (e.g., PPO, rejection sampling, DPO loops); figures focus on the **reward model**, not downstream policy optimization.\n- Not intended to prove that interpretability **guarantees** reduced reward hacking; the visual decomposition shows *mechanism* (objective scores + weights), not a formal safety guarantee.\n- Not intended to establish that the chosen objectives/ratings are **complete or uniquely correct** representations of “human preferences”; they depict how the method uses given multi-objective annotations.\n- Not intended to detail dataset construction, annotation rubrics, or the full evaluation protocol; any performance tables support claims but are not architectural explanations.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Interpretable_Preferences_via_Multi-Objective_Reward_Modeling_and_Mixture-of-Experts__p1__score1.00.png",
+      "caption": "Figure 1: Architecture of our reward model. It consists of an LLM backbone, a regression layer for multi-objective reward modeling, and a gating layer that outputs coefficients to scalarize the reward objectives into a scalar score.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure covers the major architectural components described in the summary: prompt+response tokens into an LLM backbone, a regression layer producing multiple objective scores, and a gating layer producing coefficients to scalarize into a single score. It also conveys the interpretability hook via per-objective contributions. However, it omits key technical specifics mentioned in the summary (e.g., last-token hidden state feature extraction f_θ(x⊕y), the linear head w∈R^{d×k}, simplex/nonnegative-sum-to-1 constraint, and the squared-error regression objective), so it is not fully comprehensive with respect to formulas/constraints."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "Without reading the paper, one can infer the operating principle: the model predicts multiple objective ratings (helpfulness, correctness, etc.), then a gating mechanism assigns weights that combine them into a final scalar score, with visible positive/negative contributions. The only potential ambiguity relative to the summary is what the gating conditions on (the summary says prompt/context-conditioned) and whether weights are constrained (simplex), neither of which is clear from the visual alone."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure is an architecture schematic and does not attempt to summarize the paper end-to-end. It does not include the training setup (absolute-rating k-dimensional regression with squared error), nor any indication of claimed empirical performance (e.g., RewardBench) or the broader interpretability/steerability claims beyond the decomposition. This matches the caption’s scope but limits completeness as a whole-paper summary."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 3.0,
+              "reason": "The figure matches the summarized core pipeline (LLM backbone → multi-objective regression head → gating/scalarization → scalar score). However, it introduces specific objective labels (Helpfulness, Correctness, Coherence, Complexity, Verbosity) and example numeric coefficients (0.8x, 0.6x, 0x, -0.2x) that are not explicitly specified in the provided summary. The negative gating weight (-0.2x) conflicts with the summary’s statement that gating outputs simplex weights (nonnegative, sum to 1), which is a substantive hallucinated detail rather than a harmless illustration."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 3.0,
+              "reason": "Major component ordering and connections are consistent with the summary: tokens from prompt/response go through a decoder-only LLM backbone; a regression layer outputs per-objective scores; a gating layer provides coefficients to produce a final scalar score. But the depiction of a negative coefficient implies gating weights need not be nonnegative/simplex, contradicting the summarized MoE-style scalarization constraint; this affects the correctness of the scalarization relationship."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 4.0,
+              "reason": "High-level labels ('ArmoRM', 'Regression Layer', 'Gating Layer', LLM/decoder stack) align with the summary and caption. The fine-grained objective names are not confirmed by the summary (which only gives examples like honesty/verbosity/safety), so they may be imprecise but do not fundamentally mislabel the main architectural blocks."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The diagram foregrounds the main architectural pipeline described in the summary: prompt/response tokens enter an LLM backbone, a regression layer produces multiple objective scores, and a gating layer outputs coefficients to combine them into a scalar score. This matches the core contribution (multi-objective absolute-rating reward model + context-conditioned scalarization). Minor trivialities (e.g., decorative checkmarks/cross and explicit example weights) are present but do not obscure the primary structure."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption/text, the figure clearly communicates the separation of concerns emphasized in the summary: objective decomposition (helpfulness/correctness/etc.) followed by adaptive weighting into a single score. The flow arrows and module labels make the intended computation understandable at a glance. One clarity gap relative to the summary is that the gating is said to be context-conditioned (on the prompt x), but the visual does not explicitly show the gating network’s input, which slightly weakens standalone interpretability."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure largely avoids irrelevant content and stays focused on the method components in the summary (LLM backbone, regression head, gating/scalarization, scalar score). The objective list and example coefficients aid intuition but add some non-essential detail (including negative weight shown for verbosity, whereas the summary specifies nonnegative simplex weights), which may introduce mild confusion; however, it does not add unrelated modules (e.g., RLHF loops) or distracting decorative elements."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The architecture clearly flows left-to-right: prompt/response tokens enter the LLM backbone, then a regression layer outputs multi-objective scores, then the gating layer produces coefficients, culminating in a single scalar score on the far right."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Most connections are clean and do not cross. However, the magenta routing from the 'Gating Layer' to the right-side coefficient panel uses an L-shaped path that visually overlaps/threads above other elements, creating mild visual clutter even if it does not technically cross many other lines."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related modules are mostly grouped: the backbone + regression are inside the 'ArmoRM' block, and the objective list with coefficients is adjacent. The gating layer is placed above and slightly detached from the scalarization/objective area it controls, which weakens immediate association compared to placing it directly next to the weights panel."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major blocks follow a consistent horizontal layout (backbone → regression → objectives/weights → score). Within the left block, vertical modules are aligned reasonably. The gating layer sits above the main horizontal axis, and the connectors create a slight misalignment relative to an implied grid."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Main components stand out: the large green 'ArmoRM' region, the distinct 'Gating Layer' label, and the red 'Score' on the right make the pipeline’s key stages visually prominent. The regression layer is thinner and could be easier to miss relative to its importance as one of the three named components in the caption."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally adequate whitespace between the left pipeline and the right objective/weight panel. Some elements are tight: the regression layer is very close to the objective list, and the routing from the gating layer to the weights panel runs near other arrows, slightly reducing breathing room."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles are mostly encoded consistently: backbone submodules use similar rounded-rectangle styling; objective items are listed uniformly; coefficients use a consistent badge style. Color semantics are somewhat mixed (e.g., many different bright colors for backbone components without an explicit legend), which can reduce consistency of meaning across shapes/colors."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure uses concrete visual tokens (small colored squares for prompt/response tokens), checkmarks/cross icons, and numeric coefficients to stand in for abstract concepts like objective satisfaction and scalarization weights. However, most components are still represented with standard labeled blocks (LLM backbone, regression layer, gating layer) rather than richer metaphorical symbols."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "The overall visual style is a conventional deep-learning architecture diagram: sequential colored blocks feeding into a list of objectives and a scalar score. While the inclusion of check/cross icons and per-objective multipliers adds some personality, it does not strongly differentiate from common reward-model schematic templates described in the summary (backbone → objective heads → gating → scalar)."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific decomposable reward pipeline: it clearly separates prompt vs response tokens, highlights ArmoRM as the multi-objective regressor, and then shows a distinct gating layer producing context-dependent coefficients applied to named objectives before yielding a final score. This direct mapping to the method’s interpretability/steerability claim is more adapted than a generic single-head reward-model diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.562
+      }
+    }
+  ]
+}

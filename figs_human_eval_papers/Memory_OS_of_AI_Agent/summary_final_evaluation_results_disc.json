@@ -1,0 +1,261 @@
+{
+  "paper_name": "Memory_OS_of_AI_Agent",
+  "evaluated_at": "2026-01-12T03:02:02.774809",
+  "figure_summary": "## 1. Core Contributions\n- Proposes **MemoryOS**, an OS-inspired, unified memory management framework for LLM agents to address **fixed context window** limits and enable **long-term coherence + personalization**.\n- Introduces a **three-tier hierarchical memory** (STM/MTM/LPM) and integrates **four coordinated modules** (Storage, Updating, Retrieval, Generation) as a single system design.\n- Defines **explicit update policies** across tiers: **dialogue-chain FIFO** (STM→MTM) and **segmented paging + heat-based prioritization** (MTM→LPM), aiming for efficient retention and controlled forgetting.\n- Empirically shows (per paper text) substantial gains on long-conversation benchmarks (e.g., LoCoMo), positioning MemoryOS as both **effective** (quality) and **efficient** (memory management) vs. baselines.\n\n## 2. Method Components & Relations relevant to figures\n- **Key modules depicted**\n  - **Memory Storage**\n    - **STM**: stores recent interactions as *dialogue pages* `{Q, R, T}` plus a **dialogue chain** with LLM-produced meta-summary (`metachain`) to maintain local continuity.\n    - **MTM**: stores topic-organized *segments* composed of multiple dialogue pages (OS-like **segmented paging**); segment membership determined by an **Fscore** combining embedding cosine similarity and keyword Jaccard overlap.\n    - **LPM**: persistent **persona memory** split into **User Persona** (static profile + dynamic user KB + evolving traits) and **Agent Persona** (static profile + dynamic traits).\n  - **Memory Updating**\n    - **STM→MTM**: STM is a **fixed-length queue**; oldest pages moved via **FIFO** when full (guided by the dialogue-chain structure).\n    - **MTM management / MTM→LPM**: segments are **ranked by a Heat score** (combining visitation, interaction length, recency); used for **segment deletion** and **promotion of important content into LPM**, operationalized with **page-level selection** within segments (top-*k* pages) and segment selection (top-*m* segments).\n  - **Memory Retrieval**\n    - Multi-step retrieval over MTM: **(1) semantic relevance to select segments**, then **(2) retrieve relevant pages**; additionally pulls **persona attributes from LPM** and immediate context from STM.\n  - **Response Generation**\n    - **Integrates retrieved STM/MTM/LPM content into a prompt** to generate a final response intended to be coherent and personalized.\n\n- **Key relations / data flow emphasized in figures**\n  - User **Query → STM write (push page)** → potential **FIFO migration to MTM** → MTM **segmented organization** → **heat-based** retention/eviction and **promotion to LPM**.\n  - At inference: **Query → retrieval from MTM (segment then page) + retrieval from LPM (persona) + STM context → response generation**.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **visualize the system-level architecture** of MemoryOS: the **three-tier memory hierarchy**, the **four modules**, and how information **moves (updates) and is accessed (retrieval)** across tiers.\n- To clarify the **OS-inspired mechanisms** (segmentation/paging, FIFO, heat-based replacement) as concrete operations on conversational data (pages/segments/persona slots), making the design interpretable as an “operating system” for memory.\n- To qualitatively illustrate how MemoryOS changes agent behavior in long dialogues—i.e., that integrating managed memory yields **more consistent, context-aware, persona-consistent responses** than a default LLM without such memory management.\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide a full **mathematical derivation** or prove optimality of FIFO, segmentation thresholds, or the heat function—figures depict **mechanisms**, not theoretical guarantees.\n- Not intended to isolate **ablation-level causal attribution** (e.g., exactly how much each module—STM chaining vs. MTM segmentation vs. LPM persona—contributes); figures present the **integrated workflow**.\n- Not intended to document **dataset-specific** details, training procedures, or exhaustive experimental controls; qualitative figures (e.g., case studies) illustrate **behavioral impact**, not statistical significance by themselves.\n- Not intended to represent internal LLM reasoning or chain-of-thought; “summaries/meta/keywords” are shown as **stored artifacts**, not as exposed reasoning processes.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Memory_OS_of_AI_Agent__p7__score0.90.png",
+      "caption": "Figure 4: Case study demonstrating the positive impact of introducing our memory management system. Left: default LLMs; Right: with MemoryOS.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 2.0,
+              "reason": "The figure matches the summary’s stated purpose for qualitative case studies (showing improved long-term coherence/personalization with MemoryOS vs a default LLM). However, it omits essentially all major method components emphasized in the summary: the three-tier hierarchy (STM/MTM/LPM), the four modules (Storage/Updating/Retrieval/Generation), and the explicit update/retrieval mechanisms (FIFO STM→MTM, segmented paging with Fscore, heat-based prioritization and promotion to LPM). Thus it does not cover major components/formulas; it only illustrates an outcome."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the visual alone, one can understand the general claim: without MemoryOS the agent forgets earlier user facts (park/scenery/squirrels/exercise), while with MemoryOS it recalls them weeks later and responds more personalized/consistent (ties burger advice to gym motivation). The operating principle is understandable at a high level (memory helps), though the system’s actual operating mechanisms are not inferable."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 1.0,
+              "reason": "This single case-study comparison does not summarize the paper from beginning to end as described in the summary (architecture, tier definitions, update/retrieval policies, and efficiency/effectiveness evidence). It provides only a narrow qualitative example of behavioral impact and does not reflect the broader system design or empirical benchmarking."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1 Hallucination",
+              "score": 5.0,
+              "reason": "The figure is a qualitative case study contrasting a default LLM vs. MemoryOS (as stated in the caption). It only illustrates long-term recall/personalization effects (remembering the wetland park/scenery/squirrels and the user’s workout goal) and does not introduce unmentioned modules, formulas (e.g., Heat/Fscore), or extra architectural components beyond what the summary says figures may show."
+            },
+            {
+              "question": "2.2 Relation Correctness",
+              "score": 4.0,
+              "reason": "The depicted relationship—MemoryOS enabling better use of prior conversation history weeks later, yielding more coherent and personalized responses—is consistent with the summary’s intent (managed memory improves long-term coherence and personalization vs. default LLMs). However, the figure does not explicitly show the summarized internal mechanisms/flows (STM→MTM FIFO, segmented paging, heat-based promotion/eviction, MTM retrieval steps), so the correctness of those specific relations is not evidenced here."
+            },
+            {
+              "question": "2.3 Label Accuracy",
+              "score": 5.0,
+              "reason": "Labels match the summary and caption at the appropriate level: 'Without MemoryOS' vs. 'With MemoryOS' and 'Conversation History' align with the described comparison (default LLMs vs. MemoryOS) and the goal of demonstrating improved long-term memory/personalization. No incorrect or mismatched component names are introduced."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized as a simple before/after case study aligned with the caption (Left: default LLMs; Right: with MemoryOS). It focuses on the main claimed impact from the summary—long-term recall and personalization across weeks—by showing the system remembering prior user details (park/scenery/squirrels and workout goal) versus forgetting. It does not depict the internal STM/MTM/LPM tiering or update/retrieval mechanisms, but for a case-study impact figure this abstraction is still readable and on-contribution."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "Given the caption, the visual comparison is immediately interpretable: a past conversation history and a later query, contrasted between ‘Without MemoryOS’ (forgetting) and ‘With MemoryOS’ (recalling and incorporating prior context/persona-related goal). This matches the summary’s intent that qualitative figures illustrate behavioral impact rather than mechanisms. Minor readability friction comes from the figure not explicitly tying the improved behavior to specific MemoryOS components (e.g., which tier provides which recalled item), so it functions best as supplementary evidence rather than explanatory architecture."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "Most elements serve the core message: highlighting key remembered facts in red and presenting parallel dialogue layouts aids scanning and comparison. The decorative icons (LLM logo/robot/user avatars) and some stylistic framing are not strictly necessary, but they do not materially distract from the main point or introduce irrelevant method structure beyond the intended ‘with vs without MemoryOS’ contrast."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The case study is organized primarily left-to-right: the left side is labeled \"Without MemoryOS\" and the right side \"With MemoryOS,\" enabling an immediate comparative reading consistent with the caption. The top \"Conversation History\" and the mid \"A few weeks later...\" add a top-to-bottom staging, but the main comparison flow remains left-to-right."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "There are essentially no connector lines between elements (only a single horizontal arrow/timeline cue), so there is no line-crossing clutter. The conversational bubbles are visually separated without intersecting links."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are grouped: (i) prior conversation history is boxed together at the top, and (ii) the two conditions (default LLM vs. MemoryOS) are spatially separated into left and right dialogue tracks. Within each track, user utterances and the corresponding assistant replies are placed close enough to be read as paired turns."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "The figure uses a clean, grid-like structure: top history in a single band; then two parallel columns for the two conditions. Dialogue bubbles are mostly aligned horizontally within each row/turn. Minor irregularities remain (e.g., differing bubble widths and icon placements), but overall alignment is neat."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Main components stand out via position and labeling: the top \"Conversation History\" box provides context; the two main conditions are highlighted with clear labels; and the temporal jump \"A few weeks later...\" is emphasized by a large arrow. The hierarchy is clear, though the two conditions are visually similar in weight, so the key contrast relies mainly on labels."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is sufficient whitespace between the top history panel and the lower case-study dialogues, and between the left and right tracks. A few elements feel slightly tight (e.g., multiple speech bubbles in the lower band), but readability is largely preserved."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles are rendered consistently: user messages appear in green rounded rectangles, assistant replies in white rounded rectangles, and the two scenarios use parallel visual conventions. Emphasis (red keywords) is used consistently to highlight remembered details. Some stylistic inconsistency exists in iconography (different assistant icons/placements), but it does not materially harm interpretability."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 3.0,
+              "reason": "The figure turns the abstract idea of long-term memory/personalization into a concrete side-by-side dialogue vignette (“Without MemoryOS” vs “With MemoryOS”), using user/AI avatar icons and highlighted keywords (e.g., scenery/squirrels/working out) to visually cue what should be remembered. However, it does not use richer OS-inspired symbols for the mechanisms (e.g., pages/segments/heat/FIFO), so the metaphorization is moderate rather than strong."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "The visual style is a common case-study template: conversation history panel on top, then two parallel chat outcomes with labeled conditions. This matches the caption’s intent (showing behavioral impact) but does not present a distinctive or unusual visual language beyond standard speech bubbles, arrows, and highlights."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is well-adapted to the paper’s claim that MemoryOS improves long-term coherence/personalization: it explicitly depicts a time gap (“A few weeks later…”) and contrasts forgetting vs recalling specific prior details, which directly operationalizes the fixed-context/long-term memory problem in a reader-friendly way. It breaks from generic architecture diagrams by focusing on an outcome-driven narrative comparison tailored to this contribution."
+            }
+          ]
+        },
+        "weighted_total": 3.629
+      }
+    },
+    {
+      "figure_file": "Memory_OS_of_AI_Agent__p2__score1.00.png",
+      "caption": "Figure 1: The overview architecture of MemoryOS, including memory Store, Updating, Retrieval, Response.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_Content_Coverage",
+              "score": 4.0,
+              "reason": "The figure covers the major system components emphasized in the summary: the three-tier memory (STM/MTM/LPM), and the four modules (Store/Updating/Retrieval/Response Generation) as an integrated architecture. It explicitly shows STM pages with FIFO behavior and migration (“Insert to MTM”), MTM segmented organization (“Segment”) with a Heat mechanism (including a threshold τ) driving updates to LPM and segment deletion, and LPM split into User Persona and Agent Persona with static profiles and dynamic traits/KB. It also depicts retrieval from STM/MTM/LPM feeding response generation and includes the ‘Top-k Page’ and ‘Top-m Segment’ selection cues consistent with the summary. However, some summary-mentioned specifics are not shown (e.g., the Fscore definition combining embedding cosine similarity + keyword Jaccard for segment membership; the explicit Heat-score components such as visitation/interaction length/recency; and the STM metachain/meta-summary details), which reduces full coverage."
+            },
+            {
+              "question": "1.2_Standalone_Intelligibility",
+              "score": 4.0,
+              "reason": "From the diagram alone, one can infer the operating principle: a user query is written into STM, older content is migrated via FIFO into MTM where content is organized into segments, segments are managed via a Heat-based policy that can delete segments or promote/update content into LPM, and at inference time the system retrieves from STM/MTM/LPM to condition response generation. The roles of STM/MTM/LPM and the direction of information flow are visually clear. Intelligibility is not perfect because key decision criteria are abstracted (e.g., what exactly constitutes ‘Heat’, how segments are formed, and what ‘relevant LPM’ retrieval entails), so a reader may understand the pipeline but not the concrete mechanics without the paper."
+            },
+            {
+              "question": "1.3_Completeness",
+              "score": 3.0,
+              "reason": "As an overview architecture figure, it summarizes the central method design (hierarchical memory + modules + main update/retrieval flows) but does not capture broader paper content end-to-end. In particular, it omits the empirical claims and benchmark results (e.g., LoCoMo improvements and efficiency comparisons) that are part of the paper’s overall narrative, and it does not detail the policy formulas/definitions (Fscore, Heat computation) beyond naming/indicating them. Thus it is a solid architectural summary but not a complete summary of the full paper from motivation through experiments and conclusions."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure largely sticks to components and mechanisms explicitly described in the summary: three-tier memory (STM/MTM/LPM), FIFO STM→MTM migration, MTM segmented paging with heat-based prioritization, and promotion to LPM plus segment deletion. It also shows retrieval from STM/MTM/LPM into response generation. A minor potential over-specification is the explicit threshold notation \"Heat > τ\" (the summary mentions heat-based ranking/selection but not a threshold symbol), and labels like \"Relevant LPM\" / top-k/top-m are consistent in spirit though not all notational details are stated verbatim."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 5.0,
+              "reason": "Dataflow matches the summary: query writes to STM (push page), STM uses FIFO and migrates to MTM, MTM organizes pages into segments, heat governs retention/eviction and promotion/update to LPM, and at inference retrieval pulls STM context + MTM (segment then page via top-m segments and top-k pages) + LPM persona into response generation. The depicted update (STM→MTM) and management/promotion (MTM→LPM) relations align with the described OS-inspired workflow."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Major labels correspond to the summary’s terminology: STM, MTM, LPM; FIFO; segment; heat; top-k page and top-m segment selection; and LPM split into User Persona and Agent Persona with static profiles and dynamic traits/KB. Module-level elements (retrieve/response generation) also match the four-module framing (storage/updating/retrieval/generation) conveyed by the caption and summary."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "summarization",
+              "score": 4.0,
+              "reason": "The diagram foregrounds the main contributions described in the summary: the three-tier hierarchy (STM/MTM/LPM) and the four coordinated modules (Storage/Updating/Retrieval/Response Generation). Key update mechanisms are schematized (STM FIFO migration to MTM; MTM heat-based decisions including promotion to LPM and segment deletion; top-m segments and top-k pages). Some details (multiple small icons, explicit heat threshold notation, and internal MTM/LPM sub-boxes) add density but still serve the core method rather than trivialities."
+            },
+            {
+              "question": "contextual_match",
+              "score": 4.0,
+              "reason": "As an overview figure, it matches the caption and summary well: it shows Query-driven retrieval from STM/MTM/LPM feeding Response Generation, and it depicts the OS-inspired memory operations (segmented paging in MTM, FIFO in STM, heat-based management, persona separation in LPM). The high-level data flow is understandable as supplementary context, though readability is mildly reduced by small text/labels (e.g., top-k/top-m, heat threshold) and crowded visual elements inside MTM."
+            },
+            {
+              "question": "redundancy",
+              "score": 3.0,
+              "reason": "The figure mostly avoids purely decorative content, but it includes several repetitive icons (pages/LLM symbols/flames/snowflake/trash) and multiple dashed containers that do not add proportional explanatory value beyond the labeled mechanisms already present. These elements do not contradict the summary, but they increase visual clutter and compete with the core flow, slightly hurting readability."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.857,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The architecture is laid out primarily left-to-right (STM → MTM → LPM → Response Generation), matching the summary’s tiered memory flow and inference pipeline. However, there are also strong top-down 'Retrieve' arrows and a bottom bus-like line feeding Response Generation, making the overall reading direction slightly mixed rather than purely left-to-right or top-to-bottom."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 3.0,
+              "reason": "Most arrows are routed cleanly (STM→MTM dashed insert, MTM→LPM dashed update, and vertical retrieval arrows). But the long bottom horizontal line with multiple vertical drops (from STM/MTM/LPM) plus the outer dashed boundary path creates several near-intersections and visual tangles, especially around the Response Generation area and left boundary, which reduces traceability."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related tiers are placed adjacent (STM next to MTM next to LPM), consistent with the three-tier hierarchy in the summary. Retrieval cues are placed directly above the corresponding memory blocks, and Response Generation is positioned to the right as the consumer of retrieved memory, reflecting the described dataflow."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major components (STM/MTM/LPM boxes) align neatly on a common horizontal baseline and appear grid-structured. Minor elements inside MTM (segment/heat icons, 'top-m segment' and 'top-k page' indications) are less uniformly aligned, creating slight clutter within that panel."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The three main memory tiers are large, clearly bounded panels with prominent labels (STM/MTM/LPM), and Response Generation is also a large distinct module, making main components stand out. Importance is conveyed by size/position, though emphasis is somewhat diluted by many small icons/text annotations inside MTM competing for attention."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "While the outer frame provides some spacing, several areas are tight: MTM’s interior (segment/heat/delete/update annotations) and the right side near Query/Response Generation have limited whitespace. The density makes it harder to visually separate operations like heat-based update vs deletion vs retrieval."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles are mostly encoded consistently: memory tiers are rounded rectangles; persona sub-blocks use similar box styles; dashed arrows denote transfers/updates, and solid/vertical arrows denote retrieval. Some inconsistency remains due to mixed iconography (multiple small app-like icons, flames/snowflake/trash) and varied text styling (colors and italics) that may not be uniformly mapped to specific operation types."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces many abstract operations from the summary (FIFO migration, segmented paging, heat-based prioritization, persona memory) with concrete visual symbols: page/segment icons for dialogue pages and segments, flame/snowflake-like icons for “Heat” states, trash-bin for deletion, and a robot icon for response generation. The tiered memory (STM/MTM/LPM) is also represented as container blocks with labeled sub-boxes (User/Agent Persona), making the OS-like metaphor fairly tangible rather than purely textual."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 3.0,
+              "reason": "While it includes some OS-themed cues (pages/segments, FIFO badge, heat icons, promotion/deletion markers) consistent with the summary, the overall visual style is still largely a standard systems-architecture diagram: rounded rectangles, arrows, dashed boundaries, and module labels (Storage/Updating/Retrieval/Generation implied by flows). It is moderately distinctive in combining memory-tier internals (segments, top-k pages, top-m segments, persona slots) in one view, but does not strongly depart from common block-diagram templates."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific unified memory-management workflow described in the summary: three-tier hierarchy (STM→MTM→LPM), explicit update paths (FIFO insert to MTM; heat-threshold update to LPM; delete segment), and retrieval lines feeding response generation. It breaks from a generic “pipeline” by embedding tier-specific mechanisms inside each memory block (dialogue chain in STM; segmented paging + heat ranking + top-k/top-m selection in MTM; static/dynamic persona partition in LPM), showing a structure adapted to MemoryOS rather than a uniform design."
+            }
+          ]
+        },
+        "weighted_total": 3.905
+      }
+    }
+  ]
+}

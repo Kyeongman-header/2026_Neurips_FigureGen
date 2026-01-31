@@ -1,0 +1,134 @@
+{
+  "paper_name": "Con_dence_Improves_Self-Consistency_in_LLMs",
+  "evaluated_at": "2026-01-12T00:59:46.811182",
+  "figure_summary": "## 1. Core Contributions\n- Proposes **Confidence-Informed Self-Consistency (CISC)**: a drop-in variant of self-consistency that performs **confidence-weighted majority voting** over sampled reasoning paths to reduce the number of samples needed.\n- Empirically shows that **using model-derived confidence** can maintain or improve reasoning accuracy **at substantially lower sampling cost** (reported as >40% average reduction across many settings).\n- Introduces **within-question confidence evaluation** as the relevant criterion for CISC, arguing standard calibration-style evaluations are misaligned; proposes **Within-Question Discrimination (WQD)** to measure the ability to rank candidate answers *for the same question*.\n- Provides evidence (including qualitative/human-alignment analysis, per text) that LLMs’ confidence scores correlate with reasoning-path quality, supporting the claim that LLMs can **self-assess** usefulness/correctness of their outputs.\n\n## 2. Method Components & Relations relevant to figures\n- **Baseline: Self-consistency decoding**\n  - Sample multiple responses \\((r_i, a_i)\\) for a question \\(q\\).\n  - **Aggregate by unweighted majority vote** over answers: pick the most frequent \\(a\\).\n- **CISC pipeline (key modules shown in schematic figures)**\n  1. **Sampling module (shared with self-consistency):** generate multiple reasoning paths and answers \\(\\{(r_i,a_i)\\}_{i=1}^m\\).\n  2. **Confidence extraction module:** obtain a scalar confidence \\(c_i\\) per sampled path using one of:\n     - **Response probability** (length-normalized generation probability of \\((r,a)\\) given \\(q\\)).\n     - **Verbal confidence** (model outputs an explicit score, e.g., binary or 0–100, after generating the answer).\n     - **P(True)** (probability assigned to a “1/true” token under a binary self-evaluation prompt).\n     - Implementation detail emphasized for comparisons: a **two-step prompting** where confidence is generated *after* \\((q,r,a)\\) so the *reasoning paths stay identical* across SC vs CISC and overhead is minimal.\n  3. **Confidence normalization:** apply **softmax with temperature \\(T\\)**:\n     \\[\n     \\tilde c_i = \\frac{\\exp(c_i/T)}{\\sum_j \\exp(c_j/T)}\n     \\]\n     with the limiting relationship often visualized/explained: \\(T\\to\\infty\\) recovers uniform weights (≈ self-consistency), \\(T\\to 0\\) approaches “pick the single highest-confidence sample.”\n  4. **Aggregation (core relation):** **weighted majority vote**:\n     \\[\n     \\hat a = \\arg\\max_a \\sum_i \\mathbf{1}[a_i=a]\\cdot \\tilde c_i\n     \\]\n- **Evaluation relations that figures often encode**\n  - **Accuracy vs. number of samples** curves comparing SC to CISC.\n  - **Compute/cost reduction** defined by fixing a CISC budget (e.g., 5 or 10 samples) and finding how many SC samples are needed to match its accuracy.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **visualize the efficiency–accuracy tradeoff**: how quickly accuracy improves as more reasoning paths are sampled, and how CISC shifts this curve so fewer samples are needed for the same accuracy.\n- To **communicate the mechanism** of CISC relative to self-consistency: same sampling stage, then an added confidence-scoring step and a different aggregation rule (weighted vs unweighted vote).\n- To **support the central empirical claim** that model-derived confidence is actionable for decoding: confidence-weighting improves selection among sampled answers, especially at small sample counts.\n- To **motivate/justify confidence-method comparisons** (and the need for within-question evaluation): figures are intended to show that not all confidence measures help equally for CISC, and that the “right” metric should reflect **within-question discrimination** rather than across-question calibration.\n\n## 4. What Figures are NOT intended to show\n- Not intended to prove new training-time improvements or changes to model parameters; CISC is a **decoding-time** modification using existing models.\n- Not intended to claim universal gains independent of confidence quality or tuning; CISC’s benefit depends on the **confidence extraction method** and **temperature scaling** choice.\n- Not intended as a pure calibration study across questions (e.g., global reliability diagrams); the paper argues such evaluations can be **misleading for CISC**, which needs **within-question ranking** of candidate answers.\n- Not intended to demonstrate that a single reasoning path becomes more correct; instead, figures focus on **selection/aggregation over multiple sampled paths** and compute savings from better aggregation.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Con_dence_Improves_Self-Consistency_in_LLMs__p1__score0.90.png",
+      "caption": "Figure 2: A simplified example comparing self-consistency vs CISC. (1) Given an input question, (2) both methods first sample multiple reasoning paths. (4, top) Self-consistency then simply selects the most frequent answer. Conversely, (3) CISC adds a self-assessment step, where a confidence score is assigned to each path (see §4.1 for more advanced methods). Then, (4, bottom) it selects the final answer via a weighted majority vote.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_Content_Coverage",
+              "score": 3.0,
+              "reason": "The figure covers the key high-level components described in the summary and caption: shared sampling of multiple reasoning paths, an added confidence self-assessment step for CISC, and the difference between unweighted majority vote (self-consistency) vs confidence-weighted aggregation (CISC). However, it omits several major methodological details mentioned in the summary that often matter for CISC’s definition/operation, including the explicit weighted-vote formula, confidence normalization via softmax with temperature T (and the T→∞ / T→0 interpretation), and the alternative confidence extraction methods (response probability, P(True), etc.)."
+            },
+            {
+              "question": "1.2_Standalone_Intelligibility",
+              "score": 4.0,
+              "reason": "Visually, the pipeline is understandable without the paper: it shows (1) a question, (2) multiple sampled answers/reasoning paths, (3) a confidence score per path, and (4) two aggregation outcomes—self-consistency picking the most frequent answer vs CISC picking the answer with higher total confidence weight. The example makes the core operating principle clear, though it does not explain how confidences are obtained/normalized, which limits full interpretability of the exact mechanism."
+            },
+            {
+              "question": "1.3_Completeness",
+              "score": 2.0,
+              "reason": "The figure is a simplified mechanism example and does not summarize content spanning the paper’s full scope described in the summary (e.g., accuracy-vs-samples efficiency curves, >40% sampling cost reduction results, within-question confidence evaluation and WQD, comparisons among confidence extraction methods, and temperature-scaling behavior). It is informative for the decoding schematic but not complete as an end-to-end paper summary."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1",
+              "score": 4.0,
+              "reason": "The figure matches the summary’s high-level pipeline: sample multiple reasoning paths, assign a confidence score per path, then aggregate via either unweighted majority vote (self-consistency) or confidence-weighted vote (CISC). It does introduce a specific verbal-confidence scale (1–10) and uses raw confidence sums without showing the softmax-with-temperature normalization described in the summary; however, these are auxiliary choices in a “simplified example” and do not change the core method claim."
+            },
+            {
+              "question": "2.2",
+              "score": 4.0,
+              "reason": "Major relationships are represented correctly: both methods share the same sampling stage; self-consistency selects the most frequent answer; CISC adds a self-assessment/confidence step and then uses a weighted vote that can overturn the unweighted majority. The only potential mismatch with the summary is that the summary specifies confidence normalization (softmax with temperature) before weighting, while the diagram appears to aggregate using unnormalized verbal scores directly; for a schematic example this is a mild fidelity issue but not a reversal of the intended component relations."
+            },
+            {
+              "question": "2.3",
+              "score": 5.0,
+              "reason": "Core labels are accurate and aligned with the summary/caption: “Self Consistency” vs “CISC,” with stages labeled Question → Answers (sampled paths) → Confidences (self-assessment) → Aggregation. The notion of verbal confidence is consistent with the summary’s listed confidence extraction methods."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The schematic closely matches the summary’s core mechanism: same sampling of multiple reasoning paths/answers, then CISC adds a confidence-scoring step and replaces unweighted majority vote with confidence-weighted voting. It stays focused on the main contribution (confidence-informed aggregation) and does not drift into unrelated training-time claims. Minor readability drag comes from including fairly detailed arithmetic reasoning text inside each sampled path, which is more granular than needed to convey the method difference."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "With the caption, the four-panel structure (Question → Answers → Confidences → Aggregation) makes the SC vs CISC contrast immediately interpretable. The top (self-consistency counting) vs bottom (CISC weighted sums) aggregation boxes directly instantiate the summary’s unweighted vs weighted majority vote idea, making it effective as an explanatory companion figure."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure largely avoids decorative elements and keeps auxiliary content limited. However, the repeated long-form reasoning in the ‘Answers’ column and repeated confidence prompt text in the ‘Confidences’ column are somewhat redundant for understanding the aggregation concept; shorter placeholders could convey the same idea with less visual clutter. The color-coding and simple count/weight tables are functional rather than decorative."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The diagram has a clear left-to-right pipeline with four numbered columns: (1) Question → (2) Answers (multiple sampled paths) → (3) Confidences (self-assessment per path) → (4) Aggregation. This matches the summary’s CISC schematic structure (shared sampling, added confidence step, then different aggregation)."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "There are no visible inter-module connector lines that cross. The figure uses column grouping and vertical stacking rather than crisscrossing arrows, so the SC vs CISC comparisons in the rightmost aggregation panel remain visually uncluttered."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related elements are co-located: the three sampled answers are stacked in the (2) Answers column, and their corresponding confidence scores are stacked in the adjacent (3) Confidences column, supporting a one-to-one correspondence needed for confidence-weighted voting."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "The overall layout is grid-like with consistent column boundaries and aligned boxes across rows. Minor deviations (e.g., varying text lengths and the hand-drawn-style aggregation callouts) slightly reduce the strictness of alignment, but readability remains strong."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Key stages are emphasized by numbered headers and the final aggregation outcomes are highlighted with large colored callouts for Self-Consistency (red) and CISC (green). However, the main conceptual contrast (unweighted vs weighted vote) is conveyed more by text than by strong visual prominence of the aggregation mechanisms themselves."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is adequate spacing between columns (reinforced by dashed vertical separators) and between stacked boxes, preventing crowding. The aggregation callouts on the right are somewhat tight relative to the available panel space, but they do not impede legibility."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Modules of the same role (sampled answers; confidence ratings) are shown with consistent box shapes and repeated phrasing, and SC vs CISC are consistently color-coded (red vs green). A small inconsistency is the stylistic shift to hand-drawn-like colored braces/callouts in the aggregation panel compared to the more formal boxes elsewhere."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 2.0,
+              "reason": "The figure relies mostly on textual boxes, numbered stages, and simple arithmetic examples to convey the pipeline. It uses minimal concrete iconography (e.g., colored annotations/brackets for SC vs CISC), but does not substantially replace abstract concepts like sampling, confidence extraction, or weighted voting with distinctive symbols or visual metaphors beyond standard flowchart conventions."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "Visually, this is a conventional stepwise schematic: four labeled panels (Question → Answers → Confidences → Aggregation) with SC vs CISC outcomes highlighted by color. This matches common ML paper templates for method comparison diagrams and does not show a notably unique visual style or inventive graphical language beyond clear coloring and grouping."
+            },
+            {
+              "question": "adaptability",
+              "score": 3.0,
+              "reason": "The layout is tailored to the paper’s specific mechanism by directly instantiating the pipeline with a concrete toy example (multiple sampled reasoning paths, per-path confidence ratings, then unweighted vs weighted aggregation). The split aggregation outcome (top self-consistency counts vs bottom confidence-weighted totals) is specifically suited to highlighting the decoding difference emphasized in the summary/caption, though the overall structure remains a standard linear pipeline."
+            }
+          ]
+        },
+        "weighted_total": 3.686
+      }
+    }
+  ]
+}

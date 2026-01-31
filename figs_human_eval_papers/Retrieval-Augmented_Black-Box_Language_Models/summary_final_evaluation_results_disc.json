@@ -1,0 +1,388 @@
+{
+  "paper_name": "Retrieval-Augmented_Black-Box_Language_Models",
+  "evaluated_at": "2026-01-12T03:39:25.765327",
+  "figure_summary": "## 1. Core Contributions (2–4 bullet points)\n- **Black-box retrieval augmentation (REPLUG):** A retrieval-augmented LM framework that **does not modify or access internal LM representations**, instead **prepending retrieved documents** to the LM input and using the LM purely via its outputs.\n- **Ensembled “prepend-per-document” inference:** An inference scheme that runs the same black-box LM **multiple times (one per retrieved document)** and **ensembles next-token probabilities**, enabling incorporation of more documents than would fit if concatenated all at once.\n- **LM-supervised retriever tuning (REPLUG LSR):** A training method that **adapts the dense retriever to the fixed LM** by using the LM’s scoring (via likelihood/perplexity on ground-truth continuations) as supervision, without updating LM parameters.\n\n## 2. Method Components & Relations relevant to figures\n- **Modules**\n  - **Black-box LM (frozen):** Only queried for token probabilities / likelihoods; no parameter updates; no hidden states required.\n  - **Dense dual-encoder retriever:** Encodes query context \\(x\\) and documents \\(d\\) into embeddings \\(E(x), E(d)\\); uses **cosine similarity** \\(s(d,x)=\\cos(E(d),E(x))\\); retrieves **top-\\(k\\)** via FAISS over precomputed doc embeddings.\n  - **External corpus / datastore \\(D\\):** Indexed collection of documents; supplies retrieved \\(D'\\subset D\\).\n\n- **Key relations / data flows**\n  - **Inference (REPLUG):**\n    1. Retrieve top-\\(k\\) documents \\(D'\\) using similarity \\(s(d,x)\\).\n    2. For each \\(d\\in D'\\), form LM input by **concatenation** \\(d \\circ x\\).\n    3. Compute LM next-token distribution \\(p(y \\mid d\\circ x)\\) for each \\(d\\).\n    4. **Ensemble**: \\(p(y \\mid x, D')=\\sum_{d\\in D'} p(y\\mid d\\circ x)\\cdot \\lambda(d,x)\\), where \\(\\lambda(d,x)\\) is a softmax over similarity scores.\n  - **Training (REPLUG LSR):**\n    1. Retriever produces a **retrieval likelihood** over retrieved docs:\n       \\[\n       P_R(d\\mid x)=\\text{softmax}\\left(\\frac{s(d,x)}{\\gamma}\\right)\\ \\text{over } d\\in D'\n       \\]\n    2. LM scores each retrieved document by the likelihood of the **ground-truth continuation** \\(y\\):\n       \\[\n       Q(d\\mid x,y)=\\text{softmax}\\left(\\frac{P_{LM}(y\\mid d,x)}{\\beta}\\right)\\ \\text{over } d\\in D'\n       \\]\n    3. Update retriever parameters by minimizing:\n       \\[\n       \\mathcal{L}=\\frac{1}{|B|}\\sum_{x\\in B} KL\\big(Q(\\cdot\\mid x,y)\\ \\|\\ P_R(\\cdot\\mid x)\\big)\n       \\]\n       (LM remains frozen; only retriever learns.)\n    4. Practical detail reflected in the figure captions: **asynchronous index update** for the datastore embeddings/index as the retriever changes.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **visualize the architectural shift** from prior retrieval-augmented LMs that require **LM parameter updates / internal access** to a **black-box-compatible** approach where retrieval is “plugged in” externally.\n- To **clarify the operational pipeline** of REPLUG: retrieval from a corpus, **document-wise prepending**, repeated LM calls, and **probability ensembling** as the mechanism for using multiple documents under context-length constraints.\n- To **illustrate the training signal path** in REPLUG LSR: how a frozen LM provides **document-level supervision** (via likelihood/perplexity proxy) that is converted into a target distribution and used to **train the retriever** via KL divergence.\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide **full empirical results** (e.g., exact gains on GPT-3/Codex, MMLU, QA) or compare numbers across baselines.\n- Not intended to depict **LM internal mechanisms** (cross-attention over retrieved text, hidden-state fusion, kNN over activations), since the method explicitly avoids internal LM access.\n- Not intended to specify **corpus details**, document formatting prompts, or the exact nature of retrieved documents beyond their role as prependable context.\n- Not intended to establish **retrieval quality metrics** directly (e.g., recall/precision of retrieval) independent of the LM-supervised objective; the focus is on retrieval’s *usefulness to the LM’s predictions* rather than standalone IR performance.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Retrieval-Augmented_Black-Box_Language_Models__p4__score1.00.png",
+      "caption": "Figure 3: REPLUG LSR training process (§4). The retriever is trained using the output of a frozen language model as supervision signals.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure captures the key REPLUG LSR training loop from the summary: a trainable retriever producing a distribution over retrieved documents P_R(d_i|x), a frozen LM producing a target distribution Q(d_i|x) based on LM likelihood of the ground-truth continuation given each prepended document, and a KL-divergence objective to update only the retriever. It also visually indicates per-document scoring (multiple retrieved docs d1–d4) and that the LM is frozen. However, several formula-level details in the summary are omitted or only implicit: the softmax temperature parameters (gamma for P_R and beta for Q) and the explicit dependence on the ground-truth continuation y in Q(d|x,y), and the constraint that LM inputs are concatenations d∘x (suggested but not written). The asynchronous index update detail is also not shown."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "Without reading the paper, one can infer the operating principle: retrieve multiple documents for a context x, compute a retriever probability over them, compute an LM-based probability/score over them using a frozen LM, then train the retriever by matching these distributions via KL divergence. The figure’s numbered steps (1–3) and the frozen/learnable icons support this. Standalone clarity is reduced by missing explicit mention of the ground-truth continuation y and by the nonstandard notation in the KL box (showing KL(P||Q) rather than the summary’s KL(Q||P_R)), which can confuse the exact direction of supervision."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure is focused on the REPLUG LSR training process only, not the full paper scope. It does not summarize the inference-time REPLUG procedure (prepend-per-document repeated LM calls and ensembling with lambda(d,x)), the dense dual-encoder retrieval with cosine similarity/FAISS, or other end-to-end components beyond what is necessary for the training diagram. Thus it is not complete from beginning to end of the paper, though it is appropriate for Figure 3’s stated purpose."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 3.0,
+              "reason": "The figure largely matches the summarized REPLUG LSR training recipe: it shows (1) a retriever producing a document distribution, (2) a frozen LM producing an LM-based document distribution, and (3) KL divergence between the two. However, it introduces notation and details not explicitly stated in the summary: it labels the LM-based distribution as Q(d_i|x) (the summary specifies Q(d|x,y) based on P_LM(y|d,x)), and it depicts a specific token/word likelihood (\"P_LM(apple | d_i, x)/β\") rather than likelihood of the ground-truth continuation y. These additions are not necessarily wrong conceptually, but they are not explicitly in the provided summary and slightly shift the formal conditioning."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 3.0,
+              "reason": "The high-level relationships are correct per the summary: retriever produces P_R(d|x) via softmax over similarity; frozen LM provides supervision by scoring each retrieved document; retriever is trained by minimizing KL between LM-induced target distribution Q and retriever distribution P_R. But the KL direction and conditioning appear inconsistent with the summary: the figure states \"KL Divergence (P||Q)\", whereas the summary specifies minimizing KL(Q || P_R). Also, the figure’s Q depends only on x (and an example token), while the summary’s Q depends on (x,y) with y being the ground-truth continuation."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 4.0,
+              "reason": "Major components are labeled in line with the summary: \"Retriever\" and the step names for computing retriever likelihood P_R and LM likelihood Q are aligned with REPLUG LSR’s roles, and the presence of a frozen LM is visually suggested (snowflake). The main label issue is the KL term shown as P||Q (and Q written without y), which conflicts with the summarized objective KL(Q||P_R) and Q(d|x,y)."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3_1_summarization",
+              "score": 4.0,
+              "reason": "The schematic foregrounds the core REPLUG LSR training loop described in the summary: (1) computing retriever likelihood over retrieved docs, (2) computing an LM-derived target distribution from likelihood of the ground-truth continuation with a frozen LM, and (3) optimizing via KL divergence. The main modules (retriever, frozen LM, retrieved documents) and the document-wise distributions are visually emphasized more than low-level implementation details."
+            },
+            {
+              "question": "3_2_contextual_match",
+              "score": 4.0,
+              "reason": "With the caption, the figure reads as a clear supplement for §4: it shows the retriever producing candidates given context x, the LM (explicitly frozen) scoring each candidate via continuation likelihood, and the KL objective aligning the retriever distribution to the LM-induced distribution. The directionality of supervision (LM → retriever) is visually apparent via arrows and the explicit KL block, matching the summary’s description of LM-supervised retriever tuning."
+            },
+            {
+              "question": "3_3_redundancy",
+              "score": 3.0,
+              "reason": "Most elements support the core idea, but there are some potentially distracting or nonessential decorations: emoji/icons (e.g., fire, question-mark cubes) and a specific illustrative example about 'Jobs/Steve Jobs/Apple' that is not required to convey the abstract mechanism. These do not change the claimed method structure, but they add visual clutter that slightly reduces clarity."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 4.0,
+              "reason": "The process is organized as a left-to-right pipeline consistent with the summary’s training flow: retriever on the left produces retrieved docs, then likelihood computations (1 and 2) occur in the central panels, and the KL divergence objective (3) is on the right. Minor ambiguity comes from some dashed feedback-style arrows, but the dominant direction is clear."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 3.0,
+              "reason": "Most connectors are readable, but the multiple dashed arrows from retrieved documents/black-box LM scoring toward the LM-likelihood bar chart create a visually busy region where lines come close to overlapping. There are no severe tangles, yet the density slightly harms traceability of which document feeds which score distribution."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 5.0,
+              "reason": "Functionally related modules are placed near each other: retrieved documents are adjacent to both the retriever and the likelihood-computation panels; the retriever-likelihood panel (P_R) sits close to the retriever, and the LM-likelihood panel (Q derived from frozen LM scoring) sits beneath the documents, matching the summary’s two distributions over the same retrieved set."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "Key blocks (Retriever, document boxes, the two numbered panels, and the KL box) follow a clean horizontal structure with consistent spacing. Some elements (dashed arrows and small icons above the LM-likelihood chart) are not perfectly grid-aligned, but overall layout is orderly."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "Primary stages are emphasized via large numbered panels (1, 2) and a distinct objective box (3), making the main training components stand out. The retriever is also visually prominent. However, the LM supervision aspect is conveyed partly via small icons (e.g., frozen/black-box cues), which are less salient than the main boxes and may under-emphasize the frozen-LM role described in the summary."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between major modules (retriever, panels, KL box). The central region around the retrieved documents and dashed arrows is somewhat tight, making that local area feel crowded, but it remains legible."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 4.0,
+              "reason": "Similar roles are mostly represented consistently: retrieved documents share the same box style; the two distributions (P_R and Q) are both shown as bar charts inside similarly styled panels; the objective is a separate highlighted box. A small inconsistency is that supervision/LM-related cues use heterogeneous iconography (e.g., cubes with question marks), which is less systematically tied to the roles defined in the summary (frozen LM scoring, Q distribution)."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure uses a few concrete visual cues to stand in for abstract training signals: bar charts to depict the softmax distributions over documents (for both retriever likelihood P_R and LM-derived target Q) and snowflake/lock-like icons to imply the LM is frozen/black-box. However, most concepts remain expressed in standard math/labels (P_R, Q, KL), and the pipeline is largely literal (retriever → docs → LM scoring → KL), so metaphorical/iconic replacement is moderate rather than strong."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Visually it follows a common ML schematic template: rounded boxes for modules, arrows for dataflow, and small distribution plots for probabilities. While the inclusion of paired histograms for P_R and Q is a nice touch, the overall style and visual language are conventional for retrieval-augmentation training diagrams described in the summary (LM-supervised retriever tuning via KL)."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the specific REPLUG LSR objective in the summary: it explicitly separates (1) computing P_R(d|x) from retriever scores and (2) computing Q(d|x,y) from LM likelihood on the ground-truth continuation, then (3) feeding both into KL divergence. Using two parallel, document-indexed distributions (instead of a generic end-to-end ‘loss’ box) matches the paper’s key training signal path and makes the doc-level supervision mechanism visually explicit."
+            }
+          ]
+        },
+        "weighted_total": 3.467
+      }
+    },
+    {
+      "figure_file": "Retrieval-Augmented_Black-Box_Language_Models__p2__score1.00.png",
+      "caption": "Figure 2: REPLUG at inference (§3). Given an input context, REPLUG first retrieves a small set of relevant documents from an external corpus using a retriever (§3.1 Document Retrieval). Then it prepends each document separately to the input context and ensembles output probabilities from different passes (§3.2 Input Reformulation).",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure clearly covers the major inference components described in the summary/caption: a retriever querying an external corpus to obtain multiple documents d_i, document-wise prepending (d_i ◦ x) as input reformulation, multiple black-box LM passes (one per retrieved document), and an explicit ensembling step over the resulting next-token probability distributions. However, it omits the summary’s more specific formal details of ensembling—e.g., the similarity-based softmax weights λ(d,x) and retrieval scoring mechanism (cosine similarity / FAISS / top-k)—so it is not fully formula-complete."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 5.0,
+              "reason": "Without reading the paper, one can infer the operating principle: given a context x, retrieve relevant documents, prepend each document separately to x, run a black-box LM multiple times, then combine (ensemble) the output probabilities to produce the final prediction. The visual separation of retrieval, per-document prompting, per-pass distributions, and the final ensembled distribution makes the workflow self-explanatory."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "As an inference-only figure (consistent with the caption), it does not summarize the paper from beginning to end: it excludes the LM-supervised retriever tuning method (REPLUG LSR), the KL objective and distributions P_R and Q, and the asynchronous index update detail, all of which are core parts of the overall contribution in the summary. Thus it is not a complete end-to-end summary of the full method/training story."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 5.0,
+              "reason": "The figure shows only the components and operations described for REPLUG inference: a retriever pulling top documents from an external corpus, document-wise prepending to the context, multiple black-box LM calls, and an ensemble over output token probabilities. It does not introduce unmentioned training objectives (e.g., KL loss), internal LM access, or unrelated modules."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 5.0,
+              "reason": "The depicted dataflow matches the summary and caption: (1) input context x goes to the retriever, (2) retrieved documents d_i are each concatenated/prepended with x, (3) the black-box LM is queried separately per (d_i ∘ x), and (4) the resulting next-token distributions are combined via an ensemble. This correctly reflects the “prepend-per-document” repeated passes and probability ensembling mechanism under context-length constraints."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Major elements are labeled consistently with the summary/caption: 'Retriever', 'Retrieved document d_i', 'Test Context x', 'Input Reformulation', 'Black-box LM', and 'Ensemble'. These align with REPLUG’s inference-stage terminology and do not misname the method or imply LM parameter updates."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The schematic centers on the key inference contribution described in the summary/caption: retrieve top documents, prepend each document separately to the same context, run a black-box LM per document, and ensemble the resulting next-token probabilities. It largely avoids internal-LM details and highlights the repeated-pass structure. Minor distraction: the toy content about 'Jobs/Apple' and the explicit bar charts add example-level detail that is not strictly necessary for conveying the method."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "As supplementary material for the caption, the figure matches the described pipeline very clearly: a retriever fetches multiple documents, each forms an input pair (d_i, x), the black-box LM is queried multiple times, and outputs are combined via an ensemble. The left-to-right layout and repeated blocks make the 'prepend-per-document' inference easy to understand without requiring additional text."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure mostly avoids decorative/irrelevant elements and stays aligned with core ideas (retrieval, input reformulation, black-box LM calls, ensembling). Some redundancy exists in repeating the LM icon three times and using relatively detailed probability bar charts; these help illustrate ensembling but could be simplified (e.g., schematic probability vectors) without losing the core message."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The pipeline follows a clear left-to-right flow consistent with the summary: context x at lower-left goes to the retriever, retrieved documents appear to the right, then each document is prepended to x and passed through repeated black-box LM calls, culminating in a rightmost ensemble of output probabilities."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Most connectors are clean and do not cross: retrieval arrows and per-document LM arrows are largely parallel. There is minor visual complexity where the retrieved-doc stack feeds down into the LM and the large yellow panel, but it does not create substantial ambiguous crossings."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related components are co-located: the retriever is adjacent to the retrieved document stack; each (d_i, x) pair is placed immediately next to its corresponding black-box LM call; the output bars are grouped together with a brace indicating ensembling, matching the 'prepend-per-document' and ensemble scheme in the summary."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Within the yellow panel, the three per-document rows are neatly aligned horizontally and vertically (document box → x box → LM cube → distribution). The left-side section is slightly less grid-aligned (stacked documents, context box, and LM cube are not perfectly aligned), but overall structure remains orderly."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Main components stand out: the 'Retriever' is a prominent colored block; the ensemble section is emphasized with a large shaded panel; repeated LM calls are visually repeated to convey multiplicity. The black-box LM icon is smaller than might be ideal given its central role, but the repeated instances help establish importance."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between modules (retriever, context, retrieved docs, and the ensemble panel). Inside the ensemble panel, the bars and brace are somewhat dense, but still readable and not overly cramped."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Similar roles use consistent visual encodings: retrieved documents share the same rounded blue box style; the input context x is consistently shown as a rounded box; each LM pass uses the same black cube icon; probability outputs are consistently represented as bar charts, supporting the repeated-per-document inference described in the summary."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces several abstract operations with concrete visual symbols: a red rounded-rectangle labeled “Retriever,” stacked paper-like cards for retrieved documents, and a black cube with a question mark to stand in for the black-box LM (emphasizing opacity). The probability outputs are conveyed via simple bar charts and an “Ensemble” bracket, which concretizes the otherwise abstract notion of ensembling token distributions described in the summary."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "The visual style is clear but largely conventional for ML system diagrams: labeled boxes, arrows, and small histograms for probabilities. The black-box cube icon adds some distinctive flair, but the overall composition (retrieve → prepend → multiple LM passes → ensemble) aligns with common retrieval-augmentation schematic templates rather than introducing a notably unique artistic or diagrammatic style."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is well-tailored to the paper’s specific inference claim: it explicitly depicts the 'prepend-per-document' repeated LM calls as parallel lanes, each with its own doc+context input, followed by aggregation of output probabilities—directly addressing the context-length/concatenation constraint in the summary. This is more specialized than a generic single-pass 'retrieve-and-append' diagram and structurally highlights the method’s core differentiation (multiple passes + ensembling)."
+            }
+          ]
+        },
+        "weighted_total": 4.219
+      }
+    },
+    {
+      "figure_file": "Retrieval-Augmented_Black-Box_Language_Models__p0__score1.00.png",
+      "caption": "Figure 1: Different from previous retrieval-augmented approaches (Borgeaud et al., 2022) that enhance a language model with retrieval by updating the LM’s parameters, REPLUG treats the LM as a black box and augments it with a frozen or tunable retriever. This black-box assumption makes REPLUG applicable to large LMs, which are often served via APIs.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 2.0,
+              "reason": "The figure conveys the high-level architectural contrast stated in the summary/caption: prior retrieval-augmented approaches require updating an LM (shown as a trainable/white-box LM), whereas REPLUG treats the LM as a black box and can use a frozen or trainable retriever. However, it omits most major method-specific content from the summary: no top-k retrieval/FAISS, no dual-encoder embeddings or cosine similarity, no prepend-per-document multi-run inference, no probability ensembling with similarity-weighted softmax, and no REPLUG LSR training objective (P_R, Q, KL loss) or asynchronous index update."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 3.0,
+              "reason": "From the visual alone, one can understand the general operating principle emphasized by the caption: retrieval supplies documents that are fed to an LM, and REPLUG differs by not requiring access to or updating the LM (black-box) while allowing the retriever to be frozen/trainable. But the figure does not explain the key operational details that make REPLUG distinctive in the summary (document-wise prepending with multiple LM calls and ensembling; LM-supervised retriever tuning), limiting deeper understanding without the paper."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 1.0,
+              "reason": "It is not a beginning-to-end summary of the paper’s content as described in the provided summary. It only illustrates the architectural shift/assumption (black-box LM vs updated LM) and does not cover the core inference scheme (ensemble over per-document LM runs) or the retriever training method (LM-supervised KL objective and related distributions), which are central contributions."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 3.0,
+              "reason": "The figure’s core elements align with the summary/caption contrast: prior work updates the LM, whereas REPLUG treats the LM as a black box with a frozen or tunable retriever. However, it introduces details not stated in the provided summary: the prior LM is labeled “White-box LM” and both panels include specific parameter-scale claims (“<10B” vs “>100B”). These extras are not in the summary; while they don’t change the core REPLUG mechanism, they are unsupported embellishments."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 4.0,
+              "reason": "The relationships match the stated high-level architecture: test context goes to a retriever, retrieved text is prepended/used as additional context for the LM, and the key distinction is whether the LM is trainable (previous) or frozen/black-box (REPLUG) while the retriever can be frozen or trainable. The figure does not depict the per-document repeated LM calls and ensembling or the LSR KL training path, but that omission is consistent with the caption’s purpose (architectural shift rather than full pipeline)."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 4.0,
+              "reason": "Major labels are consistent with the summary/caption: “RE-PLUG,” “Retriever,” and “Black-box LM,” with frozen/trainable status indicated. The “White-box LM” label for the previous method is not explicitly mentioned in the summary (only that prior approaches update LM parameters / require internal access), but it is directionally consistent with that characterization; the added parameter-count labels are also not supported by the summary."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "summarization",
+              "score": 5.0,
+              "reason": "The figure is schematized around the central conceptual contrast stated in the caption/summary: prior retrieval-augmented approaches require updating the LM (top row), whereas REPLUG treats the LM as a black box and shifts adaptation to the retriever (bottom row). The pipeline is shown with minimal components (test context → retriever → retrieved doc → LM), highlighting the main contribution (black-box compatibility) rather than implementation-level details (e.g., ensembling, KL objective), which are not needed for this specific figure’s purpose."
+            },
+            {
+              "question": "contextual_match",
+              "score": 5.0,
+              "reason": "As a companion to the caption, the two-panel comparison makes the ‘architectural shift’ immediately clear: in the previous approach the LM is labeled trainable, while in REPLUG the LM is explicitly frozen/black-box and the retriever can be frozen/trainable. Visual cues (labels “Frozen/Trainable”, “White-box LM” vs “Black-box LM”) align tightly with the summary’s framing that REPLUG avoids internal access and LM updates and therefore fits API-served LMs."
+            },
+            {
+              "question": "redundancy",
+              "score": 4.0,
+              "reason": "The figure largely avoids decorative clutter; the elements shown are directly tied to the conceptual comparison. Minor potentially non-essential details include the concrete ‘Jobs’ example text and the parameter-count annotations (e.g., <10B vs >100B), which add context but are not strictly required to convey the core idea. These do not materially distract from the main message."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.286,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "Both panels (“Previous” and “RE-PLUG”) depict a clear left-to-right pipeline consistent with the summary: test context → retriever → retrieved document/prepended context → LM. Arrows and the horizontal layout make the processing order unambiguous."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Connection lines largely avoid crossings. The only potential visual complication is the long curved arrow from the left (context) to the LM that passes beneath intermediate elements; it does not actually intersect other arrows, but it slightly increases visual clutter."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related modules are placed adjacent: the retriever sits near the retrieved document box, and the LM sits immediately after the retrieved content in both panels, matching the summarized data flow of retrieval then LM scoring."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Within each panel, components are mostly aligned on a horizontal axis (context, retriever, document, LM). Minor misalignment occurs due to differing box sizes and the curved arrow, but overall the diagram follows an implicit grid."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Main components (Retriever and LM) stand out via colored background regions and prominent labels (Frozen/Trainable). The distinction between “white-box LM” (previous) and “black-box LM” (RE-PLUG) is visually salient, supporting the figure’s stated purpose. However, the retrieved-document box is visually similar in prominence to modules, slightly diluting emphasis on the core architectural change."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between elements and between the two panels separated by a dashed line. Some elements are relatively tight around the retrieved-document box and the LM region, but not enough to harm readability."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles are represented consistently: retrievers are shown with similar database icons and colored containers; LMs are shown as boxed components on the right. The color semantics (blue for Frozen, red/pink for Trainable) are consistent across panels, though the LM depiction differs (white-box vs black-box styling), which is appropriate to the conceptual contrast."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces abstract modules with concrete icons and symbolic cues: the retriever is depicted as a database cylinder; the black-box LM is a dark box with a question mark to emphasize opacity/API access; and color-coding (blue for frozen, red for trainable) conveys the key conceptual distinction (updating LM parameters vs keeping LM fixed) described in the summary/caption."
+            },
+            {
+              "question": "novelty",
+              "score": 3.0,
+              "reason": "The overall design follows a common two-row comparison pipeline (\"Previous\" vs \"RE-PLUG\") with standard flow arrows and module boxes. However, it adds a moderately distinctive style through the explicit \"white-box\" vs \"black-box\" contrast, the large question-mark black box, and the parameter-scale labels, which together foreground the paper’s black-box premise in a more visually pointed way than a generic RAG schematic."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific contribution as summarized: it directly contrasts prior approaches that update LM parameters with REPLUG’s black-box LM plus frozen/tunable retriever, rather than presenting a generic retrieval-augmentation diagram. The split design, freeze/trainable banners, and \"white-box\" vs \"black-box\" framing are specialized to communicating the architectural shift emphasized in the caption."
+            }
+          ]
+        },
+        "weighted_total": 3.657
+      }
+    }
+  ]
+}

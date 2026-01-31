@@ -1,0 +1,372 @@
+{
+  "paper_name": "Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models",
+  "evaluated_at": "2026-01-12T03:47:40.081441",
+  "figure_summary": "## 1. Core Contributions\n- Introduces **Self-Knowledge guided Retrieval augmentation (SKR)**: a retrieval-augmentation framework where an LLM **decides whether to use retrieval** based on an elicited notion of what it “knows” vs. “doesn’t know.”\n- Proposes a practical way to **collect “self-knowledge” labels** from training data by comparing the model’s performance **with vs. without** retrieved passages, yielding two subsets: **LLM knowns (D+)** and **LLM unknowns (D−)**.\n- Develops multiple strategies to **elicit self-knowledge for a new question** by referencing collected cases: **direct prompting**, **few-shot in-context elicitation**, **training a small classifier**, and **kNN-based inference**.\n- Uses the elicited self-knowledge to **adaptively apply retrieval augmentation** rather than always retrieving, aiming to avoid retrieval-induced degradation.\n\n## 2. Method Components & Relations relevant to figures\n- **Base LLM answering (internal knowledge path)**: generate \\(\\hat a(M, q_i)\\) via few-shot in-context learning (Eq. 1).\n- **Retriever + external corpus (external knowledge path)**:\n  - Retrieve top-\\(k\\) passages \\(p_i = R(q_i, C)\\) (Eq. 2), with \\(R\\) instantiated as **DPR** and \\(C\\) as **Wikipedia passage chunks**.\n  - Generate retrieval-augmented answer \\(\\hat a_R(M, q_i)\\) by inserting passages into demonstrations and query context (Eq. 3).\n- **Self-knowledge collection / labeling**:\n  - Compare evaluation \\(E[\\hat a(M,q_i)]\\) vs. \\(E[\\hat a_R(M,q_i)]\\) to split training questions into:\n    - **\\(D^+\\)** (retrieval does not help; “LLM knowns”)\n    - **\\(D^-\\)** (retrieval helps; “LLM unknowns”)\n  - Discard cases where both versions are incorrect (Eq. 4).\n- **Self-knowledge elicitation for a target question \\(q_t\\)** (four strategies):\n  - **Direct prompting**: ask the LLM whether it needs additional info.\n  - **In-context elicitation**: provide labeled exemplars from \\(D^+\\) and \\(D^-\\).\n  - **Classifier training**: train a small model (e.g., **BERT-base**) to predict \\(D^+\\)/\\(D^-\\) (Eq. 5).\n  - **kNN**: embed \\(q_t\\) and infer its label by nearest labeled training questions (illustrated conceptually).\n- **Adaptive use**: elicited label for \\(q_t\\) controls whether to **invoke the retriever** (use retrieval primarily for predicted “unknowns”).\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **motivate the need for selective/adaptive retrieval** by illustrating that retrieval can be *relevant yet harmful* to an LLM’s answer.\n- To **depict the SKR workflow end-to-end**, showing how self-knowledge is (i) **collected** from training comparisons, (ii) **elicited** for new questions using either LLM prompting or smaller models, and (iii) **used** to decide retrieval augmentation.\n- To clarify the **mechanisms of elicitation strategies** (especially example-based methods like **kNN**) and how they leverage the labeled training pool of “known/unknown” questions.\n\n## 4. What Figures are NOT intended to show\n- They are not meant to demonstrate **retriever quality** (e.g., recall/precision of DPR) or establish that retrieved passages are universally correct—only that they can be *relevant but unhelpful*.\n- They are not intended as a complete **quantitative validation** of SKR’s superiority; rather, they visually explain *why* adaptive retrieval is needed and *how* SKR operates.\n- They are not designed to provide a full **ablation** over elicitation strategies, hyperparameters (e.g., \\(k\\) in retrieval or kNN), or prompt sensitivity—only conceptual/architectural grounding.\n- They are not intended to claim a general measure of “self-knowledge” independent of the paper’s operational definition (performance change with vs. without retrieval).",
+  "figure_evaluations": [
+    {
+      "figure_file": "Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+      "caption": "Figure 2: The overall pipeline of our SKR method. We first collect self-knowledge from training questions according to the performance with or without external information (§ 3.1). Then we use the LLMs themselves or explicit small trainable models to elicit self-knowledge of a question qt by referring to the collected self-knowledge from training questions (§ 3.2). Finally, we use the self-knowledge to the new question and adaptively call a retriever (§ 3.3).",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_Content_Coverage",
+              "score": 4.0,
+              "reason": "The figure captures the major pipeline components described in the summary: (i) self-knowledge collection by comparing LLM performance with vs. without external information and splitting into LLM knowns (D+) and unknowns (D−); (ii) elicitation for a target question qt using either the LLM itself or small trainable models while referencing labeled training questions; and (iii) using the predicted label to decide whether to call the retriever. However, it omits most of the method-specific details/formalism mentioned in the summary (e.g., explicit internal vs. retrieval-augmented answer generation equations, the discard case where both are incorrect, and the distinct elicitation strategies like direct prompting vs in-context vs classifier vs kNN)."
+            },
+            {
+              "question": "1.2_Standalone_Intelligibility",
+              "score": 4.0,
+              "reason": "From the visual alone, one can infer the operating principle: compare two answering modes on training data to label questions as known/unknown, use those labeled examples to decide for a new question whether it is known/unknown, and only retrieve when predicted unknown. The three-stage layout (collect → elicit → use) and the control-flow into retrieval make the adaptive retrieval idea understandable without reading the paper. What is less clear standalone is the exact criterion for known/unknown (performance improvement vs not), and the concrete elicitation mechanisms (the figure collapses them into a single box)."
+            },
+            {
+              "question": "1.3_Completeness",
+              "score": 3.0,
+              "reason": "It summarizes the end-to-end SKR workflow at a high level (training-time labeling through comparison, test-time elicitation, and adaptive retrieval usage), aligning with the summary’s intended figure purpose of explaining why/how SKR operates. But it is not complete with respect to the paper’s method details: it does not show the two answer-generation paths explicitly (internal knowledge vs retrieved passages insertion), the data filtering/discard rule, the retriever/corpus instantiation details (DPR/Wikipedia), nor the four elicitation variants and their relations. Thus it provides an architectural overview rather than a comprehensive beginning-to-end method specification."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 4.0,
+              "reason": "The figure shows a three-stage SKR pipeline—collecting self-knowledge by comparing LLM answering with vs. without external information, eliciting self-knowledge for qt using the LLM itself or small trainable models with reference to labeled training questions, and using the predicted known/unknown to decide whether to call a retriever—which matches the summary and caption. It does not introduce extra formulas or novel modules beyond the described workflow. Minor underspecification/hallucination risk: the elicitation box visually implies exemplar-based inference (showing sets of labeled questions q+ and q−) but does not explicitly name the four strategies (direct prompting, in-context, classifier, kNN); however this is a conventional abstraction rather than a conflicting new component."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 5.0,
+              "reason": "Relationships align with the summary: (i) training questions qi are evaluated in two conditions (internal-only vs retrieval-augmented) to split into LLM knowns (D+/q+) and unknowns (D−/q−); (ii) a target question qt is fed to an elicitor (LLM or small model) that refers to the collected labeled questions to predict known/unknown; (iii) the predicted label gates retrieval—known goes directly to the base LLM path, unknown triggers retriever + external corpus then LLM. This accurately reflects adaptive retrieval usage driven by elicited self-knowledge."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Major labels used in the figure—\"Collecting Self-Knowledge,\" \"Eliciting Self-Knowledge,\" \"Using Self-Knowledge,\" \"training question qi,\" \"question qt,\" \"LLM knowns,\" \"LLM unknowns,\" \"retriever,\" and \"known/unknown\"—match the terminology and roles described in the summary/caption (D+ vs D− as knowns/unknowns; elicitation via LLM or small trainable models; adaptive retriever invocation). No major component appears mislabeled."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_Summarization",
+              "score": 5.0,
+              "reason": "The schematic cleanly foregrounds the main SKR contribution described in the summary: (i) collecting self-knowledge by comparing LLM performance with vs. without external info to form LLM knowns (D+) and unknowns (D−), (ii) eliciting a known/unknown label for a target question qt via the LLM itself or small trainable models, and (iii) using that label to decide whether to call the retriever. It avoids algorithmic minutiae (e.g., DPR specifics, equations, k values) while preserving the core workflow."
+            },
+            {
+              "question": "3.2_Contextual_Match",
+              "score": 4.0,
+              "reason": "As a companion to the caption/text, it functions well: the three panels directly correspond to the caption’s stages (§3.1 collect, §3.2 elicit, §3.3 use) and visually communicates the control-flow decision (known → answer directly; unknown → retrieve then answer). However, the elicitation stage aggregates multiple strategies into a single box (“LLM itself / small trainable models”) without visually distinguishing direct prompting vs. in-context vs. classifier vs. kNN, which may require readers to rely more on the text to map the box to the four methods named in the summary."
+            },
+            {
+              "question": "3.3_Redundancy",
+              "score": 4.0,
+              "reason": "The figure largely avoids decorative or irrelevant content: icons (LLM/Wikipedia/retriever) and dashed groupings support the core conceptual separation between internal vs. external knowledge and the three-stage pipeline. Minor redundancy/ambiguity arises from repeating the question qt in the last two panels and using generic icons instead of explicitly labeling the ‘with retrieval’ vs. ‘without retrieval’ comparison in the collection stage, but these do not introduce unrelated information or distract from the main claims."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The pipeline is organized clearly from left to right across three titled stages—“Collecting Self-Knowledge” → “Eliciting Self-Knowledge” → “Using Self-Knowledge”—matching the summary’s end-to-end SKR workflow (collect, elicit, then decide retrieval). Arrows between panels reinforce this direction."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Connection lines are mostly non-crossing within and across panels. In the left panel, the two downward branches from the training question to the two evaluation paths are visually separated and do not cross, though the dual-branch layout creates mild visual complexity. Overall, crossings are effectively avoided."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related modules are grouped: collection components (training question, with/without external info, resulting D+ and D−) are co-located; elicitation components (qt, reference to labeled pools, decision known/unknown) are centralized; and usage (routing based on label to internal LLM vs retriever+LLM) is grouped on the right. This matches the summary’s component relations."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major elements align along a clear grid: three panels are horizontally aligned; within panels, labels and boxes are mostly aligned vertically (inputs at top, outputs at bottom). Some internal elements (e.g., the two middle exemplars strips and the decision box) are not perfectly centered relative to each other, but overall alignment is neat."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Primary stages stand out via large bold titles and panel separation, making the three-step SKR workflow salient. Within panels, key decision points (known/unknown) are highlighted with colored boxes. However, the visual prominence between subcomponents (e.g., “LLM itself / small trainable models” vs. exemplar sets) is fairly uniform, so internal hierarchy could be stronger."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between panels and within each panel to prevent clutter. A few areas (notably the left panel around the two parallel evaluation paths and the bottom labels ‘LLM knowns/unknowns’) feel slightly tight, but readability remains good."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Consistent visual encoding is used: similar node types use similar rounded boxes (questions), exemplars (green for known/D+ and red for unknown/D−) are consistently colored across collection and elicitation, and the LLM/retrieval icons and dashed boxes are reused consistently for similar roles. This supports the summary’s known vs unknown split and adaptive routing."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces several abstract components from the summary with concrete, recognizable icons/symbols: an LLM is shown via a model logo-like icon, the external corpus (Wikipedia passage chunks) is represented with a Wikipedia globe, and retrieval is implied by placing the Wikipedia icon between LLM icons in the retrieval-augmented path. The known/unknown decision is concretized with colored label boxes (green for known/D+, red for unknown/D−) and a final routing to either direct answering or retriever use. These metaphors align with the summary’s internal vs. external knowledge paths and adaptive retrieval decision."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Stylistically, it follows a common three-stage pipeline template (collect → elicit → use) with standard rounded rectangles, arrows, and color-coded groups. While clean and coherent, the visual language is typical of ML system diagrams and does not introduce a notably distinctive illustration style beyond conventional icon usage."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to SKR’s specific method structure in the summary: it explicitly segments the workflow into the three paper sections (collection, elicitation via LLM/small models, and adaptive use), and visually encodes the key conditional control flow (known bypasses retrieval; unknown triggers retriever). This goes beyond a uniform ‘single box pipeline’ by making the decision point and training-derived labeled pools (D+ / D−) central to the composition."
+            }
+          ]
+        },
+        "weighted_total": 4.086
+      }
+    },
+    {
+      "figure_file": "Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+      "caption": "Figure 1: Comparison between two responses given by InstructGPT. The retrieved passages are relevant but not particularly helpful for solving the question, which influences the model’s judgment and leads to incorrect answers.",
+      "scores": {
+        "Informativeness": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 4.0,
+              "reason": "The figure depicts a question, a retrieved passage snippet, and two LLM responses (one correct without retrieval, one incorrect with retrieval), which matches the summary’s motivation that retrieval can be relevant yet harmful. It introduces the specific model name “InstructGPT” (not mentioned in the provided summary), but this does not change the core method structure (it is still an LLM) and is consistent with the caption’s stated comparison, so it is only a minor extra element."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 5.0,
+              "reason": "The relationships shown are consistent with the summary and caption: (i) the LLM answers directly from internal knowledge, (ii) retrieved passages are inserted/considered, and (iii) retrieval can shift the model’s judgment and lead to an incorrect answer even when the passage is relevant. The figure does not assert any additional pipeline steps beyond this motivational comparison."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 4.0,
+              "reason": "Labels like “Question (Answer: Yes)” and “Retrieved Passages” accurately reflect the elements described in the summary (question, retrieval context) and the caption (comparison of responses). The explicit label “InstructGPT” is not supported by the summary (which refers generically to an LLM/base model), making that specific naming potentially inconsistent with the provided reference, though it does not affect the conceptual claim."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "summarization",
+              "score": 4.0,
+              "reason": "The figure is tightly schematized around the paper’s motivating point (from the summary): retrieval can be relevant yet harmful, causing answer degradation. It shows one question with two branches (no-retrieval vs. retrieval-augmented) and uses simple correctness markers (✓/✗) to emphasize the core phenomenon without introducing extra workflow components (e.g., SKR labeling or elicitation strategies) that would distract from the message."
+            },
+            {
+              "question": "contextual_match",
+              "score": 5.0,
+              "reason": "Given the caption and the summary’s stated purpose for figures (motivate selective/adaptive retrieval by illustrating relevant-but-unhelpful retrieval), the visual evidence matches perfectly: the retrieved passage appears topically related but shifts the model to an incorrect rationale, while the non-retrieval path yields the correct answer. The layout makes the comparison immediately interpretable as supporting evidence for why adaptive retrieval (SKR) is needed."
+            },
+            {
+              "question": "redundancy",
+              "score": 4.0,
+              "reason": "The figure largely avoids decorative or unrelated elements; the split comparison, arrows, and correctness symbols directly serve the point. Minor redundancy/clutter comes from including interface-style icons/logos and extra response wording that is not strictly necessary to convey ‘retrieval hurts despite relevance,’ but these do not materially obscure the main idea."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The figure clearly reads left-to-right: the question and the retrieved passage blocks are on the left, with arrows pointing to the two InstructGPT responses on the right (one correct, one incorrect). This matches the caption’s comparison framing."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 3.0,
+              "reason": "There are multiple arrows between the left blocks and the two answer boxes, and at least one set of connectors visually overlaps/crosses in the central area (green and red arrow paths intersect). While still interpretable, the crossings add avoidable clutter for such a small layout."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are placed near each other: inputs (question, retrieved passages) are grouped on the left, and outputs (two responses) are grouped on the right. However, the retrieved passage is not visually integrated with the specific response it influences beyond shared arrows, so the causal relationship relies on reading the arrows carefully."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Boxes are mostly aligned in two rows/columns (question above passage; correct answer above incorrect answer). Minor misalignment in arrow endpoints and spacing between left boxes vs. right boxes slightly reduces the clean grid impression."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The two outcomes are strongly distinguished with checkmark vs. cross and green vs. red accents, making the main message (retrieval can mislead) stand out. The figure does not otherwise use size/weight to emphasize the key input (retrieved passage) relative to the question, so hierarchy is good but not maximized."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is adequate whitespace inside boxes and between the four main boxes. The central arrow region is comparatively tight, and the overlapping connectors make that area feel slightly crowded."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Similar roles use consistent visual encoding: both responses are shown as similar rounded boxes with the same icon placement; inputs are similarly boxed on the left. Color is used consistently to indicate correctness (green) vs. incorrectness (red), aligning with the comparison purpose described in the caption."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 2.0,
+              "reason": "The figure uses a few concrete visual cues (green checkmark/red cross, arrows, and boxed callouts) to signal correctness and information flow. However, the core abstract idea from the summary—retrieval being relevant yet harmful—is still communicated mostly through text examples rather than more metaphorical/iconic encodings (e.g., distinct symbols for “known/unknown” or “internal vs external knowledge” beyond simple arrows)."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "Visually, it follows a common schematic template for NLP papers: question box on the left, two response boxes on the right, arrows, and correctness marks. This matches the caption’s comparison goal but does not introduce a distinctive visual style or an unusual visual language beyond standard diagram conventions."
+            },
+            {
+              "question": "adaptability",
+              "score": 3.0,
+              "reason": "The layout is appropriately tailored to the paper’s motivation described in the summary and caption: it directly juxtaposes a non-retrieval answer vs a retrieval-augmented answer and marks the latter as degraded despite relevant passages. While the design remains conventional, the side-by-side contrast is specifically fit to the paper’s selective-retrieval motivation rather than a generic pipeline diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.029
+      }
+    },
+    {
+      "figure_file": "Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p3__score1.00.png",
+      "caption": "Figure 3: Illustration of k-nearest-neighbor search to elicit the self-knowledge to the question qt.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 2.0,
+              "reason": "The figure focuses narrowly on the kNN-based elicitation strategy: it shows labeled training questions split into positive (q^+) and negative (q^-) sets, an encoder embedding the target question q_t, and a nearest-neighbor decision yielding Pos./Neg. This aligns with the summary’s kNN elicitation concept. However, it omits other major SKR components mentioned in the summary (retriever/DPR + Wikipedia corpus, internal vs retrieval-augmented answering, the with-vs-without retrieval comparison used to construct D+/D−, and alternative elicitation strategies like direct prompting, in-context exemplars, and a BERT classifier), so it does not cover the major method/formula components overall."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "Even without the paper, one can infer the operating principle of this sub-module: represent the query q_t with an encoder, compare it to embedded labeled training questions (q^+ vs q^-), and classify the query as positive/negative via nearest neighbors. The figure clearly communicates the kNN workflow (inputs, embedding, neighborhood, and output label), though it does not define what “Pos./Neg.” semantically correspond to (i.e., D+ known vs D− unknown / retrieval needed), which slightly limits full standalone interpretation in SKR terms."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 1.0,
+              "reason": "The figure does not summarize the paper end-to-end; it only illustrates one elicitation mechanism (kNN). It does not depict self-knowledge collection via performance comparison with vs. without retrieval, the adaptive retrieval decision point, or the broader SKR retrieval-augmentation workflow described in the summary."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 4.0,
+              "reason": "The figure depicts a kNN-style elicitation pipeline: a pool of labeled training questions split into positives/negatives (matching D+/D−), an encoder that embeds the target question qt, and neighbor-based decision (Pos./Neg.). These elements align with the summary’s kNN elicitation description. Minor potential hallucination: the figure introduces a generic 'Encoder' block and visual styling (e.g., snowflake icon) not explicitly mentioned in the summary, but these are conventional for representing embeddings and do not change the core method claim."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 5.0,
+              "reason": "Relationships are consistent with the summary: labeled training questions (D+ vs D−) are used as reference cases; qt is embedded and compared to the training pool via nearest neighbors; the inferred label (Pos./Neg.) corresponds to predicting known/unknown to control retrieval usage. The figure correctly focuses on kNN as an elicitation mechanism leveraging the labeled training set."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 4.0,
+              "reason": "Major labels ('Training Questions', 'Question qt', 'Encoder', 'Pos./Neg.') match the intended roles from the summary (labeled exemplars, target question, embedding step, predicted class). However, the figure uses generic 'Pos./Neg.' rather than explicitly naming D+/D− or 'LLM knowns/unknowns', which slightly weakens alignment to the paper’s terminology even though the meaning is clear."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3_1_summarization",
+              "score": 4.0,
+              "reason": "The schematic focuses on the core kNN elicitation idea described in the summary: a pool of labeled training questions split into D+ (green) and D− (red), an encoder applied to the target question q_t, and nearest-neighbor lookup producing a Pos./Neg. decision. It avoids diving into retrieval mechanics or evaluation equations, which aligns with the figure’s stated purpose (conceptual illustration of kNN-based inference). Minor ambiguity remains because the figure does not explicitly name D+/D−, relying on color and +/- superscripts instead."
+            },
+            {
+              "question": "3_2_contextual_match",
+              "score": 4.0,
+              "reason": "Given the caption (“k-nearest-neighbor search to elicit the self-knowledge to q_t”), the visual pipeline is easy to map: encode q_t, compare to encoded labeled questions, and infer a positive/negative label. This matches the summary’s kNN strategy (embed q_t and infer its label by nearest labeled training questions). Readability would improve with an explicit legend mapping green/red to D+/D− and clarifying what the encoder outputs (embedding space) and what “Pos./Neg.” corresponds to (known vs unknown / retrieval-needed vs not)."
+            },
+            {
+              "question": "3_3_redundancy",
+              "score": 4.0,
+              "reason": "The figure is largely free of decorative clutter and includes only standard elements needed for the concept (training sets, encoder, neighbors, decision). One potentially unnecessary/unclear element is the small snowflake-like icon near the encoder (could imply frozen parameters), which is not mentioned in the summary and may distract slightly if unexplained. Otherwise, the information is tightly tied to the core kNN elicitation mechanism."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 5.0,
+              "reason": "The figure has a clear left-to-right workflow consistent with the kNN elicitation summary: labeled training questions on the left feed into an encoder, then to an embedding space and finally to a Pos./Neg. decision on the right. The target question qt is injected into the encoder and follows the same left-to-right path."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 4.0,
+              "reason": "Connection lines are mostly non-crossing and readable. There are multiple arrows converging into the encoder (from the two training pools and from qt) and one arrow leaving it; these do not create problematic crossings, though the converging arrows create mild visual clutter around the encoder input."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 5.0,
+              "reason": "Functionally related elements are placed close together: the two labeled training question groups (q+ and q−) are grouped together on the left; the encoder sits immediately downstream; the embedded neighbors and the Pos./Neg. label are adjacent on the right, matching the conceptual kNN inference described in the summary."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "Major blocks are aligned in a left-to-right row (training pools → encoder → neighbor space → decision). The two training pools are neatly stacked and the qt box is centered below the encoder, but small elements in the neighbor space (points and dashed circle) are not grid-aligned (acceptable for a scatter depiction) and slightly reduce overall neatness."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "Key components (training questions, encoder, qt, and the Pos./Neg. output) stand out through bounding boxes, color, and central placement. However, the relative importance between the labeled pools and the decision is not emphasized strongly beyond color/position; the encoder is prominent but not visually dominant via size/weight compared to the left container."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between the left training container, the encoder, and the right neighbor/decision area. The tightest spacing occurs around the encoder inputs and the small snowflake icon near the encoder, which slightly compresses the local area but does not harm legibility."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 5.0,
+              "reason": "Consistent visual encoding is used for roles central to the kNN elicitation: positive vs. negative sets are consistently color-coded (green vs. red) both in the training pools and in the neighbor space, and modules are represented with consistent box styling. The target question qt is consistently distinguished in blue."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 3.0,
+              "reason": "The figure uses concrete visual surrogates for abstract steps in the kNN elicitation process mentioned in the summary: boxed lists for labeled training questions (D+ and D−), an 'Encoder' block to indicate embedding, and colored points (green/red) in a neighborhood to represent nearest labeled cases and the resulting Pos./Neg. decision. These are standard symbols rather than rich metaphors, but they do replace abstract operations (embedding + neighbor voting) with recognizable icons."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 2.0,
+              "reason": "The visual style is largely a conventional ML pipeline diagram (inputs → encoder → embedding space → label) with common elements (rectangles, arrows, colored classes). It does not introduce a distinctive or unusually expressive aesthetic beyond the typical template used to depict kNN classification."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 3.0,
+              "reason": "The layout is reasonably tailored to the paper’s SKR elicitation strategy by explicitly separating labeled training pools (positives/negatives corresponding to D+/D− in the summary) and showing how qt is encoded and compared against them to produce a Pos./Neg. self-knowledge output. While still template-like, the left-side grouping of training questions into two labeled sets and the final decision visualization is appropriately customized to the specific 'kNN-based inference' component described."
+            }
+          ]
+        },
+        "weighted_total": 3.552
+      }
+    }
+  ]
+}

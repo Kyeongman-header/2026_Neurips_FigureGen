@@ -1,0 +1,134 @@
+{
+  "paper_name": "Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning",
+  "evaluated_at": "2026-01-12T03:53:17.262667",
+  "figure_summary": "## 1. Core Contributions\n- Introduces **Step-level Value Preference Optimization (SVPO)** to replace coarse **solution-level** preference supervision with **step-level** preferences for multi-step mathematical reasoning.\n- Proposes using **Monte Carlo Tree Search (MCTS)** to **self-generate step-level preference pairs** and associated **Q-values** that localize likely reasoning-error steps, avoiding costly external annotation.\n- Adds a lightweight **explicit value model/head** trained from MCTS-derived signals and jointly optimized with a DPO-style policy objective, to better guide reasoning and preference learning.\n\n## 2. Method Components & Relations relevant to figures\n- **Policy model (π)**: generates step-by-step reasoning trajectories \\(y_{1:T}\\); used as the rollout/generation model inside MCTS and optimized via a DPO-like step-level objective.\n- **Reference policy (π′)**: fixed baseline (typically SFT) used to form the **implicit reward difference** term in DPO/SVPO.\n- **MCTS self-exploration** (key data-generation module):\n  - **States/actions**: \\(s_t = y_{<t}\\), \\(a_t = y_t\\); deterministic transition \\(s_{t+1} = \\text{ConCat}(s_t,a_t)\\).\n  - **Selection** via PUCT using current \\(Q(s,a)\\) and policy priors.\n  - **Expansion/evaluation** with one-step rollout; terminal reward \\(R\\in\\{+1,-1\\}\\) based on answer correctness; value assignment \\(V(s)=\\mathbb{I}_{terminal}(a)\\cdot R(s,a)\\).\n  - **Backup** updates visit counts and **Q-values** along the path; these Q-values support step-level comparisons.\n  - **Preference extraction**: for the same prefix \\(s_t\\), compare alternative next steps by **Q-values** and label \\(a_t^w \\succ a_t^l\\).\n- **Explicit value model/head \\(V_\\phi\\)**:\n  - Implemented as an auxiliary value head over the policy model.\n  - **Pretraining**: multitask loss = SFT + MSE to targets \\(\\hat V\\), where \\(\\hat V\\) is **Q-value for intermediate steps** or **final reward for terminal** steps.\n- **SVPO joint optimization loss** (three coupled objectives):\n  - **Policy preference loss**: DPO-style logistic loss on **implicit reward difference** \\(\\Delta r_\\pi\\).\n  - **Value preference margin loss**: enforces \\(V_\\phi(s^w) \\ge V_\\phi(s^l)+\\gamma\\).\n  - **Scale-alignment regularizer**: MSE between \\(\\Delta r_\\pi\\) and stop-gradient \\(\\Delta r_\\phi\\), aligning implicit reward differences with explicit value differences.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **visually justify why step-level supervision is needed**, by contrasting pipelines where solution-level labels cannot identify *which step* caused failure versus a pipeline that can.\n- To depict the **end-to-end training/data-creation workflow**: how self-exploration (MCTS) produces step-level preference data and Q-values, and how these feed into SVPO training (policy + value learning).\n- To communicate what the **Q-values “mean” operationally** in this framework: node-level signals that mark potentially erroneous reasoning choices and support preference labeling among candidate next steps.\n\n## 4. What Figures are NOT intended to show\n- Not meant to provide a complete theoretical proof of SVPO’s objectives (e.g., why the regularization guarantees optimality/stability) or detailed derivations of MCTS/DPO equations.\n- Not intended to present **full quantitative results** (accuracy gains, ablations, benchmark-by-benchmark performance) or validate statistical significance—those belong to tables/experiments.\n- Not intended as a faithful depiction of internal “thought” correctness beyond the paper’s operational definition (correct/incorrect **final answer** reward and MCTS-derived Q-values), nor as human-verified step correctness labels.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+      "caption": "Figure 1: Comparison of different frameworks: SFT, DPO, and SVPO. The top panel shows the typical pipeline of SFT and DPO, where GPT-4 does not indicate which step in yl led to the mistake. The bottom panel illustrates the pipeline of SVPO. Step-level preferences are autonomously generated via MCTS, where Q-values (represented by node colors) indicate potential reasoning errors.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 3.0,
+              "reason": "The figure captures the high-level components emphasized in the summary and caption: (i) contrast between SFT/DPO solution-level supervision and SVPO step-level supervision, and (ii) MCTS self-exploration producing step-level preference signals, with Q-values visualized via node colors indicating likely error steps. However, several major method details from the summary are omitted: the explicit value head V_ϕ and its pretraining targets (Q-value for intermediate steps / final reward for terminal), the reference policy π′, and the three-part SVPO joint loss (DPO-style policy preference loss, value margin loss, and scale-alignment regularizer). No equations/objective structure are shown, so coverage is partial rather than complete."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the visual flow alone, one can infer the general operating principle: SFT/DPO rely on whole-solution labels that do not localize which reasoning step failed, while SVPO uses MCTS to explore a reasoning tree, assigns Q-value-like quality signals to nodes (color), and extracts step-level preferences that guide step-level preference learning. Even without the paper, the pipeline-level intuition and motivation (localizing errors) is understandable. What is not intelligible from the figure alone is how SVPO is optimized (loss terms, role of π′, and explicit value modeling), so it is not fully self-contained."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure is a conceptual comparison/pipeline diagram rather than an end-to-end summary of the paper. It covers the motivation and the MCTS-to-step-level-preferences idea, but it does not summarize the full SVPO training formulation described in the summary (explicit value head training, coupled objectives, alignment regularizer), nor any broader paper content beyond this workflow (e.g., training stages/implementation specifics or other sections). Thus it is not a beginning-to-end summary."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 4.0,
+              "reason": "The figure’s main elements match the summary: SFT/DPO pipelines with solution-level labels, SVPO using MCTS self-exploration to generate step-level preferences, and Q-values visualized as node colors indicating potential error steps. It does not introduce new core modules beyond those described. Minor extras (e.g., cartoon ‘LLM’s thought’ speech bubbles, explicit mention of GPT-4 as annotator) are not in the method summary but are consistent with the caption and do not change the claimed method structure."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 4.0,
+              "reason": "Relationships are broadly consistent: top panel contrasts SFT imitation of a ‘winner’ trajectory and preference learning over whole solutions without locating the wrong step; bottom panel shows MCTS producing a tree with backup/selection and node values (Q/value signals) that enable step-level comparisons, feeding into step-level preference learning (SVPO). However, the figure simplifies/omits some relationships emphasized in the summary (e.g., the explicit value head V_phi, the reference policy π′, and the joint loss components/scale-alignment), so the depicted end-to-end SVPO training is incomplete though not contradictory."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Major method labels are accurate and aligned with the summary/caption: SFT, DPO (as preference learning at solution level), SVPO, and ‘Self-exploration with MCTS’ with Q-values as node colors. The ‘Step-level Preference Learning’ label corresponds to the summary’s step-level preference extraction from MCTS-derived Q-values."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is largely schematized around the main contribution: contrasting solution-level SFT/DPO supervision (top) with SVPO’s step-level supervision via MCTS-generated Q-values and preferences (bottom). The pipeline structure (data/annotation → training → preference learning) is clear and matches the summary’s emphasis on why step-level signals matter. However, several illustrative extras (e.g., repeated robot/LLM icons, multiple speech bubbles, and detailed node labels like A/B1/B2/C1/C2/D1/D2) add visual clutter relative to the core message."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "With the caption, the figure functions well to support understanding: it explicitly compares SFT/DPO vs SVPO and visually indicates that Q-values (node colors) localize likely error steps, aligning with the summary’s explanation of MCTS producing step-level preference pairs based on Q-values. The separation into top/bottom panels and the left-to-right workflow makes it suitable as a supplementary explanatory figure rather than a results figure."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The figure contains some redundant/decorative elements that are not necessary to communicate the core method contrast: repeated character icons, multiple dialogue boxes conveying similar points, and fairly dense MCTS tree decorations (many nodes/arrows) beyond what is required to understand 'MCTS generates Q-values → extract step preferences'. These elements do not change the claimed method structure but reduce visual economy and increase cognitive load."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.571,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure uses a clear left-to-right progression within each panel: (Q&A) input/annotation → solution trajectories → training. The top panel flows from “Solution Collection” to “Supervised Fine-tuning” and “Preference Learning”; the bottom panel flows from “Self-exploration with MCTS” to “Step-level Preference Learning” and the SVPO outcome box. Minor ambiguity comes from the mid-figure branching text (“or”) and multiple small trajectory drawings that slightly disrupt a single dominant reading path."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 3.0,
+              "reason": "Most inter-module arrows between large blocks do not cross. However, within the MCTS tree, the blue/red arrows for select/backup and the edges between nodes intersect visually, and the step-level trajectory comparison area shows crossing links between intermediate nodes (e.g., between B2/C1/C2). These crossings occur in the core illustrative part (MCTS/Q-value-based step preferences), so they moderately reduce diagram clarity."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related components are placed close: the top panel groups SFT/DPO pipeline elements together, and the bottom panel places the MCTS tree directly next to the extracted step-level preference trajectories and then the SVPO arrow/output. The proximity between MCTS (data generation) and step-level preference learning (training signal consumption) supports the summary’s end-to-end workflow."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 3.0,
+              "reason": "High-level blocks are roughly aligned into two horizontal panels separated by a dashed line, and major headings are placed consistently. Still, many elements (speech bubbles, small icons, trajectory mini-graphics) are not aligned to a clear grid, producing a slightly cluttered layout and making scanning less systematic."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Main components stand out via panel structure (top vs bottom), large section titles, and the prominent green rounded rectangle summarizing the SVPO benefit. The dashed separator also reinforces hierarchy. Some secondary decorations (multiple icons/bubbles) compete for attention, but the key contrast (solution-level vs step-level/MCTS) remains visually dominant."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "There is adequate outer margin, but internal spacing is tight in several regions: the top panel has adjacent trajectory lines and text bubbles, and the bottom panel’s MCTS tree plus legend plus node labels are dense. This crowding can hinder quick association of Q-value colors with the preference extraction story described in the summary/caption."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Consistency is strong for the central encoding: green vs red nodes repeatedly denote correct vs incorrect outcomes and node color represents Q-value/error potential as stated in the caption. Similar modules (trajectories) are drawn with repeated circle-and-line motifs across panels. Minor inconsistency arises from mixed visual languages (cartoon robots, icons, bubbles, and schematic graphs) without a unified style, but it does not fundamentally change interpretation."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 4.0,
+              "reason": "Abstract entities in the summary (correct/incorrect solutions, step-level preferences, and MCTS Q-values) are rendered with concrete visual symbols: green/red node colors for Q-value quality signals and error localization, check/cross marks for correctness, and a tree diagram to embody MCTS self-exploration over step choices. The use of simple robot/LLM icons and speech bubbles also concretizes supervision vs preference feedback, aligning with the caption’s intent to show that solution-level labels don’t reveal which step failed."
+            },
+            {
+              "question": "novelty",
+              "score": 3.0,
+              "reason": "The figure uses a fairly standard ML-paper visual language (two-panel comparison, flow arrows, color-coded nodes, and schematic MCTS tree). While the integration of node-color Q-values explicitly tied to ‘potential reasoning errors’ and the juxtaposition of SFT/DPO vs SVPO in one composite is tailored to the paper’s message, the overall styling remains close to common framework-comparison templates rather than a distinctly unique visual style."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is purpose-built to support the paper’s specific claim: it contrasts the top pipeline (SFT/DPO with solution-level feedback that cannot localize the mistaken step) against the bottom pipeline (SVPO with MCTS generating step-level preference pairs and Q-values). The inclusion of an explicit MCTS subtree with selection/backup cues and a subsequent step-level preference learning schematic directly reflects the summarized method components (self-exploration → Q-values → step-level comparisons), rather than using a uniform generic ‘training loop’ diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.714
+      }
+    }
+  ]
+}

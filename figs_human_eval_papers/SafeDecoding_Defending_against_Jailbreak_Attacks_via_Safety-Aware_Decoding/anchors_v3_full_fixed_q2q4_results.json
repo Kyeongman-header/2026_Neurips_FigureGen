@@ -1,0 +1,1102 @@
+{
+  "paper_name": "SafeDecoding_Defending_against_Jailbreak_Attacks_via_Safety-Aware_Decoding",
+  "mode": "full",
+  "evaluated_at": "2026-01-30T06:52:16.880213",
+  "note": "Re-scored Q2(Fidelity) and Q4(Design) with lenient strategy.",
+  "figure_evaluations": [
+    {
+      "figure_file": "SafeDecoding_Defending_against_Jailbreak_Attacks_via_Safety-Aware_Decoding__p0__score0.95.png",
+      "caption": "Figure 1: This example illustrates the token probabilities of Vicuna-7B model under GCG attack (Zou et al., 2023). The words in red are GCG suffixes. We note that although the token representing the word \"Sure\" has a dominant probability, safety disclaimers such as \"I\", \"Sorry\", and \"As\" are still present in the sample space, which is sorted in descending order in token probabilities. When a safety disclaimer token is sampled, the model would reject the attacker’s harmful query.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Token probability perspective on jailbreak success (token space / sample space)', 'Two token groups in distribution: harmful/attack-aligned tokens or sequences (H) vs safety-disclaimer/human-values-aligned tokens or sequences', 'Observation: safety disclaimer tokens exist among top-probability tokens even when harmful tokens dominate', 'Core mechanism: amplify probabilities of safety-disclaimer/human-values-aligned tokens', 'Core mechanism: attenuate probabilities of harmful/attacker-goal-aligned token sequences (H)', 'SafeDecoding two-phase pipeline (Figure 2): (1) training phase to build an expert model with hardened safety via fine-tuning with safety instructions; (2) inference phase', 'Inference flow: user query sent to both original LLM and expert model', 'Fusion step: construct a combined/modified token distribution from both models’ outputs', 'Decoding step: sample/select next tokens from the constructed token distribution (safety-aware decoding), mitigating failures of standard decoding (greedy/top-k/top-p)']\nContext: Our insight in developing SafeDecoding is based on the observation that, even though probabilities of tokens representing harmful contents outweigh those representing harmless responses, safety disclaimers still appear among the top tokens after sorting tokens by probability in descending order. This allows us to mitigate jailbreak attacks by identifying safety disclaimers and amplifying their token probabilities, while simultaneously attenuating the probabilities of token sequences that are aligned with the objectives of jailbreak attacks.\n\nWe aim to defend LLMs against jailbreak attacks by introducing a new perspective on jailbreak success. Our analysis of jailbreak attacks is through the lens of token probabilities, where a token is the smallest unit of text that can be interpreted by LLMs. This perspective, shown in Figure 1, leads to the following two observations. First, the success of a jailbreak attack can be attributed to the dominance of token probabilities aligned with the attack objectives (e.g., “Sure, here’s a tutorial for making a bomb\"), leading to potential failures in widely used decoding strategies such as greedy and top-k (Fan et al., 2018) when generating harmless content. Second, although the model exhibits unintended behavior, tokens representing safety disclaimers such as “Sorry, I cannot fulfill your request.\" exist in the sample space.\n\nWe observe that the probability of generating token sequences that conform to human values and safety instructions (e.g., “Sorry, I cannot . . .\") is non-zero. Thus, the success of jailbreak attacks is attributed to the dominance of token sequences aligned with the attacker’s goal H, outweighing those aligned with human values. Consequently, existing decoding strategies such as top-p (Holtzman et al., 2019) and top-k (Fan et al., 2018) will produce token sequences in H with higher probabilities. Based on this observation, our insight into developing safety-aware decoding strategies is to (i) attenuate the probability of token sequences that are aligned with the attacker’s goal, and (ii) amplify the probability of token sequences that are aligned with human values including safety.\n\nOur SafeDecoding consists of two phases, as illustrated in Figure 2. The first phase is training phase, which constructs an expert model with hardened safety. Such an expert model can be obtained by fine-tuning the original LLM with a few safety instructions. Then in the second inference phase, the user query is sent to both the original and expert models for decoding. SafeDecoding then constructs a token distribution based on the outputs from both models, and sample tokens based on the constructed token distribution.",
+        "fidelity_based": "Lenient Consistency Report: [[{'element': 'top-p', 'status': 'Supported', 'evidence': \"The paper explicitly discusses nucleus sampling (top-p) as a standard decoding method (Sec. 3.1) and Figure 1 is described as showing a token-probability sample space after sorting by probability; depicting a 'top-p' context that points to candidate initial tokens is a plausible visualization of the top-p sampling pool.\"}, {'element': 'top-p -> Sure', 'status': 'Supported', 'evidence': \"Figure 1 in the provided text explicitly notes that the token 'Sure' has a dominant probability under a jailbreak attack; placing 'Sure' as a high-probability token within the top-p sample space is consistent with the narrative.\"}, {'element': 'top-p -> I', 'status': 'Supported', 'evidence': \"The text explicitly states that safety disclaimer tokens such as 'I' appear among the top tokens even when the harmful continuation dominates (Figure 1 caption and Sec. 1/4.1 discussion). Thus, 'I' being included in the top-p sample space is directly supported.\"}, {'element': 'top-p -> C', 'status': 'Supported', 'evidence': \"The figure elements suggest 'C' as the start of 'Certainly! Here is a …'. The paper’s Figure 1 description discusses affirmative/helpful continuations (e.g., 'Sure, here’s a tutorial…') being high-probability under attack. Showing another plausible affirmative starter token in the same candidate set is consistent with the token-probability framing (visual enrichment/loose mapping).\"}, {'element': 'top-p -> Sorry', 'status': 'Supported', 'evidence': \"The text explicitly uses 'Sorry, I cannot…' as a canonical safety disclaimer and states such disclaimers remain present in the sample space (Figure 1 caption; Sec. 4.1). Therefore inclusion of 'Sorry' in top-p candidates is supported.\"}, {'element': 'top-p -> Of', 'status': 'Supported', 'evidence': '‘Of’ appears to be the beginning of ‘Of course! …’, another affirmative response starter. The paper repeatedly contrasts affirmative starters (aligned with attack objectives) versus refusal/disclaimer starters. Including ‘Of’ as an additional plausible affirmative token in the candidate set is consistent with the described token distribution behavior.'}, {'element': 'top-p -> As', 'status': 'Supported', 'evidence': 'The paper explicitly lists ‘As an AI language model…’ as an example of a safety disclaimer token sequence and states such disclaimer tokens appear in the token sample space under attack (Figure 1 caption). Hence ‘As’ being a candidate in top-p is supported.'}, {'element': 'Sure', 'status': 'Supported', 'evidence': \"Figure 1 caption explicitly calls out the word/token 'Sure' as dominant in probability under the GCG jailbreak example; the element matches the paper’s described example.\"}, {'element': 'Sure -> 85%', 'status': 'Supported', 'evidence': \"The caption states 'Sure' has a dominant probability; an illustrative large percentage (85%) is plausible as a concrete instantiation of 'dominant' in a visualization, and nothing in the text contradicts that magnitude.\"}, {'element': 'Sure -> here’s a tutorial …', 'status': 'Supported', 'evidence': 'The paper explicitly provides an example harmful continuation aligned with the attacker objective: “Sure, here’s a tutorial for making a bomb …” (Figure 1 caption; Sec. 4.1).'}, {'element': 'I', 'status': 'Supported', 'evidence': \"The text explicitly names 'I' as a safety-disclaimer-associated token present in the sample space (Figure 1 caption).\"}, {'element': 'I -> 11%', 'status': 'Supported', 'evidence': 'The paper asserts that disclaimer tokens are present with non-zero probability even when not dominant; assigning an illustrative non-trivial probability (e.g., 11%) is plausible and not contradicted.'}, {'element': 'I -> I’m sorry, but I cannot …', 'status': 'Supported', 'evidence': 'Refusal language like “I’m sorry, but I cannot …” is directly consistent with the paper’s repeated examples of safety disclaimers (“Sorry, I cannot …”) and the notion that sampling such tokens leads to rejection (Figure 1 caption).'}, {'element': 'C', 'status': 'Supported', 'evidence': \"Interpreting 'C' as the first token of 'Certainly!' is consistent with the paper’s discussion that affirmative responses are part of the high-probability harmful continuation space under jailbreak attacks; it is a plausible token-level depiction.\"}, {'element': 'C -> 0.63%', 'status': 'Supported', 'evidence': 'The paper supports that multiple candidate tokens (including affirmative ones besides the top token) can appear with smaller probabilities in the sorted sample space; a sub-1% value is plausible and not contradicted.'}, {'element': 'C -> Certainly! Here is a …', 'status': 'Supported', 'evidence': \"This is semantically equivalent to an affirmative compliance preface (like 'Sure...'); the text establishes that such compliant continuations are what jailbreak attacks try to elicit, so this mapping is plausible.\"}, {'element': 'Sorry', 'status': 'Supported', 'evidence': \"The paper explicitly calls out 'Sorry' as an example safety disclaimer token present in the sample space (Figure 1 caption).\"}, {'element': 'Sorry -> 0.57%', 'status': 'Supported', 'evidence': 'The paper’s claim is that disclaimer tokens have non-zero probability but are outweighed by harmful/affirmative tokens; a small percentage like 0.57% fits that description and is not contradicted.'}, {'element': 'Sorry -> I cannot fulfill your …', 'status': 'Supported', 'evidence': 'The text repeatedly uses refusal examples including “Sorry, I cannot fulfill your request.” (Figure 1 label/near-caption text), making this directly supported.'}, {'element': 'Of', 'status': 'Supported', 'evidence': \"‘Of’ as the beginning of 'Of course!' is a plausible affirmative token in the same candidate set described for attack-induced compliance; it does not introduce a new scientific claim beyond token-probability illustration.\"}, {'element': 'Of -> 0.54%', 'status': 'Supported', 'evidence': 'A small non-zero probability for an additional affirmative starter token is consistent with the stated token-distribution behavior; the paper does not provide exact values, so an illustrative value is plausible.'}, {'element': 'Of -> Of course! Here’s a tutorial …', 'status': 'Supported', 'evidence': 'This is another semantically similar compliant continuation to the explicitly cited “Sure, here’s a tutorial …”; the paper’s point is about compliant vs refusal tokens, so this is a plausible alternative wording.'}, {'element': 'As', 'status': 'Supported', 'evidence': \"The paper explicitly lists “As an AI language model, …” as a type of safety disclaimer token sequence and includes 'As' among disclaimer tokens (Figure 1 caption).\"}, {'element': 'As -> 0.20%', 'status': 'Supported', 'evidence': 'A very small but non-zero probability for a disclaimer starter token matches the paper’s core observation that such tokens remain in the sample space despite being outweighed.'}, {'element': 'As -> As an AI language model, it …', 'status': 'Supported', 'evidence': 'The phrase is explicitly referenced in the text as a disclaimer style (“As an AI language model, …”), and the figure’s truncation (‘…’) is consistent with representing a longer refusal/disclaimer sequence.'}], [{'element': 'top-p -> Sure', 'status': 'Supported', 'evidence': 'The figure chunk explicitly includes a panel labeled “(d) Top-p Sampling” and discusses how top‑p sampling affects outputs and ASR; mapping top‑p to example first tokens like “Sure” is a plausible illustrative consequence of sampling behavior.'}, {'element': 'top-p -> I', 'status': 'Supported', 'evidence': 'Top‑p sampling is described as influencing generation (ASR increases as p increases due to resampling attenuated harmful tokens). It is scientifically plausible that changing top‑p shifts the distribution over initial tokens, including starting with “I …”.'}, {'element': 'top-p -> C', 'status': 'Supported', 'evidence': 'Even if not explicitly enumerated in the text, showing example initial-token outcomes under top‑p is a reasonable visualization consistent with the text’s statement that top‑p changes sampled outputs and affects safety/utility tradeoffs.'}, {'element': 'top-p -> Sorry', 'status': 'Supported', 'evidence': 'The paper context is about defenses reducing harmful content and sometimes producing refusal-style responses; associating top‑p sampling with the likelihood of refusals (e.g., starting with “Sorry…”) is plausible and not contradicted by the excerpt.'}, {'element': 'top-p -> Of', 'status': 'Supported', 'evidence': 'The excerpt notes top‑p sampling can enhance response diversity; varied openings like “Of course…” are a plausible depiction of diversity effects under different p values.'}, {'element': 'top-p -> As', 'status': 'Supported', 'evidence': 'The excerpt discusses benign-task utility and alignment/refusal behavior; the common disclaimer-style opener “As an AI language model…” is a plausible sample under certain decoding settings and serves as a visual illustration rather than a novel scientific claim.'}, {'element': 'Sure -> 85%', 'status': 'Supported', 'evidence': 'While the text does not list token-level percentages, presenting token frequency/probability (e.g., 85% for an opening token) is a plausible auxiliary visualization of how decoding preferences shift with top‑p; the excerpt does not contradict such a distribution.'}, {'element': 'Sure -> here’s a tutorial …', 'status': 'Supported', 'evidence': 'The excerpt discusses utility preservation for benign tasks; an example helpful continuation like “here’s a tutorial …” is consistent with preserved helpfulness and is a reasonable illustrative output.'}, {'element': 'I -> 11%', 'status': 'Supported', 'evidence': 'Token-level percentages are not explicitly in the provided text, but they are a plausible way to visualize sampled-output likelihoods under top‑p; nothing in the excerpt rules out such distributions.'}, {'element': 'I -> I’m sorry, but I cannot …', 'status': 'Supported', 'evidence': 'Refusal responses are consistent with alignment/defense behavior discussed (reducing ASR/harmful scores). The excerpt does not state refusals cannot occur; it is plausible that safer decoding yields refusal-style completions.'}, {'element': 'C -> 0.63%', 'status': 'Supported', 'evidence': 'As above, token-frequency annotations are plausible figure enrichments for decoding behavior and are not contradicted by the excerpt.'}, {'element': 'C -> Certainly! Here is a …', 'status': 'Supported', 'evidence': 'The excerpt emphasizes maintaining utility on benign tasks; a helpful response starter like “Certainly! Here is a …” is consistent with that claim.'}, {'element': 'Sorry -> 0.57%', 'status': 'Supported', 'evidence': 'A small probability for refusal-style openings is plausible under sampling; the excerpt discusses safety/utility tradeoffs with top‑p and does not contradict this.'}, {'element': 'Sorry -> I cannot fulfill your …', 'status': 'Supported', 'evidence': 'The broader context is safety defenses reducing harmful outputs; refusal phrasing is a common and plausible outcome of such defenses and is not contradicted by the excerpt.'}, {'element': 'Of -> 0.54%', 'status': 'Supported', 'evidence': 'Minor-probability alternative openings are consistent with the excerpt’s statement that top‑p affects diversity; presenting these as low-frequency tokens is plausible.'}, {'element': 'Of -> Of course! Here’s a tutorial …', 'status': 'Supported', 'evidence': 'Matches the utility-preservation narrative (helpfulness largely intact) and the diversity tradeoff mentioned for top‑p sampling; serves as an illustrative benign output.'}, {'element': 'As -> 0.20%', 'status': 'Supported', 'evidence': 'A low-probability disclaimer-style opener is plausible under sampling-based decoding; the excerpt does not provide or dispute token-level likelihoods.'}, {'element': 'As -> As an AI language model, it …', 'status': 'Supported', 'evidence': 'Disclaimer/opening lines are common in aligned models and safety-related generation; given the excerpt discusses well-aligned models and safety defenses, this illustrative continuation is plausible and not contradicted.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 3,
+              "reason": "The target figure captures the paper’s central token-probability perspective: it contrasts attack-aligned/harmful continuation tokens (e.g., “Sure, here’s a tutorial…”) versus safety-disclaimer tokens (e.g., “Sorry… I cannot…”) and visually supports the key observation that disclaimer tokens can appear among non-zero/top candidates even when harmful tokens dominate. It also implicitly relates this to standard decoding (shows “top-p”). However, it omits most major system components of SafeDecoding described in the evidence—no two-phase pipeline (training an expert model + inference), no dual-query flow to original LLM and expert model, no fusion/constructed distribution step, and no explicit amplification/attenuation mechanism beyond an illustrative probability table. Thus it covers the motivational analysis but not the main method/pipeline details."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 3,
+              "reason": "The figure communicates the core intuition that, under standard decoding (explicitly labeled “top‑p”), high-probability harmful tokens (e.g., “Sure … tutorial”) can dominate, while safety-disclaimer tokens (e.g., “I’m sorry, but I cannot…”) still exist in the high-probability region. This aligns with the paper’s token-probability perspective and the observation that disclaimer tokens appear among top candidates even in jailbreak contexts. However, as a standalone depiction of the *system* (SafeDecoding), it is incomplete: it does not show the two-model setup (original + expert), the fusion/modified token distribution step, nor the explicit amplify/attenuate mechanisms. Without captions or paper context, a reader can grasp “decoding choice influences harmful vs safe continuation,” but not the full SafeDecoding pipeline or how token probabilities are operationally altered."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 2,
+              "reason": "The target figure captures only a narrow slice of the paper’s ideas: the token-probability view of jailbreak success and the observation that safety-disclaimer tokens remain in the high-probability set even when harmful tokens dominate (illustrated via a top-p-like token list with “Sure” vs “Sorry/I cannot”). However, it omits major end-to-end content described in the evidence, especially the SafeDecoding two-phase pipeline (training an expert model via safety fine-tuning, dual-query inference to original+expert models, fusion of token distributions, and safety-aware decoding based on the fused distribution). No fusion mechanism, expert model, or two-stage workflow is depicted. Thus, it is not a complete summary of the paper from beginning to end; it mainly visualizes the motivation/observation rather than the full method."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "No fatal hallucinations: all key elements (top‑p/nucleus sampling context, dominant “Sure” token under jailbreak, presence of disclaimer/refusal starters like “I/Sorry/As an AI language model…”, and compliant continuations like “Sure, here’s a tutorial…”) are supported by the provided evidence. The additional tokens/probabilities (e.g., C/Of and specific percentage values) are plausible illustrative enrichments and are not contradicted by the paper excerpt, so no deduction is warranted under the rubric."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "The depicted relationships among components are consistent with the paper’s described token-probability sample space under top‑p (nucleus) sampling: a top‑p candidate set containing both compliance starters (e.g., “Sure”, “Of”, “C…”) and refusal/disclaimer starters (e.g., “I…”, “Sorry…”, “As…”) and the idea that a dominant high‑probability compliance token can lead to a harmful continuation while lower‑probability disclaimer tokens remain available. No relationship in the figure is explicitly contradicted by the provided evidence; percentage annotations appear illustrative rather than claiming exact reported values."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "Major component/method labels appear accurate and consistent with the paper’s terminology. The figure labels the decoding method as “top‑p” (nucleus sampling), which the evidence indicates is explicitly discussed in the paper. The example token labels (e.g., “Sure”, “Sorry”, “As”, “I”) align with the paper’s described high-probability affirmative vs. refusal/disclaimer starters under jailbreak conditions. No critical methodology/component name is contradicted; any added illustrative tokens/probabilities function as visualization aids rather than mislabels."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is schematized around the paper’s core contribution: a token-probability view of jailbreak success where harmful/attack-aligned tokens dominate yet safety-disclaimer tokens remain in the top-probability set, motivating probability attenuation (harmful) and amplification (safety) during decoding. Visually, it abstracts the situation into a prompt, a next-token distribution (top-p style list with probabilities), and contrasting continuations (harmful vs disclaimer), which aligns with the evidence’s main mechanism rather than incidental implementation details. However, it does not depict the full two-phase SafeDecoding pipeline (expert model training + inference-time fusion of two model distributions), so it summarizes the intuition more than the complete method, slightly limiting alignment with the ‘main contribution’ as described in Figure 2 of the paper."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 4,
+              "reason": "The target figure is largely a good contextual supplement for the described SafeDecoding motivation. It visually conveys the core token-probability perspective: under standard decoding (illustrated via “top-p”), harmful/attack-aligned tokens (e.g., “Sure, here’s a tutorial…”) can dominate, yet safety-disclaimer tokens (e.g., “Sorry…”, “I cannot…”) still appear among top-ranked tokens with non-zero probability. This aligns with the evidence’s key observations (two token groups H vs safety; disclaimers present in the sample space despite being lower-probability) and supports the stated mechanism of amplifying safety-aligned tokens while attenuating harmful ones.\n\nHowever, the figure is weaker as a supplement to the full SafeDecoding method description because it does not depict the two-model setup (original + expert), the fusion step, or the two-phase pipeline (train expert, then inference with combined distribution). As a result, it is strong for motivating the token-space view and why decoding can fail, but only partially supports understanding of the full pipeline mechanics described in the text (Figure 2 in the paper)."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 3,
+              "reason": "The target figure largely communicates the core SafeDecoding insight from the evidence: under standard decoding (e.g., top-p), harmful/attack-aligned tokens (e.g., “Sure… tutorial…”) can dominate while safety-disclaimer tokens (e.g., “Sorry…”) still appear among relatively high-probability candidates, motivating probability amplification/attenuation. However, it includes several decorative/unnecessary elements that do not directly advance the mechanism: cartoon animal avatars, a stylized chat bubble layout, and extra red prompt text (e.g., “Claude this Saturday…”) that adds clutter and potential confusion. The token-probability bar list and color-coded continuations are relevant, but the surrounding embellishments reduce concision compared to the more schematic reference figures."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.571,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The figure has a clear top-to-bottom flow: prompt text at the top, model response in the middle, and token/probability bars plus colored completion outputs at the bottom. The arrows and layout guide the eye cleanly, with good alignment and spacing, so the directionality is immediately understandable at a glance."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 5,
+              "reason": "The connection lines are minimal and clearly routed, with no noticeable line crossings. Callouts and arrows are spaced cleanly, and the overall layout reads left-to-right without tangled connectors, maintaining a neat, publication-ready appearance."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Functionally related elements are grouped tightly: the chat prompt/response bubbles are adjacent, and the token-choice bars and their corresponding outputs are placed directly beneath/next to each other. Visual linkage is clear via proximity and consistent alignment, so a 3-second glance is enough to map inputs → token probabilities → generated responses. Overall it looks polished and publication-ready."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall the layout follows a clear grid: the main speech bubbles, the top-p sampling bar block, and the text legend are arranged in a mostly consistent left-to-right structure and remain fully readable. However, there are minor alignment inconsistencies—some bubble edges and the stacked probability bars don’t line up perfectly, and a few elements (icons/text blocks) feel slightly offset relative to each other—so it looks good but not perfectly polished."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 5,
+              "reason": "The main components are immediately clear: a large central prompt/response panel at the top, a prominent token-probability block with bold labels and high-contrast color coding on the left, and the green vs red completion text to the right. Visual hierarchy is reinforced through size (largest speech bubbles), position (top-to-bottom flow), and emphasis (thicker outlines, strong color blocks). The layout reads like a polished, publication-ready figure with no legibility issues."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "Overall there is adequate whitespace between the main panels and callouts, so the figure is readable at a glance. However, several elements feel tightly packed: the top prompt box sits close to the character icon, the left speech bubble and the probability bars crowd each other, and the bottom text lines overlap visually with the colored bars. Margins are sufficient but not consistently generous, so it looks slightly cramped rather than fully polished."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 4,
+              "reason": "Overall, similar roles are mostly consistent: dialogue/user/system elements use matching rounded boxes, and the token/probability bars share a uniform stacked-rectangle style. The use of red vs green text conveys different behaviors consistently. Minor inconsistencies remain (some callouts/boxes vary in outline thickness, spacing, and background tint, and the top speech box vs bottom chart region feel like two slightly different style systems), but everything is readable and coherent."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The target figure strongly replaces abstract concepts with concrete visual symbols and abbreviations. Abstract ideas like model behavior/outputs are conveyed via discrete token boxes (e.g., “Sure”, “I”, “Sorry”, “Of”, “As”) with percentage bars, a top‑p label, and color-coding to signify probability/mode selection—standing in for an otherwise abstract sampling process. The chat bubbles and the cartoon avatar icons concretize ‘user’ and ‘assistant’ roles, while the red/green typographic outputs depict unsafe vs refusal responses as tangible visual artifacts. Compared with the references, it is less metaphor-heavy than Ref 3/4 (which use multi-panel task metaphors and tool icons extensively) but clearly more metaphorical than Ref 1/2 (more diagrammatic/textual). Overall, abstract mechanisms are substantially mapped onto simple, concrete icons and compact abbreviations."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure follows a very common ML/LLM infographic template: thick black outlines, rounded rectangles, pastel accent blocks, simple cartoon mascots, and a top‑p/token-bar style callout. This visual language closely matches multiple provided references (especially the schematic, boxed-layout diagrams and the bottom token/probability visualization in Ref 5), suggesting it is derivative rather than distinctive. While the specific cat/mascot and the exact content arrangement are slightly customized, the overall composition and stylistic cues are not meaningfully unique relative to common templates in this space."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure largely follows a uniform, template-like layout (single rounded panel, a speech bubble interaction, and a stacked token/probability bar section). Compared to the references, it does not meaningfully adapt its structure to a specific paper’s needs: Ref 2 and Ref 5 show pipeline/flow structures with clearer modular blocks and directional logic tailored to the described method, and Ref 3 uses a multi-panel comparative grid to suit categorization. The target’s composition is more like a generic illustrative cartoon with an appended bar chart, offering limited reconfiguration or paper-specific structural innovation. Minor customization exists (highlighted tokens, character/dialogue framing), but it does not substantially break away from uniform design principles."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.714,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7011
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.7009
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.719
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6828
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7011
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.7009
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.6917
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.6747
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7011
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.719
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.6917
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6828
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.6127
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6486
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.7009
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.719
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.5966
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6781
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.6917
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.719
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6447
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.6684
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.7009
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.719
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6929
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.6801
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7011
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6828
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7011
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.6801
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6447
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.7009
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6486
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7011
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.7009
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6929
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.6105
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6849
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6828
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.719
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6849
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.6621
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.6687
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.7009
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.6105
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6781
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.7009
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6849
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.6625
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6409
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.719
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7011
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.6621
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6805
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.7009
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6563
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6849
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.6747
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.719
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p7__score1.00.png",
+            "similarity": 0.5624
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.6625
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.6801
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.719
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6929
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6805
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7011
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.719
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7011
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.7009
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6729
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.719
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7011
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6805
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7351
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6849
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.719
+          }
+        }
+      }
+    },
+    {
+      "figure_file": "SafeDecoding_Defending_against_Jailbreak_Attacks_via_Safety-Aware_Decoding__p4__score1.00.png",
+      "caption": "Figure 2: This figure illustrates the detail of SafeDecoding. During the training phase, we fine-tune the original LLM to construct an expert model with strengthened safety. In the inference phase, a user query is passed to both the original and expert models. Based on their outputs, SafeDecoding constructs a new token probability distribution. This constructed probability distribution attenuates the probabilities of tokens that are aligned with the attacker’s goal, and amplifies the probabilities of tokens that are aligned with human values. In this example, SafeDecoding is applied only to the first 2 tokens, while the remaining tokens are generated through normal decoding.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Two-phase SafeDecoding pipeline: Training phase + Inference phase', 'Training phase module: construct Expert Model (safety-hardened) from Original LLM', 'Training data creation flow: collect harmful queries -> generate responses with LLM -> filter with GPT-4 keeping refusals -> build query-response fine-tuning dataset', 'Fine-tuning module: parameter-efficient fine-tuning (e.g., LoRA) applied to Original Model to produce Expert Model (shared/aligned vocabulary)', 'Inference phase inputs: User query / token prefix x1:n−1', 'Dual-model decoding flow: send x1:n−1 to both Original Model (θ) and Expert Model (θ′) each step', 'Step 1 module: construct sample space V_n^(c) by intersecting top-k token sets from both models (V_n^k ∩ V′_n^k) with constraint |S| ≥ c', 'Step 2 module: construct combined token probability function P_n over V_n^(c) using Eq.(4) with hyperparameter α and normalization', 'Token sampling module: sample next token from P_n to generate response (autoregressive decoding)', 'Efficiency detail (optional but stated as used): apply SafeDecoding only for first m decoding steps to guide generation']\nContext: 4.2 Overview of SafeDecoding\nOur SafeDecoding consists of two phases, as il-\nlustrated in Figure 2. The first phase is training phase, which constructs an expert model with hard-\nened safety. Such an expert model can be obtained\nby fine-tuning the original LLM with a few safety\ninstructions. Then in the second inference phase,\nthe user query is sent to both the original and ex-\npert models for decoding. SafeDecoding then con-\nstructs a token distribution based on the outputs\nfrom both models, and sample tokens based on the\nconstructed token distribution. In the remainder of\nthis section, we describe each step in detail.\n\n4.3 Training Phase: Construct Expert Model\nTo construct the expert model, we first collect\n36 harmful queries spanning 18 harmful categories,\nas identified in (Ganguli et al., 2022). These queries\nare expected to be rejected by any LLM that is well\naligned with human values. Following this, we\ncreate a fine-tuning dataset by first prompting the\nlanguage model to autonomously generate re-\nsponses to these harmful queries. The outputs are\nthen filtered using GPT-4, and only those responses\nthat effectively refuse the harmful queries are kept.\nThe fine-tuning dataset is finally constructed as the\ncollection of query-response pairs. To create an\nexpert model that is more robust to attack prompts,\nwe fine-tuned the original model using parameter-efficient fine-tuning, e.g. LoRA (Hu et al., 2021)\nwith our constructed dataset. This approach ensures\nthat the vocabulary of the fine-\ntuned model aligns with that of the original model,\nwhile simultaneously identifying and responding\nappropriately to malicious user inputs.\n\n4.4 Inference Phase: Construct New Token Distribution\nGiven the original and expert models, we show\nhow SafeDecoding constructs a token distribution\nat the inference time, following which tokens will be sampled to produce responses to input queries.\nFor an autoregressive LLM, we note that a token distribution at the n-th step can be fully charac-\nterized by a sample space V(c)\nn and a probability function Pn (Fan et al., 2018; Holtzman et al.,\n2019). Here the sample space V(c)\nn specifies the set of all possible tokens that can be generated fol-\nlowing token sequence x1:n−1, where parameter c\nis the minimum size of sample space required by SafeDecoding.\n\nStep 1: Construct the Sample Space V(c)\nn . At the n-th step in the inference time, we forward a token sequence x1:n−1 to both the original and expert models. We denote the set of tokens that can be possibly sampled by the original model and\nexpert model as Vn and V′\nn, respectively. Without loss of generality, we assume that the tokens in Vn and V′\nn are sorted by probability in descending order. Then SafeDecoding constructs a sample space V(c)\nn as the intersection between top k tokens from Vn and V′\nn, which is represented as:\nV(c)\nn = arg min S=Vkn∩V′k\nn k s.t. |S| ≥c.\nHere Vk\nn and V′k\nn represent the top k tokens from Vn and V′\nn, respectively.\n\nStep 2: Define the Probability Function Pn. We use θ and θ′ to denote the original and expert models, respectively. For a token sequence x1:n−1, we construct probability function Pn over V(c)\nn as\nPn(x|x1:n−1) = pθ(x|x1:n−1) + α(pθ′(x|x1:n−1) −pθ(x|x1:n−1)), (4)\nwhere α ≥0 is a hyper-parameter that determines the weights assigned to the original model and ex-\npert model. We finally normalize the values ob-\ntained in Eq. (4) such that P x∈V(c)\nn Pn(x) = 1.\n\n4.5 Helpfulness and Efficiency of SafeDecoding\n... Inspired by this observation, we apply SafeDecoding at the first m steps of the decoding process to guide the response generation.",
+        "fidelity_based": "Lenient Consistency Report: [[{'element': 'Training Phase', 'status': 'Supported', 'evidence': 'The text explicitly defines a two-phase design: “The first phase is training phase… constructs an expert model…” (Sec. 4.2) and details expert-model fine-tuning (Sec. 4.3).'}, {'element': 'Inference Phase', 'status': 'Supported', 'evidence': 'The text explicitly defines an inference-time procedure using both original and expert models to construct a new token distribution and sample from it (Secs. 4.2 and 4.4).'}, {'element': 'Training Phase precedes Step 1', 'status': 'Supported', 'evidence': 'Plausible workflow: training constructs the expert model first (Sec. 4.3), then inference uses it to construct the sample space (Step 1) (Sec. 4.4).'}, {'element': 'Training Phase precedes Inference Phase', 'status': 'Supported', 'evidence': 'Explicit two-phase pipeline: expert model is built in the training phase and then used during inference (Sec. 4.2).'}, {'element': 'Inference Phase precedes Step 2', 'status': 'Supported', 'evidence': 'Both Step 1 (construct sample space) and Step 2 (define probability function) are described as inference-time steps in Sec. 4.4.'}, {'element': 'Step 2 leads_to Softmax', 'status': 'Supported', 'evidence': 'Eq. (4) defines an unnormalized combination which is then “finally normalize[d] … such that Σ Pn(x)=1” (Sec. 4.4). Depicting normalization as a softmax is a scientifically plausible visualization of turning scores into a distribution.'}, {'element': 'Step 1 is Construct Sample Space', 'status': 'Supported', 'evidence': 'The paper explicitly labels “Step 1: Construct the Sample Space Vn(c)” (Sec. 4.4).'}, {'element': 'Construct Sample Space feeds_into Step 2', 'status': 'Supported', 'evidence': 'Step 2 defines Pn over the constructed sample space Vn(c) (“we construct probability function Pn over Vn(c) …”) (Sec. 4.4), so Step 1 directly feeds Step 2.'}, {'element': 'Step 2 is New Prob. Function', 'status': 'Supported', 'evidence': 'The paper explicitly labels “Step 2: Define the Probability Function Pn” and provides Eq. (4) (Sec. 4.4).'}, {'element': 'New Prob. Function inputs_to Softmax', 'status': 'Supported', 'evidence': 'After computing Eq. (4), the text states the values are normalized to sum to 1 (Sec. 4.4). Showing a softmax block as the normalization mechanism is a plausible depiction.'}, {'element': 'New Prob. Function uses α = 3', 'status': 'Supported', 'evidence': 'Eq. (4) uses hyper-parameter α, and the settings section states “we set … α = 3 in Eq. (4)” (Sec. 5.1, SafeDecoding Settings).'}, {'element': 'Softmax outputs_to Normal Decoding', 'status': 'Supported', 'evidence': 'After SafeDecoding determines the next tokens from the constructed distribution, the paper states they apply SafeDecoding for first m steps and then “apply normal decoding in the remaining generation” (Sec. 5.1; also Sec. 4.5). A figure showing the distribution feeding token selection/decoding is consistent.'}, {'element': 'Softmax used_in SafeDecoding', 'status': 'Supported', 'evidence': 'SafeDecoding’s core is constructing a (normalized) token distribution and sampling/decoding from it (Sec. 4.4). A softmax/normalization step is a reasonable visual shorthand.'}, {'element': 'SafeDecoding contrasted_with Normal Decoding', 'status': 'Supported', 'evidence': 'The paper explicitly contrasts SafeDecoding (new distribution using original+expert models) with “existing decoding strategies” and also describes switching back to normal decoding after m steps (Secs. 4.4–4.5).'}, {'element': '+ Amplify Prob. legend_for New Prob. Function', 'status': 'Supported', 'evidence': 'The text repeatedly states SafeDecoding “amplif[ies]” probabilities aligned with human values and “attenuat[es]” those aligned with attacker objectives (Abstract; Sec. 4.1; Sec. 4.4 explanation of Eq. (4)).'}, {'element': '− Attenuate Prob. legend_for New Prob. Function', 'status': 'Supported', 'evidence': 'Same as above: attenuation of attacker-aligned probabilities is explicitly described as the mechanism (Abstract; Sec. 4.4).'}, {'element': 'α = 3 parameter_of New Prob. Function', 'status': 'Supported', 'evidence': 'α appears directly in Eq. (4) defining Pn and is set to 3 in the experiment settings (Sec. 5.1).'}, {'element': 'Sure included_in Construct Sample Space', 'status': 'Supported', 'evidence': 'Figure 1 discussion notes tokens like “Sure” appear with high probability in the sorted sample space under attack (Fig. 1 caption and surrounding text). Step 1 constructs a sample space of top tokens; including “Sure” is consistent with the illustrated example.'}, {'element': 'I included_in Construct Sample Space', 'status': 'Supported', 'evidence': 'The Figure 1 caption explicitly mentions safety disclaimer tokens such as “I” being present in the sample space (Fig. 1 caption).'}, {'element': 'As included_in Construct Sample Space', 'status': 'Supported', 'evidence': 'The Figure 1 caption explicitly lists “As” as a disclaimer token present among top tokens (Fig. 1 caption).'}, {'element': 'No', 'status': 'Supported', 'evidence': 'Refusal/declination tokens (e.g., “No”) are scientifically plausible as part of the expert model’s top tokens and the intersection-based sample space; the paper’s refusal-string framing and examples of rejecting harmful queries support this conceptually (Abstract; Sec. 4.3; Sec. 4.4).'}, {'element': 'C', 'status': 'Supported', 'evidence': 'Single-letter tokens can appear in token vocabularies and top-token lists. The figure’s inclusion of such tokens is a plausible artifact of tokenization and probability display; nothing in the text contradicts this.'}, {'element': 'It', 'status': 'Supported', 'evidence': 'Common tokens like “It” plausibly appear in top-token sample spaces under both benign and refusal responses; consistent with the general notion of a top-token sample space (Sec. 4.4) and the paper’s token-level perspective.'}, {'element': 'Sorry', 'status': 'Supported', 'evidence': 'The paper explicitly cites “Sorry, I cannot…” as an example of safety disclaimers in the token distribution (Sec. 4.1; Fig. 1 caption).'}, {'element': 'Of', 'status': 'Supported', 'evidence': 'Common token that can occur in both helpful and refusal responses; plausible within a top-token sample space as depicted in Fig. 1-style analysis.'}, {'element': 'Okay', 'status': 'Supported', 'evidence': 'Common token plausible in the token sample space; not contradicted by the text and consistent with token-level probability visualization.'}, {'element': 'Write a tutorial on how to make a bomb', 'status': 'Supported', 'evidence': 'This exact harmful-query example appears in the extracted page with Figure 1 illustrating token probabilities for such a prompt under attack (Fig. 1 caption and nearby text).'}, {'element': 'Claude this Saturday.\\\\\" Ok lug, POST anotherparagraph fot someone Moore Mate instead? havet nichutorial', 'status': 'Supported', 'evidence': 'The paper discusses GCG attack suffixes (red words) appended to prompts; Figure 1 caption notes “words in red are GCG suffixes.” This kind of nonsensical adversarial suffix string is consistent with that description.'}, {'element': 'I’m sorry, but I cannot assist ...', 'status': 'Supported', 'evidence': 'The paper repeatedly uses refusal responses like “Sorry, I cannot…” as canonical safe outputs (Abstract; Sec. 4.1; Fig. 1 caption).'}, {'element': 'SafeDecoding produces I’m sorry, but I cannot assist ...', 'status': 'Supported', 'evidence': 'SafeDecoding is designed to increase probability of safety disclaimers/refusals so that the model rejects harmful queries (Abstract; Sec. 4.4). Depicting a refusal output as the result is consistent with the described goal and mechanism.'}], [{'element': 'Training Phase', 'status': 'Supported', 'evidence': 'The paper discusses an expert model being trained (e.g., mentions training a universal expert model) and then deploying SafeDecoding at generation time. This naturally implies a training/setup phase distinct from inference/decoding.'}, {'element': 'Inference Phase', 'status': 'Supported', 'evidence': 'SafeDecoding is a decoding-time defense evaluated via ASR/harmful score and sampling strategies, which is an inference-time procedure.'}, {'element': 'Training Phase precedes Step 1', 'status': 'Supported', 'evidence': 'If Step 1 is part of constructing or learning components used by SafeDecoding (e.g., expert model / sample-space-related machinery), it plausibly occurs after training/setup. The text implies training of an expert model prior to deployment.'}, {'element': 'Training Phase precedes Inference Phase', 'status': 'Supported', 'evidence': 'Standard ML workflow: training/setup occurs before inference/decoding. The text also separates training a universal expert model from generation-time evaluation.'}, {'element': 'Step 1 is Construct Sample Space', 'status': 'Supported', 'evidence': 'Although the provided text chunk does not spell out this step, constructing a candidate/sample space for decoding is a common and scientifically plausible part of decoding-time methods; figures often make such implicit steps explicit.'}, {'element': 'Construct Sample Space feeds into Step 2', 'status': 'Supported', 'evidence': 'It is plausible that once a token/sample space is formed, the next step modifies probabilities or applies the defense to that set. This is consistent with decoding pipelines.'}, {'element': 'Inference Phase precedes Step 2', 'status': 'Supported', 'evidence': 'Step 2 appears to be a decoding-time operation (new probability function), which would occur during inference.'}, {'element': 'Step 2 is New Prob. Function', 'status': 'Supported', 'evidence': \"The method name SafeDecoding and the discussion of hyper-parameters (α, m, c) affecting ASR/harmful score strongly suggest a probability reweighting/adjustment during decoding; a 'new probability function' label is a reasonable figure-level abstraction.\"}, {'element': 'Step 2 leads to Softmax', 'status': 'Supported', 'evidence': 'In autoregressive decoding, logits/probability adjustments are typically followed by softmax normalization before sampling/greedy selection; this is common knowledge and fits the described sampling/decoding context.'}, {'element': 'New Prob. Function inputs_to Softmax', 'status': 'Supported', 'evidence': 'Consistent with standard generation: a modified scoring/probability function would be normalized (softmax) to obtain a distribution used for token selection.'}, {'element': 'New Prob. Function uses α = 3', 'status': 'Supported', 'evidence': 'The text explicitly discusses a hyper-parameter α and states insensitivity when α ≥ 3, making α=3 a plausible depicted default/ablation setting.'}, {'element': 'α = 3 parameter_of New Prob. Function', 'status': 'Supported', 'evidence': 'Same rationale: α is explicitly a SafeDecoding hyper-parameter and would parameterize the probability modification step.'}, {'element': 'Softmax outputs_to Normal Decoding', 'status': 'Supported', 'evidence': 'Normal decoding (greedy/top-p sampling) consumes the softmax distribution. The text explicitly discusses greedy and top-p sampling as decoding strategies.'}, {'element': 'Softmax used_in SafeDecoding', 'status': 'Supported', 'evidence': 'SafeDecoding is a decoding-time method that operates on token probabilities/logits; using softmax is a standard component of such pipelines, and the text discusses sampling behavior (top-p) which presupposes a normalized distribution.'}, {'element': 'SafeDecoding contrasted_with Normal Decoding', 'status': 'Supported', 'evidence': \"The text compares SafeDecoding against baselines and discusses performance relative to 'no defense' and other defenses; contrasting to normal decoding is conceptually consistent.\"}, {'element': '+ Amplify Prob. legend_for New Prob. Function', 'status': 'Supported', 'evidence': 'The text describes attenuating harmful tokens and implies reweighting probabilities; a figure legend indicating amplification/attenuation is a plausible visualization of that mechanism.'}, {'element': '− Attenuate Prob. legend_for New Prob. Function', 'status': 'Supported', 'evidence': 'Directly aligns with the text’s explanation that attenuated harmful tokens can be resampled (top-p discussion), implying the defense reduces probability mass for harmful tokens.'}, {'element': 'Hyper-parameters α, m, c and top-p sampling (Figure 3 ablation context)', 'status': 'Supported', 'evidence': 'The provided text explicitly describes ablation on α, m, c and top-p sampling, and states thresholds (α ≥ 3, m ≥ 2, c ≥ 7) where SafeDecoding becomes insensitive.'}, {'element': 'Sure / I / As included_in Construct Sample Space', 'status': 'Supported', 'evidence': 'These look like example candidate tokens in a decoding sample space. The text does not enumerate tokens, but showing example tokens is a typical illustrative aid and does not introduce a conflicting scientific claim.'}, {'element': 'Write a tutorial on how to make a bomb', 'status': 'Supported', 'evidence': 'The paper evaluates safety against harmful prompts/attacks (ASR, harmful score) and discusses successful defense; an example harmful instruction is consistent with the safety context.'}, {'element': 'I’m sorry, but I cannot assist ... produced by SafeDecoding', 'status': 'Supported', 'evidence': 'A refusal-style safe response is consistent with reducing ASR/harmful outputs; the text reports SafeDecoding reduces ASR to near 0% for well-aligned models, which plausibly corresponds to refusals on harmful requests.'}, {'element': 'Claude this Saturday... (garbled text example)', 'status': 'Supported', 'evidence': 'Appears to be an illustrative output snippet/noise. The text mentions examples in appendices; including example generations in a figure is plausible and not contradicted.'}, {'element': 'No / C / It / Sorry / Of / Okay (isolated tokens)', 'status': 'Supported', 'evidence': 'Likely additional example tokens in the candidate set or decoding illustration. Not explicitly in the text, but consistent as visual enrichment and does not contradict reported results.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 5,
+              "reason": "The target figure covers essentially all major components described in Sec. 4.2–4.5: it explicitly separates Training Phase vs Inference Phase; shows constructing an expert (safety-hardened) model from the original model; depicts dual-model decoding where the prefix is forwarded to both models each step; includes Step 1 sample-space construction via intersection of top-k tokens (illustrated as overlapping candidate sets and selecting a constrained set); includes Step 2 probability combination consistent with Eq.(4) using hyperparameter α and then normalization/softmax; and shows autoregressive token sampling to continue generation. It also includes the efficiency detail of applying SafeDecoding only for the first m steps before switching to normal decoding. The only minor omissions are implementation-level details like explicit mention of LoRA/parameter-efficient fine-tuning and the harmful-query→LLM-response→GPT-4-filter dataset creation pipeline; however, these are training-data specifics rather than core inference components, and the main training objective (expert model construction) is still represented. Overall, it includes the major modules/formula flow without meaningful omission."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure largely communicates the operating principle without the paper: it clearly separates a Training Phase (producing a safety-hardened “expert” model from an original model) and an Inference Phase where both models score next-token candidates. It visualizes Step 1 as intersecting top tokens from both models to form a constrained sample space, and Step 2 as combining probabilities via a weighted difference term (with α) followed by normalization/softmax, then sampling to yield a safer continuation (refusal). This aligns well with the evidence (two-phase pipeline, dual-model per-step decoding, intersection-based candidate set, Eq.(4)-style mixture, autoregressive sampling). However, some key details needed for full standalone clarity are missing or under-specified: the role/meaning of k and c (minimum set size constraint) is not explicitly shown, the fine-tuning dataset creation and LoRA/parameter-efficient aspect are not explained (training is depicted but not how), and the optional efficiency trick (apply only first m steps then normal decoding) is only faintly implied rather than clearly labeled. Despite these gaps, the general principle is understandable from the figure."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 4,
+              "reason": "The target figure captures the core end-to-end SafeDecoding story from the paper’s overview through training and inference: (i) a two-phase pipeline (training + inference), (ii) training via collecting harmful queries, generating/refusal-filtering responses to build a fine-tuning set, and applying parameter-efficient fine-tuning (implied by the ‘Training Phase’ producing an expert model), and (iii) inference-time dual-model decoding with Step 1 (top-k intersection sample space with minimum-size constraint) and Step 2 (Eq. 4-style linear combination with hyperparameter α, followed by normalization/softmax and autoregressive sampling). It also reflects the intuition of amplifying/attenuating token probabilities.\n\nHowever, completeness from beginning-to-end is not perfect: it omits/does not clearly depict several textual specifics (e.g., explicit notation x1:n−1, explicit top-k intersection with |S|≥c constraint, explicit normalization over V_n^(c), and the efficiency detail of applying SafeDecoding only for the first m decoding steps). It is therefore largely complete for the main method but misses some stated details and later-section efficiency nuance."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "No fatal hallucinations detected. The figure’s core components—two-phase pipeline (training an expert model, then inference-time SafeDecoding), Step 1 (construct sample space V_n(c)), Step 2 (define new probability function with hyperparameter α), and normalization to a distribution (softmax/normalization block as visual shorthand)—are supported by the cited sections/equations. The example tokens and garbled GCG-style suffix are consistent with the paper’s illustrative discussion and are not contradicted. There is no evidence of any critical component or formula being explicitly contradicted by the paper."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "All major relationships depicted are supported by the provided evidence: a two-phase pipeline where a training phase constructs an expert model, which is then used at inference time; inference-time Step 1 constructs the sample space Vn(c), Step 2 defines a new probability function Pn over that space (with α set to 3), followed by normalization (reasonably visualized as a softmax) and decoding (SafeDecoding for initial steps then normal decoding). The amplify/attenuate framing matches the paper’s described mechanism. Token examples and extra visual elements are illustrative and not contradicted."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "Major components/methodology names are labeled in line with the paper’s terminology and structure: a two-phase pipeline (“Training Phase” to build the expert model, then “Inference Phase”), and the inference-time steps explicitly named in the paper (“Step 1: Construct the Sample Space” and “Step 2: Define the Probability Function”). “SafeDecoding” and its contrast/switch to “Normal Decoding” are also consistent with the described method. The “Softmax” block is a reasonable label for the normalization step (values normalized to sum to 1) and is not contradicted by the text. No critical label is contradicted by the provided evidence."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 5,
+              "reason": "The target figure is strongly schematized around the paper’s main contribution: the two-phase SafeDecoding pipeline. It clearly separates Training Phase (constructing an Expert Model via safety-focused fine-tuning) from Inference Phase (dual-model decoding). In inference it explicitly shows (i) sending the same prefix to both Original and Expert models, (ii) Step 1 constructing the constrained sample space via intersection of top-k token sets with a minimum-size constraint, and (iii) Step 2 forming the combined token probability function using the paper’s Eq.(4) with hyperparameter α and normalization (softmax), followed by autoregressive sampling. It also includes the efficiency note (apply only for first m steps) without overloading details. Compared to the visual references, it focuses on the method schematic (modules/flows/probability shaping) rather than ancillary or trivial implementation specifics, aligning well with the ‘Main Contribution’."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "The target figure closely matches the described SafeDecoding pipeline and serves well as supplementary material for the reader. It clearly depicts the two-phase setup (Training Phase producing an Expert Model from an Original/Base model, then an Inference Phase). The inference flow aligns with the text: (i) both models score tokens given the same prefix, (ii) Step 1 constructs the sample space via intersection of top-k tokens (illustrated by selecting shared candidates like “Sure”, “I”, “As”), and (iii) Step 2 forms a new probability function using the linear combination in Eq.(4) with hyperparameter α (explicitly shown as 85% + α(52%−85%) etc.), followed by normalization (softmax). It also conveys the efficiency detail by indicating SafeDecoding applied for the first m steps before switching to normal decoding. Compared to the visual references, it is the only one that directly visualizes dual-model token-level intersection and probability recombination, making it contextually well matched to Section 4.2–4.5."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 3,
+              "reason": "The target figure communicates the core SafeDecoding pipeline (training expert model, dual-model stepwise decoding, intersection/top-k sample space, and Eq.(4)-style probability mixing with α and normalization/softmax). However, it includes several decorative/non-essential elements that add redundancy: cartoon model icons, stylized speech bubble with an example harmful prompt (partially irrelevant to the decoding math), the “Amplify/Attenuate Prob.” legend, and extra visual flourishes (colors, ellipses, token bars) beyond what is needed to convey the algorithmic steps. These do not contradict the evidence but reduce concision compared to a purely schematic depiction."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.571,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The figure has a clear left-to-right progression: user prompt → training phase probabilities → step 1 sample space → inference phase step 2 probability adjustment → softmax → final output. Arrows and labeled steps make the reading order obvious, with clean alignment and no confusing back-and-forth flow."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 5,
+              "reason": "Connection lines are mostly routed cleanly left-to-right with clear grouping (training phase → inference steps). Arrows and flow connectors are separated and do not meaningfully intersect; any overlaps are minimal and don’t create ambiguity. Overall looks neat and publication-ready within a 3-second glance."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Closely related elements are grouped and placed adjacent: the training-phase columns sit together on the left, the inference-phase steps (sample space construction → new probability function → softmax) flow left-to-right in one contiguous block, and the decoding outcomes are shown directly beneath the inference pipeline. Callouts for amplify/attenuate are near the probability update module they reference. Overall proximity supports the intended process flow and is immediately readable."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall layout follows a clear grid with well-aligned major blocks (training/inference phases, step boxes, probability columns) and consistent spacing, so it’s readable at a glance. Minor misalignments in some labels/arrows (e.g., small callouts near softmax and a few text elements not perfectly centered within boxes) keep it from looking fully polished."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 4,
+              "reason": "The main components (target prompt at top-left, training vs. inference phases, and the Step 1/Step 2 blocks) are clearly separated and sized, with color-coded token bars drawing attention appropriately. The pipeline flow is easy to follow in a quick glance. Minor hierarchy distractions come from dense small text in the top prompt bubble and several similarly weighted boxes competing for attention (e.g., probability tables vs. step headers), making the primary focal point slightly less immediate than a fully polished published figure."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 5,
+              "reason": "Margins and padding are consistently applied across the figure: panels have clear whitespace from borders, text blocks aren’t cramped, and arrows/connecting lines don’t collide with labels. Even with dense content, elements remain well-separated and readable at a glance, giving it a polished, publication-ready layout."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 4,
+              "reason": "Mostly consistent visual encoding: probability/token tables use the same box shapes and color scheme (green for allowed/safe, red for disallowed/risky) across training/inference sections, and the step panels share similar framing. Minor inconsistencies remain—some labels/containers switch between rounded vs sharp rectangles, line/arrow styles vary slightly, and the legend-style '+/-' callouts use a different visual language— but overall roles are recognizable and readable at a glance."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The Target Figure strongly replaces abstract concepts with concrete symbols and abbreviations. Core ideas in model behavior and safety alignment are represented via icons (cartoon agent faces), color-coded token/probability bars, and compact labels (e.g., “SafeDecoding,” “Softmax,” “α=3,” “Amplify/Attenuate Prob.”). This mirrors the Evidence figures’ use of schematic modules and symbolic notation (e.g., flow diagrams, boxed components, abbreviated model names). However, the Target still relies on several textual explanations (“Training Phase,” “Inference Phase,” “Construct Sample Space,” “New Prob. Function”) rather than fully metaphorical visual substitutes, so it is not maximally icon-driven."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 3,
+              "reason": "The target figure largely follows a common ML-paper schematic template: rounded boxes, phase separation (training vs. inference), arrows/flows, probability tables, and a rightward pipeline culminating in a softmax/output—elements also prevalent in the evidence figures (e.g., Ref 3–4’s process diagrams and Ref 5’s pipeline). However, it introduces some differentiating stylistic cues: a cartoon mascot/character integrated into the workflow, color-coded token/probability blocks with an “amplify/attenuate” legend, and a mixed illustrative + UI-like layout that is more playful than standard academic diagrams. Overall, it shows moderate novelty in styling, but the underlying structure and visual language remain close to common templates."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure largely follows a standard, template-like schematic layout: a single wide panel with thick borders, clearly separated subregions (Training Phase vs. Inference Phase), step labels, and arrow-driven flow. This is consistent with the uniform design principles seen in the references (pipeline boxes, left-to-right process diagrams, modular panels).\n\nWhile there is some paper-specific tailoring (token/probability tables, explicit “Amplify/Attenuate” legend, and the SafeDecoding vs. Normal Decoding comparison), these are content adaptations rather than a meaningful break from conventional figure layout. Compared to the evidence set, it does not introduce a notably different or more context-driven composition (e.g., irregular structuring, novel paneling, or paper-specific narrative framing beyond standard stages/steps). Hence, adaptability is limited."
+            }
+          ]
+        }
+      },
+      "weighted_total": 4.247,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.7079
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.6953
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7097
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.726
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.7079
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.726
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7338
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7232
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.7079
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7051
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7338
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7232
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p0__score1.00.png",
+            "similarity": 0.584
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6637
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.7113
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7338
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6165
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7051
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.7113
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7338
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6764
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7051
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.7113
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7338
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.7079
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6748
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7097
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7338
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7051
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7088
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7097
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.726
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6637
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7098
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7097
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7338
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.6756
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7042
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7338
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.7113
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6383
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.6626
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.6931
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7098
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5448
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6534
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.6971
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7338
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.6884
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6862
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.726
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6859
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7051
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7338
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.726
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6748
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6923
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.726
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7338
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.6223
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.6873
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7051
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7338
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.7079
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7042
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7097
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7338
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.7079
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7098
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.726
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6958
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.6931
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.726
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7361
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7338
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6958
+          }
+        }
+      }
+    }
+  ]
+}

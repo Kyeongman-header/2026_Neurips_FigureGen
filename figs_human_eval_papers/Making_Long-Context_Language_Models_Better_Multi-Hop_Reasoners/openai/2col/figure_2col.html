@@ -1,0 +1,292 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=1800, initial-scale=1"/>
+<title>Overview of Reasoning with Attributions and Training Objectives</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#1f2937;
+    --muted:#4b5563;
+    --muted2:#6b7280;
+    --line:#9aa4b2;
+    --panel:#f8fafc;
+    --panel2:#f3f4f6;
+    --accent:#2563eb;
+    --accent2:#0f766e;
+    --accent3:#7c3aed;
+    --warn:#b45309;
+    --la:#0f766e;
+    --ap:#2563eb;
+    --cg:#7c3aed;
+    --qi:#b45309;
+  }
+  html,body{height:100%; margin:0; background:var(--bg); font-family: Arial, Helvetica, sans-serif;}
+  #figure-root{
+    width:1800px; height:1200px;
+    margin:0 auto;
+    background:var(--bg);
+    box-sizing:border-box;
+  }
+  .caption{
+    font-size:22px;
+    line-height:1.25;
+    color:#111827;
+  }
+  .small{
+    font-size:18px;
+    fill: var(--muted);
+  }
+  .tiny{
+    font-size:16px;
+    fill: var(--muted2);
+  }
+  .title{
+    font-size:34px;
+    font-weight:700;
+    fill: var(--ink);
+  }
+  .subtitle{
+    font-size:22px;
+    fill: var(--muted);
+  }
+  .panel-label{
+    font-size:22px;
+    font-weight:700;
+    fill: var(--ink);
+  }
+  .task-title{
+    font-size:24px;
+    font-weight:700;
+    fill: var(--ink);
+  }
+  .task-badge{
+    font-size:18px;
+    font-weight:700;
+    fill:#ffffff;
+  }
+  .label{
+    font-size:18px;
+    fill: var(--ink);
+  }
+  .mono{
+    font-family: "Arial", Helvetica, sans-serif;
+    letter-spacing: 0.2px;
+  }
+  .stroke{
+    stroke: var(--line);
+    stroke-width:2;
+    fill:none;
+  }
+  .box{
+    fill: var(--panel);
+    stroke: var(--line);
+    stroke-width:2;
+    rx:14; ry:14;
+  }
+  .box2{
+    fill: var(--panel2);
+    stroke: var(--line);
+    stroke-width:2;
+    rx:14; ry:14;
+  }
+  .box-white{
+    fill:#ffffff;
+    stroke: var(--line);
+    stroke-width:2;
+    rx:12; ry:12;
+  }
+  .arrow{
+    stroke: #6b7280;
+    stroke-width:2.5;
+    fill:none;
+  }
+  .arrow-strong{
+    stroke: #374151;
+    stroke-width:3;
+    fill:none;
+  }
+  .dashed{
+    stroke-dasharray: 8 6;
+  }
+  .note{
+    fill:#ffffff;
+    stroke: var(--line);
+    stroke-width:2;
+    rx:12; ry:12;
+  }
+  .pill{
+    stroke: none;
+  }
+</style>
+</head>
+<body>
+<div id="figure-root">
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200" role="img" aria-label="Overview of Reasoning with Attributions and training objectives diagram">
+  <defs>
+    <marker id="arrowHead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b7280"></path>
+    </marker>
+    <marker id="arrowHeadStrong" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#374151"></path>
+    </marker>
+    <marker id="arrowHeadAccent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0f766e"></path>
+    </marker>
+  </defs>
+
+  <!-- Top header -->
+  <text x="60" y="70" class="title">Reasoning with Attributions: tasks and objectives for multi-hop reasoning in noisy long-context inputs</text>
+  <text x="60" y="108" class="subtitle">Primary learning-to-attribute (LA) objective with auxiliary multi-task objectives (AP, CG, QI)</text>
+
+  <!-- Left panel: inputs -->
+  <rect x="60" y="150" width="560" height="900" class="box"></rect>
+  <text x="90" y="195" class="panel-label">Noisy long-context input</text>
+
+  <!-- Question -->
+  <rect x="90" y="230" width="500" height="125" class="box-white"></rect>
+  <text x="110" y="265" class="label" font-weight="700">Question (multi-hop)</text>
+  <text x="110" y="296" class="small">Complex query requiring synthesis across multiple documents</text>
+  <text x="110" y="326" class="tiny mono">Example form: bridge / comparison / compositional questions</text>
+
+  <!-- Context stack -->
+  <rect x="90" y="380" width="500" height="640" class="box-white"></rect>
+  <text x="110" y="415" class="label" font-weight="700">Context (shuffled documents)</text>
+  <text x="110" y="446" class="small">Relevant + distractor documents; variable noise level</text>
+
+  <!-- Document cards -->
+  <g>
+    <rect x="120" y="470" width="440" height="90" class="box2"></rect>
+    <text x="145" y="504" class="label" font-weight="700">Doc A (relevant)</text>
+    <text x="145" y="532" class="small">Supporting fact for hop 1</text>
+
+    <rect x="120" y="575" width="440" height="90" class="box2"></rect>
+    <text x="145" y="609" class="label" font-weight="700">Doc B (distractor)</text>
+    <text x="145" y="637" class="small">Irrelevant text introduces noise</text>
+
+    <rect x="120" y="680" width="440" height="90" class="box2"></rect>
+    <text x="145" y="714" class="label" font-weight="700">Doc C (relevant)</text>
+    <text x="145" y="742" class="small">Supporting fact for hop 2</text>
+
+    <rect x="120" y="785" width="440" height="90" class="box2"></rect>
+    <text x="145" y="819" class="label" font-weight="700">Doc D (distractor)</text>
+    <text x="145" y="847" class="small">Additional unrelated information</text>
+
+    <rect x="120" y="890" width="440" height="90" class="box2"></rect>
+    <text x="145" y="924" class="label" font-weight="700">… more documents</text>
+    <text x="145" y="952" class="small">Position varies via shuffling; count varies via sampling</text>
+  </g>
+
+  <!-- Middle panel: multitask training -->
+  <rect x="660" y="150" width="1080" height="900" class="box"></rect>
+  <text x="690" y="195" class="panel-label">Multi-task fine-tuning objectives</text>
+  <text x="690" y="226" class="small">All tasks share the same (Question + Context) input; differ in required output supervision</text>
+
+  <!-- Shared input node -->
+  <rect x="760" y="260" width="880" height="120" class="box-white"></rect>
+  <text x="790" y="296" class="label" font-weight="700">Shared input representation</text>
+  <text x="790" y="326" class="small">Concatenate question with noisy long context (relevant + distractors; shuffled order)</text>
+  <text x="790" y="356" class="tiny">Goal: robust multi-hop reasoning under noise (“lost in the middle” mitigation via grounding)</text>
+
+  <!-- Central model node -->
+  <rect x="1030" y="420" width="380" height="110" class="box-white"></rect>
+  <text x="1220" y="460" text-anchor="middle" class="label" font-weight="700">Long-context LM</text>
+  <text x="1220" y="488" text-anchor="middle" class="small">Fine-tuned with multi-task objectives</text>
+  <text x="1220" y="516" text-anchor="middle" class="tiny">e.g., Vicuna-7B-16k + LoRA</text>
+
+  <!-- Arrows: left panel to shared input -->
+  <path d="M 620 292 L 750 292" class="arrow-strong" marker-end="url(#arrowHeadStrong)"></path>
+  <text x="640" y="278" class="tiny">Question + Context</text>
+
+  <!-- Arrow: shared input to model -->
+  <path d="M 1200 380 L 1200 418" class="arrow-strong" marker-end="url(#arrowHeadStrong)"></path>
+
+  <!-- Task boxes row/columns -->
+  <!-- LA (primary) -->
+  <g>
+    <rect x="720" y="590" width="960" height="170" class="box-white"></rect>
+    <rect x="740" y="612" width="64" height="32" class="pill" fill="var(--la)" rx="8" ry="8"></rect>
+    <text x="772" y="635" text-anchor="middle" class="task-badge">LA</text>
+    <text x="820" y="636" class="task-title">Learning-to-Attribute (primary)</text>
+    <text x="760" y="675" class="label">Output: chain-of-thought with attributions for each step (citations / quotes)</text>
+    <text x="760" y="705" class="small">Forces: (i) pinpoint pertinent context segments, (ii) construct grounded multi-hop claims</text>
+    <text x="760" y="735" class="tiny mono">Format concept: step 1 → [cite/quote], step 2 → [cite/quote], …, final answer</text>
+  </g>
+
+  <!-- Auxiliary tasks: AP, CG, QI -->
+  <!-- AP -->
+  <g>
+    <rect x="720" y="790" width="300" height="235" class="box-white"></rect>
+    <rect x="740" y="812" width="64" height="32" class="pill" fill="var(--ap)" rx="8" ry="8"></rect>
+    <text x="772" y="835" text-anchor="middle" class="task-badge">AP</text>
+    <text x="820" y="836" class="task-title">Answer Prediction</text>
+    <text x="740" y="875" class="label">Output: answer only</text>
+    <text x="740" y="905" class="small">Trains direct QA behavior</text>
+    <text x="740" y="935" class="small">Helps internalize implicit reasoning</text>
+    <text x="740" y="965" class="tiny">No explicit chain; no attribution requirement</text>
+  </g>
+
+  <!-- CG -->
+  <g>
+    <rect x="1050" y="790" width="300" height="235" class="box-white"></rect>
+    <rect x="1070" y="812" width="64" height="32" class="pill" fill="var(--cg)" rx="8" ry="8"></rect>
+    <text x="1102" y="835" text-anchor="middle" class="task-badge">CG</text>
+    <text x="1150" y="836" class="task-title">CoT Generation</text>
+    <text x="1070" y="875" class="label">Output: chain-of-thought + answer</text>
+    <text x="1070" y="905" class="small">Trains explicit multi-hop reasoning</text>
+    <text x="1070" y="935" class="small">Methodical step-by-step generation</text>
+    <text x="1070" y="965" class="tiny">No requirement to cite/quote sources</text>
+  </g>
+
+  <!-- QI -->
+  <g>
+    <rect x="1380" y="790" width="300" height="235" class="box-white"></rect>
+    <rect x="1400" y="812" width="64" height="32" class="pill" fill="var(--qi)" rx="8" ry="8"></rect>
+    <text x="1432" y="835" text-anchor="middle" class="task-badge">QI</text>
+    <text x="1480" y="836" class="task-title">Quote Identification</text>
+    <text x="1400" y="875" class="label">Output: key supporting quotes</text>
+    <text x="1400" y="905" class="small">Trains context filtering under noise</text>
+    <text x="1400" y="935" class="small">Locates critical text spans for reasoning</text>
+    <text x="1400" y="965" class="tiny">Supervision focuses on evidence, not full reasoning</text>
+  </g>
+
+  <!-- Arrows from model to tasks (training supervision heads) -->
+  <path d="M 1220 530 L 1220 588" class="arrow" marker-end="url(#arrowHead)"></path>
+  <text x="1240" y="566" class="tiny">supervised objectives</text>
+
+  <path d="M 1110 530 L 900 790" class="arrow dashed" marker-end="url(#arrowHead)"></path>
+  <path d="M 1220 530 L 1200 790" class="arrow dashed" marker-end="url(#arrowHead)"></path>
+  <path d="M 1330 530 L 1530 790" class="arrow dashed" marker-end="url(#arrowHead)"></path>
+
+  <!-- Emphasis: LA primary -->
+  <path d="M 1220 530 L 1220 590" class="arrow-strong" marker-end="url(#arrowHeadAccent)" stroke="#0f766e"></path>
+
+  <!-- Right-side note: robustness rationale -->
+  <rect x="1410" y="260" width="330" height="250" class="note"></rect>
+  <text x="1430" y="292" class="label" font-weight="700">Why attributions help</text>
+  <text x="1430" y="324" class="small">• Reduce distraction by grounding steps in context</text>
+  <text x="1430" y="354" class="small">• Encourage locating relevant documents under shuffling</text>
+  <text x="1430" y="384" class="small">• Improve robustness as noise (distractors) increases</text>
+  <text x="1430" y="414" class="small">• Make reasoning verifiable via citations/quotes</text>
+  <text x="1430" y="446" class="tiny">Used for multi-hop benchmarks with long contexts</text>
+
+  <!-- Bottom legend-like mini schematic of outputs -->
+  <rect x="720" y="1045" width="960" height="80" class="box2"></rect>
+  <text x="750" y="1080" class="label" font-weight="700">Outputs differ by task:</text>
+  <text x="980" y="1080" class="small"><tspan font-weight="700" fill="var(--ap)">AP</tspan><tspan> → answer</tspan></text>
+  <text x="1150" y="1080" class="small"><tspan font-weight="700" fill="var(--cg)">CG</tspan><tspan> → chain-of-thought + answer</tspan></text>
+  <text x="1480" y="1080" class="small"><tspan font-weight="700" fill="var(--qi)">QI</tspan><tspan> → supporting quotes</tspan></text>
+  <text x="750" y="1108" class="small"><tspan font-weight="700" fill="var(--la)">LA</tspan><tspan> → chain-of-thought with attributions (citations/quotes) + answer</tspan></text>
+
+  <!-- Caption area -->
+  <rect x="60" y="1070" width="560" height="100" class="box-white"></rect>
+  <text x="80" y="1105" class="label" font-weight="700">Figure caption</text>
+  <foreignObject x="80" y="1120" width="520" height="60">
+    <div xmlns="http://www.w3.org/1999/xhtml" class="caption">
+      Overview of Reasoning with Attributions and training objectives: the primary learning-to-attribute (LA) task versus auxiliary tasks—answer prediction (AP), chain-of-thought generation (CG), and quote identification (QI)—used in multi-task fine-tuning for robust multi-hop reasoning in noisy long-context inputs.
+    </div>
+  </foreignObject>
+</svg>
+</div>
+</body>
+</html>

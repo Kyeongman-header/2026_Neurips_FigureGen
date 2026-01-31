@@ -1,0 +1,653 @@
+{
+  "paper_name": "Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models",
+  "mode": "full",
+  "evaluated_at": "2026-01-29T14:13:47.077277",
+  "figure_evaluations": [
+    {
+      "figure_file": "Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+      "caption": "Figure 1: Illustrations of our proposed approach. There are four stages. (1) Uncertainty Estimation: with or without a few human-written chain-of-thoughts, we query the large language model k (k “ 5 in this illustration) times to generate possible answers with intermediate steps for a set of training questions. Then, we calculate the uncertainty u based on k answers via an uncertainty metric (we use disagreement in this illustration). (2) Selection: according to the uncertainty, we select the most uncertain questions for annotation. (3) Annotation: we involve humans to annotate the selected questions. (4) Inference: infer each question with the new annotated exemplars.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Unlabeled training dataset Dtr (questions only)', 'Test dataset Dte (questions only)', 'LLM forward/generation module', 'k repeated generations per training question (k answers per qi)', 'Uncertainty estimation module producing u per training question', 'Uncertainty metrics (at least: disagreement, entropy; optionally shown: variance, self-confidence)', 'Uncertainty ranking over Dtr by u', 'Top-n selection of most uncertain questions (with random tie-breaking if needed)', 'Oracle/human annotation module for selected n questions', 'Construction of exemplar set E consisting of (question, chain-of-thought rationale c, answer a) for n exemplars', 'Few-shot chain-of-thought prompting module that prepends E to each test question', 'Inference on Dte producing predictions', 'Self-consistency during inference: m repeated generations with temperature T and selection of most consistent answer']\nContext: The schematics of our proposed approach are illustrated in Figure 1. There are several different ways for uncertainty estimation in the literature (Settles, 2009; Culotta and McCallum, 2005). In our main experiments, we characterize the uncertainty u by the disagree- ment and entropy of all predicted answers. In ad- dition, we investigate other different uncertainty metrics, like variance and self-confidence. For self- confidence, we re-organize the generated answer with the question using a new template and then ask the model’s confidence for such generation. In this scenario, u is defined as a categorical variable from {very confident, confident, not confident, wrong answer}. It is observed that the disagreement, en- tropy, and variance perform similarly well, while self-confidence is not working because LLMs are prone to be over-confident. Specifically, given a dataset D, we first ask the model to answer it k times. Then, we calculate the un- certainty u of this model based on k answers to each question. With u, we select the most uncer- tain n questions with the largest u and annotate these questions by the oracle to craft new exemplars E. Finally, we pre-pend E to each test question following the standard recipe of chain-of-thought prompting (Wei et al., 2022b).\n\nGiven l un- labeled training data Dtr “ tq1, q2, ..., qlu and m test data Dte “ tp1, p2, ..., pmu with each q and p indicating the question without any an- swer or reasoning steps, our goal is to annotate only n questions from Dtr as few-shot exem- plars by constructing a new exemplar set E “ tpq1, c1, a1q, pq2, c2, a2q, ..., pqn, cn, anqu with rea- soning steps c and the answer a. Then, we use E to prompt the test data Dte and obtain the predictions. In this section, we explain how to select the n most uncertain questions and annotate them.\n\n2.1 Uncertainty Estimation To select a few questions from a large dataset, we need an unsupervised method. Previous stud- ies (Gentile et al., 2022) demonstrate that reducing the model’s uncertainty helps improve the model’s performance. Therefore, we introduce the uncer- tainty of LLMs as a metric to select data. In the chain-of-thought setting, we first forward the LLM k times to obtain k answers for each question. Then the uncertainty of a question could be measured in different ways. In our work, we consider four potential uncertainty metrics, described below.\n\n2.2 Selection and Annotation After obtaining the uncertainty of each question, we can establish an uncertainty ranking accord- ing to the uncertainty of each question. Then, we will select the top-n uncertain questions for anno- tation. If there are more than n questions with the largest uncertainty, we will randomly select n questions from them. These n questions will be annotated with rationale chains and answers by human annotators to construct new exemplars E “ tpq1, c1, a1q, ..., pqn, cn, anqu. E will replace the initial ˆE and we will use it for few-shot chain- to-thought prompting.\n\n2.3 Inference With the new annotated exemplars E, we prompt each question with them in the inference stage. In addition, we apply self-consistency (Wang et al., 2022) to infer a question m times with a tempera- ture T, and then select the most consistent answer.",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': 'UNLABELED_QUESTIONS -> (1) Uncertainty Estimation', 'status': 'Supported', 'evidence': 'Figure/paper describe starting from an unlabeled pool and estimating uncertainty: \"given a dataset D, we first ask the model to answer it k times. Then, we calculate the uncertainty u...\" and Figure 1 labels \"UNLABELED_QUESTIONS\" feeding into \"(1) Uncertainty Estimation\".'}, {'element': '(1) Uncertainty Estimation -> Uncertainty Ranking', 'status': 'Supported', 'evidence': 'After computing uncertainty, the method ranks questions: \"After obtaining the uncertainty of each question, we can establish an uncertainty ranking according to the uncertainty of each question.\"'}, {'element': 'Uncertainty Ranking -> (2) Selection', 'status': 'Supported', 'evidence': 'The selection uses the uncertainty ranking: \"Then, we will select the top-n uncertain questions for annotation.\" This corresponds to ranking feeding into the selection step.'}, {'element': '(2) Selection -> Most Uncertain Questions', 'status': 'Supported', 'evidence': 'Selection explicitly chooses the most uncertain questions: \"select the most uncertain n questions with the largest u\" / \"select the top-n uncertain questions\".'}, {'element': 'Most Uncertain Questions -> (3) Annotation', 'status': 'Supported', 'evidence': 'The pipeline is selection then human annotation: \"we select the most uncertain questions for annotation\" and Figure 1 has stage (3) Annotation applied to those selected questions.'}, {'element': '(3) Annotation -> New Exemplars E', 'status': 'Supported', 'evidence': 'Annotation produces exemplar set E: \"annotate these questions by the oracle to craft new exemplars E\" and \"construct new exemplars E = {(q1,c1,a1), ...}\".'}, {'element': 'New Exemplars E -> (4) Inference', 'status': 'Supported', 'evidence': 'Inference uses the new exemplars: \"Finally, we pre-pend E to each test question\" and Section 2.3: \"With the new annotated exemplars E, we prompt each question with them in the inference stage.\"'}, {'element': 'Fill in the question -> Few-shot CoT', 'status': 'Supported', 'evidence': 'The figure’s “Fill in the question” leading to Few-shot CoT matches the described prompting style, where exemplars are prepended and the question slot is filled. The text describes few-shot CoT use during uncertainty estimation: \"we start with a few manually annotated exemplars... We call it the few-shot prompting trick\".'}, {'element': 'Fill in the question -> Zero-shot CoT', 'status': 'Supported', 'evidence': 'Text explicitly discusses zero-shot CoT as an alternative: \"other exemplar-free methods like zero-shot prompting ... could be applied\" and \"we simply add \\'Let’s think step by step.\\'\" This aligns with the figure offering a Zero-shot CoT branch.'}, {'element': 'Few-shot CoT -> (1) Uncertainty Estimation', 'status': 'Supported', 'evidence': 'Few-shot prompting is used to generate k predictions for uncertainty estimation: \"we start with a few manually annotated exemplars to help infer answers in the uncertainty estimation stage\" and then compute uncertainty from those k answers.'}, {'element': 'Zero-shot CoT -> (1) Uncertainty Estimation', 'status': 'Supported', 'evidence': 'The paper states uncertainty estimation can be done without exemplars using zero-shot CoT: \"Instead of using ... exemplars ... we simply add \\'Let’s think step by step.\\' ...\" to generate predictions for uncertainty estimation.'}, {'element': 'New Exemplars E -> Test Question', 'status': 'Supported', 'evidence': 'The method prepends E to each test question: \"Finally, we pre-pend E to each test question following the standard recipe of chain-of-thought prompting.\"'}, {'element': 'Test Question -> (4) Inference', 'status': 'Supported', 'evidence': 'Inference is applied to test questions using E: \"With the new annotated exemplars E, we prompt each question with them in the inference stage.\" Thus test question flows into stage (4) Inference.'}], [{'element': 'UNLABELED_QUESTIONS -> (1) Uncertainty Estimation', 'status': 'Not Mentioned', 'evidence': \"The chunk discusses selecting exemplars/questions and transferring them across models, but does not describe a pipeline starting from unlabeled questions with an explicit 'uncertainty estimation' step.\"}, {'element': '(1) Uncertainty Estimation -> Uncertainty Ranking', 'status': 'Not Mentioned', 'evidence': \"While the text refers to 'selected uncertain cases' and 'uncertainty in selected exemplars', it does not mention ranking questions by uncertainty.\"}, {'element': 'Uncertainty Ranking -> (2) Selection', 'status': 'Supported', 'evidence': \"The chunk repeatedly frames a 'selection' process based on uncertainty (e.g., 'selected uncertain cases' and 'select questions by gpt-3.5-turbo'), which is consistent with selecting after assessing uncertainty, even if ranking is not explicitly stated.\"}, {'element': '(2) Selection -> Most Uncertain Questions', 'status': 'Supported', 'evidence': \"The text describes selecting questions/exemplars based on uncertainty: 'The selected uncertain cases are related to tasks and can transfer to different models.' This matches selecting the most uncertain questions.\"}, {'element': 'Most Uncertain Questions -> (3) Annotation', 'status': 'Not Mentioned', 'evidence': 'No annotation step is described in this chunk; it focuses on selection and inference/transfer experiments.'}, {'element': '(3) Annotation -> New Exemplars E', 'status': 'Not Mentioned', 'evidence': \"The chunk mentions 'selecting exemplars' and 'active exemplars' but does not describe annotating them to form 'new exemplars E'.\"}, {'element': 'New Exemplars E -> (4) Inference', 'status': 'Supported', 'evidence': \"The text indicates selected exemplars are then used for inference, including across models: 'select questions by ... and infer by ...' and 'applying the selected questions to another model.'\"}, {'element': 'Fill in the question -> Few-shot CoT', 'status': 'Supported', 'evidence': \"The chunk discusses chain-of-thought prompting and few-shot examples: 'enrich the few-shot examples with reasoning steps' (CoT). This is consistent with using questions to form few-shot CoT prompts, though 'fill in the question' wording is not used.\"}, {'element': 'Fill in the question -> Zero-shot CoT', 'status': 'Not Mentioned', 'evidence': 'The provided text portion mentions CoT prompting generally and few-shot examples, but does not explicitly reference zero-shot CoT.'}, {'element': 'Few-shot CoT -> (1) Uncertainty Estimation', 'status': 'Not Mentioned', 'evidence': 'Although uncertainty is discussed, the chunk does not describe a process where few-shot CoT outputs are used to estimate uncertainty.'}, {'element': 'Zero-shot CoT -> (1) Uncertainty Estimation', 'status': 'Not Mentioned', 'evidence': 'Zero-shot CoT is not discussed in this chunk, nor is a link between it and uncertainty estimation.'}, {'element': 'New Exemplars E -> Test Question', 'status': 'Supported', 'evidence': \"The chunk implies selected exemplars are applied to other models/tasks for evaluation: 'applying the selected questions to another model' and transfer experiments across datasets/models, consistent with using exemplars when answering test questions.\"}, {'element': 'Test Question -> (4) Inference', 'status': 'Supported', 'evidence': \"Inference on questions is central: 'performing inference using both ... models' and 'infer by Llama2-70b-chat'. This supports test questions feeding into an inference step.\"}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 4,
+              "reason": "The target figure captures the main pipeline described in the evidence: unlabeled training questions (Dtr), repeated LLM generations per training question (k samples), an uncertainty score u computed from those samples, an uncertainty ranking and top-n selection (most-uncertain questions), human/oracle annotation to create a new exemplar set E with (question, rationale/CoT, answer), and few-shot CoT prompting for inference on test questions (Dte). However, it omits or under-specifies several paper-mentioned details: the uncertainty metrics are not named (disagreement/entropy/variance/self-confidence), the tie-breaking rule for selecting n if more than n have maximal uncertainty is not shown, the test set Dte is not explicitly labeled as questions-only, and self-consistency at inference (m repeated generations with temperature T and majority/most-consistent answer selection) is not depicted. Thus, it includes most major components but misses some key experimental/inference specifics."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure is largely self-contained and communicates the core pipeline end-to-end: (1) start from unlabeled training questions, (2) perform k repeated LLM generations per question, (3) compute an uncertainty score u (illustrated via answer diversity and u values), (4) rank and select the top-n most uncertain questions, (5) send them to annotation to form exemplars E with rationale/answer, and (6) use E for few-shot CoT inference on test questions. These elements align well with the evidence (Dtr/Dte, k generations, uncertainty estimation and ranking, top-n selection, oracle annotation, exemplar construction, and few-shot prompting).\n\nTwo details reduce full standalone intelligibility: (i) the uncertainty metric types (disagreement/entropy/variance/self-confidence) are not explicitly named—only implied through answer diversity and u; and (ii) self-consistency at inference (m repeated generations with temperature T and majority/consistency selection) is not shown in the inference panel, which instead depicts a single prompted test question. With minor labels for these, it would be fully understandable without the paper."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 4,
+              "reason": "The target figure captures the core end-to-end pipeline described in the evidence: unlabeled training questions (Dtr), repeated LLM generations per training question (k samples), uncertainty computation (illustrated via answer disagreement and a u value), uncertainty ranking, top-n selection of most uncertain questions, human/oracle annotation to form exemplars E with (question, rationale/CoT, answer), and few-shot CoT prompting for inference on test questions (Dte). However, it is not fully complete relative to the described method because it does not clearly depict (i) entropy as an uncertainty metric (only disagreement is visually implied), (ii) the optional alternative metrics (variance/self-confidence) mentioned in the paper, and (iii) self-consistency at inference time with m repeated generations at temperature T and choosing the most consistent answer. These omissions mean it summarizes most but not all content from beginning to end."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "The target figure’s components align with the paper description and the provided consistency evidence: an unlabeled question pool, uncertainty estimation via k sampled answers, computing an uncertainty score u, ranking by uncertainty, selecting top-n most uncertain questions, annotating them to create new exemplars E, and using E at inference by prepending to test questions. The optional branches (few-shot CoT vs zero-shot CoT) are also explicitly mentioned in the evidence. No extra modules (e.g., retrievers/knowledge bases, verification stages, calibration, MCTS, preference learning) or unmentioned formulas are introduced beyond the simple uncertainty computation and ranking/selection shown. Therefore, there is no apparent figure-level hallucination of unsupported components."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "The target figure’s end-to-end relations match the paper-described pipeline and are supported by the provided evidence: UNLABELED_QUESTIONS feed into (1) Uncertainty Estimation (via k sampled answers under few-shot or zero-shot CoT), uncertainties induce an Uncertainty Ranking, which drives (2) Selection of the Most Uncertain Questions, followed by (3) Annotation to create New Exemplars E, which are prepended to the Test Question for (4) Inference. Each linkage is explicitly corroborated in the evidence excerpts (uncertainty computation, ranking, top-n selection, oracle annotation to form E, and inference using E). The visual structure (ranking→selection→annotation→exemplar-augmented inference) is also consistent with the style of reference pipeline figures. Minor omissions (e.g., dataset/task transfer details present in one evidence chunk) do not constitute incorrect relations in the depicted core pipeline."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "Major components and method-stage labels in the Target Figure align with the paper description in the provided evidence: it starts from an unlabeled pool (\"UNLABELED_QUESTIONS\"), performs \"(1) Uncertainty Estimation\" by sampling k answers and computing uncertainty u, forms an \"Uncertainty Ranking,\" conducts \"(2) Selection\" of \"Most Uncertain Questions,\" applies \"(3) Annotation\" to create \"New Exemplars E,\" and uses these in \"(4) Inference\" on the \"Test Question.\" The prompting branches \"Few-shot CoT\" and \"Zero-shot CoT\" are also accurately named and correspond to the paper’s stated prompting options for uncertainty estimation and inference. No major component appears mislabeled relative to the evidence."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 5,
+              "reason": "Yes. The target figure schematizes the main contribution as a clear end-to-end pipeline: (1) uncertainty estimation via k repeated LLM generations on unlabeled Dtr, yielding per-question uncertainty u; (2) uncertainty ranking and top-n selection (with implicit tie-handling); (3) oracle/human annotation to build exemplars E containing (q, CoT rationale c, answer a); and (4) few-shot CoT prompting for inference on test questions. This matches the evidence’s core novelty (uncertainty-driven exemplar selection and annotation for few-shot CoT). It avoids extraneous implementation details, while including only necessary components (k-sampling, ranking/selection, exemplar construction, prompting/inference). The only notable omission is explicit depiction of self-consistency at inference (m samples with temperature T), but this does not detract from the figure’s focus on the main contribution."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "Yes. The target figure closely matches the described pipeline and works well as supplementary material when reading the text. It explicitly depicts: (i) unlabeled training questions Dtr, (ii) k repeated LLM generations per training question, (iii) uncertainty computation u (illustrated via disagreement fraction), (iv) uncertainty ranking and top-n selection, (v) oracle/human annotation to produce exemplars E with (question, rationale/CoT, answer), (vi) prepending E for few-shot CoT prompting at test time on Dte, and (vii) inference. The only minor contextual gap is that self-consistency at inference (m repeated generations with temperature T and majority/most-consistent selection) is not clearly visualized; the figure emphasizes self-consistency mainly during uncertainty estimation and does not label m/T. Despite this, the figure is highly aligned with the paper’s narrative and improves reader understanding of the method."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely focused on the core pipeline described in the evidence (unlabeled Dtr, k generations, uncertainty u via disagreement/entropy, ranking, top-n selection, annotation to build exemplars E with CoT rationales and answers, few-shot prompting on Dte, and inference with repeated sampling/self-consistency). It avoids major decorative graphics and keeps the content functional. Minor redundancy/unnecessary detail remains: the left-side prompt examples (few-shot/zero-shot boxes) and repeated question snippets add visual clutter beyond the essential workflow, but they are still loosely related as illustrative inputs/outputs rather than purely decorative."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The Target Figure’s overall pipeline is organized left-to-right: (1) Uncertainty Estimation on the left feeds into (2) Selection on the right, then down within that right panel to (3) Annotation and further down to (4) Inference. This matches the dominant left-to-right flow commonly seen in the reference figures (multi-stage boxes connected by arrows progressing horizontally), even though there is secondary top-to-bottom flow inside the right-side subpanel."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "Most connectors in the Target Figure are routed cleanly and are largely non-overlapping, similar to the reference diagrams’ generally orderly flow. The main pipeline arrows between (1) Uncertainty Estimation → (2) Selection → (3) Annotation → (4) Inference are separated and do not create obvious crossings. Minor issues remain: within the (2)→(3)→(4) region, several arrows converge into the “New Exemplars E” and “Test Question” boxes and run close to each other near boundaries, creating slight visual congestion and potential near-crossings, but not clear, actual line intersections."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "Functionally related modules are generally placed in close physical proximity and connected in a clear pipeline. The left block (Unlabeled Questions → fill-in → few-shot/zero-shot CoT) is spatially grouped, and the central uncertainty estimation panel sits adjacent to the selection panel (uncertainty ranking / most-uncertain bucket), which then directly feeds the right-side annotation and inference blocks. The arrows reinforce short, nearby transitions between related steps. Minor proximity issues remain: the right-side ‘Annotation’ and ‘Inference’ components are separated by multiple nested boxes and whitespace, and some cross-panel connections (e.g., from uncertainty estimation to ranking/selection) span across panel boundaries, slightly reducing the sense of tight co-location compared to the strongest reference layouts."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall alignment is strong: the figure is organized into four labeled stages with clear column structure, consistent box widths, and neatly stacked elements (unlabeled questions, uncertainty bars, ranking list, exemplar boxes). The stage headers and main container boxes align well to an implicit grid, similar to the reference figures’ disciplined layouts. Minor misalignments remain—some inner elements (e.g., the uncertainty-score list vs. adjacent cylinder, and small spacing differences among exemplar/test boxes and arrows) do not perfectly share vertical baselines or consistent padding—so it falls short of the most rigid grid alignment."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 4,
+              "reason": "The target figure establishes a clear top-level structure: the four main stages—(1) Uncertainty Estimation, (2) Selection, (3) Annotation, and (4) Inference—are separated into large, labeled blocks with ample whitespace, making the overall pipeline easy to perceive. Within each stage, key elements (e.g., UNLABELED_QUESTIONS, Uncertainty Ranking, Most Uncertain Questions, New Exemplars E) are placed prominently and enclosed with boxes, and the left-to-right flow arrows reinforce the hierarchy.\n\nCompared to the evidence/reference figures, the hierarchy is slightly weaker because most internal boxes use similar line weights and font sizes, so subcomponents (example question cards, token blocks, and small annotations) compete visually with stage-level labels. The main components still stand out primarily by position and grouping rather than strong size/thickness contrast, hence a 4 rather than 5."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "Overall, the target figure maintains clear whitespace between major regions (Unlabeled Questions / Uncertainty Estimation / Selection–Annotation–Inference) and uses dashed boxes and column structure to prevent crowding. Margins between grouped panels and arrows are generally sufficient for separation and scanability. However, some local areas feel tight: the small score blocks inside the uncertainty estimation panel sit close to their surrounding borders, and the right-side pipeline (Selection→Annotation→Inference) places boxes and connecting arrows with relatively narrow gaps, making the flow slightly dense compared with the cleaner spacing seen in the higher-scored references. Still, no major overlaps or severe crowding occur."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 4,
+              "reason": "Overall, the Target Figure is fairly consistent in mapping similar roles to similar visual encodings. Repeated question items are consistently shown as rounded rectangles with a light gray fill across the pipeline; the process stages are numbered (1)–(4) in blue and placed in consistent positions; and groupings/containers use dashed outlines with similar styling (e.g., UNLABELED_QUESTIONS box; New Exemplars/Test Question box). The uncertainty samples are consistently represented as small colored squares, and the uncertainty values are summarized in a uniform list format.\n\nHowever, some role-to-encoding mappings are not fully uniform: (i) the small colored squares (1–5) change color by value rather than role, which can be read as a different semantic channel than the constant green squares in the top example; (ii) key artifacts (e.g., “Most Uncertain Questions” cylinder vs. exemplar boxes vs. uncertainty-ranking list) use different shapes without a clearly consistent color scheme tying ‘data collections’ together; and (iii) arrows/flows are consistent but not color-coded by step, unlike some reference figures where positive/negative or modules have a stable palette. These minor inconsistencies prevent a perfect score."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 3,
+              "reason": "The target figure uses some metaphorical/concrete substitutions for abstract concepts: an LLM is shown as a recognizable model icon, uncertainty is summarized with compact numeric tiles (1–5) and a computed u value, selection is depicted with a ranking list and a container/cylinder metaphor for “most uncertain questions,” and workflow stages are abstracted via arrows and numbered step labels. However, most concepts are still expressed through text boxes and standard flowchart structure rather than strong symbolic/iconic replacements (e.g., fewer dedicated icons for “annotation,” “exemplars,” “inference”). Compared with the higher-scoring references that rely more heavily on pictograms (checks/crosses, bots, dataset/database icons, calibration gauges) to stand in for concepts, the target’s metaphor usage is moderate."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a very common ML-paper schematic template: multi-panel pipeline with numbered stages, rounded boxes, dashed group boundaries, simple arrows, and small illustrative examples. Its typography, icon usage, and color-coding (pastel highlights, gray outlines) closely match the provided evidence/reference figures, which also depict step-wise workflows (uncertainty/selection/annotation/inference, verification, sampling, fine-tuning) in a similar visual grammar. There are no distinctive illustration motifs, unusual layout decisions, or novel visual metaphors that would clearly differentiate it from standard academic diagrams beyond minor content-specific labeling."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure largely follows a generic, modular pipeline template (numbered stages, boxed modules with dashed borders, arrows connecting left-to-right flow) that is very similar to common LLM-method figures in the references. While it adapts slightly by splitting into (1) Uncertainty Estimation and (2) Selection/(3) Annotation/(4) Inference and adding task-specific content (uncertainty ranking list, exemplars), the overall visual grammar (uniform rounded rectangles, consistent arrowed flow, compartmentalization) remains standardized rather than tailored to a distinctive paper-specific narrative. Compared with the more application-tailored layout in the conformal-calibration reference (multi-row with application panels and probability legends), the target does not significantly break away from uniform design principles."
+            }
+          ]
+        }
+      },
+      "weighted_total": 4.029,
+      "used_anchor_paths": {
+        "q1.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q1.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q1.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q2.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q2.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q2.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q3.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q3.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q3.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q4.1": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "1.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q4.2": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q4.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q4.4": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q4.5": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q4.6": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "1.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q4.7": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q5.1": [
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q5.2": [
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ],
+        "q5.3": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7564
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.755
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7277
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7132
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7083
+          }
+        ]
+      }
+    }
+  ]
+}

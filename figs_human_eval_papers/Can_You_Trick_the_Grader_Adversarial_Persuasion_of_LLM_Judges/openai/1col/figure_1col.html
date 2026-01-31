@@ -1,0 +1,200 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Persuasion-induced bias in LLM-as-a-Judge grading</title>
+<style>
+  body { margin:0; background:#ffffff; font-family: Arial, Helvetica, sans-serif; }
+  #figure-root { width:1200px; height:1500px; margin:0 auto; position:relative; background:#fff; }
+  .caption-wrap {
+    position:absolute; left:0; top:1370px; width:1200px; height:130px;
+    padding:14px 22px; box-sizing:border-box; border-top:1px solid #d9d9d9;
+    background:#fff;
+    font-size:16px; line-height:1.25; color:#111;
+  }
+  .small { font-size:14px; color:#222; }
+  .note { font-size:13px; color:#333; }
+  svg { position:absolute; left:0; top:0; }
+  .panel-title { font-size:22px; font-weight:700; }
+  .subhead { font-size:16px; font-weight:700; }
+  .label { font-size:16px; }
+  .mono { font-family: "Arial", Helvetica, sans-serif; font-size:14px; }
+  .box { fill:#ffffff; stroke:#2b2b2b; stroke-width:2; }
+  .box-soft { fill:#fbfbfd; stroke:#2b2b2b; stroke-width:2; }
+  .box-blue { fill:#f2f7ff; stroke:#2b2b2b; stroke-width:2; }
+  .box-red { fill:#fff3f3; stroke:#2b2b2b; stroke-width:2; }
+  .box-gray { fill:#f7f7f7; stroke:#2b2b2b; stroke-width:2; }
+  .pill { fill:#ffffff; stroke:#2b2b2b; stroke-width:1.5; }
+  .arrow { stroke:#2b2b2b; stroke-width:2.2; fill:none; marker-end:url(#arrow); }
+  .arrow-dash { stroke:#2b2b2b; stroke-width:2.2; fill:none; stroke-dasharray:7 6; marker-end:url(#arrow); }
+  .arrow-red { stroke:#b00020; stroke-width:3; fill:none; marker-end:url(#arrowRed); }
+  .arrow-green { stroke:#0b6b3a; stroke-width:2.8; fill:none; marker-end:url(#arrowGreen); }
+  .thin { stroke-width:1.6; }
+  .divider { stroke:#cfcfcf; stroke-width:2; }
+  .gridline { stroke:#e6e6e6; stroke-width:1; }
+  .axis { stroke:#2b2b2b; stroke-width:2; }
+  .tick { stroke:#2b2b2b; stroke-width:2; }
+  .scoretext { font-size:16px; font-weight:700; }
+  .legend { font-size:14px; }
+  .bad { fill:#b00020; font-weight:700; }
+  .good { fill:#0b6b3a; font-weight:700; }
+  .muted { fill:#444; }
+  .callout { fill:#fffdf5; stroke:#2b2b2b; stroke-width:1.8; }
+  .callout-title { font-size:15px; font-weight:700; }
+  .callout-text { font-size:14px; }
+  .badge { fill:#ffffff; stroke:#2b2b2b; stroke-width:1.6; }
+  .badge-text { font-size:13px; font-weight:700; }
+  .tech { font-size:13px; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+  <svg width="1200" height="1370" viewBox="0 0 1200 1370" xmlns="http://www.w3.org/2000/svg" aria-label="Diagram showing baseline versus persuaded scoring and unfair score increases due to rhetorical cues">
+    <defs>
+      <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 z" fill="#2b2b2b"></path>
+      </marker>
+      <marker id="arrowRed" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 z" fill="#b00020"></path>
+      </marker>
+      <marker id="arrowGreen" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 z" fill="#0b6b3a"></path>
+      </marker>
+    </defs>
+
+    <!-- Header -->
+    <text x="600" y="52" text-anchor="middle" class="panel-title" fill="#111">Persuasion-induced bias in LLM-as-a-Judge grading of mathematical solutions</text>
+    <text x="600" y="80" text-anchor="middle" class="label" fill="#222">Incorrect math solutions can receive higher correctness scores when rhetorical cues are embedded in the response text.</text>
+
+    <!-- Two main columns -->
+    <!-- Left: Baseline -->
+    <rect x="70" y="120" width="520" height="1120" rx="14" class="box-gray"></rect>
+    <text x="330" y="160" text-anchor="middle" class="panel-title" fill="#111">Baseline (no persuasion)</text>
+    <text x="330" y="188" text-anchor="middle" class="note" fill="#333">Judge should grade correctness only; rhetorical content absent.</text>
+
+    <!-- Right: Persuaded -->
+    <rect x="610" y="120" width="520" height="1120" rx="14" class="box-gray"></rect>
+    <text x="870" y="160" text-anchor="middle" class="panel-title" fill="#111">Persuaded (logos/pathos/ethos embedded)</text>
+    <text x="870" y="188" text-anchor="middle" class="note" fill="#333">Same incorrect solution, augmented with persuasion techniques → biased grading.</text>
+
+    <!-- Shared problem box (top center) -->
+    <rect x="250" y="230" width="700" height="120" rx="12" class="box-soft"></rect>
+    <text x="600" y="262" text-anchor="middle" class="subhead" fill="#111">Math problem + candidate solution</text>
+    <text x="600" y="292" text-anchor="middle" class="label" fill="#222">Candidate solution contains a mathematical error (ground truth: incorrect)</text>
+    <rect x="512" y="308" width="176" height="28" rx="14" class="badge"></rect>
+    <text x="600" y="328" text-anchor="middle" class="badge-text" fill="#111">Correctness scale: 0–5</text>
+
+    <!-- Arrows splitting to columns -->
+    <path d="M520,350 L330,415" class="arrow"></path>
+    <path d="M680,350 L870,415" class="arrow"></path>
+
+    <!-- LEFT pipeline -->
+    <rect x="130" y="420" width="400" height="160" rx="12" class="box"></rect>
+    <text x="330" y="452" text-anchor="middle" class="subhead" fill="#111">Input to LLM judge</text>
+    <text x="150" y="484" class="mono" fill="#222">Solution text:</text>
+    <rect x="150" y="496" width="360" height="70" rx="8" class="box-blue"></rect>
+    <text x="168" y="520" class="tech" fill="#111">• Reasoning steps + final answer</text>
+    <text x="168" y="543" class="tech" fill="#111">• Contains an error (e.g., wrong arithmetic)</text>
+    <text x="168" y="566" class="tech" fill="#111">• No persuasive phrasing</text>
+
+    <path d="M330,580 L330,640" class="arrow"></path>
+
+    <rect x="130" y="650" width="400" height="140" rx="12" class="box"></rect>
+    <text x="330" y="685" text-anchor="middle" class="subhead" fill="#111">LLM-as-a-Judge scoring</text>
+    <text x="330" y="715" text-anchor="middle" class="label" fill="#222">Focuses on mathematical correctness</text>
+    <text x="330" y="748" text-anchor="middle" class="scoretext" fill="#111">Assigned score: <tspan class="muted" fill="#111">Low</tspan> (e.g., 1–2 / 5)</text>
+
+    <path d="M330,790 L330,850" class="arrow"></path>
+
+    <rect x="130" y="860" width="400" height="190" rx="12" class="box-soft"></rect>
+    <text x="330" y="895" text-anchor="middle" class="subhead" fill="#111">Expected fairness</text>
+    <text x="160" y="928" class="label" fill="#222">Because solution is incorrect:</text>
+    <text x="170" y="958" class="label" fill="#222">• Score should remain low</text>
+    <text x="170" y="988" class="label" fill="#222">• Language style should not matter</text>
+    <text x="170" y="1018" class="label" fill="#222">• Persuasion attempts should be ignored (or penalized)</text>
+
+    <!-- RIGHT pipeline -->
+    <rect x="670" y="420" width="400" height="210" rx="12" class="box"></rect>
+    <text x="870" y="452" text-anchor="middle" class="subhead" fill="#111">Input to LLM judge</text>
+    <text x="690" y="484" class="mono" fill="#222">Same incorrect solution + rhetorical cues:</text>
+
+    <rect x="690" y="496" width="360" height="116" rx="8" class="box-red"></rect>
+    <text x="708" y="520" class="tech" fill="#111">Logos (logic cues): Majority, Consistency</text>
+    <text x="708" y="542" class="tech" fill="#111">Pathos (emotion cues): Flattery, Reciprocity, Pity</text>
+    <text x="708" y="564" class="tech" fill="#111">Ethos (credibility cues): Authority, Identity</text>
+    <text x="708" y="590" class="tech" fill="#111">Surface signals distract from correctness while error remains.</text>
+
+    <path d="M870,630 L870,690" class="arrow"></path>
+
+    <rect x="670" y="700" width="400" height="150" rx="12" class="box"></rect>
+    <text x="870" y="735" text-anchor="middle" class="subhead" fill="#111">LLM-as-a-Judge scoring</text>
+    <text x="870" y="765" text-anchor="middle" class="label" fill="#222">Rhetorical cues bias evaluation</text>
+    <text x="870" y="800" text-anchor="middle" class="scoretext" fill="#111">Assigned score: <tspan class="bad" fill="#b00020">Higher</tspan> (e.g., 2–3 / 5)</text>
+
+    <path d="M870,850 L870,910" class="arrow"></path>
+
+    <rect x="670" y="920" width="400" height="220" rx="12" class="callout"></rect>
+    <text x="870" y="955" text-anchor="middle" class="callout-title" fill="#111">Persuasion-induced bias (unfair inflation)</text>
+    <text x="690" y="990" class="callout-text" fill="#222">Observed effect:</text>
+    <text x="700" y="1018" class="callout-text" fill="#222">• Incorrect responses receive inflated correctness scores</text>
+    <text x="700" y="1046" class="callout-text" fill="#222">• Bias is attributable to rhetorical cues, not math quality</text>
+    <text x="690" y="1082" class="callout-text" fill="#222">Mechanism (conceptual): LLM rewards coherence/credibility/affect</text>
+    <text x="690" y="1110" class="callout-text" fill="#222">even when the underlying reasoning is wrong.</text>
+
+    <!-- Central comparison: score axis -->
+    <line x1="600" y1="420" x2="600" y2="1180" class="divider"></line>
+
+    <!-- Score scale widget -->
+    <rect x="420" y="520" width="360" height="250" rx="12" class="box-soft"></rect>
+    <text x="600" y="552" text-anchor="middle" class="subhead" fill="#111">Correctness score (0–5)</text>
+
+    <!-- Axis -->
+    <line x1="510" y1="725" x2="690" y2="725" class="axis"></line>
+    <!-- ticks 0..5 -->
+    <line x1="510" y1="715" x2="510" y2="735" class="tick"></line>
+    <line x1="546" y1="715" x2="546" y2="735" class="tick"></line>
+    <line x1="582" y1="715" x2="582" y2="735" class="tick"></line>
+    <line x1="618" y1="715" x2="618" y2="735" class="tick"></line>
+    <line x1="654" y1="715" x2="654" y2="735" class="tick"></line>
+    <line x1="690" y1="715" x2="690" y2="735" class="tick"></line>
+
+    <text x="510" y="758" text-anchor="middle" class="legend" fill="#222">0</text>
+    <text x="546" y="758" text-anchor="middle" class="legend" fill="#222">1</text>
+    <text x="582" y="758" text-anchor="middle" class="legend" fill="#222">2</text>
+    <text x="618" y="758" text-anchor="middle" class="legend" fill="#222">3</text>
+    <text x="654" y="758" text-anchor="middle" class="legend" fill="#222">4</text>
+    <text x="690" y="758" text-anchor="middle" class="legend" fill="#222">5</text>
+
+    <!-- Baseline marker (example) -->
+    <circle cx="546" cy="640" r="9" fill="#0b6b3a" stroke="#2b2b2b" stroke-width="1.5"></circle>
+    <text x="600" y="615" text-anchor="middle" class="legend" fill="#222">Baseline score (incorrect solution)</text>
+    <text x="546" y="664" text-anchor="middle" class="legend" fill="#0b6b3a">~1</text>
+
+    <!-- Persuaded marker -->
+    <circle cx="600" cy="640" r="9" fill="#b00020" stroke="#2b2b2b" stroke-width="1.5"></circle>
+    <text x="600" y="690" text-anchor="middle" class="legend" fill="#222">Persuaded score (same incorrect solution)</text>
+    <text x="600" y="664" text-anchor="middle" class="legend" fill="#b00020">~2.5</text>
+
+    <!-- Inflation arrow -->
+    <path d="M546,640 L600,640" class="arrow-red"></path>
+    <text x="573" y="624" text-anchor="middle" class="legend" fill="#b00020">unfair increase</text>
+
+    <!-- Bottom summary band -->
+    <rect x="90" y="1255" width="1020" height="85" rx="12" class="box-soft"></rect>
+    <text x="600" y="1286" text-anchor="middle" class="subhead" fill="#111">Key contrast shown in the figure</text>
+    <text x="150" y="1318" class="label" fill="#222">Baseline: score reflects correctness → low score for incorrect math.</text>
+    <text x="150" y="1343" class="label" fill="#222">Persuaded: rhetorical cues (logos/pathos/ethos) inflate 0–5 correctness scores despite unchanged incorrectness.</text>
+
+    <!-- Connect score widget to columns (light) -->
+    <path d="M420,610 L380,610 L380,650" class="arrow-green thin"></path>
+    <path d="M780,610 L820,610 L820,700" class="arrow-green thin"></path>
+
+  </svg>
+
+  <div class="caption-wrap">
+    <div class="small">
+      Persuasion-induced bias in LLM-as-a-Judge grading of mathematical solutions: incorrect responses embedding logos/pathos/ethos techniques receive inflated 0–5 correctness scores. The figure contrasts baseline versus persuaded scoring, illustrating unfair score increases attributable to rhetorical cues.
+    </div>
+  </div>
+</div>
+</body>
+</html>

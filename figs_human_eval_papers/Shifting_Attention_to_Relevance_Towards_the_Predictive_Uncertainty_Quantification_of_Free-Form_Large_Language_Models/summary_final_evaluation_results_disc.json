@@ -1,0 +1,118 @@
+{
+  "paper_name": "Shifting_Attention_to_Relevance_Towards_the_Predictive_Uncertainty_Quantification_of_Free-Form_Large_Language_Models",
+  "evaluated_at": "2026-01-12T03:48:40.296383",
+  "figure_summary": "## 1. Core Contributions\n- Identify **token- and sentence-level “generative inequality”**: components with low semantic content (irrelevant tokens/sentences) can contribute disproportionately to common uncertainty scores (e.g., predictive entropy), distorting UQ for free-form LLM generations.\n- Propose **Shifting Attention to Relevance (SAR)**: a heuristic reweighting approach that **assigns more influence to semantically relevant tokens/sentences** when computing uncertainty.\n- Provide empirical evaluation across multiple **off-the-shelf instruction-tuned and pretrained LLMs** (e.g., Vicuna, WizardLM, LLaMA/LLaMA-2-chat; up to ~33B) and multiple **free-form QA datasets/domains**, reporting improved UQ performance over prior methods (as claimed).\n\n## 2. Method Components & Relations relevant to figures\n- **Baseline uncertainty (token-accumulated predictive entropy, PE)**  \n  - Sentence likelihood factorization: \\(p(z_i \\mid s_{<i}, x)\\) for token \\(z_i\\).  \n  - Predictive entropy for a generated sentence \\(s\\):  \n    \\[\n    PE(s,x) = -\\log p(s\\mid x)=\\sum_i -\\log p(z_i\\mid s_{<i},x)\n    \\]\n- **Token-level relevance vs. token-level uncertainty contribution**\n  - **Token relevance** \\(RT(z_i,s,x)\\): computed as **1 − semantic similarity** between the original completion and the completion with token \\(z_i\\) removed:  \n    \\[\n    RT(z_i,s,x)=1-|g(x\\cup s,\\,x\\cup (s\\setminus\\{z_i\\}))|\n    \\]\n    where \\(g(\\cdot,\\cdot)\\) is a sentence semantic similarity model (they use Cross-Encoder RoBERTa-large).\n  - **Token uncertainty proportion** \\(UPT(z_i,s,x)\\): the **fraction of PE** attributed to token \\(z_i\\):  \n    \\[\n    UPT(z_i,s,x)=\\frac{-\\log p(z_i\\mid s_{<i},x)}{PE(s,x)}\n    \\]\n  - Figure-relevant relationship: analyze whether **high \\(UPT\\)** aligns with **high \\(RT\\)** (and show mismatch for irrelevant tokens).\n- **Sentence-level relevance for multi-sample generations**\n  - Generate multiple sentences/completions \\(S=\\{s_1,\\dots,s_K\\}\\) for the same prompt \\(x\\).\n  - **Sentence relevance** \\(RS(s_i,S,x)\\): probability-weighted semantic agreement with other sampled sentences:  \n    \\[\n    RS(s_i,S,x)=\\sum_{j\\neq i} g(s_i,s_j)\\,p(s_j\\mid x)\n    \\]\n  - Figure-relevant relationship: demonstrate that **some sentences are semantically peripheral** yet can still influence aggregate uncertainty if treated uniformly.\n- **SAR mechanism (as positioned by the text)**\n  - Uses computed **relevance at token and sentence levels** to **“shift attention” / reassign weights** so uncertainty is driven more by semantically meaningful components rather than redundant/functional ones.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- Visually **motivate and evidence the generative-inequality phenomenon**: show that relevance is unevenly distributed across tokens/sentences and that UQ methods that sum/average token entropies can be dominated by low-semantic components.\n- Illustrate the **disconnect between “semantic importance” and “uncertainty contribution”** under baseline UQ, thereby justifying why relevance-aware reweighting (SAR) should improve decision behavior (e.g., refuse vs answer).\n- Depict **distributions** (e.g., relevance over tokens/sentences) to support the claim that **irrelevant components form a substantial mass** and thus can systematically bias uncertainty scores.\n\n## 4. What Figures are NOT intended to show\n- Not intended to claim that particular function words (e.g., “of”) are *intrinsically* uncertain in general—rather, they serve as **examples of low-semantic tokens** that can receive high entropy in a given generation context.\n- Not intended to provide a full theoretical derivation of uncertainty in LLMs (aleatoric vs epistemic) or prove SAR is optimal; the figures mainly support an **empirical/heuristic diagnosis** and remedy.\n- Not intended to validate the semantic similarity model \\(g(\\cdot,\\cdot)\\) itself or to establish it as ground truth for “relevance”; it is used operationally to produce relevance scores for analysis/weighting.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Shifting_Attention_to_Relevance_Towards_the_Predictive_Uncertainty_Quantification_of_Free-Form_Large_Language_Models__p0__score0.90.png",
+      "caption": "Figure 1: Irrelevant tokens (or sentences) may commit majority uncertainty in free-form generations, such as the token “of” committing extremely large uncertainty misleads the uncertainty quantification of LLMs. We term these observations as generative inequalities and tackle them by shifting attention to more relevant components.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 2.0,
+              "reason": "The figure captures the paper’s core *phenomenon* (irrelevant token “of” contributing large token entropy) and the high-level *remedy* (reweighting/shifting attention to relevance). However, it omits most major formal components described in the summary: the PE definition as a sum of token negative log-likelihoods, explicit token relevance RT(z_i,s,x)=1−similarity-with-token-removed, token uncertainty proportion UPT, sentence-level relevance RS for multi-sample generations, and how SAR uses these quantities. The shown arithmetic (averaging token entropies and multiplying by weights) is an intuitive illustration but does not include the key formulas/definitions referenced in the summary."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "Without reading the paper, a viewer can understand the general operating principle: baseline uncertainty aggregates token entropies and can be dominated by an irrelevant token; SAR downweights that token via relevance-based weights, yielding a lower uncertainty and different decision behavior (refuse vs answer). The example is concrete and visually clear. What is not fully intelligible from the figure alone is how the relevance weights are computed (the semantic-similarity deletion test / Cross-Encoder) and whether/ how this extends beyond the single illustrative example."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 1.0,
+              "reason": "The figure is an illustrative motivation example rather than a summary from beginning to end of the work. It does not reflect the paper’s broader scope in the summary: token- and sentence-level generative inequality analyses, multi-sample sentence relevance, evaluation across multiple LLMs and QA datasets, and empirical UQ performance comparisons. Thus it is not a complete summary of the paper’s content."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 3.0,
+              "reason": "The figure aligns with the summary’s core idea that predictive-entropy-style token aggregation can be dominated by low-semantic tokens (e.g., “of”) and that SAR reweights toward relevance. However, it introduces specific numeric token entropies, a division-by-4 averaging operation, and explicit ‘refuse to answer/return generation’ decision outcomes that are not explicitly specified in the provided summary (the summary mentions improved decision behavior as a general downstream implication, not this concrete rule). These additions are plausibly illustrative but are not grounded in the summary’s stated formulas."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 3.0,
+              "reason": "The depicted relationship—baseline uncertainty computed by aggregating token-level entropy contributions, and SAR reducing the influence of irrelevant tokens via token-level shifting—is consistent with the summary’s description of generative inequality and relevance-aware reweighting. But the baseline is shown as an average of token entropies, whereas the summary defines PE as a sum of negative log-likelihoods; and the SAR weighting is shown as multiplying token entropies by weights without showing the summary’s relevance definitions (RT via removal-based semantic similarity, RS for sentence level). Thus the qualitative relation is correct, but the quantitative/structural depiction is only partially faithful."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 4.0,
+              "reason": "Major labels like 'Predictive Entropy-based Uncertainty Quantification' and 'Shifting Attention to Relevance (SAR) Uncertainty Quantification' match the summary’s baseline (token-accumulated predictive entropy) and the proposed SAR mechanism. The term 'Token Entropy' is consistent with token-level -log p contributions. The figure does not misname key methods, though it omits explicit RT/RS notation and the semantic similarity model g(·,·) described in the summary."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure is organized in a clear top-to-bottom flow: prompt/ground truth at the top, then a baseline PE-based UQ panel, then the SAR (relevance-shifting) panel. Within each panel, the computation reads left-to-right across tokens and then to the resulting uncertainty and decision box."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "There are essentially no connecting lines that can cross. The only arrows (from computed uncertainty to the decision box) are simple and non-overlapping, so visual tracing is unambiguous."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related elements are grouped tightly: tokens are aligned in a row, their per-token entropy numbers appear directly beneath (and in the SAR panel, the additional weights are colocated under each token), and the aggregate uncertainty and decision outcome are placed immediately below/right, matching the described token-level generative-inequality motivation and the SAR remedy."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Tokens and their associated numeric values/weights are laid out in neat columns, giving strong grid-like alignment. Minor misalignment appears in the baseline panel where the averaging '/4' and some numbers are not as consistently column-centered as in the SAR panel."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The main components (baseline vs SAR) are clearly separated by large titled section headers, and the key outcomes (high vs low uncertainty) are emphasized with large colored decision boxes. However, the critical token illustrating the inequality (\"of\" with large entropy) is not visually singled out beyond its numeric value, so the focal point relies on reading the numbers."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "Spacing between the two main panels and between token rows and result boxes is generally sufficient. The top header area (question/ground truth and icons) is somewhat compact, and some text/numbers are close to the boundaries of their panel, but it remains readable."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Similar roles are encoded consistently: tokens are shown as similar teal boxes in both panels; computations use the same layout (token contributions summed/combined); outcome boxes use consistent semantic coloring (red for high uncertainty/refusal, green for low uncertainty/return). This supports the contrast between baseline PE accumulation and SAR reweighting described in the summary."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 4.0,
+              "reason": "The figure translates the abstract idea of token-level uncertainty aggregation into concrete visual tokens (boxed words) with per-token entropy values and arithmetic operators, making “generative inequality” tangible via the standout token “of.” It also uses simple icons/visual cues (checkmark for correctness; sad/happy faces; red/green outcome boxes) to concretize downstream decisions (refuse vs. answer). This aligns with the summary’s token-level PE contribution vs. relevance reweighting concept, though it remains a schematic rather than a richer symbolic metaphor."
+            },
+            {
+              "question": "novelty",
+              "score": 3.0,
+              "reason": "Stylistically, the figure uses a familiar didactic infographic format (two stacked panels: baseline vs. method; color-coded highlights; arrows; decision labels). While clear, it does not exhibit a particularly unique visual style beyond standard ML-paper explanatory schematics. The creative element is primarily the explicit, memorable demonstration that a low-semantic token (“of”) dominates uncertainty, which is consistent with the paper’s framing but presented with conventional visual tropes."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific claim: it juxtaposes predictive-entropy-based aggregation against SAR-style reweighting on the same example, directly visualizing how uncertainty changes when ‘attention shifts’ to relevance. The token-by-token decomposition and reweighted multiplication are specialized to the generative-inequality diagnosis described in the summary rather than a generic pipeline diagram, and the decision consequences (refuse vs. return generation) are integrated into the schematic in a way that fits the paper’s motivation."
+            }
+          ]
+        },
+        "weighted_total": 2.752
+      }
+    }
+  ]
+}

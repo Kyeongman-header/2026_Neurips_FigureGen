@@ -1,0 +1,134 @@
+{
+  "paper_name": "FaST_Feature-aware_Sampling_and_Tuning_for_Personalized_Preference_Alignment_with_Limited_Data",
+  "evaluated_at": "2026-01-12T01:37:18.522554",
+  "figure_summary": "## 1. Core Contributions\n- **Problem formulation:** Defines *Personalized Preference Alignment with Limited Data (PPALLI)*, where each user provides <100 preference choices from a fixed, user-agnostic questionnaire, and a separate personalized model is trained per user (privacy-motivated).\n- **Resources for study:** Introduces two datasets (DnD and ELIP) designed to benchmark this low-data, questionnaire-based personalization setting.\n- **Method contribution:** Proposes **FaST (Feature-aware Sampling and Tuning)**, a parameter-efficient personalization approach that builds a **feature-based reward model** from automatically discovered, interpretable feature dimensions and uses it to guide generation-model training.\n- **Empirical claim (as positioned):** Evaluates FaST against multiple alignment techniques on preference prediction and personalized generation, reporting best overall performance (figures are meant to support these comparative claims).\n\n## 2. Method Components & Relations relevant to figures\n- **Inputs / data objects**\n  - A **fixed questionnaire**: contexts/questions \\(q\\) each paired with multiple candidate responses \\(\\{r_1,\\dots,r_K\\}\\), shared across users.\n  - A **user-labeled preference dataset** per user \\(u\\): for each context, the user selects one preferred response \\(r_i^{(u)}\\).\n\n- **Key modules (FaST pipeline)**\n  1. **(a) Feature discovery (user-agnostic):**\n     - Prompt a strong LLM (GPT-4o in experiments) with the full questionnaire to produce **\\(F\\) global, interpretable features** (e.g., humor, brevity, precision).\n     - Output: discovered feature set shared across users.\n  2. **(b) Feature-wise response scoring (user-agnostic preprocessing):**\n     - For each feature \\(f\\), define a **feature function** \\(\\phi_f\\): a prompted (smaller) LLM that assigns a **1–5 score** to a (context, response) pair along that feature.\n     - Implementation detail emphasized for figures: the score is designed to be the **next-token prediction**, enabling a single forward pass; **uncertainty** is incorporated via a probability-weighted average over score tokens.\n     - Output: questionnaire responses annotated with feature-wise scores.\n  3. **(c) Feature weight learning (user-specific):**\n     - Learn a **user-specific feature weight vector** \\(\\lambda^{(u)} \\in \\mathbb{R}^F\\) from that user’s chosen responses, framed as conditional likelihood / preference modeling over the candidates.\n     - Output: **Feature-aware Reward Model (FaRM)**, described as a **weighted average of feature functions** (feature scores combined by learned weights) to rank responses for that user.\n  4. **(d) Sampling & tuning (user-specific training loop):**\n     - Iteratively: **sample candidate responses** from the current generator → **rank** them using FaRM → **fine-tune** the generator on ranked data using **SFT or DPO**.\n\n- **Key relations / data flow depicted**\n  - Questionnaire → (a) feature set → (b) feature-scored questionnaire → + user preferences → (c) user weights → FaRM → (d) ranking signals → generator fine-tuning.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- **Clarify the end-to-end personalization workflow** under PPALLI: how a fixed questionnaire plus a small amount of user choice data is transformed into a user-specific training signal.\n- **Visually separate user-agnostic vs. user-specific steps**, emphasizing efficiency/privacy aspects (e.g., only weight learning and tuning are per-user).\n- **Make the “feature-based reward modeling” idea concrete**: features are *discovered*, then *scored per response*, then *weighted per user* to form a reward used for ranking and tuning.\n- **Communicate how FaST replaces heavy reward modeling with a parameter-efficient decomposition** (feature functions + lightweight user weights) and how this reward integrates into standard tuning methods (SFT/DPO).\n\n## 4. What Figures are NOT intended to show\n- **Not** a complete mathematical specification of the preference likelihood, loss functions, or optimization details for \\(\\lambda^{(u)}\\), SFT, or DPO (beyond the high-level flow).\n- **Not** evidence that discovered features are uniquely correct, exhaustive, or guaranteed to be stable across prompts/LLMs; feature discovery is presented as a practical heuristic enabled by small questionnaires.\n- **Not** a demonstration of absolute quality/safety of generated text in all conditions; figures primarily motivate *mechanism and training flow*, not comprehensive behavioral guarantees.\n- **Not** a claim that feature scoring is ground-truth “annotation”; scores are LLM-produced signals with uncertainty handling, used as intermediate supervision for ranking/tuning rather than validated labels.",
+  "figure_evaluations": [
+    {
+      "figure_file": "FaST_Feature-aware_Sampling_and_Tuning_for_Personalized_Preference_Alignment_with_Limited_Data__p2__score1.00.png",
+      "caption": "Figure 1: Overview of the proposed FaST approach. The red-dashed box highlights the user-specific steps.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure captures the full FaST pipeline described in the summary: (a) user-agnostic feature discovery from the fixed questionnaire (Prompted GPT-4o → discovered feature set), (b) user-agnostic feature-wise response scoring via prompted LLM feature functions producing per-(q,r) numeric feature scores, (c) user-specific feature weight learning yielding a user-specific weight vector λ^(u) and an explicit weighted-sum Feature-aware Reward Model (FaRM), and (d) user-specific sampling and tuning with response sampling, FaRM-based ranking, and LLM fine-tuning (SFT/DPO). However, it omits the summary’s emphasized implementation detail that feature scoring is done via next-token prediction with probability-weighted averaging for uncertainty; this is a nontrivial methodological detail not visualized."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the diagram alone, one can infer the operating principle: start with a shared questionnaire, discover interpretable features, score candidate responses along those features, learn user-specific feature weights from limited preferences, combine scores into a reward used to rank sampled outputs, and fine-tune the generator (SFT/DPO). The red dashed box clearly separates user-specific steps, supporting the privacy/efficiency framing. Some specifics needed for full understanding (e.g., the exact preference-likelihood objective for learning λ^(u), and how uncertainty is handled in scoring) are not inferable, but these are stated in the summary as beyond what figures are intended to fully specify."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 3.0,
+              "reason": "The figure is a high-level method overview and effectively summarizes the end-to-end workflow central to the paper’s core contribution (PPALLI setting + FaST mechanism) and the user-agnostic vs user-specific separation. It does not include other major paper components mentioned in the summary such as the introduction of the DnD and ELIP datasets or the empirical comparative results/claims. Thus it is complete for the method pipeline but not for the paper ‘from beginning to end’ content."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure largely adheres to the summary’s FaST pipeline: questionnaire -> feature discovery (prompted GPT-4o) -> feature-wise scoring via prompted LLM -> user-specific feature weight learning -> Feature-aware Reward Model (FaRM) -> sampling/ranking -> LLM fine-tuning (SFT/DPO). The only potentially extra detail is the explicit algebraic form R_FaRM^(u) = lambda_humor^(u) phi_humor + ... shown inside the FaRM box; however, this matches the summary’s description of FaRM as a weighted average of feature functions, so it is not a substantive hallucination. The figure does not introduce unrelated modules or losses."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 5.0,
+              "reason": "All major relationships and dataflow match the summary: (a) user-agnostic feature discovery from the full questionnaire; (b) user-agnostic feature-wise scoring of (context,response) pairs producing feature-scored questionnaire responses; (c) user-specific learning of lambda^(u) from the user-labeled preference dataset; formation of FaRM from lambda^(u) and feature functions; (d) user-specific loop where the fine-tuned LLM samples responses, FaRM ranks them, and the ranking signal is used for further fine-tuning via SFT or DPO. The red dashed box correctly marks the per-user steps (weight learning and tuning)."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Component names align with the summary and caption: 'Feature discovery', 'Feature-wise response scoring', 'Feature weight learning', 'Feature-aware Reward Model (FaRM)', and 'Sampling & Tuning' are correctly labeled, as are the user-agnostic 'Prompted GPT-4o' and the tuning methods 'SFT or DPO'. The distinction between 'Questionnaire' and 'User-labeled preference dataset' is also labeled consistently with the PPALLI setup described in the summary."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The schematic largely centers on the main FaST pipeline described in the summary: (a) user-agnostic feature discovery from the questionnaire, (b) feature-wise scoring of responses, (c) user-specific feature weight learning to form FaRM, and (d) sampling/ranking/fine-tuning (SFT/DPO). The red-dashed box clearly emphasizes the user-specific portion, aligning with the paper’s stated intent. Minor clutter comes from showing multiple small questionnaire boxes and example checkmarks/crosses, which add detail beyond the core flow but do not derail the main contribution."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "Given the caption (“Overview… red-dashed box highlights user-specific steps”), the figure reads as a complete, end-to-end workflow that matches the summary’s data flow: Questionnaire → discovered features → feature-scored questionnaire → user preferences → learned weights → FaRM → ranking signals → generator tuning. The user-agnostic vs user-specific separation is visually explicit and would function well while reading the associated text."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure avoids decorative elements and most content is functional (modules, arrows, and small examples). Some repetition (multiple near-identical questionnaire panels and response lists) slightly increases visual density and could be streamlined without losing meaning, but these elements remain directly tied to illustrating scoring, preference selection, sampling, and ranking rather than unrelated decoration."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The pipeline reads clearly left-to-right across the four labeled stages (a) Feature discovery → (b) Feature-wise response scoring → (c) Feature weight learning → (d) Sampling & Tuning, matching the summary’s end-to-end FaST flow from questionnaire to tuning."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Most connectors are routed cleanly without intersections, especially within each stage. A few mid-figure links (from the user-labeled preference dataset down to feature weight learning, and from FaRM to the ranking/tuning blocks) come close and create mild visual congestion, but do not create confusing line crossings that obscure the method structure."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Modules that belong together are placed adjacent: feature discovery outputs the feature set next to the feature-scoring block; feature-scored questionnaire is near feature weight learning; FaRM is placed next to response ranking and fine-tuning. This supports the summary’s separation of user-agnostic preprocessing vs. user-specific learning/tuning."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major blocks are generally aligned on an implicit grid (left-side user-agnostic blocks, right-side user-specific blocks within the dashed red box). Minor elements (icons, small callouts, and some arrows/labels like “Response sampling/ranking”) are slightly offset, giving a small impression of unevenness without harming readability."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 5.0,
+              "reason": "Important components stand out: the red dashed box clearly highlights user-specific steps as stated in the caption; large rounded rectangles for Questionnaire/User-labeled dataset/FaRM and the four stage labels (a–d) emphasize the primary structure consistent with the summary’s pipeline description."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "Overall spacing is sufficient, but the user-specific region packs several elements (dataset, feature weight learning, FaRM equation block, sampling/ranking panels, tuning loop) tightly. Labels and arrows remain legible, yet the right half feels denser than the left."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "The figure uses mostly consistent visual language: similar rounded containers for datasets/panels, consistent coloring to distinguish components, and repeated ‘questionnaire panel’ motifs. However, some mixed iconography and varied box styles (e.g., equation-style FaRM block vs. others, different icon types for LLM modules) slightly reduce uniformity while not affecting the core method depiction."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure uses concrete visual substitutes for abstract steps: a red dashed box to denote “user-specific,” icons for LLM modules (e.g., GPT-like swirl), a user avatar for personalization, gear icons for optimization/learning, checkmarks/crosses to depict preference choices, and a flame/robot icon to imply fine-tuned model output. These metaphoric elements make the PPALLI/FaST pipeline components (feature discovery, scoring, weight learning, tuning) more tangible without changing the method structure described in the summary."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "The diagram is clean and readable but largely follows a common ML system-overview template: boxed modules, left-to-right flow arrows, and a highlighted region for per-user computation. The distinctive aspect is the explicit decomposition into (a) discovered interpretable features, (b) feature-wise scoring, (c) learned user weights forming a weighted reward model (FaRM), and (d) rank-guided tuning, but the visual style itself is not highly unique compared to standard conference figures."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s key communication goal from the summary: separating user-agnostic preprocessing (feature discovery/scoring) from user-specific steps (weight learning and sampling+tuning) via the red dashed boundary, and showing how a feature-weighted reward (FaRM) mediates ranking and generator fine-tuning. This structure breaks slightly from generic ‘single pipeline’ depictions by foregrounding the privacy/efficiency split and the feature-based reward decomposition central to FaST."
+            }
+          ]
+        },
+        "weighted_total": 4.152
+      }
+    }
+  ]
+}

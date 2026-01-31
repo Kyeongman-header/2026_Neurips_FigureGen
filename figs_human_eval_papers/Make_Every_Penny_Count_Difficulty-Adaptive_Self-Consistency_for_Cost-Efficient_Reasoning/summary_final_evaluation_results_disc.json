@@ -1,0 +1,261 @@
+{
+  "paper_name": "Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning",
+  "evaluated_at": "2026-01-12T02:51:53.358624",
+  "figure_summary": "## 1. Core Contributions\n- Identify inefficiencies in cost-efficient self-consistency variants (ASC/ESC): redundant multi-sampling on easy queries and unaccounted *input* cost inflation from repeated re-sampling.\n- Propose **Difficulty-Adaptive Self-Consistency (DSC)**: a 3-step inference-time procedure that uses **prior** difficulty (LLM-based ranking) and **posterior** signals (pre-samples / stopping criteria) to allocate sampling budgets.\n- Introduce concrete algorithms for (i) **difficulty ranking** without gold labels, (ii) **partitioning** queries into easy vs. hard to skip SC on easy ones, and (iii) **pre-allocating sample sizes** to reduce re-sample rounds on hard ones.\n- Empirically evaluate across reasoning benchmarks (arithmetic/commonsense/symbolic) and show reduced cost vs ASC/ESC with comparable accuracy (as claimed in text).\n\n## 2. Method Components & Relations relevant to figures\n- **Baseline behaviors being contrasted**\n  - **CoT (single greedy/sample)** vs **SC (many samples + majority vote)**.\n  - **ASC**: sequential sampling with a posterior-based stopping rule.\n  - **ESC**: fixed-size sampling windows; stop when a window is unanimous.\n- **DSC pipeline modules (as a data-flow)**\n  1. **Difficulty Ranking (Algorithm 1)**  \n     - Input: full set of questions \\(Q_{1:N}\\).  \n     - Process: random batch splits (size \\(B\\)) repeated \\(R\\) times; LLM ranks difficulty *within each batch*; merge per-question ranks across splits; average and sort to produce a global easy→hard ordering.\n     - Output: questions ordered by estimated difficulty.\n  2. **Problem Partition (Algorithm 2)**  \n     - Input: difficulty-ordered questions (hard→easy), pre-sample size \\(p\\), judge window \\(k\\).  \n     - Process: pre-sample each question; compute entropy of answer distribution; stop when the latest \\(k\\) entropies are zero (all pre-sample answers identical), define an **anchor point** \\(A\\).\n     - Output: split into **hard part** \\(Q_{1:A}\\) (keeps SC-like behavior) and **easy part** \\(Q_{A+1:N}\\) (handled by single CoT sample).\n  3. **Sample Size Pre-Allocation (Algorithm 3)**  \n     - Input: hard-part questions (easy→hard), max samples \\(L\\), extension window \\(e\\), neighbor count \\(m\\), stopping criterion \\(C\\) (Dirichlet stopping as default).  \n     - Process: predict an initial allocation \\(PA\\) for the current question from the *average total sample size* of the previous \\(m\\) easier questions; sample up to \\(PA\\); if stopping criterion not met, extend by \\(e\\) repeatedly until stop or \\(L\\).\n     - Output: fewer *re-sampling rounds* (hence fewer repeated *input* costs) while still using a posterior-based stopping rule.\n- **Cost emphasis used to motivate DSC**\n  - Total cost includes **input tokens** (demonstrations/context repeated per sample call) + **output tokens**; DSC is designed to reduce both by skipping SC on easy queries and reducing the number of re-sample calls on hard ones.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- **Motivate why difficulty-awareness matters**: show that many queries do not benefit from SC relative to CoT, implying avoidable sampling.\n- **Highlight an often-missed cost component**: visually/quantitatively support that repeated sampling incurs repeated *input* cost, not just extra outputs.\n- **Provide an intuitive analogy and conceptual rationale**: connect DSC to human behavior of allocating more effort to harder problems.\n- **Communicate the DSC workflow at a system level**: depict how prior difficulty estimation and posterior stopping interact to (i) skip sampling for easy queries and (ii) reduce re-sampling rounds for hard queries.\n\n## 4. What Figures are NOT intended to show\n- Not a proof that the LLM-derived difficulty ranking is “correct” in an absolute or human-validated sense—only that it is useful for resource allocation.\n- Not a detailed ablation of each hyperparameter (\\(B, R, p, k, m, e, L\\)) or a formal sensitivity analysis; figures mainly support the conceptual pipeline and cost motivations.\n- Not a claim of improved *accuracy* over SC; the stated goal is **cost reduction with comparable performance**, and figures primarily justify cost-efficiency mechanisms.\n- Not an architectural change to the underlying LLM; figures describe an **inference-time decoding/allocation strategy**, not model training or new network components.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+      "caption": "Figure 3: Overall workflow of proposed Difficulty-Adaptive Self-Consistency. DSC first ranks problem difficulty using LLM itself (step 1), then partitions problems into easy and hard to save sampling cost for easy ones (step 2), and finally pre-allocates sample sizes to reduce resampling costs for hard problems (step 3).",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure covers the three major DSC modules described in the summary: (1) difficulty ranking via random batch splits repeated R times with batch size B, LLM within-batch easy→hard ranking, then averaging/sorting to a global order; (2) partitioning with pre-sampling and a k-length zero-entropy/unanimity stopping rule to determine an anchor point splitting hard vs easy (with easy using single sample); and (3) sample-size pre-allocation using the previous m easier questions to predict an initial allocation and then extending via a re-sample window. However, several key hyperparameters/mechanistic details in the summary are only partially represented or missing: the pre-sample size p is not explicitly indicated; the extension window e and max samples L are not clearly shown; and the stopping criterion C (Dirichlet stopping default) is not specified beyond a generic re-sampling notion."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "A reader can infer the operating principle from the visual workflow: Step 1 ranks questions by difficulty using an LLM prompt and repeated batched rankings; Step 2 uses pre-samples/unanimity (green vs red) over a sliding window k to find when problems become consistently easy and thus skip SC; Step 3 uses historical sample counts over m neighbors to predict an initial sample budget and reduce re-sample rounds. The main limitation for standalone understanding is that some critical quantities and rules are implicit (e.g., entropy computation vs unanimity depiction, what exact stopping rule is used in Step 3, and what triggers extensions), so the precise algorithmic behavior is not fully reconstructable without the paper."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 3.0,
+              "reason": "The figure is complete for summarizing the DSC method pipeline end-to-end (ranking → partition → pre-allocation) as intended by the caption and summary. But it does not capture broader paper-level context emphasized in the summary: the contrasted baselines (CoT vs SC, ASC, ESC) and the core cost motivation about repeated input-token costs are not explicitly visualized here. Thus, it is method-complete but not fully paper-complete."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 4.0,
+              "reason": "The figure largely sticks to the summarized DSC components: (1) LLM-based difficulty ranking via random batch splits repeated R times and aggregation, (2) partitioning via pre-samples and an entropy-based zero-entropy window of length k to find an anchor A, and (3) pre-allocation using the previous m easier questions with extension/re-sampling windows. Minor extra specifics appear (e.g., 'Re-sample window size = 4' and concrete sample numbers like 4/8/24/32 and a small table of DSC vs ESC re-sample times), which are not explicitly stated in the summary, but they function as illustrative examples and do not introduce a new core method component."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 5.0,
+              "reason": "The data-flow and relationships match the summary: Step 1 outputs an easy→hard ordering from repeated batch rankings and averaging/sorting; Step 2 uses that ordering (executed hard→easy) with pre-sampling and a k-length zero-entropy criterion to decide where to stop and thus split hard vs easy (easy handled with single sample); Step 3 operates on the hard subset in the opposite direction (easy→hard), predicting an initial allocation from the prior m easier questions’ total sample sizes and then extending via re-sampling windows until a stopping criterion. This accurately represents the intended interaction of prior difficulty signals (ranking) and posterior signals (pre-samples/stopping)."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Major modules are labeled consistently with the summary and caption: 'Step 1 Difficulty Ranking', 'Step 2 Problem Partition', and 'Step 3 Sample Size Pre-Allocation'. Key variables are also aligned with the summarized algorithms (B batch size, R repetitions, k judge window, m neighbor count) and the easy vs hard partition is clearly labeled. References to ESC/SC are only used for comparison of re-sampling behavior and do not mislabel DSC’s own components."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the paper’s main contribution: a 3-step DSC inference workflow (difficulty ranking → partition easy/hard → sample-size pre-allocation). Each panel corresponds to the algorithms described in the summary, showing the key inputs/outputs (questions set, ranked list, easy/hard split, predicted allocation and extension). However, readability is slightly reduced by including several low-level operational details (e.g., specific numbers in Step 3 like 4/8/24/32 and the mini-table of re-sample times) that are not essential to grasp the main contribution at a glance."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption/text, the figure aligns well with the described DSC pipeline and clarifies the data-flow: random batch ranking repeated R times and aggregated (Step 1), pre-sampling/entropy-based stopping to find an anchor A for partitioning (Step 2), and neighbor-based prediction with extension windows to reduce re-sampling rounds (Step 3). The directional annotations (hard→easy vs easy→hard execution) help interpret the procedure. Still, some symbols and notations (e.g., k-window depiction, color meaning of ‘all answers same’, and the re-sample accounting) require careful reading and could be clearer without more explicit on-figure definitions of entropy/anchor A and the stopping criterion C."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The figure mostly avoids decorative elements and stays method-focused, but it contains some arguably redundant or overly specific elements that add visual load without proportionate conceptual gain: the explicit ‘LLM’ icon, repeated small circles/answer markers across many questions, and the detailed Step 3 numeric example plus the table contrasting DSC vs ESC re-sample times. These details do not contradict the summary, but they clutter the schematic and slightly hinder quick comprehension of the core ideas."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 5.0,
+              "reason": "The workflow is organized as three clearly labeled horizontal bands (Step 1–3). Within each band, the main process flows left-to-right with arrows (e.g., Questions → batching/ranking → sorted Questions in Step 1; pre-sampling/entropy checks across questions in Step 2; pre-allocation and extensions in Step 3). The bands themselves also read top-to-bottom as an overall pipeline."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 4.0,
+              "reason": "Most connectors are local and do not cross (Step 1 is a simple chain; Step 3 uses a single diagonal 'predict' line). There are a few long boundary/return arrows and dashed bracket connectors in Step 2/3 that approach other elements visually, but they largely avoid true line intersections and do not create major ambiguity."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 4.0,
+              "reason": "Functionally related modules are grouped: Step 1 contains ranking components together (batch splits, prompt, LLM, aggregation); Step 2 groups pre-sampling, entropy/zero-entropy window k, and the anchor-based partition; Step 3 groups pre-allocation (m-neighbor prediction) with re-sampling/extension outcomes. Some explanatory legends and auxiliary annotations (e.g., color legend, saving/stopping notes) are placed within Step 2 and slightly compete for space but remain near the relevant step."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "Key nodes are largely aligned on an implicit grid: Step 1 boxes are horizontally aligned; Step 2 question blocks and sampling icons are arranged along a consistent baseline; Step 3 question blocks and the numeric table align in rows. Minor misalignments occur due to mixed element types (icons, brackets, dashed boxes, and arrows), especially in Step 2’s internal annotations."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "The three main components (Difficulty Ranking, Problem Partition, Sample Size Pre-Allocation) stand out via large step titles and boxed sectioning, matching the summary’s 3-step DSC pipeline. Within steps, primary artifacts (Questions, LLM, ordered Questions; easy/hard partition colors; pre-allocation numbers) are visually salient. However, dense internal annotations and legends reduce the contrast between core operations and supporting explanation."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 3.0,
+              "reason": "The figure is information-dense, particularly in Step 2 where legends, question blocks, sampling circles, dashed windows, and explanatory text are packed closely. While section boundaries provide some separation, several elements have tight spacing that can hinder quick parsing."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 4.0,
+              "reason": "Similar roles are mostly encoded consistently: questions use consistent small labeled boxes; demonstrations are marked with a 'D'; easy vs hard parts are color-coded (blue/orange) and used repeatedly; answer-consistency signals are color-coded (green/red). Some inconsistency arises because multiple color encodings coexist (partition colors vs answer-equality colors), which can be momentarily confusing without referring to the legend."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 3.0,
+              "reason": "The figure uses some concrete visual symbols and abbreviations to stand in for abstract operations (e.g., stacked sheets for repeated random batch splits R, colored blocks/legend for answer unanimity vs non-unanimity, small 'D' tags for demonstrations, arrows indicating easy↔hard execution order). However, most concepts are still expressed as standard flowchart text boxes (LLM, prompt, rank/average/sort), with limited use of richer metaphorical iconography beyond conventional diagramming."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "Visually it follows a common three-stage pipeline template with dashed separators, labeled steps, and box-and-arrow flow typical for ML method figures. While the inclusion of cost-motivated elements like 're-sample times' and pre-allocation numbers adds task-specific content consistent with DSC, the overall style (layout, shapes, palette, typography) is not notably distinctive relative to standard academic workflow figures."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the DSC method structure described in the summary: Step 1 explicitly depicts batch-based ranking repeated R times and aggregation into a global easy→hard ordering; Step 2 visualizes partitioning via pre-sampling/unanimity (entropy-zero proxy) and an anchor-like stopping notion using a k-window; Step 3 shows the neighbor-based pre-allocation idea (using previous m easier questions) and emphasizes reduced re-sampling rounds via a small table-like comparison. This is more customized than a generic pipeline because it encodes the specific control logic and cost-relevant quantities (p/k/m/e/L concepts implicitly through windows and counts), rather than only high-level boxes."
+            }
+          ]
+        },
+        "weighted_total": 3.8
+      }
+    },
+    {
+      "figure_file": "Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+      "caption": "Figure 2: Leveraging their prior knowledge, humans assess the difficulty level of a problem before solving it, and allocate appropriate time for its resolution based on the difficulty.",
+      "scores": {
+        "Informativeness": {
+          "score": 1.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 1.0,
+              "reason": "The summary describes DSC as a concrete 3-step inference-time pipeline (difficulty ranking via batch-split aggregation; partition via pre-sample entropy and anchor point; pre-allocation using neighbor-average PA plus extension window and Dirichlet stopping). The figure only conveys a high-level analogy (judge difficulty → allocate more/less time) with easy/medium/hard categories and repeated tries, but omits essentially all major algorithmic components, signals (prior vs posterior), and any formulas/variables (B,R,p,k,A,m,e,L,C)."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 2.0,
+              "reason": "From the visual alone one can understand the general idea of allocating more inference effort to harder questions (difficulty judge leading to more attempts/checks). However, it does not make the operating principle of DSC identifiable: there is no depiction of how difficulty is ranked without labels, how easy/hard partitioning is decided (entropy/anchor), or how stopping/pre-allocation reduces re-sampling rounds and input-cost inflation."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 1.0,
+              "reason": "The figure does not summarize the paper from beginning to end per the summary’s scope: it excludes contrasts to CoT/SC/ASC/ESC, the core cost motivation about repeated input tokens, and the full DSC workflow and outputs (skip SC on easy queries; reduce re-sample calls on hard ones). It functions as an intuition/analogy only, not a comprehensive summary."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 4.0,
+              "reason": "The figure is a high-level human-analogy schematic (difficulty judge → easy/medium/hard → different numbers of attempts/time), which is consistent with the summary’s stated purpose to provide an intuitive analogy for allocating more effort to harder problems. It does introduce categories like “Medium” and phrases like “Do couple times and check / Try multiple times,” which are not explicitly described in the summary (the core method is an easy vs hard partition plus adaptive sampling). However, these additions are conceptual and do not introduce unmentioned technical components, formulas, or an altered DSC algorithmic structure."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 4.0,
+              "reason": "The depicted relationship—assess difficulty prior to solving and allocate more inference-time effort (more attempts) for harder items—matches the summary’s motivation for DSC (difficulty-aware allocation; skip heavy sampling on easy queries; spend more on hard ones). The figure does not depict the paper’s specific posterior mechanisms (pre-samples, entropy anchor, stopping criteria) or the exact easy/hard partition, but it also does not contradict them; it remains an abstract rationale rather than a pipeline diagram."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 3.0,
+              "reason": "Labels such as “Difficulty Judge” and “Inference time allocation” align with the paper’s conceptual framing (difficulty ranking and allocating sampling budget). However, the figure’s explicit three-tier labels “Easy/Medium/Hard” and action labels (“Do once without check,” “Do couple times and check,” “Try multiple times”) do not match the summary’s named method components (Difficulty Ranking / Problem Partition / Sample Size Pre-Allocation; easy vs hard split; SC vs CoT) and could be seen as loosely or incompletely aligned with the paper’s terminology."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized and captures the paper’s motivating analogy: assess difficulty first (\"Difficulty Judge\") and then allocate more inference-time effort for harder questions (easy/medium/hard mapped to increasing attempts). This aligns with the summary’s rationale for DSC (difficulty-aware budget allocation), though it stays at a high-level human analogy and does not reflect the specific DSC 3-step pipeline modules (ranking/partition/pre-allocation)."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "With the provided caption, the visual clearly supports the intended purpose of explaining why difficulty-awareness matters and how it translates to differing inference-time allocation. The left-to-right flow (questions → judge → difficulty levels → time allocation) is easy to follow. However, it is only loosely connected to the concrete DSC mechanisms in the summary (e.g., prior ranking algorithm, entropy-based partition anchor, stopping criteria), so it functions more as conceptual motivation than as direct methodological clarification."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "Most elements serve the core analogy (difficulty judgment and varying effort). Decorative aspects (cartoon person, thought bubble, stopwatch icons) are conventional but not overly distracting. The inclusion of three difficulty bins (easy/medium/hard) slightly exceeds what is strictly required by the summary (which emphasizes easy vs hard partitioning), but it does not alter the claimed method structure and mainly improves intuitive understanding rather than adding irrelevant content."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 5.0,
+              "reason": "The visual flow is clearly left-to-right: a stack of “Questions” on the left leads to a human “Difficulty Judge” in the center-left, then to difficulty categories (Easy/Medium/Hard) in the middle, and finally to “Inference time allocation” bars on the right. This matches the summary’s intent of an intuitive human analogy for difficulty-based effort allocation."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 5.0,
+              "reason": "Arrows and connectors do not cross. Each difficulty category has a dedicated arrow to its corresponding allocation bar, keeping the mapping unambiguous and visually clean."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are placed near each other: the three difficulty labels are grouped and vertically aligned, and each is close to its corresponding text description and allocation bar. The human “judge” sits between questions and difficulty levels, consistent with the conceptual pipeline described in the caption/summary. Minor deduction because the explanatory text (e.g., “Do once without check”) is separated from both the difficulty boxes and the allocation bars, creating slightly longer eye travel than necessary."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "The three difficulty blocks and the three allocation bars are neatly stacked in rows, suggesting a consistent grid. However, the intervening explanatory text and some arrow placements appear slightly less grid-aligned (not perfectly centered relative to boxes/bars), reducing perceived mechanical alignment."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "Key concepts stand out: the human judge is large and centrally placed, and the difficulty categories use strong color coding (green/orange/red) that draws attention. The right-side allocation bars are prominent and visually encode increasing effort. Slight deduction because the main message (difficulty → time allocation) competes a bit with multiple secondary labels/arrows without a single dominant title element beyond the small “Inference time allocation” text."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 5.0,
+              "reason": "Elements have ample whitespace: the left question stack, central judge, middle difficulty boxes, and right allocation bars are separated with clear margins, preventing clutter and supporting quick parsing."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 4.0,
+              "reason": "Similar roles are represented consistently: Easy/Medium/Hard share the same rounded-rectangle shape and internal iconography, differentiated only by color; allocation bars share consistent shapes and differ by number of clocks. Minor inconsistency is introduced by mixing visual styles (cartoon human, cloud thought bubble, flat UI-like bars), though it does not alter the intended analogy from the summary/caption."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure strongly replaces the abstract idea of difficulty-adaptive computation with concrete visual metaphors aligned with the summary’s “human allocates more effort to harder problems” rationale: a thinking person under a “Difficulty Judge” thought bubble, categorical difficulty bins (Easy/Medium/Hard), and clocks indicating increasing time/budget. These icons/symbols make the allocation concept immediately legible without equations."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "The style is a clean, cartoon-like infographic with common icons (document, person thinking, labeled boxes, clocks) and a left-to-right flow. While coherent and polished, it does not exhibit a particularly unique visual language beyond standard illustrative metaphors used in many ML papers’ conceptual motivation figures."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 3.0,
+              "reason": "The layout is tailored to the paper’s conceptual message (prior difficulty judgment leading to differentiated inference-time allocation), using three parallel rows to encode increasing effort. However, it remains a conventional pipeline infographic and does not substantially break from uniform design patterns or introduce a paper-specific structural visualization of DSC’s concrete algorithmic steps (ranking/partition/pre-allocation) beyond the high-level analogy."
+            }
+          ]
+        },
+        "weighted_total": 3.352
+      }
+    }
+  ]
+}

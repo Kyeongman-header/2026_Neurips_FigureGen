@@ -1,0 +1,273 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Semantic Drift Score Diagram</title>
+<style>
+  :root{
+    --w: 1200px;
+    --h: 1500px;
+    --fg: #222;
+    --muted: #666;
+    --line: #333;
+    --panel: #ffffff;
+    --panel2: #f7f8fb;
+    --ok: #1b7f4b;
+    --bad: #b42318;
+    --accent: #1f5fbf;
+    --light: #e6e8ef;
+  }
+  body{
+    margin:0;
+    background:#fff;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  #figure-root{
+    width: var(--w);
+    height: var(--h);
+    margin: 0 auto;
+    position: relative;
+    background: #fff;
+    box-sizing: border-box;
+  }
+  .caption{
+    font-size: 14px;
+    line-height: 1.25;
+    color: #111;
+  }
+  .small{
+    font-size: 13px;
+    color:#222;
+  }
+  .tiny{
+    font-size: 12px;
+    color:#222;
+  }
+  .note{
+    font-size: 12px;
+    color:#333;
+  }
+</style>
+</head>
+<body>
+<div id="figure-root">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#333"/>
+    </marker>
+    <marker id="arrowAccent" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#1f5fbf"/>
+    </marker>
+    <marker id="arrowOk" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#1b7f4b"/>
+    </marker>
+    <marker id="arrowBad" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#b42318"/>
+    </marker>
+
+    <style>
+      .title { font-size: 26px; font-weight: 700; fill: #111; }
+      .subtitle { font-size: 15px; fill: #333; }
+      .h2 { font-size: 18px; font-weight: 700; fill: #111; }
+      .h3 { font-size: 15px; font-weight: 700; fill: #111; }
+      .label { font-size: 14px; fill: #222; }
+      .labelMuted { font-size: 13px; fill: #555; }
+      .tinySvg { font-size: 12px; fill: #222; }
+      .mono { font-family: Arial, Helvetica, sans-serif; }
+      .box { fill: #fff; stroke: #333; stroke-width: 1.5; }
+      .boxSoft { fill: #f7f8fb; stroke: #333; stroke-width: 1.5; }
+      .boxAccent { fill: #eef4ff; stroke: #1f5fbf; stroke-width: 2; }
+      .boxOk { fill: #eefaf2; stroke: #1b7f4b; stroke-width: 2; }
+      .boxBad { fill: #fff2f1; stroke: #b42318; stroke-width: 2; }
+      .divider { stroke: #c7cad6; stroke-width: 1; }
+      .arrow { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .arrowAccent { stroke: #1f5fbf; stroke-width: 2.5; fill: none; marker-end: url(#arrowAccent); }
+      .arrowOk { stroke: #1b7f4b; stroke-width: 2.5; fill: none; marker-end: url(#arrowOk); }
+      .arrowBad { stroke: #b42318; stroke-width: 2.5; fill: none; marker-end: url(#arrowBad); }
+      .axis { stroke:#333; stroke-width:1.5; }
+      .tick { stroke:#333; stroke-width:1; }
+      .grid { stroke:#e1e4ee; stroke-width:1; }
+      .kLine { stroke:#1f5fbf; stroke-width:3; stroke-dasharray:7 6; }
+      .bracket { stroke:#333; stroke-width:1.5; fill:none; }
+      .okDot { fill:#1b7f4b; stroke:#0e4f2c; stroke-width:1; }
+      .badDot { fill:#b42318; stroke:#6d120c; stroke-width:1; }
+      .legendSwatchOk { fill:#1b7f4b; }
+      .legendSwatchBad { fill:#b42318; }
+      .calloutLine { stroke:#333; stroke-width:1.5; fill:none; marker-end:url(#arrow); }
+      .calloutLineAccent { stroke:#1f5fbf; stroke-width:1.8; fill:none; marker-end:url(#arrowAccent); }
+      .pill { fill:#fff; stroke:#333; stroke-width:1.2; }
+      .pillText { font-size:12px; fill:#111; }
+    </style>
+  </defs>
+
+  <!-- Top title area -->
+  <rect x="40" y="30" width="1120" height="110" rx="10" class="boxSoft"/>
+  <text x="60" y="70" class="title">Semantic drift score (SD): ordered degradation in fact-rich generations</text>
+  <text x="60" y="102" class="subtitle">Input is a sequence of atomic facts with support labels; SD is high when supported facts concentrate early and unsupported facts concentrate late, yielding a drift point k.</text>
+
+  <!-- Panel 1: Input facts sequence -->
+  <rect x="40" y="170" width="1120" height="340" rx="12" class="box"/>
+  <text x="60" y="205" class="h2">1) Fact-rich generation → atomic facts with support labels</text>
+
+  <!-- Sequence container -->
+  <rect x="60" y="230" width="1080" height="150" rx="10" class="boxSoft"/>
+  <text x="80" y="260" class="label">Generated paragraph (fact-rich): extract N atomic facts and label each as supported (sᵢ=1) or unsupported (sᵢ=0)</text>
+
+  <!-- Facts as circles along a timeline -->
+  <!-- timeline axis -->
+  <line x1="90" y1="330" x2="1110" y2="330" class="axis"/>
+  <polygon points="1110,330 1100,325 1100,335" fill="#333"/>
+  <text x="90" y="312" class="labelMuted">Fact index i (generation order)</text>
+
+  <!-- ticks at 0, k, N -->
+  <line x1="120" y1="322" x2="120" y2="338" class="tick"/>
+  <text x="114" y="360" class="tinySvg">0</text>
+  <line x1="985" y1="322" x2="985" y2="338" class="tick"/>
+  <text x="972" y="360" class="tinySvg">N−1</text>
+
+  <!-- Supported early: 10 green dots -->
+  <circle cx="160" cy="330" r="10" class="okDot"/>
+  <circle cx="210" cy="330" r="10" class="okDot"/>
+  <circle cx="260" cy="330" r="10" class="okDot"/>
+  <circle cx="310" cy="330" r="10" class="okDot"/>
+  <circle cx="360" cy="330" r="10" class="okDot"/>
+  <circle cx="410" cy="330" r="10" class="okDot"/>
+  <circle cx="460" cy="330" r="10" class="okDot"/>
+  <circle cx="510" cy="330" r="10" class="okDot"/>
+  <circle cx="560" cy="330" r="10" class="okDot"/>
+  <circle cx="610" cy="330" r="10" class="okDot"/>
+
+  <!-- Mixed around boundary: a couple to show transition -->
+  <circle cx="660" cy="330" r="10" class="okDot"/>
+  <circle cx="710" cy="330" r="10" class="badDot"/>
+
+  <!-- Unsupported later: 9 red dots -->
+  <circle cx="760" cy="330" r="10" class="badDot"/>
+  <circle cx="810" cy="330" r="10" class="badDot"/>
+  <circle cx="860" cy="330" r="10" class="badDot"/>
+  <circle cx="910" cy="330" r="10" class="badDot"/>
+  <circle cx="960" cy="330" r="10" class="badDot"/>
+  <circle cx="1010" cy="330" r="10" class="badDot"/>
+  <circle cx="1060" cy="330" r="10" class="badDot"/>
+  <circle cx="1110" cy="330" r="10" class="badDot"/>
+  <!-- last dot slightly left to stay within -->
+  <circle cx="1090" cy="330" r="10" class="badDot"/>
+
+  <!-- Legend -->
+  <rect x="60" y="395" width="520" height="90" rx="10" class="boxSoft"/>
+  <circle cx="90" cy="430" r="9" class="okDot"/>
+  <text x="110" y="435" class="label">Supported fact (sᵢ=1)</text>
+  <circle cx="90" cy="462" r="9" class="badDot"/>
+  <text x="110" y="467" class="label">Unsupported fact (sᵢ=0)</text>
+  <text x="360" y="435" class="labelMuted">Goal: find split k with</text>
+  <text x="360" y="456" class="labelMuted">many supported on left,</text>
+  <text x="360" y="477" class="labelMuted">many unsupported on right</text>
+
+  <!-- Panel 1 note -->
+  <rect x="610" y="395" width="530" height="90" rx="10" class="boxSoft"/>
+  <text x="630" y="425" class="h3">Interpretation</text>
+  <text x="630" y="448" class="labelMuted">Semantic drift is an ordered phenomenon:</text>
+  <text x="630" y="470" class="labelMuted">“correct-then-incorrect” sequencing within one generation.</text>
+
+  <!-- Arrow to panel 2 -->
+  <path d="M600 520 C600 560, 600 560, 600 600" class="arrowAccent"/>
+
+  <!-- Panel 2: Maximizing separation / drift point -->
+  <rect x="40" y="610" width="1120" height="560" rx="12" class="box"/>
+  <text x="60" y="645" class="h2">2) Score by maximizing separation → drift point k</text>
+
+  <!-- Left: objective block -->
+  <rect x="60" y="675" width="520" height="230" rx="12" class="boxAccent"/>
+  <text x="80" y="712" class="h3">Maximize separation between prefixes and suffixes</text>
+  <text x="80" y="742" class="label">Choose a split position k (the drift point) that maximizes:</text>
+  <text x="98" y="772" class="labelMuted">• proportion of supported facts among facts 0…k−1</text>
+  <text x="98" y="798" class="labelMuted">• proportion of unsupported facts among facts k…N−1</text>
+  <text x="80" y="832" class="label">Constraint (hyperparameter m):</text>
+  <text x="98" y="858" class="labelMuted">Only consider k where both sides contain ≥ m facts.</text>
+
+  <!-- Right: stylized SD(P,k) graphic -->
+  <rect x="600" y="675" width="540" height="470" rx="12" class="boxSoft"/>
+  <text x="620" y="712" class="h3">Illustration of the best split k (high SD)</text>
+
+  <!-- Mini-plot axes -->
+  <line x1="640" y1="1090" x2="1110" y2="1090" class="axis"/>
+  <line x1="640" y1="760" x2="640" y2="1090" class="axis"/>
+  <text x="650" y="745" class="labelMuted">Support label sᵢ</text>
+  <text x="930" y="1125" class="labelMuted">Fact index i</text>
+
+  <!-- grid -->
+  <line x1="640" y1="980" x2="1110" y2="980" class="grid"/>
+  <line x1="640" y1="870" x2="1110" y2="870" class="grid"/>
+  <text x="610" y="984" class="tinySvg">0</text>
+  <text x="610" y="874" class="tinySvg">1</text>
+
+  <!-- step-like points: early supported (1) then unsupported (0) -->
+  <!-- supported points (y=870), unsupported (y=980) for visual -->
+  <circle cx="700" cy="870" r="6" class="okDot"/>
+  <circle cx="740" cy="870" r="6" class="okDot"/>
+  <circle cx="780" cy="870" r="6" class="okDot"/>
+  <circle cx="820" cy="870" r="6" class="okDot"/>
+  <circle cx="860" cy="870" r="6" class="okDot"/>
+  <circle cx="900" cy="870" r="6" class="okDot"/>
+  <circle cx="940" cy="980" r="6" class="badDot"/>
+  <circle cx="980" cy="980" r="6" class="badDot"/>
+  <circle cx="1020" cy="980" r="6" class="badDot"/>
+  <circle cx="1060" cy="980" r="6" class="badDot"/>
+
+  <!-- k line -->
+  <line x1="920" y1="760" x2="920" y2="1090" class="kLine"/>
+  <text x="928" y="780" class="label" fill="#1f5fbf">k (drift point)</text>
+
+  <!-- Brackets showing left/right regions -->
+  <path d="M660 1035 L660 1055 L910 1055 L910 1035" class="bracket"/>
+  <text x="700" y="1078" class="tinySvg">Left of k: supported ↑</text>
+  <path d="M930 1035 L930 1055 L1090 1055 L1090 1035" class="bracket"/>
+  <text x="955" y="1078" class="tinySvg">Right of k: unsupported ↑</text>
+
+  <!-- Callout: SD high when separation is strong -->
+  <rect x="620" y="805" width="500" height="125" rx="10" class="box"/>
+  <text x="640" y="835" class="h3">High SD score pattern</text>
+  <text x="640" y="860" class="labelMuted">Most facts before k are supported,</text>
+  <text x="640" y="883" class="labelMuted">and most facts after k are unsupported.</text>
+  <text x="640" y="906" class="labelMuted">This yields strong ordered degradation (“drift”).</text>
+
+  <!-- SD score output box -->
+  <rect x="60" y="925" width="520" height="220" rx="12" class="box"/>
+  <text x="80" y="960" class="h3">Semantic drift score output</text>
+  <text x="80" y="990" class="label">SD(P) is the maximum separation over valid splits k.</text>
+  <text x="80" y="1020" class="labelMuted">• SD ≈ 1: all supported facts first, all unsupported facts later</text>
+  <text x="80" y="1046" class="labelMuted">• SD ≈ 0.5: mixed correct/incorrect with little ordering</text>
+  <text x="80" y="1072" class="labelMuted">• Drift point k: where this separation is maximized</text>
+  <line x1="80" y1="1090" x2="560" y2="1090" class="divider"/>
+  <text x="80" y="1116" class="label">What SD captures (in this paper context):</text>
+  <text x="98" y="1141" class="labelMuted">ordered change in truthfulness within a single generation.</text>
+
+  <!-- Arrow to panel 3 -->
+  <path d="M600 1185 C600 1225, 600 1225, 600 1265" class="arrowAccent"/>
+
+  <!-- Panel 3: Using a high score -->
+  <rect x="40" y="1270" width="1120" height="170" rx="12" class="box"/>
+  <text x="60" y="1305" class="h2">3) Why a high SD score is useful</text>
+
+  <!-- Early stopping and reranking boxes -->
+  <rect x="60" y="1330" width="520" height="95" rx="12" class="boxOk"/>
+  <text x="80" y="1360" class="h3">Early stopping</text>
+  <text x="80" y="1386" class="labelMuted">If the model becomes unreliable after k, stop generation earlier</text>
+  <text x="80" y="1408" class="labelMuted">(aim: keep supported prefix; avoid unsupported suffix).</text>
+
+  <rect x="620" y="1330" width="520" height="95" rx="12" class="boxOk"/>
+  <text x="640" y="1360" class="h3">Reranking (resample-then-rerank)</text>
+  <text x="640" y="1386" class="labelMuted">Generate alternative sentences and select those with higher consistency,</text>
+  <text x="640" y="1408" class="labelMuted">mitigating drift while preserving informativeness.</text>
+
+  <!-- Connecting arrows from drift point concept -->
+  <path d="M920 1160 C840 1230, 760 1270, 620 1330" class="arrowOk"/>
+  <path d="M920 1160 C760 1230, 450 1270, 320 1330" class="arrowOk"/>
+
+  <!-- Caption area -->
+  <rect x="40" y="1450" width="1120" height="40" rx="8" fill="#fff" stroke="#c7cad6" stroke-width="1.2"/>
+  <text x="60" y="1476" class="caption" fill="#111">Semantic drift score quantifies ordered degradation in fact-rich generations by maximizing separation between supported facts early and unsupported facts later, defining a drift point k. A high score indicates correct-then-incorrect factual sequencing, enabling early stopping and reranking to improve factuality.</text>
+</svg>
+</div>
+</body>
+</html>

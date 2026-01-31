@@ -1,0 +1,298 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Figure 1 - Uncertainty-based annotation strategy for CoT prompting</title>
+<style>
+  :root{
+    --w: 1200px;
+    --h: 1500px;
+    --pad: 40px;
+    --font: Arial, Helvetica, sans-serif;
+    --ink: #1f2a33;
+    --muted: #5a6a78;
+    --line: #9aa7b3;
+    --panel: #ffffff;
+    --panel2: #f5f7fa;
+    --accent: #2a6fbb;
+    --accent2: #1f8a70;
+    --warn: #b85c00;
+  }
+  body{
+    margin:0;
+    background:#ffffff;
+    font-family: var(--font);
+  }
+  #figure-root{
+    width: var(--w);
+    height: var(--h);
+    margin: 0 auto;
+    position: relative;
+    background: #ffffff;
+  }
+  .caption{
+    position:absolute;
+    left:0;
+    bottom:0;
+    width:100%;
+    height:140px;
+    box-sizing:border-box;
+    padding:18px 46px 18px 46px;
+    border-top: 1px solid #d7dde3;
+    background: #ffffff;
+    font-size: 18px;
+    line-height: 1.25;
+    color: #111;
+  }
+  .caption .small{
+    font-size: 17px;
+    color:#111;
+  }
+  svg{
+    position:absolute;
+    left:0;
+    top:0;
+    width: var(--w);
+    height: calc(var(--h) - 140px);
+  }
+
+  /* SVG text styles: use fill, not color */
+  .title { font-size: 26px; font-weight: 700; fill: #111; }
+  .subtitle { font-size: 16px; fill: #3e4b57; }
+  .label { font-size: 18px; fill: #18222b; }
+  .label-sm { font-size: 15px; fill: #22303a; }
+  .muted { fill: #5a6a78; font-size: 15px; }
+  .step { font-size: 18px; font-weight: 700; fill: #ffffff; }
+  .mono { font-family: "Courier New", Courier, monospace; font-size: 14px; fill: #22303a; }
+  .metric { font-size: 14px; fill: #22303a; }
+  .callout { font-size: 14px; fill: #3e4b57; }
+  .legend { font-size: 14px; fill: #2b3a44; }
+  .arrow { stroke:#3a4a57; stroke-width:2.2; fill:none; }
+  .arrow-dashed { stroke:#3a4a57; stroke-width:2.2; fill:none; stroke-dasharray: 7 6; }
+  .thin { stroke:#8b98a4; stroke-width:1.4; fill:none; }
+  .box { fill:#ffffff; stroke:#9aa7b3; stroke-width:1.8; }
+  .box-soft { fill:#f5f7fa; stroke:#9aa7b3; stroke-width:1.8; }
+  .box-accent { fill:#eef5ff; stroke:#2a6fbb; stroke-width:2.0; }
+  .box-green { fill:#eef9f6; stroke:#1f8a70; stroke-width:2.0; }
+  .box-warn { fill:#fff5ea; stroke:#b85c00; stroke-width:2.0; }
+  .pill { fill:#2a6fbb; stroke:#2a6fbb; }
+  .pill2 { fill:#1f8a70; stroke:#1f8a70; }
+  .pill3 { fill:#b85c00; stroke:#b85c00; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+  <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1360" viewBox="0 0 1200 1360" role="img" aria-label="Schematic of uncertainty-based annotation strategy for chain-of-thought prompting">
+    <defs>
+      <marker id="arrowHead" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+        <path d="M 0 0 L 12 5 L 0 10 z" fill="#3a4a57"></path>
+      </marker>
+      <marker id="arrowHeadBlue" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+        <path d="M 0 0 L 12 5 L 0 10 z" fill="#2a6fbb"></path>
+      </marker>
+      <marker id="arrowHeadGreen" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+        <path d="M 0 0 L 12 5 L 0 10 z" fill="#1f8a70"></path>
+      </marker>
+    </defs>
+
+    <!-- Header -->
+    <text x="60" y="70" class="title">Uncertainty-based annotation strategy for chain-of-thought (CoT) prompting</text>
+    <text x="60" y="102" class="subtitle">Training-time selection (active annotation) → exemplar construction → test-time prompting</text>
+
+    <!-- Step numbers row -->
+    <g>
+      <rect x="60" y="130" rx="18" ry="18" width="190" height="40" class="pill"></rect>
+      <text x="80" y="157" class="step">Step 1</text>
+      <text x="150" y="157" class="label-sm" fill="#ffffff" style="fill:#ffffff;">Sample k answers</text>
+
+      <rect x="360" y="130" rx="18" ry="18" width="240" height="40" class="pill"></rect>
+      <text x="380" y="157" class="step">Step 2</text>
+      <text x="450" y="157" class="label-sm" fill="#ffffff" style="fill:#ffffff;">Compute uncertainty</text>
+
+      <rect x="710" y="130" rx="18" ry="18" width="320" height="40" class="pill3"></rect>
+      <text x="730" y="157" class="step">Step 3</text>
+      <text x="800" y="157" class="label-sm" fill="#ffffff" style="fill:#ffffff;">Select top-n for annotation</text>
+    </g>
+
+    <!-- Left: Unlabeled training questions -->
+    <g>
+      <rect x="60" y="210" width="300" height="330" rx="14" ry="14" class="box"></rect>
+      <text x="80" y="245" class="label">Unlabeled training questions</text>
+      <text x="80" y="270" class="muted">Dataset D = {q₁, q₂, …, qℓ}</text>
+
+      <!-- mini list -->
+      <g>
+        <rect x="88" y="292" width="244" height="54" rx="10" ry="10" class="box-soft"></rect>
+        <text x="104" y="323" class="mono">q₁: (question text)</text>
+        <text x="104" y="343" class="mono">… no rationale, no answer</text>
+
+        <rect x="88" y="358" width="244" height="54" rx="10" ry="10" class="box-soft"></rect>
+        <text x="104" y="389" class="mono">q₂: (question text)</text>
+        <text x="104" y="409" class="mono">…</text>
+
+        <rect x="88" y="424" width="244" height="54" rx="10" ry="10" class="box-soft"></rect>
+        <text x="104" y="455" class="mono">qᵢ: (question text)</text>
+        <text x="104" y="475" class="mono">…</text>
+      </g>
+
+      <text x="80" y="520" class="callout">Goal: choose which questions are most worth annotating.</text>
+    </g>
+
+    <!-- Center: Sample k model answers per training question -->
+    <g>
+      <rect x="430" y="210" width="330" height="330" rx="14" ry="14" class="box-accent"></rect>
+      <text x="450" y="245" class="label">LLM sampling on training questions</text>
+      <text x="450" y="270" class="muted">For each q: generate k answers (optionally with CoT)</text>
+
+      <!-- Sampling depiction -->
+      <rect x="452" y="292" width="286" height="70" rx="10" ry="10" class="box"></rect>
+      <text x="468" y="320" class="mono">Input: qᵢ</text>
+      <text x="468" y="345" class="mono">Run model k times → Aᵢ = {aᵢ¹,…,aᵢᵏ}</text>
+
+      <!-- k answers boxes -->
+      <g>
+        <rect x="452" y="378" width="92" height="54" rx="10" ry="10" class="box-soft"></rect>
+        <text x="466" y="408" class="mono">aᵢ¹</text>
+        <text x="466" y="428" class="metric">answer</text>
+
+        <rect x="556" y="378" width="92" height="54" rx="10" ry="10" class="box-soft"></rect>
+        <text x="570" y="408" class="mono">aᵢ²</text>
+        <text x="570" y="428" class="metric">answer</text>
+
+        <rect x="660" y="378" width="78" height="54" rx="10" ry="10" class="box-soft"></rect>
+        <text x="676" y="408" class="mono">…</text>
+        <text x="672" y="428" class="metric">aᵢᵏ</text>
+      </g>
+
+      <text x="450" y="475" class="callout">Repeat for all questions in D (or a candidate pool).</text>
+    </g>
+
+    <!-- Right: Compute uncertainty per question -->
+    <g>
+      <rect x="820" y="210" width="320" height="330" rx="14" ry="14" class="box-accent"></rect>
+      <text x="840" y="245" class="label">Uncertainty estimation u(q)</text>
+      <text x="840" y="270" class="muted">From k sampled answers per question</text>
+
+      <rect x="842" y="292" width="276" height="86" rx="10" ry="10" class="box"></rect>
+      <text x="858" y="320" class="label-sm">Examples of uncertainty metrics:</text>
+      <text x="858" y="345" class="metric">• Disagreement (unique answers / k)</text>
+      <text x="858" y="366" class="metric">• Entropy of answer frequencies</text>
+
+      <!-- Ranking graphic -->
+      <rect x="842" y="394" width="276" height="118" rx="10" ry="10" class="box-soft"></rect>
+      <text x="858" y="420" class="label-sm">Rank questions by uncertainty</text>
+      <text x="858" y="445" class="mono">q₇   u=0.92  ██████████</text>
+      <text x="858" y="468" class="mono">q₁₉  u=0.88  █████████</text>
+      <text x="858" y="491" class="mono">q₄   u=0.85  ████████</text>
+      <text x="858" y="514" class="mono">…</text>
+    </g>
+
+    <!-- Arrows top row -->
+    <path d="M 360 375 C 390 375, 398 375, 430 375" class="arrow" marker-end="url(#arrowHead)"></path>
+    <path d="M 760 375 C 790 375, 800 375, 820 375" class="arrow" marker-end="url(#arrowHead)"></path>
+
+    <!-- Step 3: select top-n and annotate -->
+    <g>
+      <rect x="60" y="600" width="1080" height="300" rx="16" ry="16" class="box-warn"></rect>
+      <text x="90" y="640" class="label">Active selection + human annotation (budgeted)</text>
+      <text x="90" y="665" class="muted">Select top-n most uncertain questions, then obtain human rationale-and-answer annotations.</text>
+
+      <!-- selection box -->
+      <rect x="90" y="705" width="360" height="160" rx="12" ry="12" class="box"></rect>
+      <text x="110" y="735" class="label-sm">Selection</text>
+      <text x="110" y="760" class="metric">Input: ranked list by u(q)</text>
+      <text x="110" y="783" class="metric">Pick: top-n questions with largest u</text>
+      <text x="110" y="806" class="mono">S = {q*₁, q*₂, …, q*ₙ}</text>
+      <text x="110" y="834" class="callout">“Most uncertain” ≈ hardest / most informative.</text>
+
+      <!-- human annotation box -->
+      <rect x="480" y="705" width="630" height="160" rx="12" ry="12" class="box-green"></rect>
+      <text x="500" y="735" class="label-sm">Human rationale-and-answer annotation</text>
+      <text x="500" y="760" class="metric">For each selected question q*:</text>
+      <text x="520" y="784" class="metric">• write rationale chain c (CoT)</text>
+      <text x="520" y="807" class="metric">• provide final answer a</text>
+
+      <!-- exemplar depiction -->
+      <rect x="500" y="825" width="590" height="32" rx="8" ry="8" class="box"></rect>
+      <text x="514" y="847" class="mono">Exemplar: (q*, c, a)</text>
+    </g>
+
+    <!-- Downward arrow from uncertainty ranking to selection+annotation -->
+    <path d="M 980 540 C 980 565, 980 575, 980 600" class="arrow" marker-end="url(#arrowHead)"></path>
+    <text x="1000" y="575" class="callout">top-n</text>
+
+    <!-- Construct exemplars E -->
+    <g>
+      <rect x="60" y="940" width="520" height="250" rx="16" ry="16" class="box-green"></rect>
+      <text x="90" y="980" class="label">Construct exemplar set E</text>
+      <text x="90" y="1005" class="muted">E = {(q*₁, c₁, a₁), …, (q*ₙ, cₙ, aₙ)}</text>
+
+      <!-- exemplars stack -->
+      <g>
+        <rect x="90" y="1035" width="460" height="56" rx="10" ry="10" class="box"></rect>
+        <text x="106" y="1066" class="mono">Example 1: Q + CoT c₁ + Answer a₁</text>
+
+        <rect x="90" y="1105" width="460" height="56" rx="10" ry="10" class="box"></rect>
+        <text x="106" y="1136" class="mono">Example 2: Q + CoT c₂ + Answer a₂</text>
+
+        <rect x="90" y="1175" width="460" height="56" rx="10" ry="10" class="box"></rect>
+        <text x="106" y="1206" class="mono">… up to n exemplars</text>
+      </g>
+    </g>
+
+    <!-- Test-time prompting -->
+    <g>
+      <rect x="620" y="940" width="520" height="250" rx="16" ry="16" class="box-accent"></rect>
+      <text x="650" y="980" class="label">Test-time: prepend exemplars to each query</text>
+      <text x="650" y="1005" class="muted">For each test question p ∈ D_test</text>
+
+      <rect x="650" y="1035" width="460" height="78" rx="10" ry="10" class="box"></rect>
+      <text x="666" y="1062" class="label-sm">Prompt template</text>
+      <text x="666" y="1086" class="mono">[E] + p  →  model generates CoT + final answer</text>
+
+      <!-- Output -->
+      <rect x="650" y="1128" width="460" height="86" rx="10" ry="10" class="box-soft"></rect>
+      <text x="666" y="1156" class="label-sm">Model prediction</text>
+      <text x="666" y="1180" class="mono">Rationale (generated) + predicted answer</text>
+      <text x="666" y="1202" class="callout">Optional: apply self-consistency (multiple samples) at inference.</text>
+    </g>
+
+    <!-- Arrows between stages -->
+    <path d="M 600 900 C 600 920, 600 920, 600 940" class="arrow" marker-end="url(#arrowHeadGreen)"></path>
+    <path d="M 580 1065 C 600 1065, 600 1065, 620 1065" class="arrow" marker-end="url(#arrowHeadBlue)"></path>
+
+    <!-- Connector: from selection+annotation to E -->
+    <path d="M 600 900 C 380 930, 260 930, 260 940" class="arrow" marker-end="url(#arrowHeadGreen)"></path>
+
+    <!-- Optional clarifying loop: generate k per question (applies to all q) -->
+    <g>
+      <path d="M 210 540 C 210 575, 210 585, 210 600" class="arrow-dashed" marker-end="url(#arrowHead)"></path>
+      <text x="82" y="582" class="callout">Use u(q) to drive selection for annotation.</text>
+    </g>
+
+    <!-- Legend -->
+    <g>
+      <rect x="60" y="1240" width="1080" height="90" rx="14" ry="14" class="box"></rect>
+      <text x="90" y="1272" class="label-sm">Legend</text>
+      <rect x="190" y="1256" width="18" height="18" class="box-accent"></rect>
+      <text x="218" y="1270" class="legend">model-side computation</text>
+
+      <rect x="430" y="1256" width="18" height="18" class="box-green"></rect>
+      <text x="458" y="1270" class="legend">human annotation output (exemplars)</text>
+
+      <rect x="770" y="1256" width="18" height="18" class="box-warn"></rect>
+      <text x="798" y="1270" class="legend">active selection (budgeted)</text>
+
+      <path d="M 190 1298 L 250 1298" class="arrow" marker-end="url(#arrowHead)"></path>
+      <text x="262" y="1303" class="legend">data / control flow</text>
+
+      <path d="M 490 1298 L 550 1298" class="arrow-dashed" marker-end="url(#arrowHead)"></path>
+      <text x="562" y="1303" class="legend">informative dependency</text>
+    </g>
+  </svg>
+
+  <div class="caption">
+    <div class="small">Figure 1. Schematic of the proposed uncertainty-based annotation strategy for chain-of-thought prompting: sample k model answers per training question, compute uncertainty (e.g., disagreement or entropy), select the top-n most uncertain questions for human rationale-and-answer annotation, then prepend the resulting exemplars to each test query.</div>
+  </div>
+</div>
+</body>
+</html>

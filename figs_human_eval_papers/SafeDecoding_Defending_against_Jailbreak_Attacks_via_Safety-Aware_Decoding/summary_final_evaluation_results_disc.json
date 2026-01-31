@@ -1,0 +1,261 @@
+{
+  "paper_name": "SafeDecoding_Defending_against_Jailbreak_Attacks_via_Safety-Aware_Decoding",
+  "evaluated_at": "2026-01-12T03:44:39.804831",
+  "figure_summary": "## 1. Core Contributions\n- Proposes **SafeDecoding**, a *safety-aware decoding* procedure intended to reduce jailbreak success by **reweighting next-token probabilities** toward safety disclaimers and away from attacker-aligned continuations.\n- Motivates the defense with a **token-probability perspective**: even under jailbreak prompts, *safety-disclaimer tokens remain present* in the high-probability candidate set, though usually not dominant.\n- Introduces a **two-model setup** (original model + safety-strengthened “expert” model) used at inference to construct a **new sampling distribution** that balances safety and utility.\n\n## 2. Method Components & Relations relevant to figures\n- **Key modules**\n  - **Original LLM (base model)**: produces standard next-token distribution \\(p_{\\theta}(\\cdot \\mid x_{1:n-1})\\).\n  - **Expert model (fine-tuned LLM)**: built in a training phase by fine-tuning the original model on a generated safety-aware dataset to yield a distribution more favorable to refusals/safety disclaimers.\n  - **Sample-space construction**: at inference, SafeDecoding forms a candidate token set by taking the **intersection of top tokens** from the original and expert models (intended to manage the utility–safety tradeoff).\n  - **Safety-aware token redistribution**: defines a **new next-token probability distribution** using both models’ token probabilities, designed to:\n    - **attenuate** tokens/continuations aligned with the attacker objective \\(H\\),\n    - **amplify** tokens aligned with **human values/safety** (e.g., refusal prefixes/disclaimers).\n- **Key relations / data flows**\n  - Input query → fed **in parallel** to original model and expert model → produce two token-probability outputs → SafeDecoding combines them into a **constructed distribution** → token sampling proceeds (optionally only for an initial prefix of tokens, then normal decoding continues as illustrated).\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To visually justify *why decoding-time intervention is plausible*: show that under jailbreak prompts, **safe/refusal tokens exist in the model’s candidate space** even if harmful-compliance tokens dominate probability mass.\n- To depict the **SafeDecoding pipeline** clearly: the **training vs. inference separation**, the **two-model comparison**, and the **mechanism of building a modified token distribution** that shifts generation toward safe behaviors.\n- To convey the **mechanistic intuition** behind the defense: jailbreak “success” is framed as a **probability dominance issue** in next-token selection, and SafeDecoding aims to **change that dominance** at decoding time.\n\n## 4. What Figures are NOT intended to show\n- Not intended to prove that the method **eliminates** harmful generations in all cases, or that safety disclaimers are always reachable under every attack/prompt.\n- Not intended to provide a full characterization of the **fine-tuning procedure**, dataset generation details, or formal guarantees about the constructed distribution beyond the qualitative “attenuate vs. amplify” goal.\n- Not intended to establish comprehensive comparative performance (e.g., across models/attacks/benchmarks) from the figures alone; the figures mainly support **motivation and method design**, not complete empirical validation.",
+  "figure_evaluations": [
+    {
+      "figure_file": "SafeDecoding_Defending_against_Jailbreak_Attacks_via_Safety-Aware_Decoding__p0__score0.95.png",
+      "caption": "Figure 1: This example illustrates the token probabilities of Vicuna-7B model under GCG attack (Zou et al., 2023). The words in red are GCG suffixes. We note that although the token representing the word \"Sure\" has a dominant probability, safety disclaimers such as \"I\", \"Sorry\", and \"As\" are still present in the sample space, which is sorted in descending order in token probabilities. When a safety disclaimer token is sampled, the model would reject the attacker’s harmful query.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 2.0,
+              "reason": "The figure covers the motivational token-probability perspective described in the summary and caption: under a jailbreak (GCG) prompt, an attacker-aligned token (\"Sure\") dominates while safety-disclaimer tokens (e.g., \"I\", \"Sorry\", \"As\") still appear in the top token sample space with smaller probabilities. However, it omits most major method components from the summary—there is no depiction of SafeDecoding’s two-model setup (base vs. safety-strengthened expert), no intersection-of-top-tokens candidate-set construction, and no formula/visual for the reweighted next-token distribution."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 3.0,
+              "reason": "From the visual alone, one can understand the general intuition that jailbreak success is related to next-token probability dominance (\"Sure\" high-probability leading to harmful compliance) and that sampling a refusal/disclaimer token could lead to rejection. But the operating principle of the proposed system (SafeDecoding) is not understandable from this figure alone because the actual decoding-time intervention (how probabilities are modified using two models) is not shown."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 1.0,
+              "reason": "The figure is a narrow motivating example rather than a summary from beginning to end. It does not include the training vs. inference separation, creation of the expert model via fine-tuning, the combined distribution construction, or the overall pipeline described in the summary; thus it is far from a complete depiction of the paper’s content."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 5.0,
+              "reason": "The figure shows exactly the motivation described: under a GCG-style jailbreak prompt, a harmful-compliance token (e.g., “Sure”) has dominant probability while refusal/disclaimer-starting tokens (“I”, “Sorry”, “As”) remain in the high-probability candidate space. It does not introduce SafeDecoding’s two-model pipeline, intersection construction, or any new formulas/components beyond the token-probability illustration mentioned in the caption/summary."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 5.0,
+              "reason": "The depicted relationship—next-token distribution sorted by probability where sampling a disclaimer token would lead to refusal—is consistent with the summary’s token-probability perspective (safe tokens present but not dominant under jailbreak prompts). No incorrect or extra inter-module relations (e.g., base/expert combination) are asserted in this figure."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 4.0,
+              "reason": "Key labels align with the caption/summary: a GCG attack suffix is highlighted in red, a top-p sample space is shown, and the example tokens include “Sure” vs. disclaimer tokens (“I”, “Sorry”, “As”). However, the figure does not explicitly label the model as “Vicuna-7B” within the visual itself (that attribution is in the caption), slightly limiting label explicitness in the figure."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the main motivational claim: under a jailbreak prompt, a harmful-assisting token (e.g., “Sure”) can dominate while refusal/disclaimer tokens (“I”, “Sorry”, “As”) still appear in the top-probability sample space. The visual directly foregrounds token probabilities and the contrast between attacker-aligned vs safety-disclaimer continuations, with minimal extraneous structure."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "It functions well as supplementary material for the caption/summary’s token-probability perspective: it shows a prompt with highlighted GCG suffix tokens (red), a ranked top-p token list with probabilities, and example continuations colored to distinguish harmful compliance from refusals. This makes the caption’s point (disclaimer tokens remain present and can lead to rejection if sampled) easy to understand without needing additional method details."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "Most elements support the core idea (prompt with attack suffix highlighting, sorted token list, probabilities, and indicative continuations). Some decorative/auxiliary visuals (e.g., the cartoon avatar and stylized speech bubbles) are not essential to the conceptual point, but they do not substantially obscure the main message or alter the claimed mechanism."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.714,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 3.0,
+              "reason": "The figure reads mostly left-to-right: prompt bubble at the top leads to a response bubble, and the token-probability list sits on the left with corresponding continuations on the right. However, the presence of stacked bubbles and the vertical top-p table makes the overall flow partly top-to-bottom and somewhat ambiguous rather than a single clear direction."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "There are no visible connector lines between modules (the figure is a token-probability illustration rather than a pipeline diagram), so there are no crossings to create confusion."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are placed near each other: the top-p token list is adjacent to the example continuations that those tokens would begin (e.g., red harmful continuation vs green safety disclaimers). The prompt and generated response are also grouped in the upper region. The mapping from each row of the probability list to the corresponding colored text is still somewhat indirect (no explicit linking), limiting proximity effectiveness."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 3.0,
+              "reason": "The token-probability table is neatly column-aligned (token, probability) and the colored continuations are roughly stacked. But the speech bubbles and decorative elements are not aligned to a clear grid, and the right-side text blocks do not align precisely with the table rows, reducing overall alignment."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Key elements stand out: the dominant harmful token \"Sure\" is highlighted with a large probability (85%) and the harmful continuation is shown in red, while safety disclaimer tokens (e.g., \"I\", \"Sorry\", \"As\") appear in green. This effectively emphasizes the caption’s main point (safe tokens exist in the sample space though not dominant)."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "The figure is visually dense, especially in the lower half where the table, colored continuations, and icons sit close together. While elements remain legible, margins between the table and the right-hand continuations are tight, which can hinder quick scanning."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles are encoded consistently: harmful/compliant content is red, safety disclaimers are green, and probabilities are displayed in a uniform table style. The bubbles/icons are stylistic rather than methodological, but they are used consistently to represent the conversation context without changing the core claim."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure replaces the abstract notion of next-token probabilities with a concrete, easy-to-grasp ranked bar/stack visualization (top-p list with percentages) and color coding (red for attacker/GCG-related tokens, green for safety-disclaimer tokens). However, it largely remains a conventional probability chart rather than using richer symbolic metaphors beyond basic color cues."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "The combination of a chat-style prompt/response context with an overlaid top-token probability breakdown is a moderately distinctive presentation compared with plain tables/plots, and the explicit highlighting of specific tokens (“Sure” vs disclaimer starters) supports the paper’s token-probability intuition. Still, the overall visual style (speech bubbles + probability bars + colored tokens) aligns with common explanatory-figure templates in LLM papers rather than a markedly unique aesthetic."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s motivation: it situates the attack prompt (with GCG suffix emphasized in red) directly alongside the token sample space sorted by probability, making the “disclaimer tokens exist but are non-dominant” point immediate. This is more purpose-fit than a generic chart and directly supports the decoding-time intervention rationale described in the summary."
+            }
+          ]
+        },
+        "weighted_total": 3.61
+      }
+    },
+    {
+      "figure_file": "SafeDecoding_Defending_against_Jailbreak_Attacks_via_Safety-Aware_Decoding__p4__score1.00.png",
+      "caption": "Figure 2: This figure illustrates the detail of SafeDecoding. During the training phase, we fine-tune the original LLM to construct an expert model with strengthened safety. In the inference phase, a user query is passed to both the original and expert models. Based on their outputs, SafeDecoding constructs a new token probability distribution. This constructed probability distribution attenuates the probabilities of tokens that are aligned with the attacker’s goal, and amplifies the probabilities of tokens that are aligned with human values. In this example, SafeDecoding is applied only to the first 2 tokens, while the remaining tokens are generated through normal decoding.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure covers the major components described in the summary/caption: a training phase that fine-tunes an original LLM into an expert model, an inference phase where the query is fed to both models in parallel, construction of a candidate/sample space from both models’ token distributions, and a constructed probability function that amplifies safety-aligned tokens and attenuates attacker-aligned tokens, followed by softmax and sampling. It also illustrates the ‘apply only to first 2 tokens, then normal decoding’ behavior. What is not explicitly shown is the specific ‘intersection of top tokens’ rule as stated in the summary; the figure shows “Construct Sample Space” with a selected set but does not clearly label it as an intersection operation, so that specific design detail is under-specified."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 5.0,
+              "reason": "From the visual pipeline alone, one can infer the general operating principle: (i) build an expert model via fine-tuning, (ii) at inference run both models, (iii) combine their token probabilities into a new distribution using a reweighting formula (with a tunable parameter α), (iv) sample from the adjusted distribution to steer generation toward refusals/disclaimers, and (v) optionally switch back to normal decoding after an initial prefix (here 2 tokens). The legend for amplify/attenuate and the worked token-probability example make the mechanism understandable without the paper."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure is informative for the method design (training vs inference separation and decoding-time redistribution), which matches the intended purpose in the summary, but it does not summarize content ‘from beginning to end of the paper’ (e.g., broader evaluation, results, or other sections beyond the SafeDecoding mechanism). As a single method figure, it is not meant to be a full-paper summary."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 3.0,
+              "reason": "The figure matches the summary’s core two-model setup (original vs. expert), training vs. inference split, constructing a new token-probability distribution, and the idea of amplifying safety/refusal tokens while attenuating attacker-aligned tokens. However, it introduces a specific numeric formula in Step 2 (e.g., “85% + α(52% − 85%)”, explicit subtraction between expert/base probabilities, Softmax, and α=3) that is not explicitly described in the provided summary (which only states qualitative reweighting/redistribution). This is potentially a hallucinated implementation detail, though it does not obviously contradict the described goal."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 4.0,
+              "reason": "Relationships are largely consistent with the summary: a user query is fed in parallel to the base and expert models; their token distributions are used to (i) construct a candidate token set via an intersection of top tokens (Step 1) and (ii) build a modified distribution used for sampling (Step 2). The figure also reflects the caption/summary note that SafeDecoding is applied only for the first 2 tokens and then normal decoding continues. The only potential concern is that the exact mathematical combination shown is more specific than the summary, but the high-level dependency/flow is faithful."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled in line with the summary and caption: “Training Phase” producing an “expert model,” “Inference Phase,” parallel use of original vs. expert outputs, “Construct Sample Space,” “New Prob. Function,” and the distinction between “SafeDecoding” (first tokens) and “Normal Decoding” (remaining tokens). Labels correspond to the described method structure."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The schematic largely foregrounds the main contribution described in the summary: a two-model setup (original + safety-strengthened expert), a training vs. inference split, sample-space construction via intersecting top tokens, and a reweighted next-token distribution that amplifies safe/refusal tokens and attenuates attacker-aligned tokens. The stepwise layout (Training Phase → Step 1 Construct Sample Space → Step 2 New Prob. Function → Softmax → decoding) keeps attention on the core mechanism rather than implementation trivia. Minor clutter comes from specific token examples/probabilities and decorative icons, but they serve as an illustrative instantiation rather than derailing the main point."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption/text, the figure matches the described pipeline: fine-tuning to create an expert model, parallel inference through both models, constructing a new distribution, and applying SafeDecoding only to the first 2 tokens before normal decoding continues. The amplification/attenuation legend and the explicit formula-like reweighting block support the caption’s claims about probability redistribution. Readability is slightly hindered by small text and dense probability tables, which may require zooming to fully parse."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The figure mostly avoids irrelevant content, but includes some decorative/auxiliary elements (cartoon avatars, a stylized jailbreak prompt text bubble) that are not strictly necessary to convey the method structure from the summary. The repeated token/probability columns and ellipses add visual density; while they demonstrate the token-probability perspective, they can feel more detailed than needed for understanding the high-level mechanism. Still, these elements do not substantially alter or confuse the core claimed method."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The overall pipeline reads clearly left-to-right: training phase (original LLM fine-tuned to expert) on the left, then inference phase where the query goes to both models, then Step 1 (construct sample space), Step 2 (new probability function), softmax, and generation. This matches the summary’s training→inference separation and the two-model decoding-time combination."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Most arrows are routed cleanly without crossings: model outputs feed into sample-space construction, then into the new probability function and softmax. There is a slightly dense region around the Step 1 intersection and Step 2 formula area, but connections remain visually traceable and do not significantly cross in a confusing way."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related modules are placed adjacent: the two token-probability lists from original vs. expert are next to each other; the intersection (sample-space) is placed immediately after them; the constructed distribution and softmax are directly downstream. The output text area is positioned right after decoding, consistent with the described data flow."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major blocks (token tables, sample-space box, probability-function box, softmax, output) align on a clear horizontal flow. Some internal elements (percent boxes and token rows) vary slightly in spacing and baseline alignment, but the overall grid-like structure is neat."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Main components stand out through labeled phases (Training Phase vs Inference Phase), numbered steps, and prominent boxed regions (sample space, new probability function, output). The two-model setup is also emphasized by side-by-side distributions. However, visual emphasis is somewhat split among many highlighted tokens/percentages, reducing the dominance of the key ‘construct distribution’ module."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between major sections, and the phase labels and step labels are readable. The Step 2 probability-function area and the softmax/output region are a bit tight, but not to the point of harming comprehension."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Similar roles use consistent visual encodings: original vs expert token tables share the same table style; tokens use consistent colored blocks; the amplification/attenuation legend is consistent with the plus/minus color cues in the constructed distribution. Repeated LLM icons are used consistently for the two-model depiction as described in the summary."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 3.0,
+              "reason": "The figure uses concrete, playful icons (the llama/mascot for the LLMs), plus symbolic color-coding (green vs red) and +/− labels for “amplify/attenuate” to represent abstract probability reweighting. However, most core ideas (two-model decoding, sample-space construction, new probability function, softmax) are still conveyed through standard technical notation and tables rather than richer metaphors."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 3.0,
+              "reason": "The overall structure is a common ML method schematic (training phase → inference phase with parallel models → combine distributions → softmax → output). The distinctive element is the cartoon/mascot aesthetic and the token-list visualization with explicit percentages and red/green highlighting, which gives it a somewhat unique style compared to purely minimalist block diagrams, but it is not radically different from typical explanatory figures."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific mechanism: it explicitly separates training vs inference, shows parallel original/expert token distributions, depicts the intersection-based candidate set, and illustrates applying SafeDecoding only for the first two tokens before normal decoding continues. This is more customized than a generic pipeline and directly supports the summary’s token-probability motivation and two-model redistribution concept."
+            }
+          ]
+        },
+        "weighted_total": 3.819
+      }
+    }
+  ]
+}

@@ -1,0 +1,270 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<title>DSC Pipeline and Evaluation Overview</title>
+<style>
+  body { margin: 0; background: #ffffff; font-family: Arial, Helvetica, sans-serif; }
+  #figure-root { width: 1200px; height: 1500px; margin: 0 auto; position: relative; background: #fff; }
+  .small { font-size: 16px; }
+  .base { font-size: 18px; }
+  .title { font-size: 26px; font-weight: 700; }
+  .subtitle { font-size: 18px; font-weight: 700; }
+  .label { fill: #222; font-size: 18px; }
+  .label-small { fill: #222; font-size: 16px; }
+  .label-tiny { fill: #222; font-size: 14px; }
+  .muted { fill: #555; }
+  .note { fill: #333; font-size: 16px; }
+  .mono { font-family: "Courier New", Courier, monospace; font-size: 14px; fill: #222; }
+  .box { fill: #ffffff; stroke: #111; stroke-width: 2; }
+  .panel { fill: #ffffff; stroke: #111; stroke-width: 2.5; }
+  .soft { fill: #fbfbfc; stroke: #111; stroke-width: 2; }
+  .accent { fill: #f3f6ff; stroke: #1f3a93; stroke-width: 2; }
+  .accent2 { fill: #f6fbf7; stroke: #1b7f3a; stroke-width: 2; }
+  .accent3 { fill: #fff7f2; stroke: #a14b00; stroke-width: 2; }
+  .arrow { stroke: #111; stroke-width: 2.4; fill: none; }
+  .arrow-dash { stroke: #111; stroke-width: 2.2; fill: none; stroke-dasharray: 7 6; }
+  .gridline { stroke: #e6e6e6; stroke-width: 1; }
+  .thead { fill: #f2f2f2; stroke: #111; stroke-width: 1.5; }
+  .cell { fill: #ffffff; stroke: #111; stroke-width: 1.2; }
+  .cell-soft { fill: #fcfcfd; stroke: #111; stroke-width: 1.2; }
+  .tag { fill: #111; font-size: 14px; font-weight: 700; }
+  .legend-box { fill: #ffffff; stroke: #111; stroke-width: 1.5; }
+  .method-dsc { stroke: #1f3a93; stroke-width: 4; }
+  .method-baseline { stroke: #777; stroke-width: 3; }
+  .method-asc { stroke: #1b7f3a; stroke-width: 3.5; }
+  .method-esc { stroke: #a14b00; stroke-width: 3.5; }
+  .method-sc { stroke: #444; stroke-width: 3.5; }
+  .tick { stroke: #111; stroke-width: 1.5; }
+  .axis { stroke: #111; stroke-width: 2; }
+  .caption-area { fill: #ffffff; stroke: #111; stroke-width: 1.8; }
+  .caption-text { fill: #111; font-size: 16px; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 10 4 L 0 8 z" fill="#111"></path>
+    </marker>
+    <marker id="arrowheadBlue" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 10 4 L 0 8 z" fill="#1f3a93"></path>
+    </marker>
+  </defs>
+
+  <!-- Header -->
+  <text x="600" y="50" text-anchor="middle" class="title" fill="#111">Dirichlet Stopping Criteria (DSC): Pipeline + Evaluation Overview</text>
+  <text x="600" y="82" text-anchor="middle" class="label-small muted" fill="#555">1-column layout schematic (pipeline at top; cost/accuracy evaluation at bottom)</text>
+
+  <!-- Left panel: DSC pipeline -->
+  <rect x="60" y="110" width="1080" height="740" rx="10" class="panel"></rect>
+  <text x="80" y="145" class="subtitle" fill="#111">A. DSC pipeline (three sub-steps)</text>
+
+  <!-- Step 1: Difficulty ranking -->
+  <rect x="90" y="175" width="1020" height="190" rx="10" class="accent"></rect>
+  <text x="110" y="210" class="subtitle" fill="#1f3a93">Step 1 — Difficulty ranking (sort questions by estimated difficulty)</text>
+
+  <rect x="120" y="232" width="350" height="110" rx="10" class="box"></rect>
+  <text x="140" y="262" class="label" fill="#222">Inputs</text>
+  <text x="140" y="288" class="label-small muted" fill="#555">Questions Q (N problems)</text>
+  <text x="140" y="312" class="label-small muted" fill="#555">LLM M + ranking prompt P</text>
+  <text x="140" y="336" class="label-small muted" fill="#555">Random split rounds R, batch size B</text>
+
+  <rect x="510" y="232" width="360" height="110" rx="10" class="soft"></rect>
+  <text x="530" y="262" class="label" fill="#222">Process (sketch)</text>
+  <text x="530" y="286" class="mono" fill="#222">repeat r=1..R:</text>
+  <text x="530" y="305" class="mono" fill="#222">  split Q into batches of size B</text>
+  <text x="530" y="324" class="mono" fill="#222">  query M(P, batch) → difficulty scores</text>
+  <text x="530" y="343" class="mono" fill="#222">average &amp; sort → Q̄</text>
+
+  <rect x="900" y="232" width="180" height="110" rx="10" class="box"></rect>
+  <text x="920" y="262" class="label" fill="#222">Output</text>
+  <text x="920" y="292" class="label-small muted" fill="#555">Sorted Q̄</text>
+  <text x="920" y="314" class="label-tiny muted" fill="#555">(hard → easy)</text>
+
+  <path d="M 470 287 L 510 287" class="arrow" marker-end="url(#arrowhead)"></path>
+  <path d="M 870 287 L 900 287" class="arrow" marker-end="url(#arrowhead)"></path>
+
+  <!-- Step 2: Anchor-point detection -->
+  <rect x="90" y="385" width="1020" height="210" rx="10" class="accent2"></rect>
+  <text x="110" y="420" class="subtitle" fill="#1b7f3a">Step 2 — Entropy-based anchor-point detection (find “easy region” onset)</text>
+
+  <rect x="120" y="442" width="350" height="130" rx="10" class="box"></rect>
+  <text x="140" y="472" class="label" fill="#222">Inputs</text>
+  <text x="140" y="498" class="label-small muted" fill="#555">Sorted questions Q̄ (hard → easy)</text>
+  <text x="140" y="522" class="label-small muted" fill="#555">Demonstrations D</text>
+  <text x="140" y="546" class="label-small muted" fill="#555">Pre-sample size p; judge window k</text>
+
+  <rect x="510" y="442" width="360" height="130" rx="10" class="soft"></rect>
+  <text x="530" y="472" class="label" fill="#222">Process (sketch)</text>
+  <text x="530" y="496" class="mono" fill="#222">for i=1..N:</text>
+  <text x="530" y="515" class="mono" fill="#222">  sample S = M(Q̄[i], D, p)</text>
+  <text x="530" y="534" class="mono" fill="#222">  E[i] = Entropy(S)</text>
+  <text x="530" y="553" class="mono" fill="#222">  if sum(E[i-k..i-1])==0: A=i</text>
+
+  <rect x="900" y="442" width="180" height="130" rx="10" class="box"></rect>
+  <text x="920" y="472" class="label" fill="#222">Outputs</text>
+  <text x="920" y="500" class="label-small muted" fill="#555">Anchor index A</text>
+  <text x="920" y="522" class="label-small muted" fill="#555">Q_easy, Q_hard</text>
+  <text x="920" y="544" class="label-tiny muted" fill="#555">(split at A)</text>
+
+  <path d="M 470 507 L 510 507" class="arrow" marker-end="url(#arrowhead)"></path>
+  <path d="M 870 507 L 900 507" class="arrow" marker-end="url(#arrowhead)"></path>
+
+  <!-- Step 3: Pre-allocation + stopping criteria -->
+  <rect x="90" y="615" width="1020" height="215" rx="10" class="accent3"></rect>
+  <text x="110" y="650" class="subtitle" fill="#a14b00">Step 3 — Adaptive sample pre-allocation + stopping criteria (DSC)</text>
+
+  <rect x="120" y="672" width="350" height="140" rx="10" class="box"></rect>
+  <text x="140" y="702" class="label" fill="#222">Inputs</text>
+  <text x="140" y="728" class="label-small muted" fill="#555">Hard part questions (easy → hard), up to A</text>
+  <text x="140" y="752" class="label-small muted" fill="#555">LLM M, demonstrations D</text>
+  <text x="140" y="776" class="label-small muted" fill="#555">Stopping criteria C (default: DSC)</text>
+  <text x="140" y="800" class="label-small muted" fill="#555">Max samples L; extend window e; prediction window m</text>
+
+  <rect x="510" y="672" width="360" height="140" rx="10" class="soft"></rect>
+  <text x="530" y="702" class="label" fill="#222">Process (sketch)</text>
+  <text x="530" y="726" class="mono" fill="#222">PA = avg(previous m required samples)</text>
+  <text x="530" y="745" class="mono" fill="#222">S ← M(Q[i], D, PA)</text>
+  <text x="530" y="764" class="mono" fill="#222">while n&lt;L and not C(S):</text>
+  <text x="530" y="783" class="mono" fill="#222">  S ← S ∪ M(Q[i], D, e)</text>
+  <text x="530" y="802" class="mono" fill="#222">merge S → final answer / votes</text>
+
+  <rect x="900" y="672" width="180" height="140" rx="10" class="box"></rect>
+  <text x="920" y="702" class="label" fill="#222">Outputs</text>
+  <text x="920" y="730" class="label-small muted" fill="#555">Per-question</text>
+  <text x="920" y="752" class="label-small muted" fill="#555">adaptive #samples</text>
+  <text x="920" y="774" class="label-small muted" fill="#555">final prediction</text>
+  <text x="920" y="796" class="label-tiny muted" fill="#555">(stop when C satisfied)</text>
+
+  <path d="M 470 742 L 510 742" class="arrow" marker-end="url(#arrowhead)"></path>
+  <path d="M 870 742 L 900 742" class="arrow" marker-end="url(#arrowhead)"></path>
+
+  <!-- Pipeline connectors between steps -->
+  <path d="M 990 342 L 990 385" class="arrow" marker-end="url(#arrowhead)"></path>
+  <text x="1005" y="370" class="label-tiny muted" fill="#555">Q̄</text>
+
+  <path d="M 990 572 L 990 615" class="arrow" marker-end="url(#arrowhead)"></path>
+  <text x="1005" y="604" class="label-tiny muted" fill="#555">A, Q split</text>
+
+  <!-- Small note about costs -->
+  <rect x="90" y="860" width="1020" height="90" rx="10" class="box"></rect>
+  <text x="110" y="895" class="label" fill="#222">Cost accounting note (as used in evaluation)</text>
+  <text x="110" y="920" class="note muted" fill="#555">DSC total cost includes all three sub-steps (ranking + anchor detection + adaptive sampling). Baselines: SC (fixed), ASC, ESC (adaptive heuristics).</text>
+
+  <!-- Right-side legend for methods -->
+  <rect x="860" y="885" width="230" height="52" rx="8" class="legend-box"></rect>
+  <line x1="875" y1="905" x2="925" y2="905" class="method-sc"></line>
+  <text x="935" y="910" class="label-small" fill="#222">SC</text>
+  <line x1="875" y1="925" x2="925" y2="925" class="method-asc"></line>
+  <text x="935" y="930" class="label-small" fill="#222">ASC</text>
+  <line x1="1005" y1="905" x2="1055" y2="905" class="method-esc"></line>
+  <text x="1065" y="910" class="label-small" fill="#222">ESC</text>
+  <line x1="1005" y1="925" x2="1055" y2="925" class="method-dsc"></line>
+  <text x="1065" y="930" class="label-small" fill="#222">DSC</text>
+
+  <!-- Bottom panel: Evaluation -->
+  <rect x="60" y="980" width="1080" height="420" rx="10" class="panel"></rect>
+  <text x="80" y="1015" class="subtitle" fill="#111">B. Cost/accuracy evaluation across tasks and models</text>
+
+  <!-- Tasks row -->
+  <rect x="90" y="1040" width="1020" height="60" rx="10" class="soft"></rect>
+  <text x="110" y="1076" class="label" fill="#222">Tasks:</text>
+  <text x="190" y="1076" class="label-small muted" fill="#555">MATH</text>
+  <text x="280" y="1076" class="label-small muted" fill="#555">GSM8K</text>
+  <text x="380" y="1076" class="label-small muted" fill="#555">CSQA</text>
+  <text x="460" y="1076" class="label-small muted" fill="#555">SQA</text>
+  <text x="520" y="1076" class="label-small muted" fill="#555">Letter</text>
+  <text x="590" y="1076" class="label-small muted" fill="#555">Coinflip</text>
+
+  <text x="720" y="1076" class="label" fill="#222">Models:</text>
+  <text x="810" y="1076" class="label-small muted" fill="#555">GPT-4</text>
+  <text x="880" y="1076" class="label-small muted" fill="#555">GPT-3.5-Turbo</text>
+
+  <!-- Mini chart: cost vs accuracy concept -->
+  <rect x="90" y="1120" width="520" height="260" rx="10" class="box"></rect>
+  <text x="110" y="1152" class="subtitle" fill="#111">Cost vs. accuracy (conceptual summary)</text>
+  <!-- Axes -->
+  <line x1="135" y1="1345" x2="560" y2="1345" class="axis"></line>
+  <line x1="135" y1="1345" x2="135" y2="1185" class="axis"></line>
+  <text x="350" y="1372" text-anchor="middle" class="label-small muted" fill="#555">Higher cost →</text>
+  <text x="110" y="1265" text-anchor="middle" transform="rotate(-90 110 1265)" class="label-small muted" fill="#555">Higher accuracy →</text>
+
+  <!-- grid -->
+  <line x1="220" y1="1345" x2="220" y2="1185" class="gridline"></line>
+  <line x1="305" y1="1345" x2="305" y2="1185" class="gridline"></line>
+  <line x1="390" y1="1345" x2="390" y2="1185" class="gridline"></line>
+  <line x1="475" y1="1345" x2="475" y2="1185" class="gridline"></line>
+  <line x1="135" y1="1290" x2="560" y2="1290" class="gridline"></line>
+  <line x1="135" y1="1235" x2="560" y2="1235" class="gridline"></line>
+
+  <!-- Points (schematic): show DSC lower cost similar acc -->
+  <circle cx="500" cy="1225" r="8" fill="#444"></circle>
+  <text x="514" y="1231" class="label-tiny" fill="#222">SC</text>
+
+  <circle cx="520" cy="1235" r="8" fill="#1b7f3a"></circle>
+  <text x="534" y="1241" class="label-tiny" fill="#222">ASC</text>
+
+  <circle cx="450" cy="1230" r="8" fill="#a14b00"></circle>
+  <text x="464" y="1236" class="label-tiny" fill="#222">ESC</text>
+
+  <circle cx="380" cy="1228" r="9" fill="#1f3a93"></circle>
+  <text x="394" y="1234" class="label-tiny" fill="#222">DSC</text>
+
+  <!-- Arrow indicating Pareto improvement region -->
+  <path d="M 520 1318 L 380 1250" class="arrow-dash" marker-end="url(#arrowhead)"></path>
+  <text x="430" y="1328" class="label-tiny muted" fill="#555">Lower cost at similar accuracy</text>
+
+  <!-- Mini table: representative numbers from context (not exhaustive) -->
+  <rect x="640" y="1120" width="470" height="260" rx="10" class="box"></rect>
+  <text x="660" y="1152" class="subtitle" fill="#111">Representative results (from provided context)</text>
+
+  <!-- Table header -->
+  <rect x="660" y="1170" width="430" height="34" class="thead"></rect>
+  <text x="675" y="1193" class="label-small" fill="#111">Model</text>
+  <text x="790" y="1193" class="label-small" fill="#111">Method</text>
+  <text x="905" y="1193" class="label-small" fill="#111">MATH cost</text>
+  <text x="1005" y="1193" class="label-small" fill="#111">MATH acc</text>
+
+  <!-- Rows -->
+  <!-- GPT-4 -->
+  <rect x="660" y="1204" width="430" height="34" class="cell"></rect>
+  <text x="675" y="1226" class="label-small" fill="#222">GPT-4</text>
+  <text x="790" y="1226" class="label-small" fill="#222">SC</text>
+  <text x="905" y="1226" class="label-small" fill="#222">0.4220</text>
+  <text x="1005" y="1226" class="label-small" fill="#222">58.52</text>
+
+  <rect x="660" y="1238" width="430" height="34" class="cell-soft"></rect>
+  <text x="675" y="1260" class="label-small" fill="#222">GPT-4</text>
+  <text x="790" y="1260" class="label-small" fill="#222">ESC</text>
+  <text x="905" y="1260" class="label-small" fill="#222">0.4062</text>
+  <text x="1005" y="1260" class="label-small" fill="#222">58.49</text>
+
+  <rect x="660" y="1272" width="430" height="34" class="cell"></rect>
+  <text x="675" y="1294" class="label-small" fill="#222">GPT-4</text>
+  <text x="790" y="1294" class="label-small" fill="#222">DSC</text>
+  <text x="905" y="1294" class="label-small" fill="#222">0.3142</text>
+  <text x="1005" y="1294" class="label-small" fill="#222">58.51</text>
+
+  <!-- GPT-3.5 -->
+  <rect x="660" y="1306" width="430" height="34" class="cell-soft"></rect>
+  <text x="675" y="1328" class="label-small" fill="#222">GPT-3.5</text>
+  <text x="790" y="1328" class="label-small" fill="#222">SC</text>
+  <text x="905" y="1328" class="label-small" fill="#222">0.0181</text>
+  <text x="1005" y="1328" class="label-small" fill="#222">49.43</text>
+
+  <rect x="660" y="1340" width="430" height="34" class="cell"></rect>
+  <text x="675" y="1362" class="label-small" fill="#222">GPT-3.5</text>
+  <text x="790" y="1362" class="label-small" fill="#222">DSC</text>
+  <text x="905" y="1362" class="label-small" fill="#222">0.0148</text>
+  <text x="1005" y="1362" class="label-small" fill="#222">49.42</text>
+
+  <text x="660" y="1392" class="label-tiny muted" fill="#555">Note: full evaluation in context covers tasks {MATH, GSM8K, CSQA, SQA, Letter, Coinflip} for SC/ASC/ESC/DSC on GPT-4 and GPT-3.5-Turbo.</text>
+
+  <!-- Caption area -->
+  <rect x="60" y="1425" width="1080" height="60" rx="8" class="caption-area"></rect>
+  <text x="80" y="1460" class="caption-text" fill="#111">Overview of Dirichlet Stopping Criteria (DSC) pipeline—difficulty ranking, entropy-based anchor-point detection, and adaptive sample pre-allocation with stopping criteria—and its cost/accuracy evaluation versus SC, ASC, and ESC across tasks (MATH, GSM8K, CSQA, SQA, Letter, Coinflip) for GPT-4 and GPT-3.5-Turbo.</text>
+</svg>
+</div>
+</body>
+</html>

@@ -1,0 +1,555 @@
+{
+  "paper_name": "Interpretable_Preferences_via_Multi-Objective_Reward_Modeling_and_Mixture-of-Experts",
+  "mode": "full",
+  "evaluated_at": "2026-01-30T04:29:55.839243",
+  "note": "Re-scored Q2(Fidelity) and Q4(Design) with lenient strategy.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Interpretable_Preferences_via_Multi-Objective_Reward_Modeling_and_Mixture-of-Experts__p1__score1.00.png",
+      "caption": "Figure 1: Architecture of our reward model. It consists of an LLM backbone, a regression layer for multi-objective reward modeling, and a gating layer that outputs coefficients to scalarize the reward objectives into a scalar score.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Inputs: prompt x (with prior context) and response y', 'Concatenation x ⊕ y fed to the model', 'Pre-trained decoder-only LLM backbone (decoder layers) used as feature extractor fθ (original output linear layer removed)', 'Feature extraction: hidden state of final decoder layer on the last token of x ⊕ y → d-dimensional feature', 'Prompt feature extraction fθ(x): hidden state on the last token of x (available from same forward pass)', 'Linear regression head w ∈ R^{d×k} on top of fθ producing k-dimensional reward/rating predictions r′', 'Multi-objective reward vector r′ (k dimensions; e.g., helpfulness, truthfulness)', 'MoE-style gating layer gϕ (shallow MLP + softmax) taking fθ(x) and outputting k non-negative coefficients that sum to 1', 'Scalarization step: dot product / weighted sum s = gϕ(fθ(x))^T r′ producing scalar score for ranking/comparison', 'Information flow showing inference efficiency: one forward pass on x ⊕ y yields both fθ(x) and fθ(x ⊕ y) features used by gating and regression head']\nContext: We consider each example to consist of a prompt x (including contexts from previous con- versation turns), response y, and a k-dimensional rating vector r ∈Rk, where each dimension cor- responds to a reward objective such as helpful- ness and truthfulness. Now, we take a pre-trained decoder-only LLM without the original output lin- ear layer as the feature extractor fθ. We pass x ⊕y, the concatenation of x and y, through the decoder layers and take the hidden state of the final de- coder layer on the last token as a d-dimensional feature. Also, we attach a new linear regression layer w ∈Rd×k on top of fθ, which outputs a k- dimensional rating prediction.\n\nAn ArmoRM can predict multi-objective rewards for each response. However, the multi-dimensional outputs need to be reduced to a scalar for ranking or pairwise comparisons of test examples. ... With the insight mentioned above, we propose a MoE-style scalarization of reward objectives, con- ditioned on the prompt x. On the architecture level, we just need to follow the common MoE practice to add a gating layer, gϕ : Rd 7→{v ∈Rk | vi ≥ 0 and P vi = 1}, that outputs non-negative coeffi- cients (summing up to 1) for the reward objectives based on the feature extracted from the prompt, fθ(x) ∈Rd, i.e., the hidden state on the last token of x. Notice that fθ(x) is provided for free in the forward pass of fθ(x ⊕y), making the pipeline inference-efficient. The gating layer gϕ can simply be a shallow MLP (i.e., fully-connected network) that takes the prompt feature fθ(x) and outputs a k-dimensional vector, followed by a softmax function to ensure the elements of the output vector are non-negative and summing up to 1.\n\nFinally, we multiply the gating coefficients to the multi-objective rewards, to obtain a scalar score s for the response y given prompt x, R = gϕ(fθ(x))⊤r′ (4)\n\nImplementation of ArmoRM We use the Llama- 3 8B (Meta, 2024) architecture and initialize the model backbone with parameters from a Bradley- Terry RM of Llama-3 8B trained by Dong et al. (2024). We append a linear layer to the backbone, and train it with regression loss while keeping the backbone frozen.\n\nImplementation of MoE The gating layer is a ReLU MLP of 3 hidden layers with 1024 hid- den units.",
+        "fidelity_based": "Lenient Consistency Report: [[{'element': 'Prompt -> Tokens', 'status': 'Supported', 'evidence': 'Figure 1 depicts a prompt input flowing into the model as tokenized input. The text describes passing the prompt x (and x⊕y) through a decoder-only LLM, which necessarily involves representing text as tokens.'}, {'element': 'Response -> Tokens', 'status': 'Supported', 'evidence': 'Figure 1 shows the response as tokenized input. The text explicitly states that the model processes the concatenation x ⊕ y through the decoder layers, implying the response y is tokenized as part of the input.'}, {'element': 'Tokens -> Token Embedding', 'status': 'Supported', 'evidence': 'Although not spelled out, mapping tokens to embeddings is a standard, scientifically expected first step in transformer LLMs. The figure’s inclusion of a token embedding stage is a plausible and conventional visualization of the Llama-3 decoder-only backbone.'}, {'element': 'Token Embedding -> Decoder Layer', 'status': 'Supported', 'evidence': 'The paper states the concatenated tokens are passed “through the decoder layers,” which presupposes an embedding/hidden representation feeding into the first decoder layer. This is standard transformer architecture and consistent with the described LLM backbone.'}, {'element': 'Decoder Layer -> Decoder Layer', 'status': 'Supported', 'evidence': 'The figure’s repeated decoder blocks match the text’s description of passing inputs through multiple decoder layers and taking the hidden state of the final decoder layer.'}, {'element': 'Decoder Layer -> Regression Layer', 'status': 'Supported', 'evidence': 'Figure 1 shows a regression layer attached on top of the LLM backbone. The text explicitly says they “attach a new linear regression layer … on top of fθ” to output k-dimensional rating predictions.'}, {'element': 'Decoder Layer -> Gating Layer', 'status': 'Supported', 'evidence': 'The text defines a gating layer gϕ that takes prompt features fθ(x) (derived from the LLM hidden state) and outputs coefficients. This is consistent with the figure showing the gating layer fed from the LLM/decoder representation.'}, {'element': 'Regression Layer -> Helpfulness', 'status': 'Supported', 'evidence': 'The figure lists helpfulness as one regression output dimension. The text explicitly mentions multi-objective outputs including “helpfulness” among the objectives.'}, {'element': 'Regression Layer -> Correctness', 'status': 'Supported', 'evidence': 'The figure lists correctness as a regression output. The text’s Figure 1 caption and surrounding description include objectives such as “helpfulness, correctness, verbosity, etc.” indicating correctness is one predicted dimension.'}, {'element': 'Regression Layer -> Coherence', 'status': 'Supported', 'evidence': 'Coherence is a plausible human-interpretable reward objective in multi-dimensional rating setups; the text describes multi-objective absolute-rating data with human-interpretable objectives and does not contradict inclusion of coherence. Given the paper also references 19 objectives, coherence fits as a reasonable member.'}, {'element': 'Regression Layer -> Complexity', 'status': 'Supported', 'evidence': 'Complexity is consistent with the paper’s framing of multiple human-interpretable objectives (and the figure’s exemplar objectives). The text allows additional objectives beyond the few named examples and states they use 19 objectives.'}, {'element': 'Regression Layer -> Verbosity', 'status': 'Supported', 'evidence': 'Verbosity is explicitly discussed as an objective and a bias source; the method includes a verbosity reward dimension used for debiasing (Eq. 2–3). The figure’s verbosity output is directly supported.'}, {'element': 'Gating Layer -> Score', 'status': 'Supported', 'evidence': 'The text states the gating layer outputs coefficients that scalarize the (adjusted) multi-objective rewards into a scalar score (Eq. 4). Figure 1’s arrow from gating layer to score matches this scalarization mechanism.'}], [{'element': 'Prompt -> Tokens', 'status': 'Supported', 'evidence': 'The chunk is from an LLM/RLHF-style paper context (citations to DPO, PPO, etc.), where converting a prompt into tokens is a standard and scientifically plausible preprocessing step, even if not explicitly stated in this reference-list excerpt.'}, {'element': 'Response -> Tokens', 'status': 'Supported', 'evidence': 'Tokenization of model responses is a routine step in language model pipelines; the cited works (e.g., DPO/PPO-related) operate on token sequences, making this relationship plausible despite not being explicitly written in the provided chunk.'}, {'element': 'Tokens -> Token Embedding', 'status': 'Supported', 'evidence': 'Mapping tokens to embeddings is a canonical component of transformer language models and is implicitly assumed in essentially all modern LM papers referenced (even if not spelled out in the bibliography excerpt).'}, {'element': 'Token Embedding -> Decoder Layer', 'status': 'Supported', 'evidence': 'Feeding token embeddings into transformer decoder layers is standard architecture for decoder-only LMs; the cited RLHF/DPO/PPO literature presupposes such LM internals.'}, {'element': 'Decoder Layer -> Decoder Layer', 'status': 'Supported', 'evidence': 'Stacked decoder layers (one feeding the next) is the default transformer design; depicting this as repeated decoder blocks is a conventional and plausible figure choice.'}, {'element': 'Decoder Layer -> Regression Layer', 'status': 'Supported', 'evidence': 'Reward/reward-modeling and preference modeling commonly add a prediction head (often a linear/regression-style head) atop final hidden states; this is consistent with the overall RLHF/DPO context suggested by the citations.'}, {'element': 'Decoder Layer -> Gating Layer', 'status': 'Supported', 'evidence': 'Gating/mixture or aggregation layers that take decoder representations to produce a final score are a plausible architectural embellishment in reward modeling; nothing in the provided text excerpt explicitly rules this out.'}, {'element': 'Regression Layer -> Helpfulness', 'status': 'Supported', 'evidence': 'Decomposing evaluation into attributes like helpfulness is common in alignment and preference modeling; while not explicit in this chunk, it is scientifically plausible and aligns with the general domain of the cited works.'}, {'element': 'Regression Layer -> Correctness', 'status': 'Supported', 'evidence': 'Correctness as an attribute predicted from model representations is plausible in evaluation/reward frameworks, especially given references touching on reasoning/math capability; the excerpt does not contradict such a mapping.'}, {'element': 'Regression Layer -> Coherence', 'status': 'Supported', 'evidence': 'Coherence is a standard qualitative dimension in LLM evaluation; representing it as an output of a regression/prediction head is a reasonable, non-contradicted visualization.'}, {'element': 'Regression Layer -> Complexity', 'status': 'Supported', 'evidence': 'Complexity (e.g., sophistication of response) is a plausible evaluative dimension; it is not contradicted by the provided text and fits common multi-attribute scoring setups.'}, {'element': 'Regression Layer -> Verbosity', 'status': 'Supported', 'evidence': \"Verbosity is explicitly thematically connected to at least one cited work ('Verbosity bias in preference labeling by large language models'), making it particularly plausible as an explicit modeled/evaluated attribute.\"}, {'element': 'Gating Layer -> Score', 'status': 'Supported', 'evidence': 'Producing a single scalar score via a gating/aggregation component is a common pattern in reward models and preference optimization pipelines; the excerpt contains no statement that would contradict such an arrangement.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 4,
+              "reason": "The target figure captures most major architectural components described in the evidence: prompt+response tokens processed by a decoder-only backbone (token embedding + decoder layers), a regression head producing multi-objective outputs (helpfulness/correctness/etc.), and a prompt-conditioned gating layer that yields weights used to form a final scalar score (shown as per-objective multipliers and a final “Score”). This aligns with the paper’s MoE-style scalarization concept (non-negative coefficients summing to 1) and the overall inference pipeline.\n\nHowever, several key details/formulas are missing or not explicit: (i) it does not explicitly show concatenation x ⊕ y as the model input; (ii) it does not indicate the specific feature extraction points (final-layer last-token hidden state for x ⊕ y and last-token hidden state for x) nor that fθ(x) is obtained “for free” from the same forward pass; (iii) it does not show the scalarization as a dot product s = gϕ(fθ(x))^T r′; (iv) it does not convey constraints on gating weights (softmax → non-negative, sum-to-1), and the illustrated negative weight (−0.2×) contradicts the stated non-negativity constraint. These omissions/inconsistencies prevent full content coverage, but the high-level components are largely present."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure largely communicates the operating principle on its own: prompt+response tokens go through a decoder-only backbone (ArmoRM), a regression head produces multiple objective scores (helpfulness/correctness/etc.), and a prompt-conditioned gating layer produces weights that are applied to yield a final scalar score. This matches the evidence’s key pipeline (multi-objective reward prediction + MoE-style prompt-conditioned scalarization) and is more directly explanatory than the unrelated visual reference figures.\n\nHowever, a few details needed for full standalone clarity are missing or slightly ambiguous: (i) it does not explicitly show that the model input is the concatenation x ⊕ y and that both fθ(x) and fθ(x ⊕ y) are obtained in one forward pass; (ii) the feature choice (final-layer hidden state of the last token) is not stated; (iii) the mathematical operation (softmax-normalized weights and dot product s = gϕ(fθ(x))ᵀ r′) is implied but not explicit; and (iv) the shown weights include a negative value (−0.2×), which conflicts with the evidence that gating outputs non-negative coefficients summing to 1. These issues prevent a perfect standalone understanding."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 4,
+              "reason": "The target figure captures most core architectural elements described in the evidence: it depicts prompt+response token inputs fed through a decoder-only backbone (feature extractor), a regression layer producing multiple objective ratings (helpfulness, correctness, etc.), a prompt-conditioned gating layer, and a scalar score computed via weighted combination—matching the MoE-style scalarization gϕ(fθ(x))⊤r′ and the inference-efficient reuse of prompt features from the same forward pass. However, it is not fully complete relative to the paper text: it does not explicitly show that the backbone’s original output linear layer is removed/frozen, that the feature is specifically the final-layer hidden state on the last token of x⊕y (and separately last token of x), nor the key constraint that gating coefficients are non-negative and sum to 1 (softmax). It also omits explicit notation (x⊕y, d-dimensional feature, w∈R^{d×k}) and the paper’s implementation details (Llama-3 8B, regression loss, gating MLP depth/size). Hence mostly complete but missing several explicit details."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "No hallucinated components rise to the level of a contradiction. The key elements (LLM backbone processing x and x⊕y through decoder layers, attaching a linear regression head for multi-objective ratings, a gating layer producing coefficients, and scalarizing into a final score) are all supported by the provided evidence. Any additional labels/icons (e.g., example objective names like coherence/complexity) are plausible visual exemplars and not stated as contradicting the paper."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "All major relationships in the target figure are supported by the provided evidence: prompt/response are tokenized, tokens map to embeddings, embeddings feed stacked decoder layers, and the final decoder representation feeds both a regression head (predicting multiple objectives such as helpfulness/correctness/verbosity) and a gating layer that produces coefficients used to scalarize those objective ratings into a single score. No element is marked as contradicted; at most, some objectives (e.g., coherence/complexity) are plausible members of a larger set rather than explicitly enumerated in the excerpt, which is not a relationship error."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "All major component/method labels in the target figure (tokenization/tokens, token embedding, stacked decoder layers, added regression head producing multi-objective ratings such as helpfulness/correctness/verbosity, and a gating layer that scalarizes to a final score) are supported by the provided evidence. No evidence indicates any critical contradiction in naming; at worst some objectives like coherence/complexity are plausible examples within a larger objective set, not mislabeled core components."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is largely schematized around the main contribution: (i) prompt/response tokens entering a decoder-only backbone used as a feature extractor, (ii) a regression head producing multi-objective outputs (helpfulness, correctness, etc.), and (iii) a prompt-conditioned gating layer producing weights that scalarize the multi-objective rewards into a final score. This aligns well with the evidence emphasizing multi-objective reward prediction plus MoE-style prompt-conditioned scalarization and an efficient single-pass pipeline. However, it omits or blurs a few key schematic details from the evidence (e.g., explicit x ⊕ y concatenation, using last-token hidden states for both fθ(x ⊕ y) and “free” fθ(x) from the same pass, and the constraint that gating weights are non-negative and sum to 1 via softmax). It also adds some potentially distracting specifics (checkboxes, negative weight example) without clearly tying them to the paper’s constraints. Overall, it focuses on the main architectural idea with minor loss of methodological specificity."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 4,
+              "reason": "The target figure is largely a good contextual supplement to the described ArmoRM + MoE-style scalarization pipeline. It visually captures (i) feeding prompt+response tokens through a decoder-only backbone used as a feature extractor, (ii) a regression head producing multiple objective scores (helpfulness/correctness/etc.), and (iii) a gating layer that produces per-objective weights which are then combined into a final scalar “Score.” This matches the evidence’s key ideas: multi-objective reward prediction and prompt-conditioned weighting.\n\nHowever, the match is not perfect. The text emphasizes that the gating uses the prompt feature fθ(x) (last token of x) while the regression uses the feature of x⊕y (last token of the concatenation), and that both are obtained “for free” from one forward pass. The figure does not clearly indicate the two distinct feature taps (fθ(x) vs fθ(x⊕y)) nor the ‘one forward pass yields both’ efficiency claim. It also does not explicitly show the dot-product/weighted-sum scalarization s = gϕ(fθ(x))ᵀ r′ or the constraints (non-negative weights summing to 1). Finally, the use of a negative weight (e.g., −0.2×) conflicts with the evidence’s softmax non-negativity constraint, which may confuse readers.\n\nOverall, it supports understanding well, but could better align to the paper’s precise information flow and constraints."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure largely stays focused on the core pipeline described in the evidence: concatenated prompt/response tokens into a decoder-only backbone, a regression head producing multi-objective rewards, a prompt-conditioned gating layer, and a weighted-sum scalar score. It avoids most unrelated decorative content seen in some references (e.g., large background illustrations, emoji-heavy callouts). \n\nMinor redundancy/unnecessary elements remain: the green checkmarks/red X and the specific numeric multipliers (0.8×, 0.6×, 0×, −0.2×) are illustrative rather than essential to the architecture, and the objective list includes items (e.g., “Complexity”, “Verbosity”) not mentioned in the provided evidence, which can be interpreted as extra example detail. Overall, these do not significantly distract from the main ideas, but they are not strictly necessary."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.714,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The diagram’s direction is immediately clear within a 3-second glance: inputs (Prompt/Response tokens) start on the left, flow through the ArmoRM block to the right, then through the gating layer and metric weights, ending at the final Score on the far right. Arrows consistently reinforce left-to-right progression, and spacing/alignment keep the flow readable and publication-quality."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "Most connectors are clean and directional (left-to-right) with clear arrowheads, so crossings are largely avoided. However, the magenta gating-layer path wraps around and intersects the visual space near the right-side scoring panel, creating a slight sense of overlap/complexity even if it doesn’t literally tangle with other lines. Overall still fully readable and close to publication quality."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Functionally related components are clustered and placed in a clear left-to-right pipeline: inputs (Prompt/Response tokens) on the left, ArmoRM internals grouped together in the green block, then gating/attribute heads and their weights grouped together on the right, culminating in the final Score. The gating layer is positioned adjacent to the attribute weighting panel it controls, and arrows are short and unambiguous with no cross-figure jumps, so proximity strongly supports comprehension."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall layout follows clear horizontal flow and box alignment (model block → gating layer → metrics/score), so it reads cleanly at a glance. Minor grid/alignment issues: the token squares and their labels sit slightly off relative to the input arrows, the stacked metric rows don’t perfectly align with the check/weight column, and some connectors have small vertical offsets. Still fully readable and close to publication quality."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 5,
+              "reason": "The figure has clear visual hierarchy: the main pipeline (Prompt/Response → ArmoRM → Gating Layer → Score) is emphasized by large, bold section blocks and strong left-to-right flow. Key components (ArmoRM and Gating Layer) stand out via size, background color, and central placement. The final output (“Score” in red) is highly salient and easy to locate within a 3-second glance. Secondary details (attribute list and weights) are smaller but still readable, supporting the primary narrative without competing for attention."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 5,
+              "reason": "Spacing and margins between all major blocks are sufficient: the left input area, central model block, gating layer, and right scoring panel are clearly separated with consistent whitespace. Text and icons do not crowd borders, arrows have room to breathe without overlaps, and there’s clear padding inside each box (e.g., the green ArmoRM area and the score panel). Overall it looks clean and publication-ready."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 5,
+              "reason": "Components with similar roles are consistently encoded: model-internal modules use the same rounded-rectangle style with coherent color grouping (ArmORAM block in green; embedding/decoder/regression as uniform vertical capsules), inputs are uniformly depicted as token stacks with distinct colors for prompt vs response, and metric outputs are listed in a consistent column with uniform check/X icons. The routing/aggregation (gating layer) is uniquely and consistently highlighted in magenta, and arrows/flow are stylistically consistent, yielding a polished, publication-ready look."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The target figure frequently replaces abstract model components and evaluation notions with concrete visual metaphors and abbreviations: token squares for prompt/response, stacked module blocks (embedding/decoder/regression/gating) to signify computation stages, and UI-like status icons (green checkmarks, gray boxes, red X) plus numeric multipliers to represent selected criteria/weights contributing to a final score. This level of iconography is comparable to the evidence figures that use checkmarks/Xs and simplified blocks/arrows to convey routing/quality filtering and pipeline stages (e.g., Ref 2 and Ref 3). However, some key concepts remain expressed textually rather than metaphorically (e.g., ‘Helpfulness’, ‘Correctness’, ‘Coherence’, ‘Complexity’, ‘Verbosity’ are written labels, and ‘ArmoRM’ is an abbreviation without an additional pictorial metaphor), preventing a maximum score."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a common ML systems/architecture diagram template: colored module blocks (embedding/decoder/regression), arrows indicating data flow, and a side panel of metrics with checkmarks and weights leading to an overall score. This visual language is strongly aligned with several references (e.g., pipeline/module boxes and arrows in Ref 2–4, and block-based model depiction in Ref 1 and Ref 5). While the specific combination of a reward-model schematic plus a gating-weighted rubric panel is somewhat distinctive in content, the stylistic treatment (flat rounded rectangles, standard icons, simple arrows, pastel fills) does not introduce a notably unique or differentiating design style beyond common academic infographic conventions."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure largely follows a common, template-like deep-learning schematic: left-to-right data flow (Prompt/Response → embeddings/decoder stack → regression/gating → scalar score) using rounded rectangles, arrows, and a separated “module” layout. This aligns with the uniform design language seen in the evidence (pipeline blocks, module groupings, simple icons, and boxed components), rather than introducing a layout tailored to a unique paper-specific narrative. While it adds a small paper-specific touch by listing evaluation dimensions (helpfulness, correctness, etc.) with per-dimension weights and check/cross markers, the overall composition remains conventional and not notably adapted beyond standard block-diagram conventions."
+            }
+          ]
+        }
+      },
+      "weighted_total": 4.076,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6636
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p0__score1.00.png",
+            "similarity": 0.6981
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p3__score0.95.png",
+            "similarity": 0.6897
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p0__score1.00.png",
+            "similarity": 0.6981
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p3__score0.95.png",
+            "similarity": 0.6897
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6818
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p0__score1.00.png",
+            "similarity": 0.6981
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.6831
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p3__score0.95.png",
+            "similarity": 0.6897
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.5633
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6796
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6827
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.558
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6827
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6818
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6827
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.6638
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6818
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6532
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p0__score1.00.png",
+            "similarity": 0.6981
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.6729
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.6938
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p0__score1.00.png",
+            "similarity": 0.6981
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps/Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps__p3__score1.00.png",
+            "similarity": 0.6408
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6827
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p3__score0.95.png",
+            "similarity": 0.6897
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.6744
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p0__score1.00.png",
+            "similarity": 0.6981
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p3__score0.95.png",
+            "similarity": 0.6897
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.6144
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.6379
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p0__score1.00.png",
+            "similarity": 0.6981
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6201
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.6437
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6493
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.4876
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.5786
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.6729
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.6527
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.673
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6636
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.6527
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p3__score0.95.png",
+            "similarity": 0.6897
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6386
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6391
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p0__score1.00.png",
+            "similarity": 0.6981
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.673
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.6729
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p0__score1.00.png",
+            "similarity": 0.6981
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p0__score1.00.png",
+            "similarity": 0.6981
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.6938
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.673
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p0__score1.00.png",
+            "similarity": 0.6981
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.6938
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6746
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6979
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p0__score1.00.png",
+            "similarity": 0.6981
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.7038
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p3__score0.95.png",
+            "similarity": 0.6897
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6746
+          }
+        }
+      }
+    }
+  ]
+}

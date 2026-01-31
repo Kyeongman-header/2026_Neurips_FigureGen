@@ -1,0 +1,275 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Error-driven, data-efficient tuning framework overview</title>
+<style>
+  :root{
+    --w:1800px;
+    --h:1200px;
+    --bg:#ffffff;
+    --ink:#1f2937;
+    --muted:#4b5563;
+    --line:#374151;
+    --soft:#e5e7eb;
+    --soft2:#f3f4f6;
+    --student:#2563eb;
+    --teacher:#7c3aed;
+    --data:#059669;
+    --warn:#b91c1c;
+  }
+  html, body { margin:0; padding:0; background:var(--bg); }
+  #figure-root{
+    width:var(--w);
+    height:var(--h);
+    margin:0 auto;
+    background:var(--bg);
+    font-family: Arial, Helvetica, sans-serif;
+    box-sizing:border-box;
+  }
+  .frame { fill:#ffffff; stroke:var(--soft); stroke-width:2; }
+  .panelTitle { font-size:26px; font-weight:700; fill:var(--ink); }
+  .sectionLabel { font-size:22px; font-weight:700; fill:var(--ink); }
+  .small { font-size:18px; fill:var(--muted); }
+  .tiny { font-size:16px; fill:var(--muted); }
+  .label { font-size:20px; fill:var(--ink); }
+  .labelBold { font-size:20px; font-weight:700; fill:var(--ink); }
+  .mono { font-family: "Arial", Helvetica, sans-serif; font-size:18px; fill:var(--ink); }
+  .pillStudent { fill:#eaf1ff; stroke:var(--student); stroke-width:2; }
+  .pillTeacher { fill:#f3e8ff; stroke:var(--teacher); stroke-width:2; }
+  .pillData { fill:#ecfdf5; stroke:var(--data); stroke-width:2; }
+  .pillGray { fill:var(--soft2); stroke:#9ca3af; stroke-width:2; }
+  .errorBox { fill:#fff1f2; stroke:var(--warn); stroke-width:2; }
+  .skillBox { fill:#faf5ff; stroke:var(--teacher); stroke-width:2; }
+  .arrow { stroke:var(--line); stroke-width:3; fill:none; }
+  .arrowThin { stroke:var(--line); stroke-width:2.5; fill:none; }
+  .arrowData { stroke:var(--data); stroke-width:3; fill:none; }
+  .arrowTeach { stroke:var(--teacher); stroke-width:3; fill:none; }
+  .arrowWarn { stroke:var(--warn); stroke-width:3; fill:none; }
+  .dash { stroke-dasharray:8 7; }
+  .callout { fill:#ffffff; stroke:var(--soft); stroke-width:2; }
+  .captionBox { fill:#ffffff; stroke:var(--soft); stroke-width:2; }
+  .captionText { font-size:18px; fill:#111827; }
+  .stepBadge { fill:#111827; }
+  .stepBadgeText { font-size:16px; font-weight:700; fill:#ffffff; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200">
+  <defs>
+    <marker id="arrowHead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#374151"/>
+    </marker>
+    <marker id="arrowHeadData" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#059669"/>
+    </marker>
+    <marker id="arrowHeadTeach" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arrowHeadWarn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#b91c1c"/>
+    </marker>
+  </defs>
+
+  <!-- Outer frame -->
+  <rect x="40" y="40" width="1720" height="1040" rx="18" class="frame"/>
+
+  <!-- Title -->
+  <text x="70" y="95" class="panelTitle">Error-driven, data-efficient tuning (teacher–student) framework</text>
+  <text x="70" y="128" class="small">Iterative loop: collect errors → localize mistake &amp; summarize missing skills → retrieve targeted support data → fine-tune student</text>
+
+  <!-- Layout guides (invisible) -->
+  <!-- Main process lane boundaries -->
+  <!-- Left lane: Student eval -->
+  <!-- Middle lane: Teacher analysis -->
+  <!-- Right lane: Retrieval & tuning -->
+
+  <!-- Step 1: Error Collection (Student) -->
+  <rect x="80" y="170" width="520" height="420" rx="18" class="pillGray"/>
+  <circle cx="110" cy="200" r="16" class="stepBadge"/>
+  <text x="110" y="205" text-anchor="middle" class="stepBadgeText">1</text>
+  <text x="140" y="206" class="sectionLabel">Error Collection</text>
+  <text x="140" y="236" class="tiny">Evaluate student LMM on a small validation set; record wrong answers and rationales.</text>
+
+  <!-- Validation set -->
+  <rect x="120" y="270" width="210" height="90" rx="14" class="pillData"/>
+  <text x="225" y="305" text-anchor="middle" class="labelBold">Validation set</text>
+  <text x="225" y="332" text-anchor="middle" class="tiny">Small (e.g., ~1K)</text>
+
+  <!-- Student model -->
+  <rect x="350" y="262" width="220" height="105" rx="16" class="pillStudent"/>
+  <text x="460" y="300" text-anchor="middle" class="labelBold">Student LMM</text>
+  <text x="460" y="328" text-anchor="middle" class="tiny">Predict + rationale</text>
+
+  <!-- Arrow from validation to student -->
+  <path d="M 330 315 L 350 315" class="arrow" marker-end="url(#arrowHead)"/>
+
+  <!-- Outputs: predictions/rationales -->
+  <rect x="120" y="395" width="450" height="165" rx="16" class="callout"/>
+  <text x="145" y="428" class="labelBold">Student outputs on validation</text>
+  <text x="145" y="458" class="tiny">• Predicted answer ŷ</text>
+  <text x="145" y="484" class="tiny">• Intermediate reasoning steps r = [r₁, r₂, …]</text>
+  <text x="145" y="510" class="tiny">• Compare with gold answer ỹ to detect errors</text>
+  <text x="145" y="536" class="tiny">→ Keep only error samples (q, image, ŷ, r, ỹ)</text>
+
+  <!-- Arrow from student to outputs -->
+  <path d="M 460 367 L 460 395" class="arrowThin" marker-end="url(#arrowHead)"/>
+
+  <!-- Error samples box -->
+  <rect x="120" y="575" width="450" height="0" rx="16" fill="none" stroke="none"/>
+  <rect x="120" y="565" width="450" height="0" rx="16" fill="none" stroke="none"/>
+
+  <!-- Highlight error samples as a red box attached below -->
+  <rect x="120" y="560" width="450" height="0" rx="16" fill="none" stroke="none"/>
+  <rect x="120" y="560" width="450" height="0" rx="16" fill="none" stroke="none"/>
+
+  <rect x="120" y="560" width="450" height="0" rx="16" fill="none" stroke="none"/>
+
+  <rect x="120" y="560" width="450" height="0" rx="16" fill="none" stroke="none"/>
+
+  <rect x="120" y="560" width="450" height="0" rx="16" fill="none" stroke="none"/>
+
+  <!-- Dedicated error samples artifact -->
+  <rect x="120" y="560" width="450" height="0" rx="16" fill="none" stroke="none"/>
+
+  <rect x="120" y="560" width="450" height="0" rx="16" fill="none" stroke="none"/>
+
+  <rect x="120" y="560" width="450" height="0" rx="16" fill="none" stroke="none"/>
+
+  <rect x="120" y="560" width="450" height="0" rx="16" fill="none" stroke="none"/>
+
+  <!-- Place error samples box just below within the same panel -->
+  <rect x="120" y="560" width="450" height="0" rx="16" fill="none" stroke="none"/>
+
+  <rect x="120" y="560" width="450" height="0" rx="16" fill="none" stroke="none"/>
+
+  <!-- Actually render error samples box at bottom of step 1 panel -->
+  <rect x="120" y="565" width="450" height="0" rx="16" fill="none" stroke="none"/>
+
+  <rect x="120" y="565" width="450" height="0" rx="16" fill="none" stroke="none"/>
+
+  <!-- Correct position: keep error box inside panel (y=540..580 area). -->
+  <rect x="120" y="560" width="450" height="0" rx="16" fill="none" stroke="none"/>
+
+  <!-- Minimal clean: make error samples box at y=540..580 -->
+  <rect x="120" y="535" width="450" height="45" rx="14" class="errorBox"/>
+  <text x="145" y="563" class="labelBold" fill="#111827">Collected error samples</text>
+  <text x="540" y="563" text-anchor="end" class="tiny" fill="#111827">Input to teacher</text>
+
+  <!-- Step 2: Teacher analysis -->
+  <rect x="640" y="170" width="520" height="420" rx="18" class="pillGray"/>
+  <circle cx="670" cy="200" r="16" class="stepBadge"/>
+  <text x="670" y="205" text-anchor="middle" class="stepBadgeText">2</text>
+  <text x="700" y="206" class="sectionLabel">Mistake Identification &amp; Skill Analysis</text>
+  <text x="700" y="236" class="tiny">Teacher model pinpoints the key erroneous reasoning step and summarizes missing skills.</text>
+
+  <!-- Teacher model -->
+  <rect x="690" y="262" width="420" height="105" rx="16" class="pillTeacher"/>
+  <text x="900" y="300" text-anchor="middle" class="labelBold">Teacher model</text>
+  <text x="900" y="328" text-anchor="middle" class="tiny">Analyze error rationales (no extra training)</text>
+
+  <!-- Arrow from error samples (left panel) to teacher -->
+  <path d="M 570 558 L 640 558" class="arrowWarn" marker-end="url(#arrowHeadWarn)"/>
+  <path d="M 640 558 L 690 350" class="arrowWarn dash" marker-end="url(#arrowHeadWarn)"/>
+
+  <!-- Mistake step -->
+  <rect x="690" y="395" width="420" height="75" rx="14" class="errorBox"/>
+  <text x="710" y="425" class="labelBold" fill="#111827">Localized mistake step</text>
+  <text x="710" y="452" class="tiny" fill="#111827">r* = first reasoning step causing wrong answer</text>
+
+  <!-- Missing skills -->
+  <rect x="690" y="485" width="420" height="85" rx="14" class="skillBox"/>
+  <text x="710" y="517" class="labelBold">Missing skill summary</text>
+  <text x="710" y="545" class="tiny">s = targeted capability gap (one per iteration)</text>
+
+  <!-- Arrows within step 2 -->
+  <path d="M 900 367 L 900 395" class="arrowTeach" marker-end="url(#arrowHeadTeach)"/>
+  <path d="M 900 470 L 900 485" class="arrowTeach" marker-end="url(#arrowHeadTeach)"/>
+
+  <!-- Step 3: Retrieval & targeted tuning -->
+  <rect x="1200" y="170" width="520" height="420" rx="18" class="pillGray"/>
+  <circle cx="1230" cy="200" r="16" class="stepBadge"/>
+  <text x="1230" y="205" text-anchor="middle" class="stepBadgeText">3</text>
+  <text x="1260" y="206" class="sectionLabel">Targeted Supporting Sample Retrieval</text>
+  <text x="1260" y="236" class="tiny">Use missing skills to retrieve relevant samples from a large task-agnostic supporting dataset.</text>
+
+  <!-- Supporting dataset -->
+  <rect x="1230" y="262" width="460" height="115" rx="16" class="pillData"/>
+  <text x="1460" y="300" text-anchor="middle" class="labelBold">Supporting dataset</text>
+  <text x="1460" y="328" text-anchor="middle" class="tiny">Large, task-agnostic pool (e.g., Vision-Flan)</text>
+  <text x="1460" y="353" text-anchor="middle" class="tiny">Precomputed required skills per sample</text>
+
+  <!-- Retrieval module -->
+  <rect x="1230" y="405" width="460" height="85" rx="16" class="callout"/>
+  <text x="1255" y="437" class="labelBold">Retriever</text>
+  <text x="1255" y="465" class="tiny">Rank support samples by similarity to missing skill s</text>
+
+  <!-- Targeted tuning set -->
+  <rect x="1230" y="505" width="460" height="70" rx="16" class="pillData"/>
+  <text x="1460" y="548" text-anchor="middle" class="labelBold">Targeted tuning samples</text>
+
+  <!-- Arrow from missing skills (middle) to retriever (right) -->
+  <path d="M 1110 528 L 1230 448" class="arrowTeach" marker-end="url(#arrowHeadTeach)"/>
+
+  <!-- Arrows inside step 3 -->
+  <path d="M 1460 377 L 1460 405" class="arrowData" marker-end="url(#arrowHeadData)"/>
+  <path d="M 1460 490 L 1460 505" class="arrowData" marker-end="url(#arrowHeadData)"/>
+
+  <!-- Fine-tuning stage (bottom main lane) -->
+  <rect x="80" y="640" width="1640" height="390" rx="18" class="pillGray"/>
+  <text x="110" y="690" class="sectionLabel">Iterative fine-tuning loop</text>
+  <text x="110" y="722" class="tiny">Fine-tune the student with retrieved targeted samples; re-evaluate on validation; repeat to progressively reduce errors.</text>
+
+  <!-- Fine-tune box -->
+  <rect x="140" y="765" width="520" height="220" rx="18" class="pillStudent"/>
+  <text x="400" y="810" text-anchor="middle" class="labelBold">Fine-tune student LMM</text>
+  <text x="400" y="842" text-anchor="middle" class="tiny">Update parameters using targeted tuning samples</text>
+  <rect x="185" y="875" width="430" height="85" rx="14" class="callout"/>
+  <text x="205" y="905" class="labelBold">Outcome</text>
+  <text x="205" y="932" class="tiny">Improved capability on missing skills</text>
+  <text x="205" y="957" class="tiny">Fewer errors on validation set</text>
+
+  <!-- Arrow from targeted tuning samples to fine-tune -->
+  <path d="M 1460 575 L 1460 720 L 660 720 L 660 835 L 660 835" class="arrowData" marker-end="url(#arrowHeadData)"/>
+  <path d="M 1230 540 L 900 540 L 900 640" class="arrowData dash" marker-end="url(#arrowHeadData)"/>
+
+  <!-- Re-evaluation box -->
+  <rect x="740" y="765" width="520" height="220" rx="18" class="callout"/>
+  <text x="1000" y="810" text-anchor="middle" class="labelBold">Re-evaluate on validation set</text>
+  <text x="1000" y="842" text-anchor="middle" class="tiny">Run updated student on the same small validation set</text>
+  <rect x="785" y="875" width="430" height="85" rx="14" class="errorBox"/>
+  <text x="805" y="905" class="labelBold" fill="#111827">New error samples</text>
+  <text x="805" y="932" class="tiny" fill="#111827">Collect remaining failures for next iteration</text>
+
+  <!-- Arrow from fine-tune to re-evaluate -->
+  <path d="M 660 875 L 740 875" class="arrow" marker-end="url(#arrowHead)"/>
+
+  <!-- Loop-back arrow to Step 2 (teacher analysis) -->
+  <path d="M 1000 985 L 1000 1040 L 620 1040 L 620 530 L 690 530" class="arrowWarn dash" marker-end="url(#arrowHeadWarn)"/>
+  <text x="720" y="1030" class="tiny">iterate until budget / max iterations</text>
+
+  <!-- Legend -->
+  <rect x="1320" y="765" width="360" height="220" rx="18" class="callout"/>
+  <text x="1340" y="805" class="labelBold">Legend</text>
+
+  <rect x="1340" y="830" width="26" height="26" rx="6" class="pillStudent"/>
+  <text x="1380" y="849" class="tiny">Student-side components</text>
+
+  <rect x="1340" y="865" width="26" height="26" rx="6" class="pillTeacher"/>
+  <text x="1380" y="884" class="tiny">Teacher analysis outputs</text>
+
+  <rect x="1340" y="900" width="26" height="26" rx="6" class="pillData"/>
+  <text x="1380" y="919" class="tiny">Datasets / retrieved samples</text>
+
+  <rect x="1340" y="935" width="26" height="26" rx="6" class="errorBox"/>
+  <text x="1380" y="954" class="tiny">Error-focused artifacts</text>
+
+  <!-- Caption area -->
+  <rect x="40" y="1100" width="1720" height="70" rx="12" class="captionBox"/>
+  <text x="60" y="1142" class="captionText">
+    Overview of the proposed error-driven, data-efficient tuning framework: a student LMM is evaluated on a small validation set to collect error samples, a teacher model localizes the key erroneous reasoning step and summarizes missing skills, and targeted supporting samples are retrieved for iterative fine-tuning.
+  </text>
+</svg>
+</div>
+</body>
+</html>

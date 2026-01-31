@@ -1,0 +1,1299 @@
+{
+  "paper_name": "MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin",
+  "mode": "full",
+  "evaluated_at": "2026-01-29T19:04:57.736307",
+  "figure_evaluations": [
+    {
+      "figure_file": "MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+      "caption": "Figure 2: The Architecture of Multi-modAl Retrieval model via Visual modulE pLugin (MARVEL). We first pretrain the visual modules using the image-caption alignment task (Figure 2(a)) and then finetune the language model to conduct multi-modal retrieval (Figure 2(b)).",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Input query q', 'Multi-modal document set D containing text documents (d^Text) and image documents (d^Image)', 'Universal encoder: T5-ANCE-CLIP', 'Encoding flow for query: q -> q_vector via T5-ANCE-CLIP', 'Encoding flow for text document: d^Text -> d_vector via T5-ANCE-CLIP', 'Image document components: image feature I and image caption C (for each d^Image)', 'CLIP visual encoder module for image: I -> h_I (patch/grid features)', 'Linear projection/adaptation layer: h_I -> I_embeddings in T5-ANCE input embedding space', 'Prompt tokens/embeddings for image feature insertion: <start> and <end>', 'Concatenation/packing of T5-ANCE input embeddings: e(<start>); I_1..I_49; e(<end>); text token embeddings e_1..e_k', 'Image document encoding flow using T5-ANCE-CLIP with (I, C) inputs -> d_vector', 'Relevance scoring module: cosine similarity f(q, d_i) = cos(q_vector, d_vector)', 'Retrieval step: KNN search over document embeddings using f(q,d) to get candidates', 'Pretraining stage: Visual Module Adaption Pretraining (train CLIP visual module + projection layer)', 'Pretraining objective: image-caption contrastive loss L_VM = L_IC + L_CI with in-batch negatives and temperature τ', 'Finetuning stage: Modality-Balanced Language Model Finetuning (freeze visual module; train other MARVEL parameters)', 'Finetuning objective: modality-balanced hard negative training with equal # of text negatives and image negatives (L_Align, L_Text, L_Image components)']\nContext: We show the model architecture in Figure 2. Dif-\nferent from previous work (Liu et al., 2023b), we can universally encode query q and multi-modal documents D = {d1 Text, ..., dm Text, d1 Image, ..., dn Image} using one encoder, T5-ANCE-CLIP:\n⃗q = T5-ANCE-CLIP(q);\n⃗di Text = T5-ANCE-CLIP(di Text);\n⃗di Image = T5-ANCE-CLIP(di Image(I), di Image(C)), (2)\nwhere di Image(I) and di Image(C) are the image fea-\nture and caption of the i-th image document di Image.\nThen we calculate the relevance score f(q, di)\nbetween query q and the i-th document di using cosine similarity:\nf(q, di) = cos(⃗q, ⃗di). (3)\nFollowing this, we conduct KNN search (Johnson et al., 2019) to retrieve multi-modal document can-\ndidates for the given query q.\n\n3.2.1 Dense Retrieval with Visual Plugin\nMARVEL starts from the T5-ANCE model (Yu et al., 2023), which is a dense retrieval model that is well-trained using MS MARCO dataset (Nguyen et al., 2016). Then we enable T5-ANCE by incorpo-\nrating the visual module from the vision-language model, CLIP (Radford et al., 2021), and conduct the T5-ANCE-CLIP model. We can use a universal\nencoder, T5-ANCE-CLIP, to encode texts, image features, and image documents.\nSpecifically, we encode the image feature I us-\ning the visual encoder of CLIP (Radford et al., 2021) and get its encoded visual representation ⃗hI:\n⃗hI = CLIP(I), (4)\nThis representation is obtained from the grid fea-\ntures of the last layer of the visual encoder of CLIP,\nand ⃗hI = {⃗hI 1, ...,⃗hI 49}. Here 49 is the number of patches. Then we follow the previous visual-\nlanguage model (Merullo et al., 2023) and use a linear transformation layer to adapt the visual fea-\ntures ⃗hI i into the embedding space of the inputs of dense retrieval model:\n⃗Ii = Linear(⃗hI i ). (5)\nFinally, we can feed these encoded image features ⃗I = {⃗I1, ..., ⃗I49} as the ahead input embeddings ⃗X for T5-ANCE:\n⃗X = ⃗e(<start>); ⃗I1; ...; ⃗I49;⃗e(<end>);⃗e1; ...;⃗ek, (6)\nwhere ; is the concatenation operation. ⃗e(<start>)\nand ⃗e(<end>) are the embeddings of prompt tokens to denote the start and end of encoded image feature representations. {⃗e1...;⃗ek} are the word embed-\ndings of the text input sequence T = {T1, ..., Tk}.\n\n3.2.2 Visual Module Adaption Pretraining\nIn MARVEL, we adapt the visual understanding module to T5-ANCE by only pretraining the param-\neters of the visual module (Eq. 4) and the projection layer (Eq. 5). We follow Radford et al. (2021) and leverage the image-caption contrastive training loss LVM to pretrain the visual understanding module. The training loss utilizes the alignment between image features I and captions C:\nLVM = LIC + LCI, (7)\nwhere LIC and LCI are the dual direction training losses to regard image and caption as queries and then map them with corresponding caption and image, respectively:\nLIC = −log ef(I,C+)/τ ef(I,C+)/τ + P C−∈D− C ef(I,C−)/τ , (8)\nLCI = −log ef(C,I+)/τ ef(C,I+)/τ + P I−∈D− I ef(C,I−)/τ , (9)\nwhere τ is the temperature used to scale the simi-\nlarity score. D− C and D− I contain negative captions and negative images respectively, which are sam-\npled from in-batch negatives.\n\n3.2.3 Modality-Balanced Language Model Finetuning\nDuring finetuning, we can freeze the parameters of the visual module (Eq. 4) and optimize other parameters of MARVEL. To enable the MARVEL model to learn a universal embedding space for both queries and multi-modal documents, we fol-\nlow previous work (Liu et al., 2023b) and employ modality-balanced hard negative training to allevi-\nate the modality discrimination of retrieval models:\nLLM = −log ef(q,d+)/τ ef(q,d+)/τ + P d−∈D−ef(q,d−)/τ ∝−f(q, d+)/τ | {z } LAlign + log( X d−∈D− (ef(q,d− Image)/τ | {z } LImage + ef(q,d− Text)/τ | {z } LText )), (10)\nwhere D−contains the same number of negative documents of image and text. LAlign teaches mod-\nels to align the query with related documents. LText and LImage guide retrievers to choose the modality and make the embedding space uniform (Liu et al., 2023b; Wang and Isola, 2020; Chen et al., 2020).",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': 'Library Reading Room Captions -> MS MARCO Pretrained Language Model', 'status': 'Supported', 'evidence': 'The architecture feeds captions (text) into the T5-ANCE language model: Eq. (6) includes word embeddings of the text input sequence, and MARVEL uses T5-ANCE (\"MS MARCO pretrained\") as backbone. Figure examples like \"Library Reading Room\" are consistent with captions being text inputs.'}, {'element': 'Images -> Visual Module', 'status': 'Supported', 'evidence': 'The paper states images are encoded by the visual module: \"we enable T5-ANCE by incorporating the visual module from ... CLIP\" and \"we encode the image feature I using the visual encoder of CLIP\" (Eq. 4).'}, {'element': 'MS MARCO Pretrained Language Model -> Plug-IN', 'status': 'Supported', 'evidence': 'The figure’s \\'Plug-IN\\' corresponds to incorporating the visual module into T5-ANCE. Text: \"MARVEL is based on the text retriever T5-ANCE... enable T5-ANCE by incorporating the visual module ... and conduct the T5-ANCE-CLIP model.\"'}, {'element': 'Plug-IN -> Visual Module', 'status': 'Supported', 'evidence': 'The plugin is specifically the visual module addition. Text: \"incorporating the visual module from... CLIP\" and \"visual module as a plugin\" (Figure 1/2 description).'}, {'element': 'Visual Module -> Projection layer', 'status': 'Supported', 'evidence': 'After CLIP visual encoding, a linear transformation adapts features: \"use a linear transformation layer to adapt the visual features\" (Eq. 5). This matches a projection layer after the visual module.'}, {'element': 'Projection layer -> CLIP Image Encoder', 'status': 'Supported', 'evidence': 'Semantically this denotes that the projection layer takes outputs from the CLIP image encoder. Text sequence: Eq. (4) CLIP(I) produces features, then Eq. (5) Linear(...) projects them.'}, {'element': 'Visual Module Adaptation Pretraining -> Caption-Image Contrastive Training (L_CI)', 'status': 'Supported', 'evidence': 'The paper defines visual module adaptation pretraining with contrastive losses including LCI: \"leverage the image-caption contrastive training loss... LVM = LIC + LCI\" (Eq. 7–9).'}, {'element': 'Visual Module Adaptation Pretraining -> Image-Caption Contrastive Training (L_IC)', 'status': 'Supported', 'evidence': 'Same as above: the pretraining objective explicitly includes LIC as one direction of contrastive learning (Eq. 8).'}, {'element': 'Caption: Library Reading Room -> Caption-Image Contrastive Training (L_CI)', 'status': 'Supported', 'evidence': 'LCI treats captions as queries aligned to images: \"LCI... regard caption as queries and then map them with corresponding ... image\" (Eq. 9). Example caption text like \\'Library Reading Room\\' fits this.'}, {'element': 'Image -> Image-Caption Contrastive Training (L_IC)', 'status': 'Supported', 'evidence': 'LIC treats image as query aligned to captions: \"LIC... regard image ... as queries\" (Eq. 8).'}, {'element': 'Library Reading Room -> Caption-Image Contrastive Training (L_CI)', 'status': 'Supported', 'evidence': 'This is another example caption string feeding the caption-to-image contrastive direction (LCI). The paper’s pretraining is on image-caption pairs; the specific example is illustrative but consistent.'}, {'element': 'Via Rodeo Dr -> Caption-Image Contrastive Training (L_CI)', 'status': 'Supported', 'evidence': 'Same rationale: these are example captions used in caption-image contrastive pretraining, consistent with \"collect image-caption pairs... to train the visual understanding module\" and LCI definition.'}, {'element': 'Estonian IT College -> Caption-Image Contrastive Training (L_CI)', 'status': 'Supported', 'evidence': 'Example caption consistent with caption-image alignment training described in Sec. 3.2.2 (Eq. 7–9).'}, {'element': 'Queries -> MS MARCO Pretrained Language Model', 'status': 'Supported', 'evidence': 'Queries are encoded by the unified encoder based on T5-ANCE: \"encode query q ... using one encoder, T5-ANCE-CLIP\" (Eq. 2) and T5-ANCE is MS MARCO-trained.'}, {'element': 'Text Docs -> MS MARCO Pretrained Language Model', 'status': 'Supported', 'evidence': 'Text documents are encoded by the same T5-ANCE-CLIP: \"\\\\vec{d_i}^{Text} = T5-ANCE-CLIP(d_i^{Text})\" (Eq. 2).'}, {'element': 'Image Docs -> Visual Module', 'status': 'Supported', 'evidence': 'Image documents include image features and caption; image features are processed by CLIP visual encoder (visual module) before entering T5-ANCE: Eq. (4–6).'}, {'element': 'MS MARCO Pretrained Language Model -> Modality-Balanced Hard Negative Training (L_LM)', 'status': 'Supported', 'evidence': 'Finetuning optimizes MARVEL (including the language model) using modality-balanced hard negative loss: \"employ modality-balanced hard negative training\" and defines LLM in Eq. (10).'}, {'element': 'Visual Module -> Modality-Balanced Hard Negative Training (L_LM)', 'status': 'Supported', 'evidence': 'Although the visual module is frozen during finetuning (Sec. 3.2.3), image representations produced by the visual module are still part of the forward pass used in LLM training. Text: \"freeze the parameters of the visual module... optimize other parameters\" while training multi-modal retrieval with LLM (Eq. 10).'}, {'element': 'Query: Is there greenery at Centennial Olympic Park? -> Modality-Balanced Hard Negative Training (L_LM)', 'status': 'Supported', 'evidence': 'LLM is the finetuning loss over queries and documents: Eq. (10) is defined over q, d+, d-. A concrete example query/caption/document triplet is consistent with this training setup.'}, {'element': 'Caption: Centennial Park District, Atlanta, GA, USA -> Modality-Balanced Hard Negative Training (L_LM)', 'status': 'Supported', 'evidence': 'Captions are part of image documents and thus can appear as candidate documents/negatives in modality-balanced training; the paper describes multi-modal documents include images with captions (Eq. 2 and Eq. 6) and negatives include both image and text (Eq. 10).'}, {'element': 'Caption: Centennial Park and Parthenon Nashville -> Modality-Balanced Hard Negative Training (L_LM)', 'status': 'Supported', 'evidence': 'Same as above: captions are textual components of image documents used during retrieval training with modality-balanced negatives (Eq. 10).'}, {'element': 'Text Doc: Centennial Olympic Park was designed as the \"town square\" of the Olympics... -> Modality-Balanced Hard Negative Training (L_LM)', 'status': 'Supported', 'evidence': 'Text documents are included in the modality-balanced negative set: Eq. (10) explicitly sums over negatives with both image and text terms (LImage and LText), matching inclusion of a sample text document.'}], [{'element': 'Visual Module Adaptation Pretraining', 'status': 'Supported', 'evidence': 'The chunk explicitly mentions a \"visual module pretraining strategy\" for \"adapting the visual understanding module,\" which semantically matches the figure’s \"Visual Module Adaptation Pretraining.\"'}, {'element': 'Caption-Image Contrastive Training (L_CI)', 'status': 'Not Mentioned', 'evidence': 'The chunk only states a visual module pretraining/adaptation strategy but does not mention contrastive training or a specific loss like L_CI.'}, {'element': 'Image-Caption Contrastive Training (L_IC)', 'status': 'Not Mentioned', 'evidence': 'No mention of image-caption contrastive training objectives or an L_IC loss in the provided text.'}, {'element': 'Modality-Balanced Hard Negative Training (L_LM)', 'status': 'Not Mentioned', 'evidence': 'The chunk does not mention modality-balanced hard negatives or an L_LM objective; it only generally references visual module pretraining strategy for adaptation.'}, {'element': 'CLIP Image Encoder', 'status': 'Not Mentioned', 'evidence': 'The chunk does not reference CLIP or any specific image encoder architecture.'}, {'element': 'Projection layer', 'status': 'Not Mentioned', 'evidence': 'The chunk does not describe any projection layer or mapping between representations.'}, {'element': 'Visual Module', 'status': 'Supported', 'evidence': 'The text refers to \"adapting the visual understanding module,\" which supports the existence of a \"Visual Module\" component in the figure.'}, {'element': 'MS MARCO Pretrained Language Model', 'status': 'Not Mentioned', 'evidence': 'The provided chunk does not mention MS MARCO or any pretrained language model.'}, {'element': 'Plug-IN', 'status': 'Not Mentioned', 'evidence': 'No mention of a plug-in mechanism or module integration in the chunk.'}, {'element': 'Images / Image Docs / Queries / Text Docs / example captions and query strings', 'status': 'Not Mentioned', 'evidence': 'The chunk does not mention these specific modalities, inputs, or any of the example captions/queries shown in the figure.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 3,
+              "reason": "The target figure covers several major architectural/training components: a universal encoder initialized from an MS MARCO–pretrained language model, the CLIP image encoder as a visual plug-in plus a projection layer, and the two-stage training pipeline (visual module adaptation pretraining with image–caption contrastive training, and modality-balanced hard negative finetuning with text/image negatives). However, it omits or does not explicitly depict multiple key elements/formulas from the paper evidence: (i) the universal encoder name/definition T5-ANCE-CLIP and the explicit encoding flows q→q_vector, d^Text→d_vector, d^Image(I,C)→d_vector; (ii) the detailed image-feature insertion mechanism into T5-ANCE inputs (49 patch/grid features, <start>/<end> prompt embeddings, and the exact concatenation/packing sequence); (iii) the relevance scoring formula f(q,d)=cos(q_vector,d_vector) and the KNN retrieval step over document embeddings; and (iv) the explicit loss definitions/equations (L_VM = L_IC + L_CI with temperature τ and in-batch negatives; and the finetuning loss decomposition L_Align/L_Text/L_Image). Thus it includes the high-level modules but misses several major technical components and formulas stated in the paper."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure largely communicates the system’s operating principle without reading the paper: it shows (a) a pretraining stage where a CLIP image encoder plus a projection layer are plugged into an MS MARCO–pretrained language model and trained via image–caption contrastive learning (both directions), and (b) a finetuning stage where the model supports queries, text docs, and image docs with modality-balanced hard negatives (illustrated by sampling one image and one text negative). This aligns well with the evidence describing visual-module adaptation pretraining (CLIP + linear projection; contrastive LIC/LCI) and modality-balanced finetuning.\n\nHowever, some core retrieval mechanics are not explicit: the universal encoder name (T5-ANCE-CLIP), the shared embedding output vectors, cosine similarity scoring, and the KNN retrieval step are not clearly depicted (unlike the reference architecture figure that explicitly shows KNN search and the retrieval space). Also, the specific image-feature insertion/prompt token concatenation (<start>, 49 patch embeddings, <end>, then text tokens) is omitted, so the ‘how images enter the text encoder’ mechanism is only implied by “Plug-IN.” These gaps prevent perfect standalone intelligibility, but the high-level pipeline is still understandable."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 4,
+              "reason": "The target figure captures most of the paper’s end-to-end pipeline: (i) a universal encoder built from MS MARCO–pretrained T5-ANCE with a CLIP visual plug-in, (ii) the visual module adaption pretraining stage with image–caption contrastive objectives in both directions (LIC/LCI), and (iii) modality-balanced hard-negative finetuning over queries with both text and image documents. These correspond closely to the evidence sections 3.2.1–3.2.3. However, several key implementation details described in the text are not shown: the explicit embedding packing with <start>/<end> tokens and 49 patch embeddings, the cosine-similarity relevance scoring and subsequent KNN retrieval step, and the explicit decomposition of the finetuning loss into LAlign/LText/LImage with equal numbers of text/image negatives. Thus, it is largely complete at the stage-level summary but not fully complete with respect to the paper’s detailed encoding and retrieval/scoring flow from start to end."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 4,
+              "reason": "Mostly avoids hallucination: nearly all depicted components (T5-ANCE/MS MARCO pretrained LM backbone, CLIP image encoder + projection layer as a plug-in visual module, visual-module adaptation pretraining, the two contrastive directions L_IC/L_CI, and modality-balanced hard negative finetuning loss L_LM) are supported by the provided evidence (Eq. 4–6, 7–10 and described training stages). The only mild risk is the use of specific illustrative caption/query strings (e.g., “Library Reading Room”, “Via Rodeo Dr”, “Estonian IT College”, and the Centennial Olympic Park query/captions), which are not necessarily explicitly present in the paper text chunks shown; they appear as examples consistent with the method rather than paper-asserted entities. No clearly unsupported formulas or architectural blocks are introduced."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 4,
+              "reason": "Most major relationships in the target figure are accurately represented relative to the paper: (i) captions/queries/text docs are encoded by the T5-ANCE (MS MARCO–pretrained) language backbone; (ii) images are encoded via a CLIP visual encoder, followed by a projection/linear adaptation layer before integration; (iii) the “Plug-IN” depiction matches incorporating the CLIP visual module into T5-ANCE; (iv) visual-module adaptation pretraining is shown as image–caption contrastive training with both L_IC and L_CI directions; and (v) modality-balanced hard-negative finetuning (L_LM) is applied over queries and mixed-modality documents, with image docs involving both image and caption text. Minor ambiguity: the arrowing/placement could be read as the projection layer feeding into the CLIP image encoder (rather than taking CLIP features as input), but the intended ordering (CLIP encoder → projection) is otherwise consistent with the equations described."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 4,
+              "reason": "Major component/method labels in the Target Figure are largely accurate and consistent with the evidence and reference: (i) the backbone as an MS MARCO–pretrained T5-ANCE language model; (ii) a CLIP-based visual module with an added projection/linear layer; (iii) the integration as a plug-in visual module; (iv) the two-stage training naming—\"Visual Module Adaptation Pretraining\" with image–caption / caption–image contrastive losses (L_IC, L_CI), and \"Modality-Balanced Hard Negative Training\" (L_LM) for finetuning—matches the paper’s described objectives. Minor caveat: the exact label wording/capitalization (e.g., \"Plug-IN\" vs \"plug-in\") and the explicit naming of L_CI/L_IC may be more detailed than what appears in the provided chunk, but the full evidence supports these labels."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is largely schematized around the paper’s main contribution: a universal dense retriever (T5-ANCE-CLIP) that plugs a CLIP visual encoder + projection layer into a T5-ANCE/MS MARCO–pretrained retriever, with two key stages (Visual Module Adaption Pretraining via image–caption contrastive loss L_IC/L_CI, and Modality-Balanced Finetuning with balanced text/image hard negatives). It emphasizes the core flows (images+captions → visual module/projection → encoder; queries/text docs/image docs → shared encoder) and the training objectives, which matches the Evidence. However, it omits or under-emphasizes some central architectural specifics from the Evidence (e.g., <start>/<end> prompt tokens, 49 patch embeddings, explicit cosine/KNN retrieval depiction in this figure) and includes some illustrative examples (e.g., specific captions/negatives) that are slightly more concrete than strictly necessary. Overall it focuses on main contribution with minor extra/omitted details."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "The target figure closely matches and usefully supplements the described methodology. It explicitly visualizes the two training stages: (a) Visual Module Adaption Pretraining with CLIP image encoder + projection layer plugged into an MS MARCO–pretrained language model and trained via bidirectional image–caption contrastive losses (L_IC, L_CI); and (b) Modality-Balanced Language Model Finetuning showing queries with both text and image documents, consistent with modality-balanced hard negatives. This aligns with the evidence’s components (universal T5-ANCE-CLIP encoder concept, visual module + projection, contrastive pretraining objective, finetuning with balanced text/image negatives) and is consistent in style and content with the strongest reference (the MARVEL overview). While it does not depict low-level embedding packing (<start>, <end>, patch tokens) or cosine/KNN retrieval explicitly, it still functions very well as supplementary material for understanding the training/architecture flow described in the caption/text."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure largely focuses on the core ideas supported by the evidence: a universal encoder (T5-ANCE + CLIP visual module + projection), a pretraining phase with image–caption contrastive losses (L_IC/L_CI), and a finetuning phase with modality-balanced hard negatives across text and image docs. Most visual elements (module blocks, data types, loss labels, freezing/flame icons) directly communicate these steps. Minor redundancy/unnecessary detail remains: multiple example photos and captions (e.g., “Library Reading Room,” “Via Rodeo Dr,” “Estonian IT College,” “Parthenon Nashville”) add illustrative but not strictly necessary information; checkmarks and some dataset/label decorations also slightly clutter the diagram. However, these do not substantially distract from the main technical message."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The Target Figure’s process is organized primarily left-to-right: inputs on the left (captions/images; queries/text/image docs) feed into the central model modules, with arrows leading to outputs and training objectives on the right. Although it has two stacked panels (a) above (b), within each panel the causal diagram flow is clearly left-to-right rather than top-to-bottom, consistent with the left-to-right pipeline style seen in the visual reference figures."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "Overall, connection lines in the Target Figure are routed cleanly and largely avoid crossing, consistent with the clearer reference examples. Most arrows run left-to-right with adequate spacing between the (a) and (b) panels. However, there are a few local intersections/overlaps: within the central model blocks the vertical “Plug-IN” connector visually intersects nearby module boundaries, and in (b) the label/arrow between the query area and the image/caption region comes close to or overlaps adjacent connectors. These are minor and do not create major ambiguity, but prevent a perfect non-crossing layout."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "The target figure generally places functionally related components in close physical proximity. In panel (a), the caption/image inputs are adjacent to the adapted visual module + MS MARCO LM block, and the corresponding contrastive-training outputs are grouped on the right, maintaining a clear left-to-right flow similar to the reference designs. In panel (b), the query/text-doc/image-doc inputs are grouped on the left, the LM + visual module are colocated, and the paired captions/images/text-doc output are placed nearby on the right. Minor proximity issues remain: some key associations rely on long arrows spanning whitespace (e.g., from the central model blocks to right-side training examples), and repeated elements (captions/images) are separated across regions, which slightly reduces immediate locality compared to the most compact reference layouts."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall alignment follows a clear implicit grid: the main blocks (inputs on the left, model modules in the center, outputs on the right) are largely aligned horizontally/vertically, and the (a)/(b) panels are organized in stacked rows with consistent margins. However, some local misalignments reduce perfect neatness—e.g., mixed baseline alignment among small icons/labels on the left, slight vertical offsets between captions/images on the right, and uneven spacing/centering of certain callouts and arrows—so it is not as uniformly grid-aligned as the cleanest reference examples."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 4,
+              "reason": "The Target Figure establishes a clear hierarchy similar to the higher-scored references: it is split into two labeled subfigures (a) and (b), with major modules (e.g., “MS MARCO Pretrained Language Model,” “Visual Module,” and training objectives) shown as large, central boxed blocks and connected by prominent arrows. Key inputs/outputs (queries, text/image docs, captions) are differentiated by position (left-to-right flow), iconography, and colored outlines (purple/orange/blue), and salient outcomes are emphasized with checkmarks and highlighted caption boxes. However, the hierarchy is slightly weakened by high visual density and many competing emphasis cues (multiple colored borders, icons, flame/snowflake markers, and several similarly sized callouts), which reduces the degree to which a single primary path dominates at first glance compared with the cleanest 4.0 evidence examples."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "Overall the figure provides adequate whitespace between major blocks (top vs. bottom panels, left pipelines vs. right examples), and most boxes/arrows are readable without crowding. However, several localized areas feel tight: the left-side icon stack (Queries/Text Docs/Image Docs) sits close to adjacent components, the right-side caption/text-doc examples are packed with limited padding inside callouts, and some labels/arrows run near borders. Compared to the reference figures, it is slightly denser and would benefit from a bit more padding around small annotations, but margins are generally sufficient."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 4,
+              "reason": "The target figure is largely consistent in mapping similar roles to the same visual encodings. Inputs are repeatedly boxed and color-coded (e.g., Queries with the same black-person icon; Text Docs with the same document icon; Image/Caption examples highlighted with the same orange frames). Core modules (MS MARCO pretrained LM, Visual Module, CLIP Image Encoder, projection layer) use the same rounded-rectangle container style across panels, supporting role consistency similar to the references. Minor inconsistencies remain: captions are sometimes presented as plain text labels and sometimes as rounded boxes, and some training/contrastive elements (e.g., LC_I/LI_C labels, checkmarks, and negative examples) do not have a fully uniform shape/color scheme across the two subfigures, slightly weakening strict role-to-encoding consistency."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The Target Figure replaces several abstract concepts (e.g., query/document types, training objectives, model components, correctness) with concrete icons and symbolic shorthand: user/query pictogram, image/text document icons, checkmarks for positive matches, flame/snowflake-like symbols to denote trainable/frozen modules, and compact math abbreviations (L_CI, L_IC, L_LM). This is comparable to higher-metaphor evidence figures that use modality icons and checkmarks to encode semantics. However, many abstractions are still expressed through text labels and diagrammatic boxes/arrows rather than being fully iconified (e.g., ‘MS MARCO Pretrained Language Model’, ‘Visual Module’, ‘Projection layer’), so it is not maximal."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a common paper-figure template for vision-language retrieval/training pipelines: boxed modules, arrows showing data flow, dashed separators between stages (pretraining vs finetuning), CLIP encoder + projection layer + pretrained LM blocks, and small illustrative image/caption examples with check marks. This layout and iconography closely resemble the provided references (e.g., MARVEL-style encoder diagram and contrastive training schematic), with similar color-coding and callout boxes. While the figure is clean and coherent, it does not introduce a distinctive visual language or unconventional composition; it appears to be a minor stylistic variation of standard academic diagram conventions rather than a uniquely styled design."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 3,
+              "reason": "The target figure shows some paper-specific adaptation (two-part structure with (a)/(b) panels, task-specific icons for queries/text/image docs, and training objectives annotated with checkmarks and example captions), rather than a completely uniform template. However, its overall layout and visual language remain very similar to the references: boxed pipeline modules, dashed containers, left-to-right flow arrows, CLIP/visual module blocks, and standard “method schematic” styling. It does not substantially break away from common uniform design principles seen in the evidence, so adaptability is moderate rather than high."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.829,
+      "used_anchor_paths": {
+        "q1.1": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q1.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q1.3": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q2.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q2.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q2.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q3.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q3.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q3.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q4.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q4.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q4.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q4.4": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q4.5": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q4.6": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q4.7": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q5.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q5.2": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ],
+        "q5.3": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.764
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7625
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7492
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7328
+          }
+        ]
+      }
+    },
+    {
+      "figure_file": "MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+      "caption": "Figure 1: Retrieval Pipeline with Our MARVEL Model. MARVEL incorporates the visual module plugin, aiming to unlock the multi-modal capabilities of well trained dense retrieval model.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Query q input', 'Multi-modal documents D containing both text documents (d^Text) and image documents (d^Image)', 'Unified encoder: T5-ANCE-CLIP (single encoder used for q, d^Text, and d^Image)', 'Text encoding flow: d^Text -> T5-ANCE-CLIP -> vector embedding \\\\vec{d}^{Text}', 'Query encoding flow: q -> T5-ANCE-CLIP -> vector embedding \\\\vec{q}', 'Image encoding flow inside T5-ANCE-CLIP: image I -> CLIP visual encoder -> grid features \\\\vec{h_I} = {\\\\vec{h^I_1}..\\\\vec{h^I_{49}}}', 'Projection/adaptation layer: Linear() mapping CLIP visual grid features into T5-ANCE input embedding space (\\\\vec{I_i} = Linear(\\\\vec{h^I_i}))', 'Fusion/input construction for image documents: <start> + projected image embeddings (\\\\vec{I_1}..\\\\vec{I_{49}}) + <end> + text word embeddings (\\\\vec{e_1}..\\\\vec{e_k}) fed as input embeddings to T5-ANCE', 'Image-document encoding uses both image I and caption C as inputs: T5-ANCE-CLIP(d^Image(I), d^Image(C)) -> vector embedding \\\\vec{d}^{Image}', 'Relevance scoring module: cosine similarity f(q, d_i) = cos(\\\\vec{q}, \\\\vec{d_i})', 'Retrieval step: KNN search over document embeddings to get candidate multi-modal documents', 'Pretraining stage for visual module (plugin) with image-caption contrastive training loss L_VM = L_IC + L_CI (alignment between image I and caption C)', 'Parameter-training policy during visual pretraining: only visual module + projection layer are trained (T5-ANCE kept fixed)', 'Finetuning stage: visual module frozen; optimize remaining MARVEL/T5-ANCE components', 'Finetuning objective component: modality-balanced hard negative training (equal number of image and text negatives)']\nContext: As shown in Figure 1, MARVEL is based on the text retriever T5-ANCE (Yu et al., 2023), regards the visual module as a plugin and pretrains the visual module with image-caption contrastive training for adaption. By incorporating a visual module into well-trained text retriever T5-ANCE, MARVEL seizes the opportunity to extend the benefits of unimodal learning to the multi-modal retrieval task.\n\nDifferent from previous work (Liu et al., 2023b), we can universally encode query q and multi-modal documents D = {d1Text, ..., dmText, d1Image, ..., dnImage} using one encoder, T5-ANCE-CLIP: \\vec{q} = T5-ANCE-CLIP(q); \\vec{d_i}^{Text} = T5-ANCE-CLIP(d_i^{Text}); \\vec{d_i}^{Image} = T5-ANCE-CLIP(d_i^{Image}(I), d_i^{Image}(C)). Then we calculate the relevance score f(q, d_i) between query q and the i-th document d_i using cosine similarity: f(q, d_i) = cos(\\vec{q}, \\vec{d_i}). Following this, we conduct KNN search (Johnson et al., 2019) to retrieve multi-modal document candidates for the given query q.\n\nMARVEL starts from the T5-ANCE model (Yu et al., 2023), which is a dense retrieval model that is well-trained using MS MARCO dataset (Nguyen et al., 2016). Then we enable T5-ANCE by incorporating the visual module from the vision-language model, CLIP (Radford et al., 2021), and conduct the T5-ANCE-CLIP model. Specifically, we encode the image feature I using the visual encoder of CLIP and get its encoded visual representation \\vec{h_I} (from grid features of the last layer, \\vec{h_I} = {\\vec{h^I_1}, ..., \\vec{h^I_{49}}). Then we use a linear transformation layer to adapt the visual features into the embedding space of the inputs of dense retrieval model: \\vec{I_i} = Linear(\\vec{h^I_i}). Finally, we feed these encoded image features as the ahead input embeddings for T5-ANCE: \\vec{X} = \\vec{e}(<start>); \\vec{I_1}; ...; \\vec{I_{49}}; \\vec{e}(<end>); \\vec{e_1}; ...; \\vec{e_k}, where <start>/<end> denote the start and end of image features and {\\vec{e_1}...\\vec{e_k}} are the word embeddings of the text input sequence.\n\nIn MARVEL, we adapt the visual understanding module to T5-ANCE by only pretraining the parameters of the visual module and the projection layer. We follow Radford et al. (2021) and leverage the image-caption contrastive training loss L_VM to pretrain the visual understanding module, using alignment between image features I and captions C: L_VM = L_IC + L_CI. During finetuning, we freeze the parameters of the visual module and optimize other parameters of MARVEL; we employ modality-balanced hard negative training to alleviate modality discrimination, using the same number of negative documents of image and text.",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': 'Queries', 'status': 'Supported', 'evidence': 'Text defines the task as: “Given a query q, the retrieval task requires…” and also uses anchor text as queries in ClueWeb22-MM.'}, {'element': 'Image Docs', 'status': 'Supported', 'evidence': 'Text states the collection includes images: “also includes images I = {d1Image, ..., dnImage}” and describes extracting “image documents”.'}, {'element': 'Text Docs', 'status': 'Supported', 'evidence': 'Text states the collection contains texts: “contains texts T = {d1Text, ..., dmText}” and describes extracting “text documents”.'}, {'element': 'MARVEL Encoders', 'status': 'Supported', 'evidence': 'Paper proposes MARVEL with unified encoding: “universally encode query q and multi-modal documents … using one encoder, T5-ANCE-CLIP”.'}, {'element': 'MS MARCO', 'status': 'Supported', 'evidence': 'Text: “T5-ANCE … is well-trained using MS MARCO dataset”.'}, {'element': 'Pretrain', 'status': 'Supported', 'evidence': 'Text includes two pretraining notions: MS MARCO pretraining of T5-ANCE and “pretrains the visual module with image-caption contrastive training for adaption”.'}, {'element': 'Query', 'status': 'Supported', 'evidence': 'Query encoding is central: “⃗q = T5-ANCE-CLIP(q)” and retrieval is conditioned on query q.'}, {'element': 'Document', 'status': 'Supported', 'evidence': 'Documents are defined as multi-modal items D including text and image documents, and relevance is computed for each document di.'}, {'element': 'Contrastive Training', 'status': 'Supported', 'evidence': 'Visual module is pretrained with contrastive learning: “leverage the image-caption contrastive training loss LVM”.'}, {'element': 'Align', 'status': 'Supported', 'evidence': 'Paper repeatedly frames objective as alignment: “image-caption alignment task” and loss term “LAlign teaches models to align the query with related documents.”'}, {'element': 'Images', 'status': 'Supported', 'evidence': 'Images are an explicit modality: collection includes images, and CLIP encodes image features: “encode the image feature I using… CLIP(I)”.'}, {'element': 'Texts', 'status': 'Supported', 'evidence': 'Texts are explicit modality: “text documents” and “captions C” and text inputs are encoded with T5-ANCE/T5-ANCE-CLIP.'}, {'element': 'Vision Module', 'status': 'Supported', 'evidence': 'Text: “incorporating the visual module from… CLIP” and “visual module plugin architecture”.'}, {'element': 'KNN Search', 'status': 'Supported', 'evidence': 'Text: “Following this, we conduct KNN search … to retrieve multi-modal document candidates”.'}, {'element': 'Ranking List', 'status': 'Supported', 'evidence': 'The pipeline retrieves candidates and computes relevance scores; retrieval outputs ranked candidates: “retrieve … candidates” after scoring by cosine similarity, consistent with producing a ranking list.'}, {'element': 'Image Docs -> Query', 'status': 'Contradicted', 'evidence': 'Paper does not describe generating queries from image documents; instead it encodes query q separately and uses anchor texts as queries (“we regard the anchor text as a query”). Images are documents to retrieve, not a source of queries.'}, {'element': 'Text Docs -> Document', 'status': 'Supported', 'evidence': 'Text docs are a subset of documents: “The document collection D … contains texts T = {…}”.'}, {'element': 'MS MARCO -> MARVEL Encoders', 'status': 'Supported', 'evidence': 'MARVEL starts from T5-ANCE pretrained on MS MARCO: “MARVEL starts from the T5-ANCE model… well-trained using MS MARCO”.'}, {'element': 'MARVEL Encoders -> Pretrain', 'status': 'Supported', 'evidence': 'MARVEL includes pretraining stages (visual module adaptation pretraining and MS MARCO pretraining inherited via T5-ANCE), consistent with an encoder feeding into/being produced by pretraining.'}, {'element': 'Pretrain -> Query', 'status': 'Supported', 'evidence': 'Query encoder weights come from pretraining (T5-ANCE pretrained on MS MARCO) and are used to encode queries: “⃗q = T5-ANCE-CLIP(q)”.'}, {'element': 'Pretrain -> Document', 'status': 'Supported', 'evidence': 'Document encoding uses pretrained components (T5-ANCE and pretrained/adapted visual module): “incorporating a visual module into well-trained text retriever T5-ANCE” and visual-module adaptation pretraining.'}, {'element': 'Contrastive Training -> Align', 'status': 'Supported', 'evidence': 'Contrastive loss is explicitly defined as aligning image and caption: “training loss utilizes the alignment between image features I and captions C”.'}, {'element': 'Images -> Align', 'status': 'Supported', 'evidence': 'Alignment is between image features and captions: “alignment between image features I and captions C”.'}, {'element': 'Texts -> Align', 'status': 'Supported', 'evidence': 'Alignment is between captions (text) and images: “alignment between image features I and captions C” and dual-direction LIC/LCI.'}, {'element': 'Document -> Vision Module', 'status': 'Supported', 'evidence': 'For image documents, the model encodes image features with the visual module: “encode the image feature I using the visual encoder of CLIP”. This is consistent with documents (image documents) being processed by a vision module.'}, {'element': 'Vision Module -> KNN Search', 'status': 'Supported', 'evidence': 'Encoded representations (including those produced via the visual module) are used for retrieval: after encoding and cosine scoring, “we conduct KNN search … to retrieve multi-modal document candidates”.'}, {'element': 'KNN Search -> Ranking List', 'status': 'Supported', 'evidence': 'KNN retrieval produces nearest neighbors/candidates which form a ranked retrieval output; paper describes using cosine similarity and KNN retrieval to retrieve candidates, implying a ranking.'}], [{'element': 'Queries', 'status': 'Not Mentioned', 'evidence': 'The provided text snippet only mentions a \"visual module pretraining strategy\" for adapting a visual understanding module for dense retrievals, and does not mention queries.'}, {'element': 'Image Docs', 'status': 'Not Mentioned', 'evidence': 'The snippet does not mention image documents; it only generally references a visual module and dense retrieval.'}, {'element': 'Text Docs', 'status': 'Not Mentioned', 'evidence': 'The snippet does not mention text documents.'}, {'element': 'MARVEL Encoders', 'status': 'Not Mentioned', 'evidence': 'No specific model/encoder name (e.g., MARVEL) appears in the snippet.'}, {'element': 'MS MARCO', 'status': 'Not Mentioned', 'evidence': 'The dataset MS MARCO is not referenced in the snippet.'}, {'element': 'Pretrain', 'status': 'Supported', 'evidence': 'The snippet explicitly refers to a \"visual module pretraining strategy,\" which semantically supports the concept of pretraining.'}, {'element': 'Query', 'status': 'Not Mentioned', 'evidence': 'The snippet does not explicitly mention a query component, only adaptation of a visual module for dense retrieval.'}, {'element': 'Document', 'status': 'Not Mentioned', 'evidence': 'The snippet does not explicitly mention documents.'}, {'element': 'Contrastive Training', 'status': 'Not Mentioned', 'evidence': 'The snippet mentions pretraining strategy but does not specify contrastive training.'}, {'element': 'Align', 'status': 'Not Mentioned', 'evidence': 'No alignment objective or alignment module is stated in the snippet.'}, {'element': 'Images', 'status': 'Supported', 'evidence': 'A \"visual understanding module\" implies images/visual inputs as the modality being handled, which supports the presence of images at a high level.'}, {'element': 'Texts', 'status': 'Not Mentioned', 'evidence': 'The snippet does not mention text modality.'}, {'element': 'Vision Module', 'status': 'Supported', 'evidence': 'The snippet explicitly mentions a \"visual understanding module,\" which corresponds to a vision module.'}, {'element': 'KNN Search', 'status': 'Not Mentioned', 'evidence': 'The snippet mentions dense retrievals but does not specify KNN search.'}, {'element': 'Ranking List', 'status': 'Not Mentioned', 'evidence': 'The snippet does not mention producing a ranking list.'}, {'element': 'Image Docs -> Query', 'status': 'Not Mentioned', 'evidence': 'The snippet does not describe any relationship between image documents and queries.'}, {'element': 'Text Docs -> Document', 'status': 'Not Mentioned', 'evidence': 'The snippet does not describe any relationship involving text docs or documents.'}, {'element': 'MS MARCO -> MARVEL Encoders', 'status': 'Not Mentioned', 'evidence': 'Neither MS MARCO nor MARVEL encoders are mentioned in the snippet.'}, {'element': 'MARVEL Encoders -> Pretrain', 'status': 'Not Mentioned', 'evidence': 'The snippet discusses pretraining in general but does not mention MARVEL encoders.'}, {'element': 'Pretrain -> Query', 'status': 'Not Mentioned', 'evidence': 'The snippet does not state that pretraining yields/feeds into a query representation.'}, {'element': 'Pretrain -> Document', 'status': 'Not Mentioned', 'evidence': 'The snippet does not state that pretraining yields/feeds into a document representation.'}, {'element': 'Contrastive Training -> Align', 'status': 'Not Mentioned', 'evidence': 'No contrastive training or alignment link is described in the snippet.'}, {'element': 'Images -> Align', 'status': 'Not Mentioned', 'evidence': 'While visual modules imply images, the snippet does not mention an alignment step involving images.'}, {'element': 'Texts -> Align', 'status': 'Not Mentioned', 'evidence': 'Text modality and alignment are not mentioned.'}, {'element': 'Document -> Vision Module', 'status': 'Supported', 'evidence': \"The snippet states a strategy for adapting a visual understanding module for dense retrieval; this broadly supports the idea that retrieval-side items (documents) are processed by a vision module in such a system, though 'document' is not explicitly named.\"}, {'element': 'Vision Module -> KNN Search', 'status': 'Not Mentioned', 'evidence': 'Dense retrieval can involve nearest-neighbor search, but the snippet does not explicitly mention KNN or any search mechanism.'}, {'element': 'KNN Search -> Ranking List', 'status': 'Not Mentioned', 'evidence': 'The snippet does not mention ranking output.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 3,
+              "reason": "The target figure captures several high-level components: (i) multimodal inputs (queries, image docs, text docs), (ii) MARVEL encoders initialized from MS MARCO pretraining, (iii) a contrastive pretraining stage aligning images and texts, (iv) inclusion of a vision module/plugin, and (v) a KNN search leading to a ranking list. However, it omits many major technical details emphasized in the paper/evidence: the unified single-encoder design (T5-ANCE-CLIP used for q, d^Text, and d^Image) is not explicit; the explicit query/text/image encoding flows and resulting embeddings (\\vec{q}, \\vec{d}^{Text}, \\vec{d}^{Image}) are not shown; the CLIP visual grid features (49 tokens), the linear projection/adaptation layer, and the <start>/<end> fusion with caption word embeddings into T5-ANCE inputs are missing; the cosine similarity scoring function is not indicated; the two-stage training policy (visual+projection trained while T5-ANCE frozen during pretrain; then visual frozen during finetuning) and the modality-balanced hard negative finetuning objective are not represented. Overall it provides a conceptual overview but not most major components/formulas."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 3,
+              "reason": "The figure conveys the high-level pipeline: queries + image/text documents are embedded by “MARVEL Encoders” (initialized from MS MARCO), a vision module is incorporated via contrastive pretraining (align images and texts), and retrieval is done with KNN to produce a ranking list. This is sufficient to understand the general operating principle (unified encoder + multimodal alignment + nearest-neighbor retrieval).\n\nHowever, several key aspects from the evidence are not intelligible from the figure alone: (i) it does not clearly communicate the *single unified encoder* (T5-ANCE-CLIP) used for q, text docs, and image docs, nor that image-doc encoding uses both image and caption; (ii) it omits the crucial mechanism of how images are injected (CLIP grid features → linear projection → <start>/<end> + text embeddings into T5-ANCE); (iii) relevance scoring via cosine similarity is not indicated (only “KNN Search”); and (iv) the training policy (pretrain only visual+projection, then freeze visual module and finetune with modality-balanced hard negatives) is only partially suggested by “Contrastive Training” and lacks the freeze/finetune distinction. As a standalone, it is understandable at a coarse level but underspecified for the system’s core design choices."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 3,
+              "reason": "The target figure captures several core components: (i) a MS MARCO–pretrained text retriever backbone (T5-ANCE implied), (ii) adding a vision module as a plug-in, (iii) a contrastive pretraining step aligning images and texts, and (iv) KNN search producing a ranking list. However, compared to the evidence, it omits multiple key end-to-end details needed for completeness across the paper’s workflow: the unified single-encoder formulation (T5-ANCE-CLIP encoding q, d^Text, and d^Image), explicit text/query/image encoding flows into vector embeddings, the CLIP grid feature extraction (49 tokens) and the linear projection/adaptation into the T5 input embedding space with <start>/<end> fusion, use of both image and caption inputs for image documents, cosine similarity scoring, and the training policy distinctions (pretrain only visual+projection while freezing T5-ANCE; finetune with visual frozen and modality-balanced hard negatives). Thus it summarizes the high-level story but not the full pipeline from beginning to end as described in the paper."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 4,
+              "reason": "The target figure is largely consistent with the paper per the evidence: it includes queries, text/image documents, MARVEL unified encoders (T5-ANCE-CLIP), MS MARCO pretraining, visual-module adaptation with image–caption contrastive alignment, and KNN-style nearest-neighbor retrieval producing a ranked list—all supported by the report and echoed by the reference pipeline figure. The main hallucination risk is the explicit edge/flow implying “Image Docs → Query” (or that queries are generated from image documents), which the evidence explicitly marks as contradicted; queries are defined independently (e.g., anchor text as queries) and images are retrieval targets. Aside from that incorrect linkage, the remaining components are not introducing clearly unsupported modules or formulas."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 4,
+              "reason": "Most key relations in the target figure match the paper and the provided evidence: MS MARCO pretraining feeding the MARVEL/T5-ANCE-based encoder; separate query/document encodings; a CLIP-based vision module used to encode image documents; contrastive (image–caption) training used for alignment; and KNN search producing a ranked list. However, there is at least one relationship that is inaccurate/unsupported: the depicted link suggesting “Image Docs → Query” (or implying queries are generated from image documents) is contradicted by the evidence, which states queries come from anchor text and are encoded independently, while images are retrieval documents. Aside from this, the remaining component relationships are consistent with the reference figures and text."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 4,
+              "reason": "Most major component/methodology labels in the target figure are consistent with the paper and the reference figures: queries/image docs/text docs; MARVEL encoders initialized from an MS MARCO–pretrained T5-ANCE backbone; a visual/vision module based on CLIP; contrastive training used for image–text (caption) alignment; and a KNN search producing a ranked list. The main label-level issue is that the target figure’s generic “Pretrain” block is underspecified and may be slightly misleading: in the paper/refs, pretraining is specifically (i) MS MARCO pretraining for the text retriever and (ii) visual-module adaptation pretraining via image–caption contrastive loss, rather than a single undifferentiated pretraining stage. Also, the target shows “Align” as a standalone component, whereas the paper frames alignment primarily as an objective/loss (LAlign) rather than a separate module. These are minor-to-moderate label accuracy concerns, but not enough to invalidate the labels overall."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is schematized around the paper’s main contribution: extending a strong text retriever (MS MARCO–pretrained T5-ANCE) with a plug-in vision module and contrastive image–text pretraining, then using a unified encoder for queries and multimodal documents followed by KNN retrieval and ranking. This matches the evidence at a high level (unified encoding, contrastive pretraining for the visual side, retrieval via KNN, ranking list output) and aligns with the style of the provided reference system diagrams.\n\nHowever, it omits several contribution-critical specifics that are central in the evidence: (i) the explicit T5-ANCE-CLIP “single encoder for q, d^Text, d^Image” formulation; (ii) the CLIP grid features and projection/adaptation into T5-ANCE input embedding space with <start>/<end> and caption concatenation; (iii) the cosine similarity scoring module; and (iv) the training policy details (visual module+projection trained during pretraining; visual module frozen during finetuning; modality-balanced hard negatives). These are not necessarily “trivial,” so the figure is slightly more abstract than ideal for fully capturing the main methodological novelty."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 4,
+              "reason": "The target figure largely works as a supportive schematic for the described MARVEL pipeline: it depicts queries and multimodal docs being encoded, includes a pretraining/contrastive alignment stage between images and texts (consistent with visual-module adaptation via image-caption contrastive loss), and shows KNN search producing a ranking list, matching the text’s retrieval description. It also conveys the notion of starting from an MS MARCO–pretrained text retriever and adding a vision module plugin.\n\nHowever, it is somewhat abstract compared to the evidence and stronger reference figure: it does not make explicit that a single unified encoder (T5-ANCE-CLIP) encodes q, d^Text, and d^Image; it omits key architectural details (CLIP visual grid features, linear projection into T5 input embedding space, and the image+caption fusion with <start>/<end> tokens). It also does not indicate the training policy (freeze/unfreeze) or the modality-balanced hard negative finetuning objective. These omissions reduce its utility for understanding the precise mechanism, though it remains a good high-level companion diagram."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely free of decorative clutter and focuses on core components supported by the evidence: MS MARCO pretraining, a unified MARVEL encoder for query/document, a contrastive pretraining stage aligning images and texts (consistent with image-caption contrastive loss), inclusion of a vision module, and KNN search producing a ranking list. Most elements are functional (icons for query/image/text docs; simple blocks/arrows indicating stages).\n\nMinor redundancy/unnecessary detail remains: repeated modality icons/colors (top legend and bottom scatter), the bottom 3D embedding scatter plot is illustrative but not essential to understanding the pipeline, and the “smiling face” icon inside the vision module is slightly decorative. Still, these do not substantially distract from the main ideas."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 4,
+              "reason": "The Target Figure predominantly reads left-to-right: icons and inputs at the top feed into a central module, followed by arrows moving rightward toward the Vision Module and then to a Ranking List on the right. However, there is also a noticeable top-to-bottom component (inputs from the top drop into the dashed box; outputs drop to KNN search and then right), making the flow mixed rather than purely left-to-right. Compared with the reference figures, it most closely matches the common left-to-right pipeline style, but with stronger vertical transitions than some examples."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "Overall, the diagram’s connectors are routed to largely avoid intersections: the main flow arrows (Queries/Image Docs/Text Docs → Query/Document; Query/Document → Vision Module; KNN Search → Ranking List) are laid out on separate vertical/horizontal paths with clear spacing. Minor crossings/near-crossings occur in the lower-left region where multiple arrows originate/branch from the scatter of colored dots toward the right and upward, creating slight visual overlap and potential ambiguity, but these are limited and do not dominate the figure. Compared with the reference figures, it is slightly less clean in the branching area yet still mostly non-crossing."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "Yes. The figure places functionally related components in close proximity: (i) the query/document encoders are grouped within the dashed MARVEL encoders block; (ii) the contrastive training subpanel co-locates Images, Texts, and the Align operation; and (iii) the Vision Module is positioned adjacent to/connected with the document pathway it serves. This matches the reference style where tightly coupled training/encoding modules are clustered. Minor proximity issues remain: the KNN search and ranking list are spatially separated from the embedding points and encoder outputs, requiring longer cross-figure arrows, and the pretrain (MS MARCO) cue is slightly detached from the encoder components it conditions."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall, elements follow a clear implicit grid: the three icons at the top are evenly spaced and aligned, the dashed container and internal blocks (\"Query/Document\" row, \"Contrastive Training\" box, \"Vision Module\") are mostly level, and the bottom \"KNN Search\" → \"Ranking List\" flow is horizontally aligned. Minor misalignments remain: some arrows/labels (e.g., the vertical arrow under the middle icon and the \"Query/Document\" headings) are not perfectly centered relative to their associated nodes, and the left-side scatter/arrow area introduces slight off-grid placement. Compared to the reference figures, it is slightly less rigidly grid-aligned but still neat and readable."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 4,
+              "reason": "The Target Figure establishes a clear visual hierarchy: the dominant dashed container groups the overall system, and the central pipeline (queries/docs → encoders/pretrain → contrastive training/vision module → KNN search → ranking list) is laid out left-to-right with strong positional cues and large labeled blocks. Key modules (e.g., “MARVEL Encoders,” “Contrastive Training,” “Vision Module,” “KNN Search,” “Ranking List”) are visually prominent via bounding boxes and label size. Compared to the evidence figures, it is less emphatic in thickness/scale contrasts (many elements share similar line weights and box sizes), and secondary elements (icons/legend dots) compete slightly with primary blocks. Overall, main components stand out primarily by position and grouping rather than by strong size/thickness differentiation."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "Overall margins are sufficient: major regions (top icon row, dashed main container, lower embedding/KNN area, and the ranking list) are separated with clear whitespace, and most labels have breathing room from their associated shapes. However, several local areas feel tight compared with the best references: (1) the top icon row sits close to the dashed container boundary, (2) elements inside the dashed box (e.g., the ‘Contrastive Training’ subpanel, ‘Align’ arrow, and the Vision Module block) have limited internal padding and some labels sit close to borders, and (3) the bottom-left cluster of colored dots and arrows is relatively dense. These issues prevent a perfect score, but readability remains good."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 4,
+              "reason": "The Target Figure is largely consistent in encoding: the three input types use distinct, repeated icons and colors (Queries=orange star, Image Docs=orange dot, Text Docs=blue dot), and the query/document representations are similarly styled (neural-network-like glyphs with orange vs purple outlines). Modules are consistently boxed with dashed boundaries, and processes/outputs (e.g., KNN search → ranking list) use standard arrow flow. Minor inconsistencies remain: the legend uses different shapes for image/text docs than the downstream scatter points (icon vs dot), and some elements with similar functional status (e.g., ‘Vision Module’ vs ‘MARVEL Encoders’) have different pictorial styles, which slightly weakens uniformity compared to the cleaner, more uniform schematic styles in the references."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The target figure heavily replaces abstract concepts with concrete visual metaphors: modality types are encoded as icons (person silhouette for queries, photo for image docs, TXT page for text docs), retrieval is depicted via KNN scatter points and a ranking-list glyph, and model components are abstracted into compact symbols/blocks (encoder/LM/network icons, “Vision Module” box). Similar to the reference figures, it uses schematic icons and abbreviations (e.g., MS MARCO, KNN) to stand in for complex processes. However, some abstraction remains in the generic neural-network node diagrams and labeled boxes (“Contrastive Training”, “Align”) that still rely on text rather than purely symbolic depiction, preventing a maximal score."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a standard ML-system schematic template: modular dashed boxes, encoder/pretrain blocks, contrastive training alignment between images/text, and a retrieval/ranking pipeline with KNN search. This visual language (icons for queries/image/text docs, simple block diagrams with arrows, and labeled submodules like “Vision Module”) is very common in recent multimodal/retrieval papers and closely resembles the provided reference figures’ layout and styling. While the specific combination of MARVEL/MS MARCO + contrastive training + KNN ranking is customized, the design itself does not exhibit a distinctive or novel visual style beyond routine diagram conventions."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure largely follows a standard, template-like pipeline layout common in multimodal retrieval/contrastive-training papers: top-row inputs (queries/image docs/text docs), a dashed model block, a contrastive alignment sub-block, and a bottom-row retrieval/ranking output. This mirrors the uniform design principles seen in the evidence/reference figures (box-and-arrow flow, dashed boundaries, generic icons). While it uses consistent color-coding for modalities and a slightly simplified composition, there is little sign of paper-specific layout innovation (e.g., unconventional structure, tailored visual metaphor, or uniquely arranged narrative panels). Overall it appears only minimally adapted rather than distinctly customized."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.533,
+      "used_anchor_paths": {
+        "q1.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q1.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q1.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q2.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q2.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q2.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q3.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q3.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q3.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q4.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q4.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q4.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q4.4": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q4.5": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q4.6": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q4.7": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q5.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q5.2": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ],
+        "q5.3": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.791
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p2__score1.00.png",
+            "similarity": 0.7537
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7289
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7198
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,555 @@
+{
+  "paper_name": "Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection",
+  "mode": "full",
+  "evaluated_at": "2026-01-30T07:18:10.082468",
+  "note": "Re-scored Q2(Fidelity) and Q4(Design) with lenient strategy.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+      "caption": "Figure 2: Overview of our multimodal self-training framework of R3V . It boosts vision-language reasoning by iteratively reflecting on bootstrapped CoT rationales and enables self-reflection through test-time computing.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Iterative self-training loop (iteration t) alternating between: (1) bootstrapping CoT solutions and (2) reflection/learning from mistakes', 'Input training sample from dataset D = {(I, x, a_hat)} (image I, question x, ground-truth answer a_hat)', 'MLLM M generates CoT rationale r and answer a for each (I, x)', 'Augmented dataset with rationales Dr = {(I, x, r, a)}', 'Split Dr into positive set D_r+ (correct: a = a_hat) and negative set D_r- (incorrect: a != a_hat)', 'Supervised fine-tuning (SFT) on D_r+ with loss L_SFT', 'Reflection module with two parts: Self-Refine and Self-Select (multitask learning)', 'Self-Refine dataset D_REF containing (I, x, y+, y-) pairs (corrected target y+ and erroneous y-)', 'Self-Refine training loss L_REF optimizing M(y+ | y-, x, I)', 'Self-Select dataset D_SEL containing (I, x, a_hat, C) where C is a set of N sampled rationale-answer candidates', 'Self-Select training loss L_SEL optimizing M(a_hat | x, I, C)', 'Combined multitask objective L_R3V = L_SFT + L_REF + L_SEL', 'Update/fine-tune M with the combined losses and feed updated M back into the next iteration (weak-to-strong improvement)', 'Test-time selection (inference): given (x, I), sample multiple candidate reasoning solutions to form candidate set C', 'Inference selection step: model outputs final answer by selecting from candidates, a = M(x, I, C)']\nContext: Our self-training framework consists of two alternating components: (1) bootstrapping a large number of positive and negative CoT solutions for multimodal questions (Section 3.1); (2) using the above-sampled solutions to reflect on rationales and learn from mistakes (Section 3.2). This iterative process turns the MLLM from weak to strong. The overall framework is illustrated in Figure 2.\n\nIn each iteration t, given a question x from training set D = {(I, x, ˆa)}, the MLLM M first generate a CoT rationale r along with an answer a , formulated as {(ri, ai)}|D| i=1. These intermediate outputs are then combined with the original training set, resulting in an augmented dataset that includes rationales: Dr = {(Ii, xi, ri, ai)}|D| i=1 (1) Assuming that rationales leading to correct answers are of higher quality compared to those that do not, we can divide Dr into positive and negative sample sets based on the correctness of the answers: D+ r = {(Ii, xi, ri, ai) | ai = ˆai}|D| i=1 (2) D− r = {(Ii, xi, ri, ai) | ai ̸= ˆai}|D| i=1 (3) We then fine-tune model M on the filtered positive CoT samples D+ r using supervised fine-tuning (SFT) with a negative log-likelihood objective: LSFT = − X (I,x,y)∼Dt log M(y | x, I), (4)\n\nInspired by the error-driven learning of humans, we introduce reflection on rationales, teaching the model to correct its own mistakes and reflect on multiple reasoning paths to identify the correct solution. Specifically, we propose additional self-refine (Section 3.2.1) and self-select (Section 3.2.2) losses for multitask learning.\n\nSelf-Refine... we construct dataset for self-refine as follows: DREF = {(Ii, xi, y+ i , y− i ) | ∃y+ i , y− i }|D| i=1, (5) ... The self-refine loss is employed to guide the model in correcting errors in its self-generated answers: LREF = − X (I,x,y+,y−)∼DREF log M(y+ | y−, x, I) (6)\n\nSelf-Select... we construct the self-select dataset as follows: DSEL = {(Ii, xi, ˆai, Ci) | ∃Ci }|D| i=1, (7) where ˆa is the ground truth and Ci = (y1 i , y2 i , ..., yN i ) is a set of N sampled rationale-answer pair... Then, the self-select loss is defined as: LSEL = − X (I,x,ˆa,C)∼DSEL log M(ˆa|x, I, C) (8) Finally, our framework combines three loss functions in a multi-task training setup to enhance MLLM reasoning: LR3V = LSFT + LREF + LSEL (9)\n\nTest-Time Selection... During inference, given a question x and corresponding image I, we first sample multiple reasoning solutions to form the candidate set C. Next, the MLLM is prompted to select the best answer from these candidate solutions: a = M(x, I, C). Test-time selection offers a novel approach for MLLMs to tackle complex multimodal reasoning... by comparing different reasoning paths and checking for errors... to identify the most likely correct solution.",
+        "fidelity_based": "Lenient Consistency Report: [[{'element': 'VQA Datasets', 'status': 'Supported', 'evidence': 'The text explicitly frames the method as leveraging widely available vision question answering data (I, x, a) to bootstrap rationales (Section 3.1) and states the overall framework is illustrated in Figure 2.'}, {'element': 'Miniature golf scores', 'status': 'Supported', 'evidence': 'Figure 2 includes an example question about miniature golf strokes. This is a plausible illustrative VQA-style example of (image/table + question) → reasoning; the paper’s framework supports such examples and does not contradict their inclusion.'}, {'element': 'Miniature golf scores -> Question', 'status': 'Supported', 'evidence': 'Plausible visual grounding: the miniature golf scores constitute the visual/textual context from which the question is asked. This matches the paper’s setting of an image I plus question x (Section 3.1).'}, {'element': 'Question', 'status': 'Supported', 'evidence': 'Core variable x in the formulation: given image I and question x, the model generates rationale r and answer a (Section 3.1).'}, {'element': 'Question -> Answer', 'status': 'Supported', 'evidence': 'Directly aligned with the task definition: the model must answer given (I, x) (Section 3.1).'}, {'element': 'Question -> MLLM', 'status': 'Supported', 'evidence': 'The pipeline described repeatedly: given (I, x), the MLLM generates solutions (rationale+answer) during training iterations and at inference (Sections 3.1 and 3.2.3).'}, {'element': 'Answer', 'status': 'Supported', 'evidence': 'Answer a (and ground truth â) is explicitly defined and used to filter positives/negatives and for self-select (Equations 2–3, 7–8).'}, {'element': 'CoT Prompt', 'status': 'Supported', 'evidence': 'Zero-shot CoT prompting (“Let’s think step by step.”) is discussed (Section 4.2). CoT prompting is also central to generating rationales r.'}, {'element': 'CoT Prompt -> MLLM', 'status': 'Supported', 'evidence': 'Prompting the model to produce chain-of-thought is a standard and explicitly mentioned evaluation condition (Zero-shot CoT) and is consistent with generating r (Sections 3.1, 4.2).'}, {'element': 'MLLM (train-time, orange)', 'status': 'Supported', 'evidence': 'The paper distinguishes training/self-training iterations and presents Figure 2 as the overall framework; using a train-time model node is a faithful visual abstraction.'}, {'element': 'Multi-Task', 'status': 'Supported', 'evidence': 'The text explicitly states a multi-task training setup combining losses (Equation 9: LR3V = LSFT + LREF + LSEL) and refers to it as multi-task training.'}, {'element': 'Multi-Task -> MLLM (train-time, orange)', 'status': 'Supported', 'evidence': 'Multi-task learning is applied to train the model parameters (Equation 9), so it plausibly “feeds into” the training-time MLLM.'}, {'element': 'MLLM (train-time, orange) -> Bootstrapped CoT Samples', 'status': 'Supported', 'evidence': 'Section 3.1 states the MLLM generates CoT rationale r and answer a for each (I, x), forming an augmented dataset Dr; this is exactly bootstrapping CoT samples.'}, {'element': 'Bootstrapped CoT Samples', 'status': 'Supported', 'evidence': 'The framework’s first component is explicitly “bootstrapping positive and negative solutions for reasoning datasets” (Methodology overview; Equations 1–3).'}, {'element': 'Bootstrapped CoT Samples -> Positive', 'status': 'Supported', 'evidence': 'The text defines partitioning into positive samples D+r based on answer correctness (Equation 2).'}, {'element': 'Bootstrapped CoT Samples -> Negative', 'status': 'Supported', 'evidence': 'The text defines partitioning into negative samples D−r based on answer incorrectness (Equation 3).'}, {'element': 'Solution y+', 'status': 'Supported', 'evidence': 'The paper uses y as the solution (r, a) and defines positive solutions y+ in the self-refine dataset construction (Equation 5).'}, {'element': 'Solution y-', 'status': 'Supported', 'evidence': 'Negative solutions y− are explicitly defined and used in self-refine (Equation 5–6).'}, {'element': 'Solution y+ -> Positive', 'status': 'Supported', 'evidence': 'By definition, y+ denotes a positive (correct-answer) solution used in DREF and elsewhere; mapping y+ to Positive is consistent (Equations 2, 5).'}, {'element': 'Solution y- -> Negative', 'status': 'Supported', 'evidence': 'By definition, y− denotes an incorrect/negative solution; mapping to Negative is consistent (Equations 3, 5).'}, {'element': 'Positive', 'status': 'Supported', 'evidence': 'Positive solutions (correct answers) are central to SFT and sampling/selection, explicitly defined as D+r (Equation 2).'}, {'element': 'Negative', 'status': 'Supported', 'evidence': 'Negative solutions (incorrect answers) are central to reflection/self-refine and discussed throughout Section 3.2, explicitly defined as D−r (Equation 3).'}, {'element': 'Reflection on Rationale', 'status': 'Supported', 'evidence': 'The method name and description explicitly: “Reflecting on CoT Rationales” and “reflection on rationale for learning from mistakes” (Abstract and Section 3.2).'}, {'element': 'Reflection on Rationale -> (1) SFT on y+', 'status': 'Supported', 'evidence': 'R3V combines the standard SFT-on-positive component with additional reflection losses; Equation 9 includes LSFT, consistent with depicting it as one branch of the overall reflection-based framework.'}, {'element': 'Reflection on Rationale -> (2) Self-Refine', 'status': 'Supported', 'evidence': 'Self-refine is explicitly introduced as part of the reflection mechanism (Section 3.2.1) and included in LR3V (Equation 9).'}, {'element': 'Reflection on Rationale -> (3) Self-Select', 'status': 'Supported', 'evidence': 'Self-select is explicitly introduced as part of the reflection mechanism (Section 3.2.2) and included in LR3V (Equation 9).'}, {'element': '(1) SFT on y+', 'status': 'Supported', 'evidence': 'The paper describes fine-tuning on filtered positive CoT samples D+r using SFT (Section 3.1; Equation 4).'}, {'element': '(1) SFT on y+ -> Objective I', 'status': 'Supported', 'evidence': 'Representing LSFT as an ‘Objective’ is a standard diagrammatic abstraction; LSFT is explicitly defined (Equation 4).'}, {'element': 'Objective I', 'status': 'Supported', 'evidence': 'LSFT is a defined training objective; labeling it as an objective is consistent with Equation 4 and Equation 9.'}, {'element': '(2) Self-Refine', 'status': 'Supported', 'evidence': 'Self-refine mechanism and loss LREF are explicitly defined (Section 3.2.1; Equation 6).'}, {'element': '(2) Self-Refine -> Objective II', 'status': 'Supported', 'evidence': 'Depicting LREF as a distinct objective is consistent with the explicit loss definition (Equation 6) and multi-task combination (Equation 9).'}, {'element': 'Objective II', 'status': 'Supported', 'evidence': 'LREF is a defined objective term in the combined training loss (Equations 6 and 9).'}, {'element': '(3) Self-Select', 'status': 'Supported', 'evidence': 'Self-select mechanism and loss LSEL are explicitly defined (Section 3.2.2; Equation 8).'}, {'element': '(3) Self-Select -> Objective III', 'status': 'Supported', 'evidence': 'Depicting LSEL as a distinct objective is consistent with Equation 8 and the combined loss in Equation 9.'}, {'element': '(3) Self-Select -> Candidates', 'status': 'Supported', 'evidence': 'Self-select is defined over a candidate set C of sampled solutions (Equation 7); thus it naturally relates to ‘Candidates’.'}, {'element': 'Objective III', 'status': 'Supported', 'evidence': 'LSEL is explicitly defined as a training loss/objective (Equation 8) and combined in Equation 9.'}, {'element': 'Candidates', 'status': 'Supported', 'evidence': 'Candidate set C = (y1,…,yN) is explicitly defined for self-select (Equation 7), with N=3 by default.'}, {'element': 'Test-Time Compute', 'status': 'Supported', 'evidence': 'The paper explicitly introduces “Test-time selection” and states it boosts performance through sampling and selection during inference (Section 3.2.3; Section 5.2).'}, {'element': 'Question (test-time)', 'status': 'Supported', 'evidence': 'Inference is described as: given question x and image I, sample multiple solutions then select (Section 3.2.3).'}, {'element': 'Question (test-time) -> MLLM (test-time, blue)', 'status': 'Supported', 'evidence': 'At inference, the model consumes x (and I) to generate and/or select answers (Section 3.2.3). Using a distinct test-time node is a visual aid.'}, {'element': 'CoT Prompt (test-time)', 'status': 'Supported', 'evidence': 'The model is prompted to produce CoT in evaluations and to sample candidate solutions; representing a CoT prompt at test time is plausible and consistent with the setup (Sections 4.2, 3.2.3).'}, {'element': 'CoT Prompt (test-time) -> MLLM (test-time, blue)', 'status': 'Supported', 'evidence': 'Prompting affects test-time generation of candidate solutions; this matches the described sampling of multiple reasoning solutions (Section 3.2.3).'}, {'element': 'MLLM (test-time, blue)', 'status': 'Supported', 'evidence': 'The paper describes inference-time behavior distinct from training, including sampling multiple solutions and selecting among them (Section 3.2.3).'}, {'element': 'MLLM (test-time, blue) -> Sampling', 'status': 'Supported', 'evidence': 'Test-time procedure: “we first sample multiple reasoning solutions to form the candidate set C” (Section 3.2.3).'}, {'element': 'Sampling', 'status': 'Supported', 'evidence': 'Sampling multiple candidate solutions is explicitly part of test-time selection (Section 3.2.3) and also used during self-training iterations.'}, {'element': 'Sampling -> Solution A', 'status': 'Supported', 'evidence': 'Solutions A/B/C are a schematic representation of sampled candidates; the text explicitly samples multiple solutions to form candidate set C (Section 3.2.3).'}, {'element': 'Sampling -> Solution B', 'status': 'Supported', 'evidence': 'Same as above; multiple sampled solutions are required and N=3 is used by default (Section 3.2.2 and 3.2.3).'}, {'element': 'Sampling -> Solution C', 'status': 'Supported', 'evidence': 'Same as above; the candidate set contains multiple solutions (Section 3.2.3).'}, {'element': 'Solution A', 'status': 'Supported', 'evidence': 'Represents one sampled candidate solution yi; consistent with candidate set C (Equation 7).'}, {'element': 'Solution B', 'status': 'Supported', 'evidence': 'Represents one sampled candidate solution yi; consistent with candidate set C (Equation 7).'}, {'element': 'Solution C', 'status': 'Supported', 'evidence': 'Represents one sampled candidate solution yi; consistent with candidate set C (Equation 7).'}, {'element': 'MLLM (test-time, blue) -> Solution A', 'status': 'Supported', 'evidence': 'At inference, the model generates candidate solutions via sampling (Section 3.2.3).'}, {'element': 'MLLM (test-time, blue) -> Solution B', 'status': 'Supported', 'evidence': 'Same as above; multiple candidate solutions are generated by the model at test time (Section 3.2.3).'}, {'element': 'MLLM (test-time, blue) -> Solution C', 'status': 'Supported', 'evidence': 'Same as above; multiple candidate solutions are generated by the model at test time (Section 3.2.3).'}, {'element': 'Self-Select Prompt', 'status': 'Supported', 'evidence': 'The paper states the MLLM is “prompted to select the best answer from these candidate solutions” at inference (Section 3.2.3). A ‘Self-Select Prompt’ is a reasonable label for that instruction.'}, {'element': 'Self-Select Prompt -> MLLM (test-time, blue)', 'status': 'Supported', 'evidence': 'Consistent with Section 3.2.3: the model is prompted to perform selection given x, I, and candidate set C.'}, {'element': 'Self-Select Prompt -> Solution B (selected)', 'status': 'Supported', 'evidence': 'Diagrammatically indicates the selection output among candidates; the text describes selecting the best/correct answer from multiple candidates (Section 3.2.3).'}, {'element': 'Solution B (selected)', 'status': 'Supported', 'evidence': 'Represents the chosen best solution/answer after self-selection; matches the described test-time selection mechanism (Section 3.2.3) and results in improved performance (Tables/Figures in Sections 4.4 and 5.2).'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 4,
+              "reason": "The target figure captures most major components of the described iterative self-training framework: (i) bootstrapping CoT rationale+answer from the MLLM over VQA samples, (ii) forming an augmented rationale dataset and splitting into positive vs. negative solutions, (iii) the three training objectives corresponding to SFT on positives, Self-Refine (using negatives to produce corrected outputs), and Self-Select (selection among candidates), and (iv) test-time sampling of multiple candidate solutions followed by a self-selection step to output the final answer. This aligns well with the evidence and with the referenced schematic styles (solution collection + selection at inference). However, several key details/formulas are omitted or only implied: the explicit dataset notations (D, Dr, Dr+/Dr−, DREF, DSEL), the combined multitask loss LR3V = LSFT + LREF + LSEL, the explicit conditional forms (e.g., M(y+|y−,x,I), M(â|x,I,C)), and the iterative loop/feedback from iteration t to t+1 (weak-to-strong improvement) is not clearly depicted as a closed loop. Thus, coverage is strong but not complete."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure is largely standalone in conveying the system’s operating principle: it shows (i) starting from VQA data with (I, x, â), (ii) prompting an MLLM to generate bootstrapped CoT solutions and splitting them into positive vs. negative by correctness, (iii) a multi-task training block that includes SFT on positives plus “Reflection on Rationale” with Self-Refine and Self-Select, and (iv) a test-time procedure where multiple candidate solutions are sampled and then a self-select step chooses the final answer. This aligns well with the evidence’s iterative self-training loop (bootstrapping → reflection/learning) and the three losses (LSFT, LREF, LSEL) plus test-time selection.\n\nHowever, some key aspects are not fully intelligible without the paper: the explicit iterative loop over iterations t (feeding the updated model back) is only implied by arrows, not clearly labeled; the Self-Refine input/output structure (y− → y+) and the Self-Select training target (â given candidate set C) are not explicitly defined; and dataset notation (Dr, D+r, D−r, DREF, DSEL) and the combined objective LR3V are not shown. Thus, a reader can grasp the high-level pipeline and roles of modules, but not the precise training objectives or data construction details."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 4,
+              "reason": "The target figure captures most of the paper’s end-to-end framework: (i) bootstrapping CoT rationale+answer pairs from training data, (ii) splitting into positive/negative solutions based on correctness, (iii) multi-task training with SFT on positives plus reflection components (Self-Refine and Self-Select), and (iv) test-time candidate sampling followed by self-selection to output the final answer. This aligns well with the evidence items (Dr creation, D_r+/D_r-, SFT, reflection modules, and inference selection). However, it is not fully complete/explicit: key dataset notations and losses (D, Dr, D_REF, D_SEL; L_SFT, L_REF, L_SEL; combined L_R3V) and the iterative loop/update across iterations t (weak-to-strong feedback into the next iteration) are only implied rather than clearly shown. Thus it summarizes most major stages but omits/underspecifies some beginning-to-end formal elements."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "All depicted components and relationships are supported by the provided evidence: VQA dataset setup (I, x, a), CoT prompting, bootstrapped CoT samples split into positives/negatives, reflection-on-rationale with three branches (SFT on y+, self-refine, self-select) combined via multi-task objectives, and test-time compute with sampling multiple candidate solutions and a self-select prompt to choose the best. The miniature-golf example and train-time/test-time MLLM nodes are consistent illustrative/diagrammatic abstractions and not contradicted by the paper per the evidence. No critical contradicted elements or invented formulas are indicated."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "All depicted relations among the major components match the paper’s described pipeline: (I,x) with CoT prompting feeds the MLLM to bootstrap rationale+answer solutions; these are partitioned into positive/negative by answer correctness; the reflection framework branches into SFT on positives, self-refine using negatives/positives, and self-select over sampled candidate sets, combined in a multi-task objective; and at test time the model samples multiple candidate solutions and is prompted to self-select the best. The evidence provided marks every relation as Supported and no critical contradictions are indicated."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "All major component/methodology labels in the target figure are accurate and align with the paper’s terminology and definitions: bootstrapped CoT samples split into positive/negative solutions; the overarching “Reflection on Rationale” framing with three branches (SFT on y+, Self-Refine, Self-Select) and their corresponding objectives; multi-task training combining these losses; and the test-time compute procedure involving sampling multiple candidate solutions and a self-select prompt. No critical labels are contradicted by the provided evidence; the remaining labels function as consistent visual aids."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 5,
+              "reason": "Yes. The target figure is clearly schematized around the paper’s main contribution: an iterative self-training loop that (i) bootstraps CoT rationale–answer solutions from an MLLM, (ii) partitions them into positive/negative based on correctness, and (iii) performs multi-task learning with SFT on positives plus reflection via Self-Refine and Self-Select, followed by an updated model and a test-time selection procedure. It abstracts away low-level implementation/training details (e.g., optimizer, architecture, hyperparameters) while preserving the key datasets/flows (D → Dr → D_r+/D_r−, and the three objectives). Compared with the reference figures, it matches the high-level pipeline/box-and-arrow style typical of method overviews and avoids trivialities, focusing on the conceptual loop and inference-time candidate selection."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "Yes. The target figure closely mirrors the described framework and would substantially aid understanding alongside the text. It explicitly depicts: (i) the iterative self-training loop from a VQA dataset input (I, x, â) through an MLLM generating CoT rationales/answers, (ii) the construction of bootstrapped CoT samples and their split into positive (correct) and negative (incorrect) sets, (iii) the three training components/objectives—SFT on positive samples, reflection via Self-Refine and Self-Select under a multi-task setup, and (iv) test-time selection by sampling multiple candidate solutions and selecting the best answer. These elements align tightly with the evidence (Dr construction, D_r+/D_r− filtering, L_SFT/L_REF/L_SEL roles, and inference-time candidate set C selection). Visually, it is also consistent with the style and intent of the reference figures that illustrate multi-path reasoning, filtering, and selection/verification; however, the target is more directly mapped to the paper’s specific modules (SFT + self-refine + self-select + test-time selection), making it an effective supplementary schematic."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely focused on the core pipeline described in the evidence: bootstrapping CoT rationales/answers, splitting into positive vs. negative samples, multi-task training with (1) SFT on positives, (2) Self-Refine, (3) Self-Select, and test-time sampling + selection. Most visual elements (green/red sample boxes, the three objective blocks, and the test-time candidate selection panel) directly support these ideas and are not decorative.\n\nMinor redundancy/unnecessary elements remain: the small “miniature golf scores” table, repeated MLLM blocks, multiple prompt callouts, and use of icons/emblems (e.g., flames/snowflakes) add visual clutter without adding conceptual content. Still, these do not substantially distract from the main message, so redundancy is low overall."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.714,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The layout reads clearly in a left-to-right, top-to-bottom manner: VQA datasets → bootstrapped CoT samples → test-time compute, with consistent arrows and grouping boxes guiding the eye. The main pipeline is immediately apparent within a 3-second glance, and the submodules are aligned cleanly without confusing crossovers."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 5,
+              "reason": "Connection lines are cleanly routed and mostly straight, with clear left-to-right flow. Arrows do not tangle or cross in confusing ways; any overlaps are minimal and remain readable at a glance. Overall looks like a polished, publishable figure."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Functionally related modules are consistently grouped and placed in close proximity: the left panel clusters dataset input → CoT prompt → MLLM → bootstrapped samples, and the lower-left reflection methods (SFT/self-refine/self-select) are co-located with clear vertical arrows indicating their relationship. The right panel keeps test-time compute elements together (question/circuit → prompt → MLLM → sampled solutions → self-select), with minimal cross-panel linkage. Spacing and bounding boxes make the module neighborhoods obvious within a 3-second scan, with no distracting long-range connections."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall layout follows a clear grid: the three main top panels align well, and the lower sections are mostly in neat rows/columns. However, there are minor alignment inconsistencies—some boxes/icons (e.g., CoT prompt/MLLM blocks and the objective blocks) sit a bit off-center relative to their groupings, and spacing between elements isn’t perfectly uniform. Still fully readable and looks publishable."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 5,
+              "reason": "The main components are immediately distinguishable: the figure is cleanly divided into three top-level panels with clear headers (“VQA Datasets”, “Bootstrapped CoT Samples”, “Test-Time Compute”). The central MLLM blocks and the green/red solution stacks are visually emphasized through size, color, and thicker borders, making the intended flow and key contrast (positive vs. negative; selected vs. unselected) pop within a 3-second glance. Arrows and grouping boxes guide attention in a logical left-to-right, top-to-bottom reading order. Text remains readable and the hierarchy feels publication-ready with no clutter that obscures the primary message."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 5,
+              "reason": "Margins are sufficient and consistent across the figure: the three main panels are clearly separated with ample whitespace, internal padding keeps text/boxes from touching borders, and connectors/arrows don’t crowd labels. Nothing feels cramped; the layout reads cleanly at a glance and looks publication-ready."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 4,
+              "reason": "Overall the figure uses a coherent visual language (boxed panels, consistent arrows/flow direction, repeated use of green/red to indicate positive/negative, and similar module boxes for MLLM). However, there are a few consistency slips: some conceptually similar items are styled differently (e.g., prompt boxes vs. solution boxes vs. objective boxes use different shapes/borders without a clearly consistent mapping), and color roles shift slightly across sections (multiple blues/greens for different semantics). Still fully readable and close to publication quality."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The Target Figure frequently replaces abstract ML concepts with concrete visual encodings: the MLLM is depicted as a boxed module (with a flame/snowflake icon suggesting training vs. test-time), reasoning is represented by stacked ‘solution’ cards, and correctness is encoded via green checkmarks/red crosses and green/red color blocks. It also uses abbreviations and compact labels (e.g., CoT, SFT, VQA, y+/y−-style solution notation, objectives I–III) to stand in for longer concepts. This level of metaphorization is comparable to the evidence figures (especially Ref 5 and Ref 4) that use icons, color semantics, and schematic pipelines. However, the Target still relies substantially on textual headers and explanatory phrases (e.g., dataset names, ‘Bootstrapped CoT Samples’, ‘Test-Time Compute’, ‘Reflection on Rationale’) rather than fully substituting them with symbols, so it is not maximal."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure follows a very common academic infographic template: multi-panel layout, boxed modules with arrows, pastel color-coding (green=positive/red=negative/blue=process), and simple iconography (LLM/MLLM blocks, prompts, sampling). Its visual language and composition strongly resemble the evidence figures—especially Ref 2 and Ref 3, which use similar pipeline segmentation, selection/annotation/inference flow, and red/green correctness cues. While it combines VQA, bootstrapped CoT samples, and test-time compute into one schematic, the styling itself is not distinctive; it reads as a conventional ML method diagram rather than a uniquely styled design."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 4,
+              "reason": "The target figure departs from a one-size-fits-all template and adopts a layout tailored to its specific narrative: it is organized into distinct, labeled modules (“VQA Datasets”, “Bootstrapped CoT Samples”, “Test-Time Compute”) with an explicit left-to-right flow that matches a pipeline/ablation story. It mixes different panel structures (dataset table + prompt block, positive/negative sample cards, and a test-time sampling/self-selection schematic) rather than repeating a uniform box-and-arrow motif across all sections. Compared with the evidence figures—many of which use more uniform, repeated panel patterns (e.g., multi-step selection pipelines or three equal columns)—the target shows greater structural adaptation to the paper’s contributions. It is not maximally adaptive because it still relies on common schematic conventions (rectangular modules, arrows, consistent iconography), but overall it meaningfully breaks from strict uniform design."
+            }
+          ]
+        }
+      },
+      "weighted_total": 4.343,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7517
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7418
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7234
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Error-driven_Data-efficient_Large_Multimodal_Model_Tuning/Error-driven_Data-efficient_Large_Multimodal_Model_Tuning__p2__score1.00.png",
+            "similarity": 0.7245
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7517
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7375
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7379
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7564
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7517
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7418
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7564
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7674
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p0__score1.00.png",
+            "similarity": 0.6556
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7477
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6774
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7674
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.5889
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7418
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.7098
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7674
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7418
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7234
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7564
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7674
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.7376
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7674
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7517
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7459
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7517
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7418
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7674
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7477
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6774
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7517
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7418
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7477
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.6966
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7564
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7379
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7674
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6396
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.7124
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7674
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7418
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5409
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.7373
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7186
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7674
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.6963
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.6574
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7674
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7517
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7234
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7418
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7674
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7674
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6754
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7318
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7564
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.6574
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7674
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7234
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7564
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.7376
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7564
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7674
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7517
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7517
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7564
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7459
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/A_Theory_of_Response_Sampling_in_LLMs_Part_Descriptive_and_Part_Prescriptive/A_Theory_of_Response_Sampling_in_LLMs_Part_Descriptive_and_Part_Prescriptive__p1__score1.00.png",
+            "similarity": 0.6855
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7517
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7564
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7861
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7459
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/A_Theory_of_Response_Sampling_in_LLMs_Part_Descriptive_and_Part_Prescriptive/A_Theory_of_Response_Sampling_in_LLMs_Part_Descriptive_and_Part_Prescriptive__p1__score1.00.png",
+            "similarity": 0.6855
+          }
+        }
+      }
+    }
+  ]
+}

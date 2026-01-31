@@ -1,0 +1,281 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Parametric Faithfulness Framework & FUR Overview</title>
+<style>
+  :root{
+    --w:1200px;
+    --h:1500px;
+
+    --bg:#ffffff;
+    --ink:#1a1a1a;
+    --muted:#555;
+    --subtle:#6b7280;
+
+    --panel:#fbfbfd;
+    --stroke:#1f2937;
+    --light-stroke:#9aa4b2;
+
+    --blue:#2563eb;
+    --blue2:#1d4ed8;
+    --blueFill:#eff6ff;
+
+    --green:#16a34a;
+    --greenFill:#ecfdf5;
+
+    --amber:#b45309;
+    --amberFill:#fffbeb;
+
+    --purple:#7c3aed;
+    --purpleFill:#f5f3ff;
+
+    --grayFill:#f3f4f6;
+  }
+
+  html, body { margin:0; padding:0; background:var(--bg); }
+  #figure-root{
+    width:var(--w);
+    height:var(--h);
+    margin:0 auto;
+    background:var(--bg);
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  /* SVG text styles (use fill, not color) */
+  .title { font-size:28px; font-weight:700; fill:var(--ink); }
+  .subtitle { font-size:15px; font-weight:600; fill:var(--muted); }
+  .sectionLabel { font-size:18px; font-weight:700; fill:var(--ink); }
+  .small { font-size:13px; fill:var(--muted); }
+  .tiny { font-size:12px; fill:var(--subtle); }
+  .label { font-size:15px; font-weight:700; fill:var(--ink); }
+  .mono { font-family: "Arial", Helvetica, sans-serif; font-size:13px; fill:var(--muted); }
+  .math { font-size:14px; fill:var(--muted); }
+  .capsuleText { font-size:14px; font-weight:700; fill:var(--ink); }
+  .metricText { font-size:14px; fill:var(--ink); font-weight:700; }
+  .metricSub { font-size:12.5px; fill:var(--muted); }
+  .caption { font-size:13px; fill:var(--ink); }
+  .captionLabel { font-size:13px; font-weight:700; fill:var(--ink); }
+
+  .box { stroke:var(--stroke); stroke-width:2; rx:14; ry:14; }
+  .boxLight { stroke:var(--light-stroke); stroke-width:1.6; rx:12; ry:12; }
+  .divider { stroke:var(--light-stroke); stroke-width:2; }
+  .dashed { stroke-dasharray:7 6; }
+
+  .arrow { stroke:var(--stroke); stroke-width:2.2; fill:none; }
+  .arrowLight { stroke:var(--light-stroke); stroke-width:2; fill:none; }
+  .arrowBlue { stroke:var(--blue2); stroke-width:2.4; fill:none; }
+  .arrowGreen { stroke:var(--green); stroke-width:2.4; fill:none; }
+
+  .pill { stroke:var(--light-stroke); stroke-width:1.5; rx:18; ry:18; }
+  .stepRect { stroke:var(--stroke); stroke-width:1.8; rx:10; ry:10; }
+  .noteRect { stroke:var(--light-stroke); stroke-width:1.5; rx:10; ry:10; }
+
+  .legendTitle { font-size:13px; font-weight:700; fill:var(--ink); }
+  .legendText { font-size:12.5px; fill:var(--muted); }
+</style>
+</head>
+<body>
+<div id="figure-root">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-label="Overview diagram of the Parametric Faithfulness Framework and FUR">
+  <defs>
+    <marker id="arrowhead" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#1f2937"></path>
+    </marker>
+    <marker id="arrowheadBlue" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#1d4ed8"></path>
+    </marker>
+    <marker id="arrowheadGreen" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#16a34a"></path>
+    </marker>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#000000" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <!-- Header -->
+  <text x="60" y="70" class="title">Parametric Faithfulness Framework (PFF) and FUR Instantiation</text>
+  <text x="60" y="100" class="subtitle">Two stages: (1) parameter intervention guided by reasoning steps; (2) evaluate faithfulness via changes in direct-answer predictions</text>
+
+  <!-- Outer main panel -->
+  <rect x="50" y="125" width="1100" height="1220" class="boxLight" fill="#fbfbfd"/>
+
+  <!-- Stage labels -->
+  <rect x="70" y="150" width="510" height="44" class="pill" fill="#f3f4f6"/>
+  <text x="90" y="178" class="sectionLabel">Stage 1: Intervention (erase step information from parameters)</text>
+
+  <rect x="620" y="150" width="510" height="44" class="pill" fill="#f3f4f6"/>
+  <text x="640" y="178" class="sectionLabel">Stage 2: Evaluation (measure parametric faithfulness)</text>
+
+  <!-- Vertical divider -->
+  <line x1="600" y1="210" x2="600" y2="1325" class="divider"/>
+
+  <!-- LEFT: Stage 1 flow (Generate CoT -> Segment -> Unlearn each step via NPO+KL) -->
+  <!-- Box 1: Input + model -->
+  <rect x="90" y="240" width="460" height="155" class="box" fill="#ffffff" filter="url(#softShadow)"/>
+  <text x="110" y="272" class="label">1) Prompt model M</text>
+  <text x="110" y="298" class="small">Input: question + answer choices (MCQA)</text>
+  <text x="110" y="322" class="small">Generate a chain of thought (CoT) using greedy decoding</text>
+
+  <!-- miniature prompt box -->
+  <rect x="110" y="336" width="420" height="44" class="noteRect" fill="#f8fafc"/>
+  <text x="125" y="363" class="tiny">Output: CoT text (free-form reasoning)</text>
+
+  <!-- Arrow to segmentation -->
+  <path d="M 320 402 L 320 435" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <!-- Box 2: Segment into steps -->
+  <rect x="90" y="445" width="460" height="200" class="box" fill="var(--blueFill)" filter="url(#softShadow)"/>
+  <text x="110" y="477" class="label">2) Segment CoT into reasoning steps</text>
+  <text x="110" y="504" class="small">Split CoT into sentence-level steps (chosen granularity)</text>
+  <text x="110" y="528" class="small">Keep content words as unlearning targets</text>
+
+  <!-- steps visual -->
+  <rect x="120" y="545" width="390" height="36" class="stepRect" fill="#ffffff"/>
+  <text x="135" y="568" class="mono">Step r₁: … (sentence 1)</text>
+  <rect x="120" y="588" width="390" height="36" class="stepRect" fill="#ffffff"/>
+  <text x="135" y="611" class="mono">Step r₂: … (sentence 2)</text>
+  <rect x="120" y="631" width="390" height="36" class="stepRect" fill="#ffffff"/>
+  <text x="135" y="654" class="mono">Step r₃: … (sentence 3)</text>
+
+  <!-- Arrow to unlearning loop -->
+  <path d="M 320 655 L 320 690" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <!-- Box 3: Unlearn each step -->
+  <rect x="90" y="705" width="460" height="360" class="box" fill="var(--amberFill)" filter="url(#softShadow)"/>
+  <text x="110" y="737" class="label">3) Unlearn each step independently (FUR)</text>
+  <text x="110" y="764" class="small">For each step rᵢ: create forget set D_f from content-word prefixes/targets</text>
+  <text x="110" y="788" class="small">Create retain set D_r from content words of random steps from other instances</text>
+
+  <!-- NPO+KL capsule -->
+  <rect x="110" y="810" width="420" height="64" class="pill" fill="#ffffff" stroke="#9aa4b2" stroke-width="1.6"/>
+  <text x="130" y="836" class="capsuleText">NPO + KL (parameter intervention)</text>
+  <text x="130" y="860" class="tiny">Discourage predicting D_f while preserving behavior on D_r via KL regularization</text>
+
+  <!-- Model update depiction -->
+  <rect x="110" y="892" width="200" height="66" class="noteRect" fill="#ffffff"/>
+  <text x="125" y="918" class="small">Base model</text>
+  <text x="125" y="942" class="mono">M</text>
+
+  <path d="M 315 925 L 360 925" class="arrowBlue" marker-end="url(#arrowheadBlue)"/>
+  <text x="322" y="910" class="tiny" fill="#1d4ed8" style="fill:#1d4ed8;">unlearn rᵢ</text>
+
+  <rect x="365" y="892" width="165" height="66" class="noteRect" fill="#ffffff"/>
+  <text x="380" y="918" class="small">Modified model</text>
+  <text x="380" y="942" class="mono">Mᵢ (step-specific)</text>
+
+  <!-- Loop indicator -->
+  <path d="M 455 965 C 510 1005, 510 1040, 455 1080 C 400 1120, 240 1120, 185 1080 C 130 1040, 130 1005, 185 965"
+        class="arrowLight dashed" marker-end="url(#arrowhead)"/>
+  <text x="150" y="1042" class="tiny">Repeat for all steps r₁…rₖ</text>
+
+  <!-- Controls note (kept minimal, but grounded in context) -->
+  <rect x="110" y="1092" width="420" height="88" class="noteRect" fill="#fff"/>
+  <text x="125" y="1118" class="small">Validity checks for intervention (controls)</text>
+  <text x="125" y="1142" class="tiny">Efficacy: reduce step probability; Specificity: retain in-domain labels; General: retain overall capability</text>
+
+  <!-- Bridge arrow to Stage 2 -->
+  <path d="M 550 915 L 600 915" class="arrow" marker-end="url(#arrowhead)"/>
+  <text x="520" y="900" class="tiny">outputs: M and {Mᵢ}</text>
+
+  <!-- RIGHT: Stage 2 evaluation -->
+  <!-- Box 4: Direct-answer prompting -->
+  <rect x="650" y="240" width="460" height="185" class="box" fill="var(--greenFill)" filter="url(#softShadow)"/>
+  <text x="670" y="272" class="label">4) Query direct answers (no CoT)</text>
+  <text x="670" y="298" class="small">Prompt M and each Mᵢ to answer directly</text>
+  <text x="670" y="322" class="small">This isolates parametric effects (no contextual CoT influence)</text>
+
+  <!-- two columns for predictions -->
+  <rect x="670" y="340" width="205" height="70" class="noteRect" fill="#ffffff"/>
+  <text x="685" y="366" class="small">Base prediction</text>
+  <text x="685" y="392" class="mono">y = argmax p(y | M)</text>
+
+  <rect x="905" y="340" width="205" height="70" class="noteRect" fill="#ffffff"/>
+  <text x="920" y="366" class="small">After unlearning rᵢ</text>
+  <text x="920" y="392" class="mono">yᵢ = argmax p(y | Mᵢ)</text>
+
+  <!-- Arrow to metrics -->
+  <path d="M 880 435 L 880 470" class="arrowGreen" marker-end="url(#arrowheadGreen)"/>
+
+  <!-- Box 5: Faithfulness metrics -->
+  <rect x="650" y="485" width="460" height="320" class="box" fill="var(--purpleFill)" filter="url(#softShadow)"/>
+  <text x="670" y="517" class="label">5) Quantify faithfulness from answer changes</text>
+  <text x="670" y="544" class="small">Parametric faithfulness increases when unlearning a step changes the direct-answer prediction</text>
+
+  <!-- Metric cards -->
+  <rect x="670" y="565" width="420" height="104" class="noteRect" fill="#ffffff"/>
+  <text x="690" y="595" class="metricText">FF-hard (chain-level)</text>
+  <text x="690" y="622" class="math">FF-hard = 1[ ∃ step rᵢ such that yᵢ ≠ y ]</text>
+  <text x="690" y="648" class="metricSub">Binary: did unlearning any step flip the most likely label?</text>
+
+  <rect x="670" y="682" width="420" height="104" class="noteRect" fill="#ffffff"/>
+  <text x="690" y="712" class="metricText">FF-soft (step-level salience)</text>
+  <text x="690" y="739" class="math">FF-soft(rᵢ) = p(y | M) − p(y | Mᵢ)</text>
+  <text x="690" y="765" class="metricSub">Continuous: how much probability mass shifts away from the base answer when rᵢ is unlearned?</text>
+
+  <!-- Salience bar sketch -->
+  <text x="670" y="822" class="small">Interpretation:</text>
+  <rect x="670" y="836" width="420" height="64" class="noteRect" fill="#ffffff"/>
+  <text x="690" y="862" class="tiny">Large FF-soft(rᵢ) ⇒ step rᵢ is causally associated with the model’s internal computation supporting y</text>
+  <text x="690" y="884" class="tiny">FF-hard summarizes over steps; FF-soft ranks steps within the chain</text>
+
+  <!-- Integrative overview: left-to-right mini pipeline -->
+  <rect x="90" y="1105" width="1020" height="200" class="boxLight" fill="#ffffff"/>
+  <text x="110" y="1135" class="label">End-to-end overview (PFF instantiated as FUR)</text>
+
+  <!-- mini nodes -->
+  <rect x="120" y="1160" width="185" height="72" class="noteRect" fill="#f8fafc"/>
+  <text x="132" y="1186" class="small">Generate CoT</text>
+  <text x="132" y="1208" class="tiny">from model M</text>
+
+  <path d="M 305 1196 L 345 1196" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <rect x="350" y="1160" width="200" height="72" class="noteRect" fill="#f8fafc"/>
+  <text x="362" y="1186" class="small">Segment into steps</text>
+  <text x="362" y="1208" class="tiny">r₁…rₖ</text>
+
+  <path d="M 550 1196 L 590 1196" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <rect x="595" y="1160" width="220" height="72" class="noteRect" fill="#fff7ed"/>
+  <text x="607" y="1186" class="small">Unlearn each step</text>
+  <text x="607" y="1208" class="tiny">NPO+KL → models Mᵢ</text>
+
+  <path d="M 815 1196 L 855 1196" class="arrow" marker-end="url(#arrowhead)"/>
+
+  <rect x="860" y="1160" width="220" height="72" class="noteRect" fill="#ecfdf5"/>
+  <text x="872" y="1186" class="small">Direct-answer eval</text>
+  <text x="872" y="1208" class="tiny">compare M vs Mᵢ</text>
+
+  <!-- arrows down to metrics -->
+  <path d="M 970 1232 L 970 1264" class="arrowGreen" marker-end="url(#arrowheadGreen)"/>
+  <rect x="860" y="1270" width="220" height="56" class="noteRect" fill="#f5f3ff"/>
+  <text x="872" y="1293" class="small">FF-hard, FF-soft</text>
+  <text x="872" y="1312" class="tiny">faithfulness from answer shifts</text>
+
+  <!-- Legend -->
+  <rect x="650" y="830" width="460" height="235" class="boxLight" fill="#ffffff"/>
+  <text x="670" y="860" class="legendTitle">Key idea: parametric (not contextual) faithfulness</text>
+  <text x="670" y="885" class="legendText">Contextual perturbations remove tokens from the prompt; the model may reconstruct missing information from parameters.</text>
+  <text x="670" y="908" class="legendText">PFF intervenes on parameters using reasoning steps as targets, then evaluates whether predictions change without providing CoT context.</text>
+
+  <line x1="670" y1="930" x2="1090" y2="930" class="divider"/>
+
+  <rect x="670" y="945" width="18" height="18" fill="var(--blueFill)" stroke="#9aa4b2" stroke-width="1.2"/>
+  <text x="696" y="959" class="legendText">CoT segmentation into steps rᵢ</text>
+
+  <rect x="670" y="974" width="18" height="18" fill="var(--amberFill)" stroke="#9aa4b2" stroke-width="1.2"/>
+  <text x="696" y="988" class="legendText">Unlearning intervention (NPO+KL) to form Mᵢ</text>
+
+  <rect x="670" y="1003" width="18" height="18" fill="var(--greenFill)" stroke="#9aa4b2" stroke-width="1.2"/>
+  <text x="696" y="1017" class="legendText">Direct-answer predictions for evaluation (no CoT)</text>
+
+  <rect x="670" y="1032" width="18" height="18" fill="var(--purpleFill)" stroke="#9aa4b2" stroke-width="1.2"/>
+  <text x="696" y="1046" class="legendText">Faithfulness metrics: FF-hard (flip) and FF-soft (probability shift)</text>
+
+  <!-- Caption area -->
+  <rect x="50" y="1360" width="1100" height="120" class="boxLight" fill="#ffffff"/>
+  <text x="70" y="1390" class="captionLabel">Figure:</text>
+  <text x="130" y="1390" class="caption">Overview of the Parametric Faithfulness Framework and its instantiation via Faithfulness by Unlearning Reasoning steps (FUR): generate a chain of thought, segment into steps, unlearn each step from model parameters using NPO+KL, and quantify faithfulness by changes in direct-answer predictions (FF-hard, FF-soft).</text>
+</svg>
+</div>
+</body>
+</html>

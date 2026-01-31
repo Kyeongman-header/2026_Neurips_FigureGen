@@ -1,0 +1,554 @@
+{
+  "paper_name": "MASTER_A_Multi-Agent_System_with_LLM_Specialized_MCTS",
+  "mode": "full",
+  "evaluated_at": "2026-01-29T04:46:19.601718",
+  "figure_evaluations": [
+    {
+      "figure_file": "MASTER_A_Multi-Agent_System_with_LLM_Specialized_MCTS__p2__score1.00.png",
+      "caption": "Figure 1: Reasoning Tree of MASTER. Starting from Agent0, Agent1 and Agent2 are created in the first expansion. Then the system first selects Agent1 for expansion due to its higher UCT. Its child agent Agent3 is a terminal agent that failed evaluation which triggers a backpropagation and lowers the UCT of Agent1. Now Agent2 has the highest UCT and is selected for next expansion. Its child agent, Agent6 is a terminal agent and passes evaluation. The answer in it is the final answer.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Input Task/Problem', 'Root Agent initialization (with problem)', 'Reasoning Tree (agents as nodes, parent-child relationships)', 'Per-agent generation loop: Thought -> Action -> Observation (tool/environment feedback) forming Solution', 'External Tools / Environment interaction (Action executed -> Observation returned)', 'Validation step (LLM verifies key facts in current Solution)', 'Assessment step (LLM outputs score and confidence)', 'Reward extraction: initial reward r0 (score) and confidence c0', 'Agent Context = Solution + Validation + Assessment', 'Memory storage of Context (stored in agent’s memory)', 'Expansion (create child agents from a parent; parent Context appended to child prompts)', 'Multiple child agents per expansion (Number of Branches hyperparameter; e.g., Agent1, Agent2)', 'UCT computation per agent (modified UCT uses r0, c0, and backprop-updated rewards)', 'Selection: choose agent with highest UCT for further expansion', 'Maximum of Expansion stopping criterion (hyperparameter)', 'Terminal Agent identification (agent produces final answer; e.g., Action = Finish[])', 'Evaluation step applied only to Terminal Agents (LLM assesses correctness of Solution)', 'If Evaluation succeeds: submit final answer / end', 'If Evaluation fails: Backpropagation triggered', 'Backpropagation flow: terminal agent reward used to update rewards (Q estimates) along path up to root', 'Updated reward component (mean of rewards from backpropagation) combined with initial reward in Qi/UCT', 'If max expansion reached without satisfactory solution: submit solution from terminal agent with highest reward']\nContext: 3.2 Framework of MASTER\nIn our framework, MASTER, the concepts of rea- soning tree, selection, expansion, and backpropa- gation are analogous to those used in MCTS. How- ever, we eliminate the simulation step due to those two issues highlighted in the Introduction section. Instead, our framework incorporates three special mechanisms to derive rewards: providing more con- text before self-evaluation, incorporating LLM’s confidence in our novel UCT formula, and updat- ing rewards in backpropagation. The details of our framework are demonstrated in Figure 1 and further explained in following paragraphs.\nWhen our framework is presented with a task, it initializes a root agent with the problem. This agent then prompts the LLM to generate text that re- flects on the current reasoning trace (Thought) and proposes an action to solve the problem (Action). The model uses a temperature of 0.6 to encourage more diverse thoughts and actions in the reason- ing tree. The agent then executes this action using tools that interact with the external environment, producing feedback (Observation). The texts, in- cluding Thought, Action, and Observation, form the agent’s Solution, as illustrated in Figure 1. Sub- sequently, the agent prompts the LLM to generate a textual output that verifies key facts in the current Solution (Validation). Finally, based on the Solu- tion and Validation, the agent prompts the LLM to evaluate progress toward solving the problem, gen- erating both a score and the LLM’s confidence in this score (Assessment). These two values (score and confidence) are then extracted. The model uses a temperature of 0.0 for Validation and Assessment to ensure more stable decisions. All texts (Solution, Validation, and Assessment) form the agent’s Con- text and are stored in its memory (Figure 1). The score serves as the agent’s initial reward.\nThe previous paragraph describes the generation of a single agent in our system. After the root agent is generated, child agents are created following the same procedure, with the root agent’s Context ap- pended to the prompts of these child agents, as they need to continue solving the problem. As illustrated in Figure 1, two child agents (Agent1 and Agent2) are generated using exactly the same procedure and prompt to explore diverse reasoning paths from the same state (parent agent). The num- ber of child agents is a hyperparameter, Number of Branches, which varies depending on the task. The creation of these child agents is termed Expansion from the parent agent. Further expansion can be carried out from any existing agent using the same procedure. The UCT of each agent is calculated, and the agent with the highest UCT is selected for further expansion. An- other hyperparameter, Maximum of Expansion, rep- resents the approximate number of steps required to solve the problem, allowing users to set it based on their understanding of the task. If this limit is reached without finding a satisfactory solution, the solution from the terminal agent with the highest reward is submitted as the final answer.\nDuring the expansion of the reasoning tree, agents that generate a final answer rather than an intermediate step in their Solution, are called Ter- minal Agents. For instance, in the HotpotQA task, if an agent’s Action is ’Finish[]’, it is identified as a terminal agent, as this Action indicates a final answer. Similar indicators exist in the Solution of other tasks. During the Evaluation (Figure 1) which applies only to Terminal Agents, the LLM assesses the correctness of the Solution. If the so- lution is deemed correct, it is submitted as the final answer, concluding the task. If not, Backprop- agation is triggered, using the reward from this terminal agent to update the rewards of all agents on the path up to the root agent.\n\n3.3 Formula of Modified UCT\nIn our system, Qi, as the estimation of Q value, consists of two components: Initial Reward is extracted from Assessment when this agent is gen- erated. Updating Reward is the mean of rewards from backpropagation, similar to Qi in Eqn 2. In- spired by the research on auxiliary information about rewards in the form of control variables (Verma and Hanawal, 2021), we modify the reward estimation in our system as shown in Eqn 3:\nQi = c0 · r0 + (1 −c0) · Pni n=1 rn / ni\nWhere r0 is the initial reward given by LLM. c0 is the confidence of the LLM to this initial reward. rn and ni are the same with Eqn 2.\n...\nIn summary, the revised formula in our system is:\nUCT = { r0 if ni = 0\nc0·r0+(1 −c0)·(ni P n=1 rn)/ni + 1/(10 √(2c0)) · √(ln Ni / ni) otherwise }\nWhen ni is 0, indicating that no backpropagation has been applied to the node, the UCT of this node is set to be its initial reward r0.\n\n3.4 Strategies of Reward Assignment\nTo conclude, the three special mechanisms we im- plement to ensure the reliability of rewards in our framework are:\n1. Before assigning a reward in the Assessment phase, an additional Validation step is con- ducted, where the LLM comments on the cor- rectness of the facts in the current solution. These comments are added to the prompt for the Assessment step, guiding the LLM toward a more reliable reward.\n2. In the Assessment phase, the LLM is asked to provide both a score and its confidence in that score, rather than just the score alone. The confidence value plays two roles in our mod- ified UCT formula...\n3. Backpropagation is re- tained in our framework. It is triggered when- ever a terminal agent produces a Solution that fails Evaluation. A failed Evaluation indicates that the reasoning steps leading to this termi- nal agent may be flawed, and their Q value should be reduced accordingly.",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': 'Backpropagate: Update the value and visits of agents on route to the terminal agent.', 'status': 'Supported', 'evidence': 'Paper (Figure 1 legend + Methodology §3.2 and §3.4): \"Backpropagation is triggered ... using the reward from this terminal agent to update the rewards of all agents on the path up to the root agent.\" Also describes MCTS backprop as updating values after simulations.'}, {'element': 'Agent0 (UCT: 0.3)', 'status': 'Supported', 'evidence': 'Figure 1 includes nodes with labels \"Agent0 UCT: 0.3\".'}, {'element': 'Agent1 (UCT: 0.7 -> 0.529)', 'status': 'Supported', 'evidence': 'Figure 1 shows \"Agent1 UCT: 0.7 → 0.529\" and the caption explains Agent1 is selected first then its UCT is lowered after failed evaluation and backpropagation.'}, {'element': 'Agent2 (UCT: 0.674)', 'status': 'Supported', 'evidence': 'Figure 1 includes \"Agent2 UCT: 0.674\" and the caption states Agent2 becomes highest UCT after Agent1 is lowered.'}, {'element': 'Agent3 (UCT: 0.174)', 'status': 'Supported', 'evidence': 'Figure 1 includes \"Agent3 UCT: 0.174\" and caption: Agent3 is a terminal agent that failed evaluation.'}, {'element': 'Agent4 (UCT: 0.484)', 'status': 'Supported', 'evidence': 'Figure 1 includes \"Agent4 UCT: 0.484\".'}, {'element': 'Agent5 (UCT: 0.8)', 'status': 'Supported', 'evidence': 'Figure 1 includes \"Agent5 UCT: 0.8\".'}, {'element': 'Agent6 (UCT: 0.9)', 'status': 'Supported', 'evidence': 'Figure 1 includes \"Agent6 UCT: 0.9\" and caption: Agent6 is terminal and passes evaluation.'}, {'element': 'Regular Agent', 'status': 'Supported', 'evidence': 'Figure 1 legend includes \"Regular Agent\".'}, {'element': 'Regular Agent selected at this step', 'status': 'Supported', 'evidence': 'Figure 1 legend includes \"Regular Agent selected at this step\"; §3.2: \"the agent with the highest UCT is selected for further expansion.\"'}, {'element': 'Terminal Agent failed Evaluation', 'status': 'Supported', 'evidence': 'Figure 1 legend includes \"Terminal Agent failed Evaluation\"; §3.2: if terminal solution is incorrect, \"Backpropagation is triggered\"; caption mentions Agent3 failed evaluation.'}, {'element': 'Expansion', 'status': 'Supported', 'evidence': '§3.1 defines Expansion as a key MCTS procedure; §3.2 describes creating child agents as expansion; Figure 1 legend includes \"Expansion\".'}, {'element': 'Backpropagation', 'status': 'Supported', 'evidence': '§3.1 lists Backpropagation as a key MCTS procedure; §3.2 and §3.4 detail backprop retained and triggered on failed terminal evaluation; Figure 1 legend includes \"Backpropagation\".'}, {'element': 'Regular Agent expanded at this step', 'status': 'Supported', 'evidence': 'Figure 1 legend includes \"Regular Agent expanded at this step\"; §3.2 describes that further expansion can be carried out from any existing agent.'}, {'element': 'Terminal Agent passed Evaluation', 'status': 'Supported', 'evidence': 'Figure 1 legend includes \"Terminal Agent passed Evaluation\"; §3.2: if evaluation deems solution correct, \"it is submitted as the final answer\"; caption: Agent6 passes evaluation.'}, {'element': 'Parent Agent', 'status': 'Supported', 'evidence': '§3.2: \"child agents respond to and build upon the outputs of the parent agent\"; \"root agent\" then \"child agents\"; Figure 1 includes \"Parent Agent\".'}, {'element': 'Use the LLM for reasoning and action selection', 'status': 'Supported', 'evidence': '§3.2: agent \"prompts the LLM to generate\" Thought and proposes an Action; Figure 1 box: \"Use the LLM for reasoning and action selection\" pointing to Thought/Action.'}, {'element': 'Execute an action with tools and observe output', 'status': 'Supported', 'evidence': '§3.2: agent \"executes this action using tools that interact with the external environment, producing feedback (Observation)\"; Figure 1 shows this mapping.'}, {'element': 'Use the LLM to validate facts in the solution', 'status': 'Supported', 'evidence': '§3.2: agent prompts LLM to verify key facts (Validation); §3.4 mechanism 1 describes Validation before Assessment; Figure 1 includes the validation box.'}, {'element': 'Use the LLM to estimate the initial reward for the solution', 'status': 'Supported', 'evidence': '§3.2: based on Solution and Validation, LLM generates \"a score\" and confidence (Assessment) and \"The score serves as the agent’s initial reward.\"'}, {'element': 'Use the LLM to evaluate the answer (Terminal Agent)', 'status': 'Supported', 'evidence': '§3.2: During Evaluation (applies only to terminal agents), \"the LLM assesses the correctness of the Solution.\" Figure 1 includes \"Use the LLM to evaluate the answer (Terminal Agent)\".'}, {'element': 'Context', 'status': 'Supported', 'evidence': '§3.2: \"All texts (Solution, Validation, and Assessment) form the agent’s Context and are stored in its memory (Figure 1).\"'}, {'element': 'Solution', 'status': 'Supported', 'evidence': '§3.2: \"Thought, Action, and Observation, form the agent’s Solution, as illustrated in Figure 1.\"'}, {'element': 'Thought', 'status': 'Supported', 'evidence': '§3.2 explicitly defines Thought as reflection on current reasoning trace; Figure 1 labels Thought.'}, {'element': 'Action', 'status': 'Supported', 'evidence': '§3.2: agent proposes an action (Action) to solve the problem; Figure 1 labels Action.'}, {'element': 'Observation', 'status': 'Supported', 'evidence': '§3.2: action execution yields feedback (Observation); Figure 1 labels Observation.'}, {'element': 'Validation', 'status': 'Supported', 'evidence': '§3.2: LLM verifies key facts (Validation); Figure 1 labels Validation.'}, {'element': 'Assessment', 'status': 'Supported', 'evidence': '§3.2: LLM evaluates progress and generates score+confidence (Assessment); Figure 1 labels Assessment.'}, {'element': 'Evaluation', 'status': 'Supported', 'evidence': '§3.2: Evaluation applies only to terminal agents to assess correctness; Figure 1 labels Evaluation.'}, {'element': 'Expansion from Selected Agent', 'status': 'Supported', 'evidence': '§3.2: \"The agent with the highest UCT is selected for further expansion\" and new child agents are created (expansion); Figure 1 explicitly labels \"Expansion from Selected Agent\".'}], [{'element': 'Backpropagate: Update the value and visits of agents on route to the terminal agent.', 'status': 'Supported', 'evidence': 'The text explicitly references “updating reward from backpropagation” (case 4: “excluding exploration term and updating reward from backpropagation”) and contrasts “initial and updating rewards,” implying values are updated via backpropagation through the tree.'}, {'element': 'Agent0 (UCT: 0.3)', 'status': 'Not Mentioned', 'evidence': 'The excerpt discusses UCT formula variants and token consumption; it does not mention specific agents or numeric UCT values for nodes.'}, {'element': 'Agent1 (UCT: 0.7 -> 0.529)', 'status': 'Not Mentioned', 'evidence': 'No node-level example, no specific agent labels, and no UCT value updates are provided in the excerpt.'}, {'element': 'Agent2 (UCT: 0.674)', 'status': 'Not Mentioned', 'evidence': 'No specific agent/node UCT values are mentioned.'}, {'element': 'Agent3 (UCT: 0.174)', 'status': 'Not Mentioned', 'evidence': 'No specific agent/node UCT values are mentioned.'}, {'element': 'Agent4 (UCT: 0.484)', 'status': 'Not Mentioned', 'evidence': 'No specific agent/node UCT values are mentioned.'}, {'element': 'Agent5 (UCT: 0.8)', 'status': 'Not Mentioned', 'evidence': 'No specific agent/node UCT values are mentioned.'}, {'element': 'Agent6 (UCT: 0.9)', 'status': 'Not Mentioned', 'evidence': 'No specific agent/node UCT values are mentioned.'}, {'element': 'Regular Agent', 'status': 'Not Mentioned', 'evidence': 'The excerpt uses MCTS/UCT terminology and mentions Observation, confidence, etc., but does not define a “Regular Agent” label.'}, {'element': 'Regular Agent selected at this step', 'status': 'Not Mentioned', 'evidence': 'No step-wise selection diagram elements are described; only UCT variants and their effects are discussed.'}, {'element': 'Terminal Agent failed Evaluation', 'status': 'Not Mentioned', 'evidence': 'The excerpt does not discuss terminal agents passing/failing evaluation.'}, {'element': 'Expansion', 'status': 'Not Mentioned', 'evidence': 'While the approach is tree-based and uses MCTS concepts, this excerpt does not explicitly mention an “Expansion” step.'}, {'element': 'Backpropagation', 'status': 'Supported', 'evidence': 'Backpropagation is explicitly referenced via “updating reward from backpropagation” in the UCT ablation description.'}, {'element': 'Regular Agent expanded at this step', 'status': 'Not Mentioned', 'evidence': 'No diagrammatic step labels about which agent is expanded are included.'}, {'element': 'Terminal Agent passed Evaluation', 'status': 'Not Mentioned', 'evidence': 'The excerpt does not describe evaluation outcomes (pass/fail) for a terminal agent.'}, {'element': 'Parent Agent', 'status': 'Not Mentioned', 'evidence': 'Although MCTS implies parent/child nodes, the excerpt does not explicitly label entities as “Parent Agent”/“Child Agent.”'}, {'element': 'Use the LLM for reasoning and action selection', 'status': 'Not Mentioned', 'evidence': 'The excerpt discusses adapting UCT to accommodate LLM and mentions “LLM’s confidence,” but does not describe a pipeline step “Use the LLM for reasoning and action selection” nor the Thought/Action decomposition.'}, {'element': 'Execute an action with tools and observe output', 'status': 'Supported', 'evidence': 'The excerpt states: “The Observation is appended to the prompt” and describes Observation as test case results (objective), implying execution produces an observation used downstream.'}, {'element': 'Use the LLM to validate facts in the solution', 'status': 'Not Mentioned', 'evidence': 'No “validate facts” step is described; only “Observation” and UCT/confidence/backpropagation are discussed.'}, {'element': 'Use the LLM to estimate the initial reward for the solution', 'status': 'Supported', 'evidence': 'The UCT variants explicitly use an “initial reward” term (r0) and discuss “weighted sum of initial and updating rewards,” indicating the framework has an initial reward estimate component (how it’s computed is not specified here, but initial reward usage is explicit).'}, {'element': 'Use the LLM to evaluate the answer (Terminal Agent)', 'status': 'Not Mentioned', 'evidence': 'The excerpt does not mention a terminal agent evaluation step.'}, {'element': 'Context', 'status': 'Not Mentioned', 'evidence': 'The excerpt does not discuss a “Context” box/element.'}, {'element': 'Solution', 'status': 'Not Mentioned', 'evidence': 'The excerpt does not describe a “Solution” element.'}, {'element': 'Thought', 'status': 'Not Mentioned', 'evidence': 'No Thought/Action/Observation chain is explicitly described (only Observation is mentioned).'}, {'element': 'Action', 'status': 'Not Mentioned', 'evidence': 'Actions are not explicitly discussed in this excerpt.'}, {'element': 'Observation', 'status': 'Supported', 'evidence': 'Observation is explicitly mentioned multiple times, e.g., “The Observation is appended to the prompt,” and described as “represented by the test case results.”'}, {'element': 'Validation', 'status': 'Not Mentioned', 'evidence': 'No validation module/step is discussed in the excerpt.'}, {'element': 'Assessment', 'status': 'Not Mentioned', 'evidence': 'The excerpt discusses rewards (initial/updating) but does not label any step as “Assessment.”'}, {'element': 'Evaluation', 'status': 'Not Mentioned', 'evidence': 'No explicit “Evaluation” box/step is described in this excerpt.'}, {'element': 'Expansion from Selected Agent', 'status': 'Not Mentioned', 'evidence': 'The excerpt does not describe the expansion procedure from a selected node/agent.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 4,
+              "reason": "The target figure covers most of the paper’s major framework components: task→root/parent agent initialization, reasoning tree with parent–child expansion, multiple branches, UCT-based selection (node UCT labels), external tool/environment interaction via Action→Observation, Validation, Assessment producing an initial reward, Evaluation applied to terminal agents only, and backpropagation from failed terminal agents to update values along the path. It also depicts stopping/termination outcomes (terminal pass vs fail). However, several items from the evidence are only implicit or missing: the modified UCT *formula* (and its dependence on r0 and c0) is not shown; confidence c0 and reward extraction details are not explicit; the exact definition of agent Context as Solution+Validation+Assessment and explicit memory storage are only loosely suggested (Context box) without “memory” depiction; the ‘Maximum of Expansion’ stopping criterion and the fallback rule (submit highest-reward terminal agent if max expansion reached) are not shown; and the explicit ‘Finish[]’ terminal indicator is not included. Overall, it is largely complete at the component level but omits key formula/hyperparameter specifics."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure largely communicates the system’s operating principle without the paper: it depicts a reasoning tree of agents with UCT values, the selection/expansion/backpropagation loop, and clearly distinguishes regular vs terminal agents and pass/fail evaluation outcomes. The right panel explains the per-agent pipeline (Thought→Action→Observation forming Solution, then Validation, Assessment, and Evaluation for terminal agents) and shows Context being passed from parent to child during expansion, matching the Evidence closely. However, some key details are not fully self-contained: (i) the modified UCT formula and how score/confidence (r0, c0) enter UCT are not explained (only “UCT” numbers shown), (ii) stopping criteria like “Maximum of Expansion” and the fallback “submit best terminal agent if max reached” are absent, and (iii) reward backpropagation mechanics are only described at a high level (‘update value and visits’) without showing what reward is propagated. Overall, it is understandable at a high level but not fully complete standalone."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 4,
+              "reason": "The target figure captures the core end-to-end MASTER workflow described in §3.2–§3.4: root/parent initialization with the problem, per-agent loop (Thought→Action→Observation forming Solution), explicit external tool/environment execution producing Observation, Validation, Assessment producing score/confidence (r0,c0), Context composition and passing parent context to children during Expansion, multiple branches, UCT-based Selection, terminal agent identification and Evaluation only for terminal agents, success termination, failure-triggered Backpropagation updating values along the path, and stopping via a maximum expansion limit with fallback to best terminal solution. However, it omits or only implicitly reflects some paper-specific details (e.g., the modified UCT formula’s explicit dependence on r0, c0 and exploration term; the exact Qi decomposition with backprop mean; temperature settings; explicit memory storage/persistence depiction; and the ‘max expansion reached without satisfactory solution submit highest-reward terminal’ rule is not clearly shown). Overall, it is largely complete for the framework narrative, with minor formula/hyperparameter specifics missing."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "The Target Figure’s components and labels are fully grounded in the provided evidence: (i) the MCTS-style backpropagation description (updating values/visits along the path to a terminal agent) is explicitly described in the paper; (ii) the agent-node UCT annotations and the example update (Agent1: 0.7→0.529; Agent2 highest afterward; terminal pass/fail for Agents 3 and 6) are stated as appearing in Figure 1 and its caption; and (iii) the pipeline blocks (LLM for reasoning/action selection; tool execution→observation; validation; assessment as initial reward; terminal evaluation; context/solution/thought/action/observation) are all supported by §3.2/§3.4 and Figure 1 legend. No extra formulas, unexplained symbols, or paper-absent modules are introduced beyond what the evidence attributes to Figure 1 and the method text."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "The target figure’s major relationships match the paper-backed evidence: (i) MCTS-style selection/expansion/backpropagation is correctly depicted, including backpropagating reward/value updates along the path to the root after terminal evaluation; (ii) the parent–child agent expansion relationship is consistent with the described tree of agents; (iii) the internal per-agent pipeline (LLM-driven thought/action, tool execution producing observation, validation, assessment as initial reward, and terminal evaluation) is represented in the same dependency order described in the methodology; and (iv) the legend’s pass/fail terminal outcomes and their effect on subsequent UCT/selection are consistent with the captioned example in Figure 1 (e.g., UCT update after failed evaluation). Visual references are broadly consistent with this MCTS-for-LLM workflow, and no contradictory relationships are apparent."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "Major component/methodology labels in the Target Figure are accurate and consistent with the paper’s described MCTS-style agent framework. The figure correctly names core MCTS procedures (Expansion, Backpropagation/Backpropagate, UCT-based selection, Parent/Child agent relations, terminal vs regular agents, pass/fail evaluation) and the internal agent pipeline elements (Thought/Action/Observation → Solution; Validation; Assessment as initial reward; Evaluation for terminal agents; Context/memory). The evidence explicitly supports these labels (Figure 1 legend and Methodology §3.1–§3.4). Minor wording variation (\"Backpropagate\" vs \"Backpropagation\") does not introduce methodological inaccuracy."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 5,
+              "reason": "The target figure is clearly schematized around MASTER’s main contribution: an MCTS-like reasoning tree over agents with selection/expansion/backpropagation (left) and the per-agent pipeline producing rewards (right). It foregrounds the key nontrivial mechanisms described in the evidence—Thought→Action→Observation forming Solution, external tool/environment interaction, Validation before Assessment, extraction of score/confidence, terminal-agent Evaluation gating success vs. backpropagation, and UCT-guided selection—while omitting implementation trivia (e.g., exact prompt wording, temperatures, dataset-specific indicators beyond a generic terminal marker). Compared to the reference figures, it similarly abstracts into a compact process diagram, and is more aligned with the paper’s main algorithmic novelty than with peripheral details."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "Yes. The target figure closely mirrors the described MASTER workflow and serves as strong supplementary material for Section 3.2. It visualizes: (i) root/parent agent initialization with the problem, (ii) the per-agent loop Thought→Action→Observation forming “Solution,” (iii) subsequent Validation and Assessment steps producing score/confidence, (iv) Context composition (Solution+Validation+Assessment) and its use when creating child agents (expansion), (v) terminal-agent detection and Evaluation applied only to terminal agents, (vi) backpropagation when Evaluation fails, and (vii) selection/expansion behavior consistent with UCT-driven search (UCT values shown on nodes). Compared to the visual references, it is at least as clear and more directly aligned to the specific MASTER pipeline (agent context + validation/assessment + terminal evaluation + backprop), making it highly effective for understanding the accompanying text/caption."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 3,
+              "reason": "The target figure mostly focuses on core MASTER components (reasoning tree with selection/expansion/backpropagation; per-agent pipeline Thought→Action→Observation→Validation→Assessment→Evaluation; context passed to child agents; UCT values), which aligns well with the provided framework description. However, it includes some potentially redundant or decorative elements: repeated robot icons with color-coded bases, multiple arrows and legend items that restate meanings already conveyed by labels, and illustrative UCT numbers that are not essential to explaining redundancy-related core ideas. Overall, it is moderately concise but could be simplified (fewer icons/legend entries and less visual ornamentation) without losing conceptual content."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.714,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 4,
+              "reason": "The Target Figure’s primary flow is left-to-right: the MCTS-style tree starts on the left and connects via an arrow into the right-side “Parent Agent” panel, which then proceeds downward to the “Child Agent.” This matches several references that emphasize left-to-right pipeline structure (e.g., Ref 3, Ref 5). However, within the right panel the internal process is clearly top-to-bottom, so the overall direction is mixed rather than purely one direction."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "Most connection lines in the Target Figure are routed to avoid intersections. In the left tree diagram, the parent-child edges are largely separated and angled so they do not cross, and the expansion/backpropagation arrows are placed to minimize overlap. On the right panel, the horizontal connectors from the process steps to the context boxes are parallel and non-crossing. Minor exceptions include a few close approaches/overlaps (e.g., some arrows passing near nodes/labels in the left panel and the large connector between panels), but these are limited and do not create substantial line-crossing clutter. Overall, crossing is largely avoided, better than average but not perfectly clean."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "The Target Figure generally places functionally related components in close physical proximity. On the left, the MCTS-style process is organized as a single clustered tree with labels for Expansion and Backpropagation adjacent to the corresponding parts of the tree, and the legend items are grouped together near the tree. On the right, the Parent Agent block contains the reasoning/action/validation/assessment/evaluation functions aligned beside the Context stack they map to, with the Child Agent positioned directly below and connected, keeping the parent–child relationship spatially tight. Compared with the references (especially Ref 5 and Ref 4), the Target follows a similar practice of grouping pipeline stages within a bounded module. Minor proximity issues remain: the figure is split into two large halves (tree vs. parent-agent schematic) with a long connector between them, so the relationship between MCTS steps and the parent/child agent roles is not as physically tight as it could be, and some step labels/arrows are slightly separated from the exact substructures they describe."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 3,
+              "reason": "The Target Figure shows partial grid alignment: the left MCTS-style tree has reasonably consistent vertical spacing between levels and mostly centered parent–child placements, and the legend items are arranged in a tidy column. However, several elements break a clean invisible grid: UCT labels and icons are not uniformly aligned, diagonal/angled connectors create uneven visual baselines, and the transition from the left tree to the right panel introduces misaligned anchor points and mixed margins. Compared to the evidence figures (which use more rigid column/row structure and consistent box alignment), the Target is moderately aligned but not consistently grid-neat."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 4,
+              "reason": "The target figure establishes hierarchy reasonably well through layout and grouping: the right-side ‘Parent Agent’ panel is larger and framed, the left-side tree structure is visually separated, and directional arrows guide attention. Key entities (Parent/Child Agent, Context/solution stack) are positioned prominently, and legend items aid parsing. However, emphasis is somewhat diluted because many agents/icons and arrows share similar visual weight (similar sizes, line thicknesses, and color intensity), and several text blocks compete for attention without a clear typographic scale (e.g., headings vs. explanatory labels). Compared with the references, it achieves comparable structural prominence via boxed sections (similar to Ref 2/5), but is less forceful in highlighting primary vs. secondary elements than Ref 3/5, which use stronger contrast and bolder section headers."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "Overall the figure maintains clear whitespace between major blocks (the left MCTS tree, the right parent-agent panel, and the legend), and internal padding in the rounded containers generally prevents text/icon crowding. Compared with the references, it is slightly denser: some labels (e.g., UCT annotations near agent icons) sit close to node graphics and connecting arrows, and the legend items are relatively tight vertically하면서 visual breathing room is a bit less consistent. Still, margins are largely sufficient for readability, with only minor local crowding."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 3,
+              "reason": "The Target Figure shows partial consistency: agents are generally depicted with the same robot icon shape, and outcomes/status are differentiated by color (e.g., blue for regular agents, purple variants for terminal agents, and an additional red/green base/marking to indicate selection/expansion). However, similar roles are not always encoded uniformly—e.g., “Regular Agent selected” vs “Regular Agent expanded” use the same robot shape but rely on different small color accents that are not as visually salient or standardized as a single consistent encoding. The right panel uses different shapes (rectangles/rounded boxes) for process steps and context elements, which is internally consistent, but the mapping between left-panel agent roles and right-panel agent roles (Parent/Child/Terminal) is not reinforced with a consistent color scheme across panels. Compared to the references (especially Ref 5), which maintain clearer, more systematic color-role mapping across the figure, the Target is moderately consistent but not strong."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 5,
+              "reason": "The Target Figure heavily replaces abstract concepts with concrete visual metaphors and abbreviations: agent roles are depicted as robot icons; pass/fail evaluation is encoded via checkmarks and an X; process phases (Expansion/Backpropagation) are conveyed with directional arrows; hierarchical relations are shown through a tree layout; and key algorithmic notions are compressed into labels like “UCT: …”, “Parent/Child Agent”, and stacked box categories (Thought/Action/Observation; Validation/Assessment/Evaluation). This level of iconography and shorthand is comparable to (and in places exceeds) the Evidence figures that use check/X markers, agent/robot icons, and block-diagram abstractions (e.g., Refs 3–5). Overall, the mapping from abstract workflow to concrete symbols is extensive and systematic."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a common academic schematic template seen in the references: multi-panel flow/architecture diagram, rounded boxes, arrows indicating stages (expansion/backpropagation), and small robot/agent icons with status colors. Its visual language (MCTS-like tree on the left + agent pipeline block on the right) is highly consistent with standard ML paper illustrations and overlaps strongly with the reference motifs (tree search, self-improvement loops, step/trajectory evaluation). While the specific combination of a UCT-labeled agent tree and a parent/child agent validation pipeline is somewhat customized, the overall style, iconography, and layout are not distinctive enough to be considered a unique or novel visual style beyond typical templates."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure follows a fairly standard, template-like schematic layout: left-to-right flow, boxed panels, repeated agent icons, and color-coded arrows/legend elements. This aligns with the uniform design patterns seen in the references (e.g., modular blocks, dashed boundaries, pipeline diagrams), rather than introducing a layout uniquely tailored to the paper’s specific narrative. While it combines two views (a tree-like MCTS/backpropagation view on the left and a parent/child agent interaction panel on the right), this is still a conventional split-panel composition and does not meaningfully break away from common schematic conventions or present a notably paper-specific visual structure."
+            }
+          ]
+        }
+      },
+      "weighted_total": 4.01,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6983
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7398
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p0__score1.00.png",
+            "similarity": 0.749
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7235
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6983
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7403
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p0__score1.00.png",
+            "similarity": 0.749
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.709
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6983
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p0__score1.00.png",
+            "similarity": 0.749
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7403
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7235
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p0__score1.00.png",
+            "similarity": 0.5574
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7096
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.663
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7036
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.5617
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6802
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.6858
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7096
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6697
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6802
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6885
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7096
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6651
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7036
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p0__score1.00.png",
+            "similarity": 0.749
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7235
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7398
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7403
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p0__score1.00.png",
+            "similarity": 0.749
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p2__score1.00.png",
+            "similarity": 0.7388
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.663
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6983
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p2__score1.00.png",
+            "similarity": 0.7388
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p0__score1.00.png",
+            "similarity": 0.749
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.6851
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6885
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.7137
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7235
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6296
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.6431
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.709
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7398
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.4676
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6171
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.6726
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7235
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7235
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.7137
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7398
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6983
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7235
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7398
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7096
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7036
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6909
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.709
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.7137
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.7137
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7235
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6802
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7096
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6651
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.709
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7398
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p0__score1.00.png",
+            "similarity": 0.749
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6983
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p0__score1.00.png",
+            "similarity": 0.749
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7403
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6844
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.7137
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7398
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.8005
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7403
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6844
+          }
+        }
+      }
+    }
+  ]
+}

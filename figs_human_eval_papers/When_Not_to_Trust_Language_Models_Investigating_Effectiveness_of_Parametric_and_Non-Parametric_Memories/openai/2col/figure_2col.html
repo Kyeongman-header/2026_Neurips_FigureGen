@@ -1,0 +1,329 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Large-scale probing of factual knowledge memorization in LLMs</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#1f2937;
+    --muted:#4b5563;
+    --light:#eef2f7;
+    --panel:#f8fafc;
+    --stroke:#2f3b4a;
+    --thin:#94a3b8;
+    --blue:#2563eb;
+    --blue2:#60a5fa;
+    --orange:#f59e0b;
+    --green:#10b981;
+    --red:#ef4444;
+    --purple:#7c3aed;
+  }
+  html,body{ margin:0; padding:0; background:var(--bg); font-family: Arial, Helvetica, sans-serif; }
+  #figure-root{
+    width:1800px; height:1200px;
+    margin:0 auto;
+    position:relative;
+    background:var(--bg);
+  }
+  .caption{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:105px;
+    padding:14px 26px;
+    box-sizing:border-box;
+    border-top:1.5px solid #cbd5e1;
+    background:#fff;
+    color:#111827;
+    font-size:18px;
+    line-height:1.25;
+  }
+  .smallnote{
+    font-size:15px;
+    color:#374151;
+  }
+  svg{ display:block; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+  <svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200" role="img" aria-label="Diagram: probing memorization vs popularity; retrieval helps tail but may hurt head; adaptive retrieval retrieves selectively">
+    <defs>
+      <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 Z" fill="#334155"/>
+      </marker>
+      <marker id="arrowBlue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 Z" fill="#2563eb"/>
+      </marker>
+      <marker id="arrowOrange" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 Z" fill="#f59e0b"/>
+      </marker>
+      <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.10"/>
+      </filter>
+      <style>
+        .title{ font-weight:700; font-size:28px; fill:#111827; }
+        .subtitle{ font-size:18px; fill:#374151; }
+        .panelTitle{ font-weight:700; font-size:20px; fill:#111827; }
+        .label{ font-size:16px; fill:#111827; }
+        .muted{ font-size:15px; fill:#4b5563; }
+        .tiny{ font-size:13px; fill:#4b5563; }
+        .box{ fill:#ffffff; stroke:#334155; stroke-width:2; rx:14; ry:14; filter:url(#shadow); }
+        .boxLight{ fill:#f8fafc; stroke:#334155; stroke-width:2; rx:14; ry:14; }
+        .subbox{ fill:#ffffff; stroke:#64748b; stroke-width:1.8; rx:12; ry:12; }
+        .dashed{ stroke-dasharray:8 6; }
+        .arrow{ stroke:#334155; stroke-width:2.5; fill:none; marker-end:url(#arrow); }
+        .arrowBlue{ stroke:#2563eb; stroke-width:3; fill:none; marker-end:url(#arrowBlue); }
+        .arrowOrange{ stroke:#f59e0b; stroke-width:3; fill:none; marker-end:url(#arrowOrange); }
+        .axis{ stroke:#334155; stroke-width:2; }
+        .grid{ stroke:#e5e7eb; stroke-width:1; }
+        .legendBox{ fill:#ffffff; stroke:#cbd5e1; stroke-width:1.5; rx:10; ry:10; }
+        .pill{ stroke-width:1.5; rx:18; ry:18; }
+        .pillBlue{ fill:#eff6ff; stroke:#2563eb; }
+        .pillOrange{ fill:#fffbeb; stroke:#f59e0b; }
+        .pillPurple{ fill:#f5f3ff; stroke:#7c3aed; }
+        .pillGreen{ fill:#ecfdf5; stroke:#10b981; }
+        .lineParam{ stroke:#2563eb; stroke-width:4; fill:none; }
+        .lineRet{ stroke:#f59e0b; stroke-width:4; fill:none; }
+        .lineAdapt{ stroke:#7c3aed; stroke-width:4; fill:none; }
+        .shadeTail{ fill:#e0f2fe; opacity:0.45; stroke:none; }
+        .shadeHead{ fill:#fff7ed; opacity:0.55; stroke:none; }
+        .vline{ stroke:#7c3aed; stroke-width:2.5; stroke-dasharray:6 6; }
+        .callout{ fill:#ffffff; stroke:#94a3b8; stroke-width:1.5; rx:10; ry:10; }
+      </style>
+    </defs>
+
+    <!-- Header -->
+    <text x="60" y="62" class="title">Probing factual knowledge memorization vs. popularity, and when retrieval helps</text>
+    <text x="60" y="92" class="subtitle">Open-domain QA with long-tail entities (PQA / EntityQuestions). Models: GPT-Neo, OPT, GPT-3.</text>
+
+    <!-- Left panel: Experimental setup / probing -->
+    <rect x="60" y="120" width="760" height="455" class="box"/>
+    <text x="90" y="160" class="panelTitle">1) Large-scale probing setup (factual knowledge → QA)</text>
+
+    <!-- Knowledge triple -->
+    <rect x="95" y="190" width="330" height="150" class="subbox"/>
+    <text x="115" y="220" class="label" font-weight="700">Knowledge triple</text>
+    <text x="115" y="248" class="label">(Subject S, Relation R, Object O)</text>
+    <text x="115" y="276" class="muted">Convert (S, R, O) → natural language question</text>
+    <text x="115" y="304" class="tiny">Popularity proxy: Wikipedia page views of S</text>
+
+    <!-- Arrow to QA prompt -->
+    <path d="M430,265 C470,265 470,265 505,265" class="arrow"/>
+
+    <rect x="510" y="190" width="275" height="150" class="subbox"/>
+    <text x="530" y="220" class="label" font-weight="700">Open-domain QA prompt</text>
+    <text x="530" y="250" class="label">Q: &lt;question about S, R&gt;</text>
+    <text x="530" y="278" class="label">A: &lt;model prediction&gt;</text>
+    <text x="530" y="310" class="tiny">Metric: exact-match accuracy</text>
+
+    <!-- Models box -->
+    <rect x="95" y="365" width="690" height="180" class="subbox"/>
+    <text x="115" y="395" class="label" font-weight="700">Models and scaling</text>
+
+    <rect x="120" y="415" width="190" height="50" class="pill pillBlue"/>
+    <text x="135" y="447" class="label" font-weight="700">GPT-Neo</text>
+    <text x="240" y="447" class="tiny">(1.3B–20B)</text>
+
+    <rect x="320" y="415" width="170" height="50" class="pill pillGreen"/>
+    <text x="335" y="447" class="label" font-weight="700">OPT</text>
+    <text x="395" y="447" class="tiny">(1.3B–13B)</text>
+
+    <rect x="500" y="415" width="255" height="50" class="pill pillPurple"/>
+    <text x="515" y="447" class="label" font-weight="700">GPT-3</text>
+    <text x="595" y="447" class="tiny">(davinci-002/003)</text>
+
+    <text x="120" y="495" class="muted">Key analysis dimensions available from the input question:</text>
+    <text x="140" y="522" class="label">• Subject-entity popularity (long tail → head)</text>
+    <text x="470" y="522" class="label">• Relation type (e.g., director, country, occupation)</text>
+
+    <!-- Right top panel: Main empirical trend chart -->
+    <rect x="860" y="120" width="880" height="455" class="box"/>
+    <text x="890" y="160" class="panelTitle">2) Empirical finding: accuracy rises with popularity; retrieval helps tail but may hurt head</text>
+
+    <!-- Plot area -->
+    <rect x="900" y="190" width="800" height="330" class="boxLight"/>
+    <!-- Grid -->
+    <g>
+      <line x1="950" y1="240" x2="1650" y2="240" class="grid"/>
+      <line x1="950" y1="300" x2="1650" y2="300" class="grid"/>
+      <line x1="950" y1="360" x2="1650" y2="360" class="grid"/>
+      <line x1="950" y1="420" x2="1650" y2="420" class="grid"/>
+      <line x1="950" y1="480" x2="1650" y2="480" class="grid"/>
+
+      <line x1="1050" y1="220" x2="1050" y2="500" class="grid"/>
+      <line x1="1150" y1="220" x2="1150" y2="500" class="grid"/>
+      <line x1="1250" y1="220" x2="1250" y2="500" class="grid"/>
+      <line x1="1350" y1="220" x2="1350" y2="500" class="grid"/>
+      <line x1="1450" y1="220" x2="1450" y2="500" class="grid"/>
+      <line x1="1550" y1="220" x2="1550" y2="500" class="grid"/>
+    </g>
+
+    <!-- Axes -->
+    <line x1="950" y1="500" x2="1650" y2="500" class="axis"/>
+    <line x1="950" y1="220" x2="950" y2="500" class="axis"/>
+    <text x="960" y="215" class="tiny" font-weight="700">Accuracy</text>
+    <text x="1370" y="530" class="tiny" font-weight="700">Subject-entity popularity (log page views): long tail → head</text>
+
+    <!-- Tick labels -->
+    <g>
+      <text x="925" y="505" class="tiny">0</text>
+      <text x="920" y="445" class="tiny">0.2</text>
+      <text x="920" y="385" class="tiny">0.4</text>
+      <text x="920" y="325" class="tiny">0.6</text>
+      <text x="920" y="265" class="tiny">0.8</text>
+
+      <text x="1038" y="520" class="tiny">low</text>
+      <text x="1240" y="520" class="tiny">mid</text>
+      <text x="1540" y="520" class="tiny">high</text>
+    </g>
+
+    <!-- Shaded regions -->
+    <rect x="950" y="220" width="340" height="280" class="shadeTail"/>
+    <rect x="1290" y="220" width="360" height="280" class="shadeHead"/>
+    <text x="970" y="240" class="tiny" font-weight="700" fill="#0c4a6e">Long tail</text>
+    <text x="1310" y="240" class="tiny" font-weight="700" fill="#7c2d12">Popular head</text>
+
+    <!-- Curves (schematic but deterministic) -->
+    <!-- Parametric-only accuracy increases with popularity -->
+    <path d="M960,470
+             C1030,460 1100,450 1170,435
+             C1240,415 1310,390 1380,350
+             C1450,310 1520,270 1640,245" class="lineParam"/>
+    <!-- Retrieval-augmented: much higher in tail, may dip in head -->
+    <path d="M960,400
+             C1040,380 1120,365 1200,350
+             C1280,335 1360,330 1440,335
+             C1520,340 1580,355 1640,370" class="lineRet"/>
+    <!-- Adaptive retrieval: uses retrieval in tail and parametric in head -->
+    <path d="M960,400
+             C1040,380 1120,365 1200,350
+             C1265,338 1285,332 1290,330
+             L1290,330
+             C1360,300 1450,275 1640,245" class="lineAdapt"/>
+
+    <!-- Threshold line -->
+    <line x1="1290" y1="220" x2="1290" y2="500" class="vline"/>
+    <text x="1300" y="285" class="tiny" font-weight="700" fill="#7c3aed">popularity threshold</text>
+
+    <!-- Legend -->
+    <rect x="1425" y="230" width="255" height="132" class="legendBox"/>
+    <line x1="1440" y1="258" x2="1495" y2="258" class="lineParam"/>
+    <text x="1510" y="263" class="tiny">Parametric-only (LM)</text>
+
+    <line x1="1440" y1="292" x2="1495" y2="292" class="lineRet"/>
+    <text x="1510" y="297" class="tiny">Always retrieve (+context)</text>
+
+    <line x1="1440" y1="326" x2="1495" y2="326" class="lineAdapt"/>
+    <text x="1510" y="331" class="tiny">Adaptive Retrieval</text>
+
+    <!-- Callouts -->
+    <rect x="980" y="445" width="310" height="62" class="callout"/>
+    <text x="995" y="470" class="tiny" font-weight="700">Tail entities:</text>
+    <text x="1078" y="470" class="tiny">retrieval boosts accuracy</text>
+    <text x="995" y="492" class="tiny">Scaling alone yields limited gains in the tail</text>
+
+    <rect x="1345" y="405" width="330" height="78" class="callout"/>
+    <text x="1360" y="430" class="tiny" font-weight="700">Popular entities:</text>
+    <text x="1455" y="430" class="tiny">LMs often already memorize</text>
+    <text x="1360" y="452" class="tiny">Retrieved context can mislead → accuracy drop</text>
+    <text x="1360" y="474" class="tiny">Adaptive Retrieval avoids unnecessary retrieval</text>
+
+    <!-- Bottom panel: Adaptive Retrieval mechanism -->
+    <rect x="60" y="600" width="1680" height="460" class="box"/>
+    <text x="90" y="640" class="panelTitle">3) Adaptive Retrieval: selectively retrieve by popularity and relation type</text>
+
+    <!-- Inputs -->
+    <rect x="95" y="680" width="420" height="330" class="subbox"/>
+    <text x="120" y="715" class="label" font-weight="700">Input question (query)</text>
+    <rect x="120" y="735" width="370" height="92" class="boxLight" rx="12" ry="12"/>
+    <text x="140" y="765" class="label">Q: &quot;Who directed &lt;movie S&gt;?&quot;</text>
+    <text x="140" y="792" class="tiny">Known from query: subject entity S and relation type R</text>
+
+    <rect x="120" y="848" width="370" height="142" class="boxLight" rx="12" ry="12"/>
+    <text x="140" y="878" class="label" font-weight="700">Popularity + relation-type metadata</text>
+    <text x="140" y="905" class="tiny">• Popularity(S) from Wikipedia page views</text>
+    <text x="140" y="930" class="tiny">• Relation type R (template / Wikidata property)</text>
+    <text x="140" y="955" class="tiny">• Threshold chosen per relation type on dev set</text>
+
+    <!-- Decision module -->
+    <rect x="560" y="705" width="420" height="290" class="subbox"/>
+    <text x="585" y="740" class="label" font-weight="700">Decision: retrieve?</text>
+
+    <rect x="585" y="760" width="370" height="90" class="pill pillPurple"/>
+    <text x="605" y="792" class="label" font-weight="700">If popularity(S) &lt; threshold(R)</text>
+    <text x="605" y="818" class="tiny">→ use non-parametric memory (retrieved text)</text>
+
+    <rect x="585" y="860" width="370" height="90" class="pill pillBlue"/>
+    <text x="605" y="892" class="label" font-weight="700">Else</text>
+    <text x="650" y="892" class="tiny">→ rely on parametric memory (LM only)</text>
+    <text x="605" y="918" class="tiny">Skip retrieval to avoid misleading context + cost</text>
+
+    <!-- Arrows from input to decision -->
+    <path d="M515,805 C535,805 540,805 560,805" class="arrow"/>
+    <path d="M515,920 C540,920 540,900 560,885" class="arrow"/>
+
+    <!-- Retrieval branch -->
+    <rect x="1020" y="680" width="330" height="330" class="subbox"/>
+    <text x="1045" y="715" class="label" font-weight="700">Non-parametric memory</text>
+
+    <rect x="1045" y="735" width="280" height="72" class="pill pillOrange"/>
+    <text x="1065" y="765" class="label" font-weight="700">Retriever</text>
+    <text x="1145" y="765" class="tiny">(BM25 / Contriever)</text>
+    <text x="1065" y="790" class="tiny">Top paragraph from Wikipedia</text>
+
+    <rect x="1045" y="822" width="280" height="160" class="boxLight" rx="12" ry="12"/>
+    <text x="1065" y="850" class="tiny" font-weight="700">Retrieved context (example)</text>
+    <text x="1065" y="876" class="tiny">… &lt;S&gt; is a film directed by …</text>
+    <text x="1065" y="900" class="tiny">… released in … starring …</text>
+    <text x="1065" y="924" class="tiny">Potential failure mode on popular facts:</text>
+    <text x="1065" y="948" class="tiny">irrelevant / incorrect paragraph → misleading</text>
+
+    <!-- Parametric branch -->
+    <rect x="1365" y="680" width="345" height="330" class="subbox"/>
+    <text x="1390" y="715" class="label" font-weight="700">Parametric memory</text>
+
+    <rect x="1390" y="735" width="295" height="90" class="pill pillBlue"/>
+    <text x="1410" y="767" class="label" font-weight="700">LM prediction</text>
+    <text x="1520" y="767" class="tiny">(GPT-Neo / OPT / GPT-3)</text>
+    <text x="1410" y="792" class="tiny">Closed-book QA (no retrieved context)</text>
+
+    <rect x="1390" y="840" width="295" height="142" class="boxLight" rx="12" ry="12"/>
+    <text x="1410" y="868" class="tiny" font-weight="700">Why this works</text>
+    <text x="1410" y="892" class="tiny">Popular entities: memorized → high accuracy</text>
+    <text x="1410" y="916" class="tiny">Avoids harmful retrieval when recall@1 is low</text>
+    <text x="1410" y="940" class="tiny">Also reduces latency and (for APIs) token costs</text>
+
+    <!-- Routing arrows -->
+    <path d="M980,800 C1000,800 1000,770 1020,770" class="arrowOrange"/>
+    <path d="M980,910 C1005,910 1005,780 1020,780" class="arrowOrange" opacity="0.0"/>
+
+    <path d="M980,905 C1000,905 1000,780 1365,780" class="arrowBlue"/>
+    <path d="M980,800 C1005,800 1010,805 1365,770" class="arrowBlue" opacity="0.0"/>
+
+    <!-- Combine at output -->
+    <rect x="710" y="1015" width="1030" height="35" fill="none" stroke="none"/>
+    <path d="M1185,1010 C1185,1030 1185,1030 1185,1050" class="arrow" opacity="0"/>
+
+    <!-- Output box -->
+    <rect x="560" y="1040" width="1150" height="0" fill="none" stroke="none"/>
+
+    <rect x="560" y="1015" width="1150" height="45" class="boxLight" rx="12" ry="12"/>
+    <text x="585" y="1044" class="label" font-weight="700">Output:</text>
+    <text x="665" y="1044" class="label">higher tail accuracy via retrieval, preserved head accuracy by avoiding misleading context; selective per relation type</text>
+
+    <!-- Decision arrows from decision module to branches -->
+    <path d="M980,805 C1010,805 1010,770 1020,770" class="arrowOrange"/>
+    <path d="M980,905 C1010,905 1100,905 1365,905" class="arrowBlue"/>
+
+    <!-- Note on per-relation thresholds -->
+    <rect x="560" y="665" width="1150" height="28" fill="none" stroke="none"/>
+    <text x="560" y="685" class="tiny">Adaptive Retrieval uses a popularity threshold chosen independently for each relation type R (e.g., director vs. country) to decide whether retrieval is necessary.</text>
+
+  </svg>
+
+  <div class="caption">
+    <div>Large-scale probing of factual knowledge memorization in large language models (GPT-Neo, OPT, GPT-3) on open-domain QA, showing accuracy rises with subject-entity popularity and retrieval helps the long tail but can hurt popular facts. Adaptive Retrieval selectively retrieves by popularity and relation type.</div>
+  </div>
+</div>
+</body>
+</html>

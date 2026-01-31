@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Integrated Figure Eval Viewer (+CSV Export)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #f0f2f5; color: #333; }
+        .container { max-width: 1400px; margin: auto; }
+        .item { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); margin-bottom: 30px; }
+        
+        /* Navigation & Header */
+        .top-bar { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 25px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .control-row { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center; }
+        
+        .mode-btn { padding: 10px 20px; font-size: 14px; cursor: pointer; border-radius: 6px; border: 1px solid #ccc; background: #f8fafc; color: #333; transition: all 0.2s; }
+        .mode-btn.active { background: #2563eb; color: white; border-color: #2563eb; font-weight: bold; }
+        
+        .action-btn { padding: 10px 20px; font-size: 14px; cursor: pointer; border-radius: 6px; border: none; background: #10b981; color: white; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .action-btn:hover { background: #059669; transform: translateY(-1px); }
+
+        .file-input-wrapper { display: none; align-items: center; gap: 10px; background: #f1f5f9; padding: 8px 15px; border-radius: 8px; }
+        .file-input-wrapper.show { display: flex; }
+
+        .nav-controls { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 15px 0; }
+        button.nav-btn { padding: 12px 28px; font-size: 15px; cursor: pointer; border-radius: 8px; border: none; background: #2563eb; color: white; font-weight: 600; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        button.nav-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+        button.nav-btn:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
+        #page-info { font-weight: bold; background: white; padding: 10px 20px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        .header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
+        .rank { font-size: 1.8em; font-weight: 800; color: #1e293b; }
+        .impact { font-size: 1.1em; font-weight: bold; color: #dc2626; background: #fee2e2; padding: 5px 15px; border-radius: 20px; }
+        
+        .img-container { background: #f8fafc; border-radius: 12px; padding: 15px; margin-bottom: 25px; text-align: center; border: 1px solid #e2e8f0; }
+        img { max-width: 100%; max-height: 550px; height: auto; border-radius: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .filename-text { color: #64748b; font-size: 0.95em; margin-top: 12px; font-family: monospace; }
+        
+        table { width: 100%; border-collapse: collapse; background: white; font-size: 14px; table-layout: fixed; }
+        th, td { border: 1px solid #e2e8f0; padding: 10px 8px; text-align: center; word-wrap: break-word; }
+        th { background: #f1f5f9; color: #475569; font-weight: 700; }
+        .group-header { background: #f8fafc; font-weight: bold; text-align: left; padding-left: 15px; color: #2563eb; border-left: 4px solid #2563eb; }
+        
+        .col-metric { width: 120px; }
+        .col-anchor { width: 100px; }
+        .col-score { width: 80px; }
+        .col-reason { text-align: left; line-height: 1.4; width: auto; }
+        .reason-box { background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #f1f5f9; }
+
+        /* Anchor Popup */
+        .anchor-wrapper { position: relative; display: inline-block; }
+        .view-anchors-btn { background: #64748b; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: help; display: inline-block; }
+        .anchor-popup {
+            visibility: hidden; opacity: 0; position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%);
+            background: white; border: 1px solid #ccc; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 15px; z-index: 1000; width: 850px; transition: opacity 0.3s, visibility 0.3s; pointer-events: none;
+        }
+        .anchor-wrapper:hover .anchor-popup { visibility: visible; opacity: 1; pointer-events: auto; }
+        .anchor-list { display: flex; gap: 10px; justify-content: center; }
+        .anchor-item { width: 160px; text-align: center; display: flex; flex-direction: column; }
+        .anchor-item img { width: 100%; height: 100px; object-fit: contain; background: #eee; border-radius: 4px; margin-bottom: 5px; }
+        .anchor-info { font-size: 10px; margin-top: auto; color: #444; }
+        .anchor-sim { font-weight: bold; color: #2563eb; font-size: 11px; margin-top: 2px; }
+        .anchor-fname { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #888; font-size: 9px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #1e293b;">Integrated Figure Eval Viewer</h1>
+        
+        <div class="top-bar">
+            <div class="control-row">
+                <button class="mode-btn active" id="btn-mode-original" onclick="setMode('original')">Original Outliers</button>
+                <button class="mode-btn" id="btn-mode-generated" onclick="setMode('generated')">Generated Figures (New)</button>
+                <button class="action-btn" onclick="exportToCSV()">📥 Export CSV</button>
+            </div>
+            
+            <div id="file-input-container" class="file-input-wrapper">
+                <span style="font-size: 14px; color: #555;">Select <b>generated_figures_evaluation_results.json</b>:</span>
+                <input type="file" id="json-uploader" accept=".json" onchange="loadGeneratedFile(this)">
+            </div>
+        </div>
+
+        <div class="nav-controls">
+            <button class="nav-btn" id="prev-btn" onclick="changePage(-1)">◀ Previous</button>
+            <span id="page-info">Waiting for data...</span>
+            <button class="nav-btn" id="next-btn" onclick="changePage(1)">Next ▶</button>
+        </div>
+
+        <div id="content">Select a mode or load a file to begin.</div>
+    </div>
+
+    <script src="data.js"></script> 
+    
+    <script>
+        let currentMode = 'original'; 
+        let currentData = [];
+        let currentIndex = 0;
+        let allImagesMap = {}; 
+
+        const metricGroups = {
+            'q1': 'Informativeness (q1)',
+            'q2': 'Fidelity (q2)',
+            'q3': 'Overall Readability (q3)',
+            'q4': 'Design Quality (q4)',
+            'q5': 'Creativity (q5)'
+        };
+
+        window.onload = function() {
+            if(window.PAPER_DATA) {
+                window.PAPER_DATA.forEach(p => {
+                    p.images.forEach(img => {
+                        allImagesMap[img.filename] = img;
+                    });
+                });
+            }
+            loadOriginalData();
+        };
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('btn-mode-original').className = mode === 'original' ? 'mode-btn active' : 'mode-btn';
+            document.getElementById('btn-mode-generated').className = mode === 'generated' ? 'mode-btn active' : 'mode-btn';
+            
+            const uploader = document.getElementById('file-input-container');
+            
+            if (mode === 'original') {
+                uploader.className = 'file-input-wrapper'; 
+                loadOriginalData();
+            } else {
+                uploader.className = 'file-input-wrapper show'; 
+                document.getElementById('content').innerHTML = '<div style="text-align:center; padding:50px; color:#666;">Please upload the <b>generated_figures_evaluation_results.json</b> file.<br><small>(Ensure this HTML file is in the root: <code>figs_human_eval_papers/</code>)</small></div>';
+                document.getElementById('page-info').innerText = '- / -';
+            }
+        }
+
+        async function loadOriginalData() {
+            try {
+                const response = await fetch('ranking_data_submetrics.json');
+                const rawData = await response.json();
+                currentData = rawData;
+                currentIndex = 0;
+                renderItem(0);
+            } catch(e) {
+                document.getElementById('content').innerHTML = "Error loading original JSON. Make sure ranking_data_submetrics.json exists.<br>" + e.message;
+            }
+        }
+
+        function loadGeneratedFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    currentData = normalizeGeneratedData(json);
+                    currentIndex = 0;
+                    if (currentData.length > 0) {
+                        renderItem(0);
+                    } else {
+                        document.getElementById('content').innerHTML = "No evaluation data found in this file.";
+                    }
+                } catch (err) {
+                    alert("Invalid JSON format: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // --- CSV Export Logic ---
+        function exportToCSV() {
+            if (!currentData || currentData.length === 0) {
+                alert("No data available to export.");
+                return;
+            }
+
+            // CSV Header
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Filename,Total_Weighted_Score,Metric_ID,LLM_Score,Human_Score,Reasoning\n";
+
+            // Data Rows
+            currentData.forEach(item => {
+                const fname = item.filename.replace(/,/g, ""); // Remove commas from filename
+                const total = item.Total_Impact_Combined;
+
+                // Sort keys for consistent order
+                const sortedKeys = Object.keys(item.details).sort();
+
+                sortedKeys.forEach(key => {
+                    const d = item.details[key];
+                    // Handle text fields containing commas/newlines by wrapping in quotes
+                    const reason = d.reason ? `"${d.reason.replace(/"/g, '""')}"` : '""';
+                    
+                    csvContent += `${fname},${total},${key},${d.llm_score},${d.human_score},${reason}\n`;
+                });
+            });
+
+            // Trigger Download
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            const fileName = currentMode === 'original' ? 'original_evaluation_results.csv' : 'generated_evaluation_results.csv';
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function normalizeGeneratedData(json) {
+            const evals = json.figure_evaluations || [];
+            return evals.map(item => {
+                const details = {};
+                if (item.scores) {
+                    Object.entries(item.scores).forEach(([critName, val]) => {
+                        if (val.sub_metrics) {
+                            val.sub_metrics.forEach(sub => {
+                                const match = sub.question.match(/^(\d+\.\d+)\./);
+                                const qKey = match ? 'q' + match[1] : sub.question;
+                                const qCodeShort = 'q' + (match ? match[1] : '');
+                                
+                                let anchors = [];
+                                if (item.used_anchor_paths && item.used_anchor_paths[qCodeShort]) {
+                                    anchors = item.used_anchor_paths[qCodeShort];
+                                }
+
+                                details[qKey] = {
+                                    llm_score: sub.score,
+                                    human_score: '-',
+                                    reason: sub.reason,
+                                    anchors: transformAnchors(anchors)
+                                };
+                            });
+                        }
+                    });
+                }
+                return {
+                    filename: item.figure_file, 
+                    details: details,
+                    Total_Impact_Combined: item.weighted_total || 0,
+                    is_generated: true
+                };
+            });
+        }
+
+        function transformAnchors(rawAnchors) {
+            if (!Array.isArray(rawAnchors)) return {};
+            const result = {};
+            rawAnchors.forEach((a, idx) => {
+                const fname = a.path.split('/').pop();
+                result[idx + 1] = {
+                    filename: fname, 
+                    similarity: a.similarity
+                };
+            });
+            return result;
+        }
+
+        function renderItem(index) {
+            if (!currentData || currentData.length === 0) return;
+            
+            const item = currentData[index];
+            const container = document.getElementById('content');
+            
+            let mainImgSrc = '';
+            if (item.is_generated) {
+                mainImgSrc = item.filename.replace(/\\/g, '/');
+            } else {
+                const imgInfo = allImagesMap[item.filename];
+                mainImgSrc = imgInfo ? imgInfo.path : 'https://via.placeholder.com/800x400?text=Path+Not+Found';
+            }
+
+            let rows = '';
+            const sortedKeys = Object.keys(item.details).sort();
+            let currentGroup = '';
+
+            sortedKeys.forEach(key => {
+                const d = item.details[key];
+                const groupKey = key.split('.')[0]; 
+                if (groupKey !== currentGroup && metricGroups[groupKey]) {
+                    rows += `<tr><td colspan="5" class="group-header">${metricGroups[groupKey]}</td></tr>`;
+                    currentGroup = groupKey;
+                }
+
+                rows += `<tr>
+                    <td class="col-metric"><strong>${key}</strong></td>
+                    <td class="col-anchor">${renderAnchorsHTML(d.anchors)}</td>
+                    <td class="col-score" style="font-size:1.2em; font-weight:bold;">${d.llm_score}</td>
+                    <td class="col-score" style="color:#888;">${d.human_score}</td>
+                    <td class="col-reason"><div class="reason-box">${d.reason || '-'}</div></td>
+                </tr>`;
+            });
+
+            const countText = item.is_generated ? `Figure ${index + 1} / ${currentData.length}` : `Outlier ${index + 1} / ${currentData.length}`;
+
+            container.innerHTML = `
+                <div class="item">
+                    <div class="header">
+                        <span class="rank">${item.is_generated ? 'Generated Figure Evaluation' : 'Rank #' + (index + 1)}</span>
+                        <span class="impact">Weighted Score: ${item.Total_Impact_Combined.toFixed(3)}</span>
+                    </div>
+                    <div class="img-container">
+                        <img src="${mainImgSrc}" onerror="this.src='https://via.placeholder.com/800x400?text=Image+Load+Error+Check+Path'">
+                        <div class="filename-text">File: ${item.filename}</div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="col-metric">Metric</th>
+                                <th class="col-anchor">Anchors</th>
+                                <th class="col-score">LLM</th>
+                                <th class="col-score">Human</th>
+                                <th>Reasoning</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('page-info').innerText = countText;
+            document.querySelectorAll('#prev-btn').forEach(b => b.disabled = (index === 0));
+            document.querySelectorAll('#next-btn').forEach(b => b.disabled = (index === currentData.length - 1));
+            
+            window.scrollTo(0, 0);
+        }
+
+        function renderAnchorsHTML(anchors) {
+            if (!anchors || Object.keys(anchors).length === 0) return '<span style="color:#ccc; font-size:11px;">No Anchors</span>';
+
+            let listHtml = '';
+            Object.entries(anchors).forEach(([k, val]) => {
+                const fname = val.filename || val;
+                const sim = val.similarity ? `Sim: ${val.similarity.toFixed(3)}` : '';
+                const imgData = allImagesMap[fname];
+                const src = imgData ? imgData.path : 'https://via.placeholder.com/100?text=No+Ref';
+
+                listHtml += `
+                    <div class="anchor-item">
+                        <img src="${src}" onerror="this.src='https://via.placeholder.com/100?text=Err'">
+                        <div class="anchor-info">
+                            <div style="font-weight:bold;">Ref #${k}</div>
+                            <div class="anchor-fname" title="${fname}">${fname}</div>
+                            <div class="anchor-sim">${sim}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            return `
+                <div class="anchor-wrapper">
+                    <span class="view-anchors-btn">View Refs</span>
+                    <div class="anchor-popup">
+                        <div style="font-weight:bold; margin-bottom:10px; border-bottom:1px solid #eee;">Reference Anchors</div>
+                        <div class="anchor-list">${listHtml}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function changePage(offset) {
+            currentIndex += offset;
+            if(currentIndex < 0) currentIndex = 0;
+            if(currentIndex >= currentData.length) currentIndex = currentData.length - 1;
+            renderItem(currentIndex);
+        }
+    </script>
+</body>
+</html>

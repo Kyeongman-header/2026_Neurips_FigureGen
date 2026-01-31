@@ -1,0 +1,245 @@
+{
+  "paper_name": "Error-driven_Data-efficient_Large_Multimodal_Model_Tuning",
+  "evaluated_at": "2026-01-12T01:30:53.832749",
+  "figure_summary": "## 1. Core Contributions\n- Introduces an **error-driven, data-efficient tuning framework** for adapting a generic pretrained LMM to a new downstream task using only a small task validation set plus a large, task-agnostic supporting dataset.\n- Uses a **teacher–student setup** where the teacher inspects the student’s *failed* validation examples to (i) **localize the key erroneous reasoning step** and (ii) **summarize the missing capability (“skill gap”)** responsible for the error.\n- Performs **skill-guided retrieval of targeted tuning samples** from an external, task-agnostic dataset (e.g., Vision-Flan) to fine-tune the student, aiming to outperform generic fine-tuning on the full supporting dataset and other selection baselines.\n\n## 2. Method Components & Relations relevant to figures\n- **Student model (generic LMM, \\(M_S\\))**\n  - Input: validation examples from the target task (\\(D_{val}\\))\n  - Output: **final answer** + **rationale** (a multi-sentence chain-of-thought)\n  - Produces **error samples** by comparing predicted answers vs gold labels.\n\n- **Error sample representation**\n  - Each student rationale \\(r\\) is split into **sentence-level reasoning steps**: \\(r = [r_1, r_2, \\dots]\\).\n  - Each error sample includes: question \\(q\\), wrong prediction \\(y\\), rationale \\(r\\), and gold answer \\(\\tilde{y}\\).\n\n- **Teacher model (stronger LMM, \\(M_T\\))**\n  - **Mistake Identification**: finds the **mistake step** \\(r_m\\), intended to be the most influential erroneous step leading to the wrong final answer.\n  - **Skill Analysis**: converts the identified mistake into a **missing skill statement** (capability gap) that explains what the student model failed to do.\n\n- **Skill-based retrieval + targeted tuning**\n  - The missing-skill description is used to **retrieve training samples** from a large **supporting set** (task-agnostic, multi-task human-labeled data).\n  - Retrieved samples are used to **fine-tune the student**, iterating the overall loop (error collection → teacher diagnosis → retrieval/tuning) until a max iteration budget.\n\n- **Key relation shown by figures**\n  - The framework is explicitly **causal/diagnostic**: *student errors → teacher pinpoints reasoning fault → teacher abstracts fault into skill gap → skill gap drives data retrieval → retrieved data drives tuning*.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To visually clarify the **end-to-end control flow** of the proposed paradigm: how validation-time student failures are transformed into actionable training signals without needing new task-specific annotations.\n- To concretize what “error-driven” means operationally: not just selecting “similar” data, but selecting data **conditioned on diagnosed reasoning/skill deficits**.\n- To illustrate the **mechanism for mistake localization** within a multi-step rationale (including how the teacher’s confidence over answer options evolves as reasoning steps are revealed), motivating why a specific step is labeled as the critical error.\n- To communicate that the approach is an **iterative teacher–student loop** combining evaluation, diagnosis, retrieval, and fine-tuning—rather than a one-shot fine-tune or generic data mixing strategy.\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide full empirical evidence of final performance gains, comparisons across all tasks, or scaling trends (those belong to results tables/plots not included here).\n- Not intended to prove that the student’s generated rationale is a faithful explanation of its internal decision process; the method **treats rationales as analyzable artifacts** for diagnosis.\n- Not intended to establish that the teacher’s identified “mistake step” is uniquely correct or theoretically optimal; the figures illustrate a **practical procedure** for localization/skill inference.\n- Not intended to detail the exact retrieval algorithm, ranking function, or fine-tuning hyperparameters; figures focus on **conceptual pipeline and diagnostic logic**, not implementation minutiae.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Error-driven_Data-efficient_Large_Multimodal_Model_Tuning__p2__score1.00.png",
+      "caption": "Figure 1: Overview of the error-driven data-efficient tuning paradigm.",
+      "scores": {
+        "Informativeness": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure covers the main pipeline described in the summary: student model producing answers with multi-step rationale on a validation set, formation of error samples, teacher-driven mistake identification at a specific rationale step, skill-gap analysis, skill-based retrieval from a task-agnostic supporting set, and using retrieved training samples to tune the student (iterative loop implied by arrows). It does not include formal notation (e.g., MS/MT, r=[r1,...]) or iteration/budget details, but those are not essential formulas in the summary and the caption frames this as an overview."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 5.0,
+              "reason": "From the diagram alone, a reader can infer the operating principle: the student fails on validation examples, a teacher inspects the student’s rationale to pinpoint the erroneous step, converts it into a missing-skill description, then retrieves targeted data from a large supporting set and uses it as training samples to improve the student. The concrete magnet example plus labeled boxes (Mistake Identification, Skill Analysis, Skill-based Retrieval) make the causal/diagnostic control flow clear without needing the paper."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 3.0,
+              "reason": "As an 'overview' figure it summarizes the core method end-to-end, but it is not a complete summary of the paper’s full content: it omits many details explicitly noted as outside figure scope in the summary (e.g., retrieval algorithm specifics, fine-tuning procedure/hyperparameters, empirical results/comparisons, and iteration stopping criteria). It also does not explicitly show the rationale being split into sentence-level steps beyond the example formatting, nor the explicit compare-to-gold mechanism, though error samples are indicated."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 5.0,
+              "reason": "The figure includes only components described in the summary: a student LMM producing rationales on a validation set, error samples, a teacher LMM performing mistake identification and skill analysis, a task-agnostic supporting set, skill-based retrieval, and using retrieved training samples for tuning. No extra algorithms, equations, or implementation-specific retrieval/ranking details are introduced that would affect the core method structure."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 5.0,
+              "reason": "The control flow matches the summary’s causal/diagnostic loop: (Step 1) student runs on validation set to produce error samples; (Step 2) teacher inspects failed examples, localizes an incorrect reasoning step and summarizes the missing skill; (Step 3) missing-skill statement drives retrieval from a supporting set, producing training samples used to fine-tune the student, with an indicated iterative loop back to the student. This aligns with the intended error-driven, skill-guided retrieval and tuning paradigm."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled consistently with the summary: 'Student Model w/ Rationale', 'Validation Set', 'Error Samples', 'Teacher Model (e.g., LMMs)', 'Mistake Identification', 'Skill Analysis', 'Supporting Set', 'Skill-based Retrieval', and 'Training Samples'. The terminology (teacher–student, mistake step, skill gap, supporting set, retrieval) matches the described method without misnaming core modules."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The schematic emphasizes the main contribution described in the summary: student produces error samples from a validation set (Step 1), a teacher diagnoses the mistake step and abstracts a missing skill (Step 2), and that skill drives retrieval from a supporting set to produce training samples for tuning (Step 3). The inclusion of one concrete example (magnet QA with sentence-level rationale) supports the idea of step-level mistake localization without overwhelming the pipeline, though the example text is relatively dense and could be more compact."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "Given the caption (“Overview of the error-driven data-efficient tuning paradigm”) and the summary’s intended purpose, the figure maps well onto the described causal loop: student errors → teacher pinpointing an erroneous reasoning step → skill gap statement → skill-based retrieval → targeted tuning/iteration. The step labels (Step 1/2/3) and arrows make the control flow easy to follow as supplementary material. Minor readability friction comes from small font size and crowded text in the left/right narrative boxes, which may require zooming."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure largely avoids decorative elements and stays focused on core concepts (student/teacher, error samples, validation/supporting sets, retrieval, training samples). The example-specific content (magnet question, rationale, and teacher analysis) is relevant to the claimed mistake-localization and skill-gap extraction mechanism rather than unrelated decoration. Some text could be shortened (e.g., detailed polarity explanation) without losing the main idea, but it does not substantially distract from the method structure."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The overview largely follows a left-to-right flow consistent with the summary’s causal chain: student error sample (left) → teacher diagnosis (center/right) → skill-based retrieval and training samples (right/bottom). The iterative loop back to the student is indicated with a return arrow, which slightly disrupts a purely linear reading but matches the iterative paradigm."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Most connectors are routed cleanly with minimal overlap. The main potential complexity is around the bottom loop (student ↔ training samples) and the dashed step boundaries, but there are no major ambiguous line crossings that would obscure the core pipeline (errors → teacher → retrieval → tuning)."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related elements are grouped: the left panel contains the error sample/rationale text; the teacher model sits adjacent to the diagnostic output (mistake identification and skill analysis); retrieval is placed next to the supporting set; training samples are placed near the tuning loop with the student. This matches the described method components and relations."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Key modules (student, teacher, retrieval, training samples) appear laid out on a mostly consistent horizontal/vertical structure, with dashed regions for steps. However, some elements (e.g., supporting set cylinder vs. retrieval box vs. training samples) are not perfectly aligned to a strict grid, giving a slightly uneven baseline."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Primary components (Student Model, Teacher Model, Skill-based Retrieval, Training Samples) stand out via colored boxes and central placement, while auxiliary items (validation set, supporting set, error samples) are smaller and less visually dominant. The hierarchy is clear, though the large left text block can compete for attention with the central pipeline."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between boxes and within the dashed step regions. The densest area is the left error-sample text panel (high text density) and the top-right diagnosis box, but spacing still keeps elements separable and the main flow readable."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Semantically similar roles use consistent visual encodings: models are in similar rounded rectangles; datasets use cylinder-like icons (validation/supporting); retrieved/training samples are boxed. Color usage is mostly consistent (e.g., retrieval highlighted in green), though not all dataset-like elements share identical styling (validation/supporting differ somewhat), slightly weakening uniformity."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 3.0,
+              "reason": "The figure uses concrete visual surrogates for abstract components—boxed modules for the Student/Teacher models, dataset icons (cylinders) for Validation/Supporting sets, and labeled arrows to encode the causal loop described in the summary (errors → diagnosis → retrieval → tuning). However, the metaphoric/iconic vocabulary is fairly standard (pipeline blocks and dataset cylinders) and does not substantially replace concepts with richer symbols beyond conventional abstractions."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 2.0,
+              "reason": "Stylistically, the overview resembles a common ML system diagram template: pastel rounded rectangles, dashed grouping, and straightforward arrowed flow. While the inclusion of an in-figure worked example (magnet reasoning with a highlighted mistaken step and a derived skill statement) aligns with the paper’s diagnostic emphasis, the visual style itself is not notably distinctive compared to typical teacher–student / retrieval-and-finetune schematics."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific causal/diagnostic mechanism highlighted in the summary. It goes beyond a generic 'train → test' flow by embedding (i) sentence-level mistake localization and (ii) skill-gap abstraction as explicit intermediate artifacts that drive retrieval, and by structuring the process into steps (Step 1–3) with a loop back to the student. This organization fits the method’s iterative, error-driven control flow rather than a uniform one-shot fine-tuning diagram."
+            }
+          ]
+        },
+        "weighted_total": 4.029
+      }
+    },
+    {
+      "figure_file": "Error-driven_Data-efficient_Large_Multimodal_Model_Tuning__p3__score0.95.png",
+      "caption": "Figure 2: Example for illustrating the process of mistake identification. At each iteration, we append one more reasoning step into the prompt to ask the teacher model to answer the question and track the probability changes of all the candidate option tokens.",
+      "scores": {
+        "Informativeness": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1",
+              "score": 4.0,
+              "reason": "The figure depicts a teacher model receiving incrementally appended sentence-level reasoning steps and outputs changing probabilities over candidate answer options, which matches the caption and the summary’s description of mistake localization using stepwise rationale exposure and tracking option probabilities. Minor elements like the explicit numeric prior (“60% probability, Option B is correct”) and the exact plotting style are not mentioned in the summary, but they function as auxiliary illustration rather than altering the method’s core structure."
+            },
+            {
+              "question": "2.2",
+              "score": 5.0,
+              "reason": "Relationships are consistent with the summary: a rationale is treated as an ordered list of reasoning steps, and the teacher is queried iteratively with progressively more steps to observe how belief over answer options evolves, supporting identification of an influential erroneous step. The flow (Reasoning Steps → Teacher Model → Answer Probabilities) matches the described diagnostic logic without introducing contradictory dependencies."
+            },
+            {
+              "question": "2.3",
+              "score": 4.0,
+              "reason": "Major components are labeled in line with the summary (e.g., “Teacher Model,” “Reasoning Steps,” and candidate options). However, the figure does not explicitly label the teacher as the stronger LMM (M_T) nor reference the mistake-step notation (r_m), so while the labels present are correct, they are slightly less specific than the paper summary’s terminology."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The figure is tightly schematized around the paper’s diagnostic core: revealing sentence-level reasoning steps incrementally and using a teacher model to track answer-option probabilities. It directly visualizes the intended mistake-identification mechanism described in the summary/caption (stepwise rationale exposure → teacher response/probability change), without drifting into unrelated parts of the full pipeline (retrieval/fine-tuning)."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As supplementary material for the caption, it is largely self-explanatory: it shows the question, candidate options (A/B), the sequential reasoning steps, the teacher model block, and the resulting probability trajectories for each option. This aligns well with the summary’s note about tracking confidence evolution as steps are revealed to motivate selecting a critical erroneous step. Minor ambiguity remains because the figure does not explicitly label which step is ultimately identified as the mistake or how that decision is made from the curves."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "It avoids decorative elements and keeps to functional components (steps, teacher, probability plot). Some information is slightly extra for the key message (e.g., the explicit 'Prior: With 60% probability, Option B is correct' and some repeated step-number icons along arrows), but these do not materially distract or introduce irrelevant method structure beyond what the summary/caption claims."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1",
+              "score": 5.0,
+              "reason": "The figure has a clear left-to-right flow: reasoning steps on the left are progressively appended and fed into the teacher model in the center, and the resulting tracked answer-option probabilities are shown on the right. This matches the caption’s iteration-by-iteration prompting and probability tracking."
+            },
+            {
+              "question": "4.2",
+              "score": 4.0,
+              "reason": "Connection lines largely avoid crossings by bundling each iteration as a separate horizontal arrow into and out of the teacher model. There is minor visual congestion where multiple arrows converge near the teacher block and split toward the probability panel, but no major ambiguous crossings that would obscure the causal/diagnostic relation described in the summary."
+            },
+            {
+              "question": "4.3",
+              "score": 5.0,
+              "reason": "Functionally related elements are placed close together: the sequential reasoning steps are grouped in one block; the teacher model is centered between inputs and outputs; and the probability trajectories (the teacher’s outputs over candidate options) are grouped on the right. This spatial grouping reflects the method’s mistake-identification mechanism (stepwise reveal → teacher response distribution shift)."
+            },
+            {
+              "question": "4.4",
+              "score": 4.0,
+              "reason": "Major components (reasoning-steps box, teacher block, probability plot) are cleanly aligned horizontally. The per-iteration arrows and step-number badges are mostly aligned to an implied grid, though the stacked arrows and braces introduce slight vertical unevenness."
+            },
+            {
+              "question": "4.5",
+              "score": 4.0,
+              "reason": "The central teacher model block is visually emphasized (large rounded rectangle), and the probability panel is prominent on the right, making the main components stand out. However, the key ‘mistake step’ is not visually highlighted as a distinct element (consistent with the caption focusing on probability changes rather than explicitly marking the chosen mistake)."
+            },
+            {
+              "question": "4.6",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between the three main regions, and text in the reasoning steps remains readable. Some margins are tight where multiple arrows/braces cluster near the teacher model and the probability panel, creating mild crowding but not harming interpretability."
+            },
+            {
+              "question": "4.7",
+              "score": 5.0,
+              "reason": "The design uses consistent visual encoding across iterations: step indices are consistently styled, arrows follow a consistent pattern, and the same color mapping appears to link each iteration’s input (numbered steps) to its corresponding probability trace. Components with similar roles (iteration prompts) are represented uniformly."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 3.0,
+              "reason": "The figure replaces some abstractions with concrete visual tokens: numbered step badges (1–4) represent incremental reasoning-step appends, and colored lines represent changing option probabilities. However, core concepts (teacher model, reasoning steps, probabilities) are still conveyed largely via standard text boxes and a conventional line plot rather than richer symbolic metaphors."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 2.0,
+              "reason": "Stylistically it resembles common method-illustration templates: a pipeline from inputs (reasoning steps) to a model block (teacher) to an output plot (probability trajectories). The only mildly distinctive aspect is the explicit tracking of candidate-option token probabilities as steps are appended, but the visual treatment itself is not notably unique."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the specific mistake-identification mechanism described in the summary/caption: it explicitly visualizes the iteration of appending one more reasoning step into the teacher prompt (left) and the resulting probability changes over candidate options (right). This departs from a generic teacher–student loop diagram by focusing on the stepwise rationale-reveal diagnostic logic and mapping each step count to a corresponding probability curve segment."
+            }
+          ]
+        },
+        "weighted_total": 3.219
+      }
+    }
+  ]
+}

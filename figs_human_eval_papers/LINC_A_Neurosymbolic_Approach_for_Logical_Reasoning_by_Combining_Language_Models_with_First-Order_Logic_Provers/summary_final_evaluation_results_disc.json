@@ -1,0 +1,515 @@
+{
+  "paper_name": "LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers",
+  "evaluated_at": "2026-01-12T02:27:24.725945",
+  "figure_summary": "## 1. Core Contributions\n- Introduces **LINC (Logical Inference via Neurosymbolic Computation)**: a modular neurosymbolic pipeline where an LLM **maps natural-language (NL) premises/conclusions to first-order logic (FOL)**, and a **symbolic theorem prover** performs the deductive inference.\n- Proposes a **sampling + theorem-proving + majority-vote** mechanism to mitigate both **syntax** and **semantic** errors in the LLM-produced logical forms.\n- Sets up an experimental comparison framework against **three prompting baselines** (Naïve, Scratchpad, Chain-of-Thought) across **two datasets** (FOLIO, ProofWriter) and **multiple LLMs**, emphasizing how LINC differs operationally from end-to-end NL reasoning.\n\n## 2. Method Components & Relations relevant to figures\n- **Key modules**\n  - **LLM semantic parser**: takes NL premises + query and generates candidate FOL encodings (multiple samples).\n  - **FOL parser + external theorem prover (Prover9)**: consumes each candidate FOL set; either (i) rejects due to syntax errors, or (ii) returns a label in **{True, False, Uncertain}**.\n  - **K-way majority voting (K=10 by default)**: aggregates the prover-returned labels across sampled candidates to produce a final prediction.\n  - **Prompting/ICL construction layer**: builds the exact textual input format via **string concatenation** of (i) task instructions/markup, (ii) few-shot examples, and (iii) the evaluation instance; varies by condition (Naïve vs Scratchpad vs CoT vs LINC).\n\n- **Key relations / data flows**\n  - NL problem → **LLM** → multiple candidate **FOL formalizations** (some may be invalid or semantically mismatched).\n  - Candidate FOL → **theorem prover** → per-sample decision (or error/filtered-out).\n  - Surviving prover outputs → **majority vote** → single final label.\n  - For all conditions, the model input is assembled as: **ICL examples + evaluation query**, but the **required output format** differs (direct answer vs scratch reasoning vs CoT vs explicit NL↔FOL mapping plus evaluation).\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **visually specify the computation pipeline** and division of labor: *LLM as formalizer/semantic parser* versus *symbolic prover as deductive engine*, plus the role of voting in robustness.\n- To **clarify what is being sampled and aggregated** (multiple logical-form candidates and their prover-derived labels), and why errors can arise (syntactic invalidity; semantic predicate mismatch).\n- To **standardize the experimental prompting setup** by showing how each method’s prompt/output contract is formed (ICL concatenation and stopping), enabling fair comparison across conditions.\n\n## 4. What Figures are NOT intended to show\n- Not a proof that the LLM’s produced FOL is *faithful* in a linguistic/semantic-theoretic sense; the figures only illustrate **possible correctness and error types**, not guarantees.\n- Not an exposition of the internal algorithmic details of **Prover9** or formal soundness/completeness properties beyond its role as an external solver returning labels/errors.\n- Not a full presentation of empirical results (e.g., accuracy tables, per-dataset/model outcomes) or statistical significance; the figures focus on **workflow/experimental setup**, not performance evidence.\n- Not a training procedure or learned objective (no losses/gradient flow are depicted); the method is framed as **prompting + external tool use + voting**, not end-to-end supervised learning.",
+  "figure_evaluations": [
+    {
+      "figure_file": "LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p1__score1.00.png",
+      "caption": "Figure 1: This figure showcases the essence of our approach. Starting from a problem in natural language, in Step 1, the LLM semantic parser samples logic formulas expressing estimates of the semantics. It is possible that some of these might contain errors, e.g., the second example shows a syntax error involving an extra parenthesis, whereas the fourth example highlights a semantic error caused by mismatched predicates. In Step 2, these are then each offloaded to an automated theorem prover, filtering out syntax errors, and producing labels for the remaining samples. In Step 3, the remaining candidate outputs are passed through a majority-vote sieve to arrive at the best estimate for a single output label.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure covers the core LINC pipeline described in the summary: (i) an LLM semantic parser that samples multiple candidate FOL formalizations from an NL problem, (ii) an external theorem prover that filters syntax errors and outputs labels, and (iii) K-way majority voting to select a final label. It also explicitly illustrates both syntax-error and semantic-error cases, matching the summary/caption. However, it omits some major paper-level components mentioned in the summary, notably the prompting/ICL construction layer and the comparison to prompting baselines/datasets; those are not shown here."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 5.0,
+              "reason": "From the visual alone, one can infer the operating principle end-to-end: NL input enters a semantic parser that generates multiple formalizations (samples), each is sent to a theorem prover which may return an error or a truth-status label, and then a K-majority vote produces the final output label. The arrows, step labels, and concrete examples (including error examples) make the overall workflow understandable without the paper."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure summarizes the method workflow but does not summarize the paper \"from beginning to end\" as described in the summary: it does not include the experimental comparison framework (Naïve/Scratchpad/CoT vs LINC), the datasets (FOLIO, ProofWriter), multiple LLM settings, or the ICL/prompt assembly details. It is informative about the approach essence, but not comprehensive of the broader paper content."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 5.0,
+              "reason": "The figure contains only the modules and artifacts described in the summary/caption: Step 1 LLM semantic parser sampling multiple candidate FOL encodings; examples of syntax error (extra parenthesis) and semantic error (mismatched predicates); Step 2 automated theorem prover that filters syntax errors and outputs labels; Step 3 K-majority voting to produce a final label. Icons (neural net, gears, funnel) and the concrete toy NL/FOL example are conventional and do not introduce new method components or claims beyond the described pipeline."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 5.0,
+              "reason": "Dataflow matches the summarized method precisely: NL premise/query input → LLM produces multiple sampled logical-form candidates → each candidate is sent to a logic theorem prover → prover returns per-sample outcomes (True/Error/Unknown) with syntax-invalid samples rejected → remaining outputs are aggregated via K-majority voting → final single label output. This aligns with the stated sampling + theorem-proving + majority-vote mechanism and the role of the prover in handling syntax validity and producing {True, False, Uncertain}-type labels (here illustrated as True/Unknown/Error)."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled consistently with the summary/caption: 'Semantic Parser' corresponds to the LLM semantic parser; 'Logic Theorem Prover' corresponds to the external theorem prover (e.g., Prover9); 'K-Maj Voting' corresponds to K-way majority voting; the figure’s step labels (Step 1/2/3) and sample labels match the described staged pipeline. Output labeling as 'True' and intermediate 'Unknown'/'Error' are compatible with the described prover outputs (labels plus syntax-rejection)."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure cleanly schematizes the main LINC pipeline described in the summary/caption: Step 1 LLM semantic parser producing multiple sampled FOL candidates (with explicit examples of syntax vs semantic errors), Step 2 theorem prover filtering/labeling, and Step 3 K-way majority voting to a final label. It mostly avoids drifting into unrelated details, though the full inline FOL strings and XML-like tags add textual density that slightly distracts from the high-level message."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "As supplementary material, it aligns strongly with the caption and the paper summary’s intended purpose: it clarifies division of labor (LLM as formalizer vs prover as deductive engine), what is sampled/aggregated, and where errors arise (syntax rejection vs semantic mismatch leading to different prover outputs). The flow of NL input → multiple FOL samples → prover outputs/errors → majority vote → final label is visually explicit and easy to map to the described method."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The diagram is largely free of decorative clutter and keeps elements tied to the core contributions (sampling, prover filtering/labeling, voting). Minor redundancy comes from repeated large text blocks (multiple near-identical sample encodings) and decorative icons (network, gears, funnel) that are conventional but not strictly necessary; they do not, however, obscure the core method structure."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.571,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 5.0,
+              "reason": "The pipeline follows a clear left-to-right flow consistent with the summary: NL input at the upper middle-left, Step 1 (LLM semantic parser) on the left, sampled FOL candidates flowing to Step 2 (theorem prover) in the center, then per-sample labels to Step 3 (K-majority voting) on the right, ending at the final output label."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 4.0,
+              "reason": "Most connectors are clean and do not cross. The only mild visual congestion is where multiple parallel arrows fan from Step 1 down to the sample boxes and then into Step 2, but these are arranged as stacked, mostly parallel routes rather than intersecting lines."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 5.0,
+              "reason": "Functionally related elements are grouped: the stack of sampled logical forms is placed adjacent to Step 1 and directly upstream of Step 2; the stack of per-sample prover outputs is placed immediately downstream of Step 2 and directly upstream of Step 3. This matches the sampling→proving→vote structure in the summary."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "Major blocks (Step 1, Step 2, Step 3) are aligned horizontally, and the sample boxes and their corresponding output boxes are vertically stacked in a grid-like manner. Minor misalignments exist (e.g., the top 'Input' and top 'Output' callouts are not strongly anchored to the same baseline/grid as the main pipeline), but overall alignment is neat."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 5.0,
+              "reason": "The three main components (Step 1/2/3) stand out via larger size, strong color fill, and prominent labels, clearly signaling the core pipeline described in the summary. Supporting elements (samples, labels like True/Error/Unknown) are smaller and visually subordinate."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient spacing between the stacked samples and between modules, keeping the pipeline readable. However, the left-side bundle of arrows from Step 1 to the sample list and the dense text inside each sample box make that region feel tight, reducing whitespace locally."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 5.0,
+              "reason": "Consistent visual encoding is used: main processing modules share the same teal rounded-rectangle style; samples and per-sample outputs use uniform light boxes with consistent 'Sample i' tags; arrows consistently indicate data flow. This supports the modular roles (semantic parser vs prover vs voting) described in the summary."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces several abstract modules with concrete icons and compact abbreviations aligned with the summary’s pipeline: a small neural-network glyph for the LLM semantic parser, gears for the external theorem prover, and a funnel for the majority-vote ‘sieve’. It also uses concise labels like “K-Maj Voting” and explicit “Step 1/2/3” to concretize the process. The metaphors are clear and helpful, though they remain conventional rather than deeply inventive."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "Visually, the diagram largely follows a common block-and-arrow workflow template typical of ML/tool-augmented NLP papers: rectangular modules, left-to-right flow, and sample-wise branching. While the inclusion of explicit syntax/semantic error examples in the sampled logical forms is a nice didactic touch consistent with the caption/summary, the overall style (icons + pipeline) is not especially distinctive relative to standard templates."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the method’s specific structure described in the summary: it explicitly depicts multiple sampled FOL candidates, shows syntax-error filtering at the prover stage, and then aggregates remaining labels via K-way majority voting to reach {True/False/Uncertain}-type outcomes. The sample-parallel lanes and the separation of ‘input NL → sampled formalizations → prover outputs → voting’ break away from a single-stream uniform design and directly match the paper’s operational claims."
+            }
+          ]
+        },
+        "weighted_total": 4.181
+      }
+    },
+    {
+      "figure_file": "LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score1.00.png",
+      "caption": "Figure 2: This figure outlines the string concatenation workflow for each of our conditions. We start with the original problem, provide ICL examples through an intermediate markup language, and finally append the problem to evaluate. At this stage, we allow the model to autoregressively sample until producing a stop token.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 3.0,
+              "reason": "The figure covers the prompting/ICL construction layer described in the summary: it shows N ICL examples, intermediate markup (<EVALUATE>), and string concatenation (#) producing different prompt/output contracts for Naïve, Scratchpad, CoT, and LINC. However, it omits other major method components emphasized as core to LINC (LLM sampling of multiple FOL candidates, Prover9/theorem prover step with {True, False, Uncertain} or syntax rejection, and K-way majority voting). Thus it is informative for prompt formation but not for the full LINC pipeline."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the visual alone, one can understand the general workflow it intends to communicate: take an original problem, prepend/concatenate ICL examples via markup, then append the evaluation instance, and autoregressively sample until a stop token; and see how the required output differs across conditions (direct answer vs scratch reasoning vs CoT vs NL↔FOL mapping). What is not understandable from this figure alone is LINC’s downstream neurosymbolic inference (theorem proving + voting), since those steps are not depicted."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "As a summary of the paper end-to-end, it is incomplete: it only illustrates prompt construction for conditions, not the central neurosymbolic computation described in the summary (multiple sampled logical forms, parsing, Prover9 decisions including Uncertain/errors, and majority-vote aggregation), nor the experimental comparison outcomes. Therefore it does not capture the full beginning-to-end story of the paper, only one layer of the setup."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 4.0,
+              "reason": "The figure focuses on the prompt/string-concatenation setup across conditions (Naïve, Scratchpad, CoT, LINC) with N ICL examples, intermediate markup, and stop-token sampling—elements explicitly described in the summary and caption. It does include concrete toy NL/FOL example content (e.g., rectangles/shapes; dogs/mammals) and specific predicate names like `four-sided`/`isshape`, which are not explicitly mentioned in the summary; however, these appear to be illustrative placeholders and do not introduce extra method components or alter the claimed pipeline structure."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 5.0,
+              "reason": "The relationships shown match the summary: ICL examples plus the evaluation instance are concatenated (denoted by the # symbol) to form the model input, and different conditions impose different output contracts (direct answer vs scratchpad reasoning vs CoT vs NL↔FOL mapping for LINC). The workflow depicted—examples/markup first, then appending the evaluation problem, then autoregressive generation until a stop token—is consistent with the described prompting/ICL construction layer."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Major condition labels (Naïve, Scratchpad, CoT, LINC) align with the summary’s named baselines and the LINC method. The figure’s auxiliary labels such as “N ICL Examples” and “# = string concatenation” are consistent with the summary’s description of ICL concatenation and do not misname core modules."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure schematizes the core experimental setup described in the summary: prompt construction via string concatenation of ICL examples (in markup) plus the evaluation instance, shown across the four conditions (Naïve, Scratchpad, CoT, LINC). It focuses on the essential difference in each condition’s input/output contract (direct answer vs scratch-style vs CoT vs NL↔FOL mapping). However, it does not depict the later LINC-specific pipeline pieces emphasized as core contributions (sampling multiple FOL candidates, theorem prover filtering/labels, majority vote), so as a standalone “main contribution” summary it is slightly incomplete."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "Given the caption and summary, the visual matches the intended purpose: it explicitly shows the workflow of assembling prompts with intermediate markup, adding N ICL examples, appending the target problem, and sampling until a stop token. The side-by-side comparison makes it easy to understand how the experimental prompting framework is standardized across conditions while varying required output format."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The layout is clean and avoids decorative graphics; the legend for string concatenation and the N-ICL-examples callout are functional. The concrete toy examples (rectangles/shapes; dogs/mammals) add some text volume, but they serve a conventional illustrative role and do not introduce irrelevant method components. Minor redundancy arises from repeating similar NL/FOL lines across multiple boxes, which slightly increases visual load without adding new structural information."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.571,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The workflow is primarily top-to-bottom: an original NL problem at the top feeds into the condition-specific prompt blocks in the middle, then down to the final evaluation-instance prompt at the bottom. Within the middle row, the four conditions are laid out left-to-right, which is consistent with comparing conditions, though the overall processing direction is more vertical than horizontal."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 3.0,
+              "reason": "The connector structure largely avoids line crossings, but the horizontal bus-like line from the top problem to the four condition blocks, together with multiple vertical drops, creates visually dense junctions (notably near the central concatenation icon), which partially harms readability even if true geometric crossings are minimal."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally similar modules (the four prompting conditions: Naïve, Scratchpad, CoT, LINC) are grouped together in a single row and presented with comparable block sizes. The ICL examples callout and the string-concatenation legend are placed nearby, supporting the figure’s stated goal of showing concatenation-based prompt construction."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "The four condition blocks are neatly aligned on a common horizontal baseline, and the top and bottom NL problem boxes are centered relative to the middle. Minor misalignment comes from auxiliary callouts (e.g., “* N ICL Examples” and legend) that do not sit on the same implied grid as the main pipeline elements."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 3.0,
+              "reason": "The main components (original problem, condition blocks, evaluation instance) are visually prominent via large rounded rectangles, but the figure does not strongly emphasize which components are the primary stages versus auxiliary annotations. The concatenation operator icons are small and could be missed despite being semantically important per the caption."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "There is generally adequate whitespace around the major blocks, but the text inside Scratchpad/CoT/LINC is dense and close to the boundaries, and the central area with the horizontal connector line plus concatenation icon feels tight, reducing legibility."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "The four conditions are consistently represented as rounded rectangles with colored headers, supporting comparison across Naïve/Scratchpad/CoT/LINC as described in the summary. Auxiliary elements (ICL examples callout, legend, concatenation icons) are also consistently styled as small boxed annotations, though their style differs from the main pipeline blocks (appropriately, as they play a different role)."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure uses concrete symbols/abstractions (e.g., the boxed markup like <EVALUATE>, the \"#\" icon explicitly defined as string concatenation, and labeled condition panels: Naïve/Scratchpad/CoT/LINC) to stand in for the prompt-construction process described in the summary. However, it remains mostly literal UI/diagrammatic text rather than employing richer metaphorical iconography beyond the concatenation symbol and module labels."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Visually, it follows a common comparative workflow template: four color-coded method boxes in parallel with arrows from an initial problem and ICL examples, plus a legend. This aligns with conventional ML paper prompt-format figures; there is limited distinctive styling or unconventional visual language beyond modest color coding and the explicit concatenation marker."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is purpose-fit to the paper’s comparison goal stated in the summary: it shows the same NL problem and shared ICL-examples feed into four different prompt/output contracts, making the string-concatenation differences across conditions immediately comparable. The side-by-side branching structure usefully adapts the design to the specific experimental setup rather than a generic single-pipeline diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.714
+      }
+    },
+    {
+      "figure_file": "LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p1__score1.00__1.png",
+      "caption": "Figure 1: This figure showcases the essence of our approach. Starting from a problem in natural language, in Step 1, the LLM semantic parser samples logic formulas expressing estimates of the semantics. It is possible that some of these might contain errors, e.g., the second example shows a syntax error involving an extra parenthesis, whereas the fourth example highlights a semantic error caused by mismatched predicates. In Step 2, these are then each offloaded to an automated theorem prover, filtering out syntax errors, and producing labels for the remaining samples. In Step 3, the remaining candidate outputs are passed through a majority-vote sieve to arrive at the best estimate for a single output label.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1_1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure captures the main method components described in the summary: (i) LLM semantic parser sampling multiple candidate FOL formalizations from NL premises/conclusion, (ii) a logic theorem prover that filters syntax errors and returns labels (including an explicit 'Error' case), and (iii) K-majority voting to produce a final label. It also illustrates both syntax and semantic error types as stated in the caption/summary. However, it does not cover other paper-level elements mentioned in the summary such as the prompting/ICL construction layer and the comparison to prompting baselines/datasets; these are outside this figure’s scope but are still part of the paper’s described framework."
+            },
+            {
+              "question": "1_2_standalone_intelligibility",
+              "score": 5.0,
+              "reason": "By inspection, the pipeline is clear end-to-end: NL input enters Step 1 (semantic parser) producing multiple samples of logical formulas; Step 2 (theorem prover) outputs per-sample decisions or errors; Step 3 aggregates via K-majority voting to yield a single final label (e.g., 'True'). The arrows, step labels, and per-sample outputs make the operating principle understandable without reading the paper."
+            },
+            {
+              "question": "1_3_completeness",
+              "score": 2.0,
+              "reason": "The figure is informative about the core LINC workflow but does not summarize the full paper from beginning to end. In particular, it omits the experimental prompting setup details (ICL concatenation and differing output contracts for Naïve/Scratchpad/CoT vs LINC), the multi-dataset/multi-LLM evaluation framing (FOLIO, ProofWriter), and the broader comparison framework—elements explicitly mentioned in the summary as part of the paper’s contributions/context."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 5.0,
+              "reason": "The figure depicts exactly the pipeline described in the summary/caption: Step 1 LLM semantic parser producing multiple sampled FOL candidates (with illustrated syntax and semantic error examples), Step 2 automated theorem prover filtering syntax errors and returning labels, and Step 3 K-way majority voting to yield a final label. No extra core modules (e.g., training/loss, additional verifiers, alternative solvers) are introduced that would change the claimed method structure."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 5.0,
+              "reason": "Component relationships match the described data flow: NL input → LLM semantic parser → multiple candidate logical forms → theorem prover per sample (some rejected as Error) → aggregation by majority vote → single output label (True/False/Uncertain/Unknown). The figure’s arrows and per-sample outputs align with the summary’s sampling + theorem-proving + voting mechanism and its error-handling (syntax rejection, semantic mismatch leading to potentially wrong labels)."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 4.0,
+              "reason": "Major component labels are consistent with the summary: 'Semantic Parser' (LLM-based), 'Logic Theorem Prover' (symbolic prover), and 'K-Maj Voting' (majority vote). The only minor mismatch is that the summary specifies Prover9 and labels {True, False, Uncertain}, while the figure uses generic 'Logic Theorem Prover' and shows 'Unknown' (and 'Error') rather than explicitly naming Prover9 and 'Uncertain'. This does not alter the core method but is slightly imprecise relative to the stated terminology."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The figure is schematized around the main contribution described in the summary/caption: (1) an LLM semantic parser sampling multiple candidate FOL formalizations, (2) an external theorem prover filtering syntax errors and producing labels, and (3) K-way majority voting to yield a final True/False/Uncertain-style output. The depicted per-sample boxes explicitly illustrate the two key error modes mentioned (syntax error via malformed parentheses; semantic error via predicate mismatch), without drifting into unrelated implementation details."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "As a supplement to the caption/text, the dataflow is easy to follow left-to-right: NL input → sampled logical forms → prover outputs (including an error case) → voting funnel → single output label. Visual labels ('Step 1/2/3', 'Sample 1/2/3/N', 'Error/True/Unknown') directly match the pipeline and robustness story in the summary, making it effective for reader comprehension without requiring additional explanation."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure mostly avoids unnecessary information and stays focused on the pipeline. Minor decorative elements (e.g., neural-network icon, gears, funnel graphic) are conventional and do not obscure the method, but they are not strictly necessary. The repeated long FOL strings across multiple samples add some visual density; however, they serve a purpose by concretely showing syntax vs semantic error types, so redundancy is limited."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.571,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The pipeline is laid out left-to-right in three clearly labeled stages (Step 1 Semantic Parser → Step 2 Logic Theorem Prover → Step 3 K-Maj Voting), matching the summary’s sequential flow from NL input to sampled FOL to prover labels to majority-vote output."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Connections are mostly parallel and non-overlapping: each sample line feeds horizontally from Step 1 to Step 2, then to a per-sample label box, then to voting. There is minor visual clutter from multiple thick lines exiting Step 1 and converging into Step 2, but they largely avoid explicit crossings."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related elements are grouped: sampled FOL candidates are placed adjacent to Step 1; the theorem prover block is adjacent to the per-sample outputs; the voting module is adjacent to the final output label. This supports the modular division of labor described in the summary."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major blocks (Steps 1–3) align horizontally and the sample rows form an implicit grid (Sample 1/2/3/N aligned across stages). Slight misalignments exist in the right-side per-sample label boxes and arrow endpoints, but overall the layout reads as grid-based."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 5.0,
+              "reason": "Primary components (Step 1/2/3) are visually dominant via larger teal rectangles, bold step labels, and central placement. Secondary elements (input, samples, per-sample labels, output) are smaller and lighter, making the main pipeline structure stand out."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between major modules and between sample rows, maintaining readability. However, the left side where multiple arrows/lines emerge from Step 1 is relatively dense, and the top input box sits somewhat close to Step 1’s arrow region."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Similar roles use consistent visual encodings: main modules share the same teal rounded-rectangle style; sample FOL boxes share a uniform white rounded-rectangle style with consistent 'Sample i' tags; per-sample prover outputs are consistently styled. This supports the repeated sampling-and-evaluation structure described in the summary."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces abstract modules with concrete visual metaphors: an LLM/semantic parser is depicted as a neural-network icon, the theorem prover as gears/cogs, and majority voting as a funnel/sieve. It also uses compact abbreviations (e.g., 'K-Maj Voting') and per-sample boxes (Sample 1/2/3/N) to concretize the sampling-and-filtering idea described in the summary and caption (syntax-error filtering; semantic mismatch example)."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "While the pipeline content matches the paper’s specific neurosymbolic setup, the visual style largely follows a common block-diagram template (rounded rectangles, arrows, step numbering, teal highlight color). The inclusion of explicit erroneous logical forms and per-sample prover outcomes adds some distinctiveness, but the overall look is not strongly differentiated from standard method schematics."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the method’s key operational claim: many sampled FOL candidates flow in parallel through a prover, with syntax errors filtered and remaining labels aggregated by majority vote. This explicit multi-branch sample depiction (including 'Error' and 'Unknown' lanes) fits the LINC robustness mechanism described in the summary/caption better than a generic single-path pipeline and therefore shows paper-specific structural adaptation."
+            }
+          ]
+        },
+        "weighted_total": 4.248
+      }
+    },
+    {
+      "figure_file": "LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+      "caption": "Figure 2: This figure outlines the string concatenation workflow for each of our conditions. We start with the original problem, provide ICL examples through an intermediate markup language, and finally append the problem to evaluate. At this stage, we allow the model to autoregressively sample until producing a stop token.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 3.0,
+              "reason": "The figure covers the prompting/ICL construction layer emphasized in the summary: it shows N ICL examples, an intermediate markup language, string concatenation, appending the evaluation instance, and different required output contracts for Naïve vs Scratchpad vs CoT vs LINC (including explicit NL↔FOL mappings for LINC). However, it omits major pipeline components that are central in the summary’s method description—namely LLM multiple-sampling of candidate FOL, the FOL parser, Prover9 theorem proving with {True, False, Uncertain}/syntax rejection, and K-way majority voting—so it does not include all major components of the overall system."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "One can understand, from the visual alone, the general operating principle of the *prompt formatting workflow*: examples + markup + concatenation + evaluation query, with autoregressive generation until a stop token, and how the four conditions differ in expected outputs (direct answer, scratchpad, CoT rationale, or NL/FOL paired outputs). But it does not by itself convey LINC’s full neurosymbolic operating principle (external theorem prover + voting for robustness), so standalone understanding is limited to the prompt construction aspect."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "Relative to the summary of the paper’s end-to-end approach, the figure is incomplete: it focuses on the beginning-stage input/prompt assembly and output formatting differences, but does not summarize the subsequent stages (sampling many logical forms, theorem proving, filtering syntax errors, aggregating labels via majority vote) or the broader experimental comparison structure beyond showing the four conditions."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 4.0,
+              "reason": "The figure mainly depicts the prompt-construction workflow via string concatenation: starting from an original NL problem, adding N ICL examples (shown as an intermediate markup with <EVALUATE> blocks), appending the evaluation instance, and sampling until a stop token—matching the summary and caption. It also includes four conditions (Naïve, Scratchpad, CoT, LINC) consistent with the summary’s baselines and LINC. Minor extra specifics appear in the example content (e.g., concrete FOL predicates like rectangle(x), foursides(x), isshape(x)), which are not explicitly mentioned in the summary; however, these are illustrative and do not introduce new method components or alter the claimed workflow."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 5.0,
+              "reason": "Relationships are consistent with the summary: each condition is shown as ICL examples + evaluation query combined by string concatenation, with differing required output formats (direct answer for Naïve; scratch-style intermediate lines for Scratchpad; NL chain-of-thought for CoT; NL-to-FOL mapping style for LINC). The figure’s flow from 'original problem' + 'N ICL examples' + appended evaluation instance and subsequent autoregressive sampling aligns with the described prompting/ICL construction layer and caption."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Major labels match the summary: the baselines are named 'Naïve', 'Scratchpad', and 'CoT', and the proposed method is 'LINC'. The figure also labels 'N ICL Examples' and explicitly indicates '# = string concatenation', which matches the described construction mechanism. No major component names contradict the summary."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure schematizes the main contribution relevant to this caption: how prompts are constructed via string concatenation across conditions (Naïve, Scratchpad, CoT, LINC), using ICL examples plus an evaluation instance. It keeps the content focused on prompt/output contracts rather than implementation details (e.g., no Prover9 internals). Minor readability dilution comes from embedding relatively dense example text inside each condition box, which may be more detail than necessary for conveying the workflow."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "It functions well as supplementary material for the caption/summary: it explicitly shows the pipeline of starting from an original problem, adding N ICL examples (via an intermediate markup/format), then appending the evaluation problem, and finally sampling until a stop token. The side legend '# = string concatenation' and the consistent four-condition layout make the intended comparison framework easy to follow."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The diagram largely avoids decorative elements and stays on-task (prompt formats and concatenation). However, the inclusion of full toy NL/FOL content and repeated markup tokens across boxes introduces some redundancy/clutter; shorter placeholders could convey the same structure with less visual load. These extras do not appear to misrepresent the core method structure described in the summary."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The workflow is primarily left-to-right: a top NL problem feeds into four parallel condition boxes (Naïve, Scratchpad, CoT, LINC), and then down to the final evaluation instance box. The added top-to-bottom step (problem → conditions → evaluation query) is clear, though the mixture of horizontal (across conditions) and vertical (to the bottom query) flow slightly reduces a single dominant direction."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 3.0,
+              "reason": "Most connectors are clean, but the central vertical connector from the top problem to the lower evaluation area intersects the long horizontal bus line, and multiple vertical drops from the bus to condition boxes create a visually busy junction. This is not severe clutter, but it is not fully crossing-free."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related modules are grouped well: the four prompting conditions are placed in a single row with similar size, enabling direct comparison of the concatenation workflow across conditions as described in the summary. The ICL examples and the final evaluation instance are placed adjacent to the concatenation pathway they relate to."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "The four condition boxes are neatly aligned horizontally, and the top problem and bottom evaluation query are centered on the main vertical axis. Minor misalignment arises from ancillary elements (e.g., the 'N ICL Examples' box and the legend) not being aligned to the same grid as the main pipeline."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 3.0,
+              "reason": "All four conditions have similar visual weight (similar box sizes and header bars), which supports fair comparison, but it also makes it harder for the reader to immediately identify the overall start/end of the workflow and the key step (string concatenation) beyond the small '+' markers. The primary workflow nodes do not stand out strongly relative to internal text content."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between the top problem statement, the row of condition boxes, and the bottom evaluation instance. However, the central junction around the concatenation symbols and the bus line is tight, and the condition boxes contain dense text that makes the interiors feel cramped even if external margins are acceptable."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "The four conditions are represented consistently with the same rounded-rectangle shape and a colored header label, matching their analogous roles in the experimental prompting setup. Connectors and the '+' concatenation symbols are also used consistently to denote the same operation across the figure."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "Abstract prompt-construction steps are represented with concrete visual shorthand: colored condition blocks (Naïve/Scratchpad/CoT/LINC), markup-like tags (e.g., <EVALUATE>), and a boxed legend using “+” as an icon for string concatenation. This replaces some abstraction with symbols/abbreviations, but remains mostly literal and text-centric rather than metaphorical."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "The figure uses a conventional comparative workflow diagram: parallel panels for conditions, arrows indicating flow, and color-coding with a small legend. This is a common template for prompting/pipeline illustrations and does not show a distinctive visual style beyond standard academic schematic formatting."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s experimental setup: it explicitly juxtaposes the four conditions side-by-side while showing the shared ICL-example insertion (“N ICL Examples”), the intermediate markup, and the final appending of the evaluation instance, matching the summary’s emphasis on standardized prompt construction via string concatenation. The parallel design supports direct cross-condition comparison rather than a generic single-pipeline diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.8
+      }
+    }
+  ]
+}

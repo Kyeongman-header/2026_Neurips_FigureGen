@@ -1,0 +1,260 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Overview of C LVLM for hallucination mitigation</title>
+<style>
+  :root{
+    --w:1200px;
+    --h:1500px;
+    --font: Arial, Helvetica, sans-serif;
+    --ink:#222;
+    --muted:#555;
+    --line:#2b2b2b;
+    --panel:#ffffff;
+    --soft:#f3f5f7;
+    --soft2:#eef6ff;
+    --soft3:#f6f0ff;
+    --accent:#1f6feb;
+    --accent2:#6f42c1;
+    --accent3:#0b6;
+    --warn:#b42318;
+  }
+  body{
+    margin:0;
+    background:#fff;
+    font-family:var(--font);
+  }
+  #figure-root{
+    width:var(--w);
+    height:var(--h);
+    margin:0 auto;
+    position:relative;
+    background:#fff;
+    box-sizing:border-box;
+  }
+  .caption{
+    position:absolute;
+    left:0;
+    bottom:0;
+    width:var(--w);
+    height:120px;
+    box-sizing:border-box;
+    padding:14px 22px;
+    border-top:1px solid #cfcfcf;
+    color:#111;
+    font-size:16px;
+    line-height:1.35;
+  }
+  .caption .label{
+    font-weight:700;
+    margin-right:10px;
+  }
+  svg{
+    position:absolute;
+    left:0;
+    top:0;
+    width:var(--w);
+    height:calc(var(--h) - 120px);
+  }
+  /* SVG text styles: use fill, not color */
+  .tTitle{ font-size:28px; font-weight:700; fill:var(--ink); }
+  .tSub{ font-size:16px; fill:var(--muted); }
+  .tBoxH{ font-size:18px; font-weight:700; fill:var(--ink); }
+  .tBox{ font-size:16px; fill:var(--ink); }
+  .tSmall{ font-size:14px; fill:var(--muted); }
+  .tMono{ font-family: "Courier New", Courier, monospace; font-size:14px; fill:var(--ink); }
+  .tEq{ font-size:16px; fill:var(--ink); font-style:italic; }
+  .tGuarantee{ font-size:16px; fill:#0f5132; font-weight:700; }
+  .tNote{ font-size:14px; fill:var(--muted); }
+  .tTag{ font-size:13px; fill:#0b3d91; font-weight:700; letter-spacing:0.2px; }
+  .tTag2{ font-size:13px; fill:#3b1a75; font-weight:700; letter-spacing:0.2px; }
+  .tTag3{ font-size:13px; fill:#0b5a3a; font-weight:700; letter-spacing:0.2px; }
+
+  .box{ fill:var(--panel); stroke:#2d2d2d; stroke-width:1.5; }
+  .boxSoft{ fill:var(--soft); stroke:#2d2d2d; stroke-width:1.5; }
+  .boxSoftB{ fill:var(--soft2); stroke:#2d2d2d; stroke-width:1.5; }
+  .boxSoftP{ fill:var(--soft3); stroke:#2d2d2d; stroke-width:1.5; }
+  .pillB{ fill:#dbeafe; stroke:#1e40af; stroke-width:1; }
+  .pillP{ fill:#ede9fe; stroke:#5b21b6; stroke-width:1; }
+  .pillG{ fill:#dcfce7; stroke:#166534; stroke-width:1; }
+  .arrow{ stroke:var(--line); stroke-width:2.2; fill:none; marker-end:url(#arrow); }
+  .arrowThin{ stroke:var(--line); stroke-width:1.8; fill:none; marker-end:url(#arrow); }
+  .dash{ stroke:#6b7280; stroke-width:1.8; fill:none; stroke-dasharray:7 6; marker-end:url(#arrow); }
+  .divider{ stroke:#c9c9c9; stroke-width:1.2; }
+  .brace{ stroke:#6b7280; stroke-width:2; fill:none; }
+  .calloutLine{ stroke:#6b7280; stroke-width:1.6; fill:none; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1380" aria-label="Overview diagram of C LVLM">
+    <defs>
+      <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+        <path d="M 0 0 L 12 6 L 0 12 z" fill="#2b2b2b"></path>
+      </marker>
+      <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="#000" flood-opacity="0.08"/>
+      </filter>
+    </defs>
+
+    <!-- Header -->
+    <text x="60" y="70" class="tTitle">C LVLM: Conformal Factuality Filtering for LVLM Outputs</text>
+    <text x="60" y="102" class="tSub">Decompose free-text responses into testable claims, score image–text alignment, and filter with split conformal calibration (error rate α, tolerance λ).</text>
+
+    <!-- Main pipeline lane background -->
+    <rect x="40" y="130" width="1120" height="820" rx="16" class="boxSoft" filter="url(#shadow)"></rect>
+    <text x="60" y="165" class="tBoxH">Inference-time pipeline (black-box LVLM compatible)</text>
+
+    <!-- Left: Inputs -->
+    <rect x="80" y="220" width="290" height="250" rx="14" class="box"></rect>
+    <text x="105" y="255" class="tBoxH">Inputs</text>
+
+    <!-- Image icon -->
+    <rect x="105" y="280" width="110" height="85" rx="10" class="boxSoftB"></rect>
+    <rect x="113" y="288" width="94" height="69" rx="8" fill="#ffffff" stroke="#1e40af" stroke-width="1.2"></rect>
+    <path d="M 120 348 L 146 320 L 166 342 L 182 330 L 202 357 L 120 357 Z" fill="#c7e0ff" stroke="#1e40af" stroke-width="1"></path>
+    <circle cx="190" cy="305" r="6" fill="#93c5fd" stroke="#1e40af" stroke-width="1"></circle>
+    <text x="105" y="388" class="tSmall">Image <tspan class="tMono">I</tspan></text>
+
+    <!-- Prompt icon -->
+    <rect x="235" y="280" width="115" height="85" rx="10" class="boxSoftP"></rect>
+    <rect x="244" y="292" width="97" height="10" rx="4" fill="#ffffff" stroke="#5b21b6" stroke-width="1"></rect>
+    <rect x="244" y="310" width="86" height="10" rx="4" fill="#ffffff" stroke="#5b21b6" stroke-width="1"></rect>
+    <rect x="244" y="328" width="92" height="10" rx="4" fill="#ffffff" stroke="#5b21b6" stroke-width="1"></rect>
+    <rect x="244" y="346" width="70" height="10" rx="4" fill="#ffffff" stroke="#5b21b6" stroke-width="1"></rect>
+    <text x="235" y="388" class="tSmall">Prompt <tspan class="tMono">X</tspan></text>
+
+    <text x="105" y="425" class="tBox">User specifies:</text>
+    <g>
+      <rect x="120" y="438" width="60" height="26" rx="13" class="pillB"></rect>
+      <text x="150" y="456" text-anchor="middle" class="tTag">α</text>
+      <text x="190" y="456" class="tSmall">error rate</text>
+    </g>
+    <g>
+      <rect x="120" y="470" width="60" height="26" rx="13" class="pillG"></rect>
+      <text x="150" y="488" text-anchor="middle" class="tTag3">λ</text>
+      <text x="190" y="488" class="tSmall">tolerance (max misalignment)</text>
+    </g>
+
+    <!-- LVLM generation -->
+    <rect x="430" y="220" width="340" height="250" rx="14" class="box"></rect>
+    <text x="455" y="255" class="tBoxH">1) LVLM generation</text>
+    <text x="455" y="285" class="tBox">Black-box LVLM produces free text response</text>
+    <rect x="455" y="310" width="290" height="135" rx="10" class="boxSoft"></rect>
+    <text x="470" y="338" class="tSmall">Raw response</text>
+    <text x="470" y="365" class="tMono">Y = “A dog sits on a red sofa …”</text>
+    <text x="470" y="392" class="tSmall">May contain hallucinated objects/attributes/relations</text>
+
+    <!-- Arrow input to LVLM -->
+    <path d="M 370 345 L 420 345" class="arrow"></path>
+    <text x="385" y="330" class="tSmall">I, X</text>
+
+    <!-- Decomposition -->
+    <rect x="820" y="220" width="320" height="250" rx="14" class="box"></rect>
+    <text x="845" y="255" class="tBoxH">2) Decomposition</text>
+    <text x="845" y="285" class="tBox">Convert output into testable claims</text>
+    <rect x="845" y="310" width="270" height="135" rx="10" class="boxSoft"></rect>
+    <text x="860" y="338" class="tSmall">Claims set</text>
+    <text x="860" y="364" class="tMono">C = { C₁, C₂, … }</text>
+    <text x="860" y="392" class="tSmall">Each Cᵢ is a hypothesis about the image</text>
+
+    <!-- Arrow LVLM to Decompose -->
+    <path d="M 770 345 L 810 345" class="arrow"></path>
+    <text x="786" y="330" class="tSmall">Y</text>
+
+    <!-- Scoring -->
+    <rect x="210" y="520" width="380" height="290" rx="14" class="box"></rect>
+    <text x="235" y="555" class="tBoxH">3) Claim scoring (image–text alignment)</text>
+    <text x="235" y="585" class="tBox">Compute score <tspan class="tMono">r(Cᵢ, I)</tspan> (higher = more aligned)</text>
+
+    <rect x="235" y="610" width="340" height="78" rx="12" class="boxSoftB"></rect>
+    <text x="252" y="638" class="tTag">Internal scores (LVLM)</text>
+    <text x="252" y="662" class="tSmall">e.g., log p(Cᵢ|X,V), log p(Cᵢ|X), or log-ratio</text>
+
+    <rect x="235" y="705" width="340" height="78" rx="12" class="boxSoftP"></rect>
+    <text x="252" y="733" class="tTag2">External scores (energy / CLIP-like)</text>
+    <text x="252" y="757" class="tSmall">e.g., similarity( image(I), text(Cᵢ) ), or −E(Cᵢ, I)</text>
+
+    <!-- Filtering -->
+    <rect x="640" y="520" width="500" height="290" rx="14" class="box"></rect>
+    <text x="665" y="555" class="tBoxH">4) Calibrated filtering</text>
+    <text x="665" y="585" class="tBox">Keep claims with score above threshold <tspan class="tMono">τ̂</tspan></text>
+    <rect x="665" y="610" width="450" height="92" rx="12" class="boxSoft"></rect>
+    <text x="682" y="638" class="tSmall">Filtering operator</text>
+    <text x="682" y="666" class="tMono">F̂(C) = { Cᵢ : r(Cᵢ, I) &gt; τ̂ }</text>
+    <text x="682" y="692" class="tSmall">Low-confidence (possibly hallucinated) claims are removed</text>
+
+    <rect x="665" y="720" width="450" height="70" rx="12" class="boxSoftB"></rect>
+    <text x="682" y="748" class="tSmall">Calibration ensures: choose τ̂ via split conformal on held-out data</text>
+    <text x="682" y="773" class="tSmall">User controls (α, λ) for desired factuality level</text>
+
+    <!-- Arrows Decomposition -> Scoring and Filtering -->
+    <path d="M 980 470 L 980 505 L 590 505 L 590 610" class="arrow"></path>
+    <text x="760" y="497" class="tSmall">Claims C</text>
+
+    <path d="M 590 665 L 630 665" class="arrow"></path>
+    <text x="605" y="648" class="tSmall">r(Cᵢ, I)</text>
+
+    <!-- Combination -->
+    <rect x="430" y="845" width="340" height="170" rx="14" class="box"></rect>
+    <text x="455" y="880" class="tBoxH">5) Combination / output</text>
+    <text x="455" y="910" class="tBox">Merge retained claims into final response</text>
+    <rect x="455" y="932" width="290" height="66" rx="10" class="boxSoft"></rect>
+    <text x="470" y="960" class="tSmall">Filtered response</text>
+    <text x="470" y="985" class="tMono">Ŷ = M( F̂(C) )</text>
+
+    <!-- Arrows to Combination -->
+    <path d="M 890 810 L 890 835 L 770 835 L 770 930" class="arrow"></path>
+    <text x="808" y="828" class="tSmall">retained claims</text>
+
+    <!-- Guarantee panel -->
+    <rect x="40" y="980" width="1120" height="340" rx="16" class="boxSoft" filter="url(#shadow)"></rect>
+    <text x="60" y="1015" class="tBoxH">Split conformal calibration (statistical guarantee)</text>
+
+    <!-- Calibration data block -->
+    <rect x="80" y="1045" width="370" height="240" rx="14" class="box"></rect>
+    <text x="105" y="1080" class="tBoxH">Calibration set</text>
+    <text x="105" y="1110" class="tBox">n exchangeable samples</text>
+    <rect x="105" y="1130" width="320" height="140" rx="10" class="boxSoft"></rect>
+    <text x="120" y="1156" class="tSmall">For each sample:</text>
+    <text x="120" y="1182" class="tMono">(I, X) → Y → C</text>
+    <text x="120" y="1208" class="tMono">scores r(Cᵢ, I) and loss L(·, I)</text>
+    <text x="120" y="1234" class="tSmall">Compute conformity score S(C, I) and quantile threshold τ̂</text>
+
+    <!-- Threshold block -->
+    <rect x="500" y="1045" width="320" height="240" rx="14" class="box"></rect>
+    <text x="525" y="1080" class="tBoxH">Quantile threshold</text>
+    <text x="525" y="1110" class="tBox">Set <tspan class="tMono">τ̂</tspan> as (1−α)-quantile of conformity scores</text>
+    <rect x="525" y="1132" width="270" height="64" rx="12" class="pillB"></rect>
+    <text x="540" y="1160" class="tMono">τ̂ = Quantile( {S} , 1−α )</text>
+    <text x="525" y="1220" class="tSmall">Interpretation: higher desired coverage ⇒ stricter filtering</text>
+
+    <!-- Guarantee block -->
+    <rect x="860" y="1045" width="300" height="240" rx="14" class="box"></rect>
+    <text x="885" y="1080" class="tBoxH">User guarantee</text>
+    <rect x="885" y="1100" width="250" height="120" rx="12" class="boxSoftB"></rect>
+    <text x="900" y="1130" class="tEq">P( L( Ŷ , I ) ≤ λ ) ≥ 1 − α</text>
+    <text x="900" y="1160" class="tSmall">L: monotone misalignment loss</text>
+    <text x="900" y="1184" class="tSmall">λ: acceptable error tolerance</text>
+    <text x="900" y="1208" class="tSmall">α: allowed failure probability</text>
+    <text x="885" y="1260" class="tGuarantee">Finite-sample, distribution-free control</text>
+
+    <!-- Connect calibration to threshold to filtering -->
+    <path d="M 450 1165 L 490 1165" class="arrow"></path>
+    <path d="M 820 1165 L 850 1165" class="arrow"></path>
+
+    <!-- Dashed link to inference filtering -->
+    <path d="M 660 1285 L 660 1330 L 895 1330 L 895 810" class="dash"></path>
+    <text x="675" y="1318" class="tSmall">Apply calibrated τ̂ at inference</text>
+
+    <!-- Small legend -->
+    <line x1="60" y1="1360" x2="1140" y2="1360" class="divider"></line>
+  </svg>
+
+  <div class="caption">
+    <span class="label">Figure:</span>
+    Overview of C LVLM for hallucination mitigation in large vision-language models: LVLM outputs are decomposed into testable claims, scored for image–text alignment, and filtered using split conformal calibration to guarantee user-specified factuality under error rate α and tolerance λ.
+  </div>
+</div>
+</body>
+</html>

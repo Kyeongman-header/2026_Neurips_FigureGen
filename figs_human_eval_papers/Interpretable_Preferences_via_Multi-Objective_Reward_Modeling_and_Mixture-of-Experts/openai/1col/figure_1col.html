@@ -1,0 +1,280 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>RLHF and Proposed Reward-Modeling Pipeline</title>
+<style>
+  :root{
+    --w:1200px;
+    --h:1500px;
+    --font: Arial, Helvetica, sans-serif;
+    --ink:#1f2a37;
+    --muted:#4b5563;
+    --line:#9aa4b2;
+    --panel:#f8fafc;
+    --panel2:#f3f4f6;
+    --accent:#1d4ed8;
+    --accent2:#0f766e;
+    --warn:#b45309;
+    --good:#166534;
+    --red:#b91c1c;
+  }
+  html, body { margin:0; padding:0; background:#ffffff; }
+  #figure-root{
+    width:var(--w);
+    height:var(--h);
+    margin:0 auto;
+    background:#fff;
+    font-family:var(--font);
+  }
+  .small { font-size:16px; }
+  .med { font-size:18px; }
+  .title { font-size:24px; font-weight:700; }
+  .subtitle { font-size:18px; }
+  .box { fill: #ffffff; stroke: var(--line); stroke-width:2; }
+  .box-soft { fill: var(--panel); stroke: var(--line); stroke-width:2; }
+  .box-soft2 { fill: var(--panel2); stroke: var(--line); stroke-width:2; }
+  .box-accent { fill:#eff6ff; stroke: var(--accent); stroke-width:2.5; }
+  .box-teal { fill:#ecfeff; stroke: var(--accent2); stroke-width:2.5; }
+  .box-warn { fill:#fff7ed; stroke: var(--warn); stroke-width:2.5; }
+  .box-good { fill:#f0fdf4; stroke: var(--good); stroke-width:2.5; }
+  .label { fill: var(--ink); font-family: var(--font); }
+  .muted { fill: var(--muted); font-family: var(--font); }
+  .mono { font-family: "Arial", "Helvetica", sans-serif; letter-spacing:0.2px; }
+  .arrow { stroke: #374151; stroke-width:2.2; fill:none; }
+  .arrow-muted { stroke: #6b7280; stroke-width:2; fill:none; stroke-dasharray:6 5; }
+  .arrow-accent { stroke: var(--accent); stroke-width:2.6; fill:none; }
+  .arrow-teal { stroke: var(--accent2); stroke-width:2.6; fill:none; }
+  .arrow-warn { stroke: var(--warn); stroke-width:2.6; fill:none; }
+  .arrow-good { stroke: var(--good); stroke-width:2.6; fill:none; }
+  .chip { fill:#ffffff; stroke:#cbd5e1; stroke-width:1.5; }
+  .chip2 { fill:#ffffff; stroke:#93c5fd; stroke-width:1.5; }
+  .chip3 { fill:#ffffff; stroke:#99f6e4; stroke-width:1.5; }
+  .chip4 { fill:#ffffff; stroke:#fdba74; stroke-width:1.5; }
+  .chip5 { fill:#ffffff; stroke:#86efac; stroke-width:1.5; }
+  .kpi { fill:#0b1220; font-weight:700; }
+  .caption-bg { fill:#ffffff; stroke:#e5e7eb; stroke-width:2; }
+  .divider { stroke:#e5e7eb; stroke-width:2; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500">
+  <defs>
+    <marker id="arrowHead" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#374151"></path>
+    </marker>
+    <marker id="arrowHeadAccent" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#1d4ed8"></path>
+    </marker>
+    <marker id="arrowHeadTeal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#0f766e"></path>
+    </marker>
+    <marker id="arrowHeadWarn" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#b45309"></path>
+    </marker>
+    <marker id="arrowHeadGood" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#166534"></path>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="1.2" stdDeviation="1.2" flood-color="#0b1220" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <!-- Header -->
+  <text x="60" y="70" class="label title">RLHF Overview and Proposed Reward-Modeling Pipeline</text>
+  <text x="60" y="102" class="muted subtitle">Standard RLHF stages (preference data → reward model → policy optimization) with a multi-objective RM and a prompt-conditioned MoE gating network.</text>
+
+  <!-- Top panel: RLHF standard loop -->
+  <rect x="60" y="130" width="1080" height="420" rx="14" class="box-soft" filter="url(#shadow)"></rect>
+  <text x="80" y="165" class="label" style="font-size:20px; font-weight:700;">A. Standard RLHF (dominant pipeline)</text>
+  <line x1="80" y1="182" x2="1135" y2="182" class="divider"></line>
+
+  <!-- Stage boxes -->
+  <rect x="95" y="220" width="320" height="270" rx="12" class="box"></rect>
+  <text x="115" y="255" class="label" style="font-size:18px; font-weight:700;">1) Preference data collection</text>
+  <rect x="115" y="275" width="280" height="60" rx="10" class="chip"></rect>
+  <text x="130" y="305" class="label med">Prompts</text>
+  <text x="210" y="305" class="muted med mono">x</text>
+
+  <rect x="115" y="345" width="280" height="70" rx="10" class="chip"></rect>
+  <text x="130" y="375" class="label med">Candidate responses</text>
+  <text x="315" y="375" class="muted med mono">y₁, y₂, …</text>
+
+  <rect x="115" y="425" width="280" height="50" rx="10" class="chip"></rect>
+  <text x="130" y="455" class="label med">Human preferences</text>
+  <text x="315" y="455" class="muted med mono">chosen vs. rejected</text>
+
+  <rect x="440" y="220" width="320" height="270" rx="12" class="box"></rect>
+  <text x="460" y="255" class="label" style="font-size:18px; font-weight:700;">2) Reward modeling (RM)</text>
+  <text x="460" y="282" class="muted small">Learn a scoring function from preference pairs</text>
+  <rect x="460" y="302" width="280" height="78" rx="10" class="chip"></rect>
+  <text x="475" y="330" class="label med">Input</text>
+  <text x="540" y="330" class="muted med mono">prompt–response (x ⊕ y)</text>
+  <text x="475" y="360" class="label med">Output</text>
+  <text x="545" y="360" class="muted med mono">scalar reward R(x, y)</text>
+
+  <rect x="460" y="392" width="280" height="82" rx="10" class="chip"></rect>
+  <text x="475" y="420" class="label med">Typical objective</text>
+  <text x="475" y="446" class="muted small">Bradley–Terry (pairwise) likelihood</text>
+
+  <rect x="785" y="220" width="320" height="270" rx="12" class="box"></rect>
+  <text x="805" y="255" class="label" style="font-size:18px; font-weight:700;">3) Policy optimization</text>
+  <text x="805" y="282" class="muted small">Optimize LLM policy using RM feedback</text>
+
+  <rect x="805" y="308" width="280" height="70" rx="10" class="chip"></rect>
+  <text x="820" y="338" class="label med">RL objective (e.g., PPO)</text>
+  <text x="820" y="362" class="muted small">maximize expected reward from RM</text>
+
+  <rect x="805" y="388" width="280" height="86" rx="10" class="chip"></rect>
+  <text x="820" y="418" class="label med">Alternative use cases</text>
+  <text x="820" y="442" class="muted small">rejection sampling / RAFT; online DPO labeling</text>
+
+  <!-- Arrows between stages -->
+  <path d="M 415 355 C 430 355, 430 355, 440 355" class="arrow" marker-end="url(#arrowHead)"></path>
+  <path d="M 760 355 C 775 355, 775 355, 785 355" class="arrow" marker-end="url(#arrowHead)"></path>
+
+  <!-- Feedback loop arrow -->
+  <path d="M 1065 490 C 1115 490, 1125 470, 1125 420 C 1125 260, 1060 240, 1030 240" class="arrow-muted" marker-end="url(#arrowHead)"></path>
+  <text x="905" y="512" class="muted small">Iterate: deploy policy → collect new responses → label/rank</text>
+
+  <!-- Bottom panel: proposed pipeline -->
+  <rect x="60" y="585" width="1080" height="800" rx="14" class="box-soft2" filter="url(#shadow)"></rect>
+  <text x="80" y="620" class="label" style="font-size:20px; font-weight:700;">B. Proposed reward-modeling pipeline (interpretable + steerable)</text>
+  <line x1="80" y1="637" x2="1135" y2="637" class="divider"></line>
+
+  <!-- Inputs (prompt & multiple responses) -->
+  <rect x="95" y="675" width="330" height="290" rx="12" class="box"></rect>
+  <text x="115" y="710" class="label" style="font-size:18px; font-weight:700;">Prompt and sampled responses</text>
+  <rect x="115" y="730" width="290" height="64" rx="10" class="chip"></rect>
+  <text x="130" y="760" class="label med">Prompt</text>
+  <text x="225" y="760" class="muted med mono">x</text>
+
+  <rect x="115" y="805" width="290" height="146" rx="10" class="chip"></rect>
+  <text x="130" y="835" class="label med">Responses</text>
+  <text x="255" y="835" class="muted med mono">y₁, y₂, …, yₙ</text>
+  <text x="130" y="865" class="muted small">From current policy (for PPO) or candidates (for ranking/RAFT)</text>
+  <text x="130" y="895" class="muted small">Each response paired with the same prompt: (x, yᵢ)</text>
+  <text x="130" y="925" class="muted small">Goal: choose best response(s) under human preferences</text>
+
+  <!-- Multi-objective RM -->
+  <rect x="460" y="675" width="680" height="290" rx="12" class="box-accent"></rect>
+  <text x="480" y="710" class="label" style="font-size:18px; font-weight:700;">Stage 1: Multi-objective reward model (RM)</text>
+  <text x="480" y="735" class="muted small">Predict fine-grained objective scores from prompt–response pairs (x ⊕ yᵢ)</text>
+
+  <!-- RM internals -->
+  <rect x="485" y="755" width="300" height="185" rx="12" class="chip2"></rect>
+  <text x="500" y="785" class="label med" style="font-weight:700;">Feature extractor</text>
+  <text x="500" y="810" class="muted small">Decoder-only LLM backbone f(·)</text>
+  <text x="500" y="835" class="muted small">Input: concatenation x ⊕ yᵢ</text>
+  <text x="500" y="860" class="muted small">Take last-token hidden state</text>
+  <text x="500" y="885" class="muted small mono">hᵢ = f(x ⊕ yᵢ)</text>
+
+  <rect x="800" y="755" width="315" height="185" rx="12" class="chip2"></rect>
+  <text x="815" y="785" class="label med" style="font-weight:700;">Regression head</text>
+  <text x="815" y="810" class="muted small">Predict k objective ratings</text>
+  <text x="815" y="835" class="muted small mono">r̂ᵢ ∈ ℝᵏ  (e.g., helpfulness, correctness, safety, …, verbosity)</text>
+  <text x="815" y="860" class="muted small">Trained with multi-objective regression loss</text>
+  <text x="815" y="885" class="muted small mono">min  E‖W hᵢ − rᵢ‖</text>
+
+  <!-- Arrow from inputs to RM -->
+  <path d="M 425 820 C 442 820, 448 820, 460 820" class="arrow-accent" marker-end="url(#arrowHeadAccent)"></path>
+  <text x="345" y="808" class="muted small">for each i</text>
+
+  <!-- Debias + MoE scalarization panel -->
+  <rect x="95" y="995" width="1045" height="355" rx="12" class="box-teal"></rect>
+  <text x="115" y="1030" class="label" style="font-size:18px; font-weight:700;">Stage 2: Prompt-conditioned MoE gating for debiasing + scalarization</text>
+  <text x="115" y="1055" class="muted small">Debias verbosity, then compute a scalar score per response for ranking and policy optimization.</text>
+
+  <!-- Verbosity debias module -->
+  <rect x="115" y="1080" width="430" height="245" rx="12" class="box-warn"></rect>
+  <text x="135" y="1110" class="label med" style="font-weight:700;">Verbosity debiasing (objective-level)</text>
+  <text x="135" y="1136" class="muted small">Correct each objective using the verbosity objective to reduce length preference</text>
+
+  <rect x="135" y="1150" width="390" height="78" rx="10" class="chip4"></rect>
+  <text x="150" y="1178" class="label med">Input objectives</text>
+  <text x="315" y="1178" class="muted med mono">r̂ᵢ = [ …, r̂ᵢ,verb, … ]</text>
+  <text x="150" y="1206" class="muted small mono">r̂ᵢ,j ← r̂ᵢ,j − λⱼ · r̂ᵢ,verb</text>
+
+  <rect x="135" y="1238" width="390" height="72" rx="10" class="chip4"></rect>
+  <text x="150" y="1266" class="label med">Calibration target</text>
+  <text x="150" y="1292" class="muted small mono">choose λⱼ such that Corr(r̂ᵢ,j, r̂ᵢ,verb)=0 on reference data</text>
+
+  <!-- MoE gating module -->
+  <rect x="565" y="1080" width="555" height="245" rx="12" class="box-good"></rect>
+  <text x="585" y="1110" class="label med" style="font-weight:700;">Prompt-conditioned mixture-of-experts (MoE) gating</text>
+  <text x="585" y="1136" class="muted small">Generate context-dependent weights over objectives, then scalarize.</text>
+
+  <rect x="585" y="1150" width="250" height="86" rx="10" class="chip5"></rect>
+  <text x="600" y="1178" class="label med">Prompt feature</text>
+  <text x="600" y="1204" class="muted small mono">z = f(x)   (last-token state of prompt)</text>
+
+  <rect x="845" y="1150" width="255" height="86" rx="10" class="chip5"></rect>
+  <text x="860" y="1178" class="label med">Gating network</text>
+  <text x="860" y="1204" class="muted small mono">g(z) → w ∈ Δᵏ  (softmax; prompt-conditional)</text>
+
+  <rect x="585" y="1245" width="515" height="65" rx="10" class="chip5"></rect>
+  <text x="600" y="1272" class="label med">Scalarization and ranking signal</text>
+  <text x="600" y="1298" class="muted small mono">S(x, yᵢ) = w(x)ᵀ · r̂ᵢ,debiased</text>
+
+  <!-- Arrows from RM to debias and scalarization -->
+  <path d="M 800 965 C 800 980, 800 985, 800 995" class="arrow-teal" marker-end="url(#arrowHeadTeal)"></path>
+  <text x="812" y="985" class="muted small">objective vector per response</text>
+
+  <path d="M 610 965 C 610 1010, 360 1010, 360 1080" class="arrow-warn" marker-end="url(#arrowHeadWarn)"></path>
+  <text x="420" y="1008" class="muted small">pass r̂ᵢ to debias</text>
+
+  <path d="M 940 965 C 940 1010, 940 1010, 940 1080" class="arrow-good" marker-end="url(#arrowHeadGood)"></path>
+  <text x="952" y="1008" class="muted small">use prompt feature f(x)</text>
+
+  <!-- Combine outputs to ranking -->
+  <rect x="95" y="1365" width="1045" height="130" rx="12" class="box"></rect>
+  <text x="115" y="1400" class="label" style="font-size:18px; font-weight:700;">Downstream use: rank responses → optimize policy</text>
+
+  <rect x="115" y="1415" width="470" height="62" rx="10" class="chip"></rect>
+  <text x="130" y="1442" class="label med">Ranking / selection</text>
+  <text x="130" y="1466" class="muted small mono">sort yᵢ by S(x, yᵢ); choose best for RAFT / label pairs</text>
+
+  <rect x="610" y="1415" width="510" height="62" rx="10" class="chip"></rect>
+  <text x="625" y="1442" class="label med">Policy optimization signal</text>
+  <text x="625" y="1466" class="muted small mono">use scalar score S(x, y) as reward for PPO (or other RLHF variants)</text>
+
+  <!-- Arrow from Stage 2 to downstream -->
+  <path d="M 617 1350 C 617 1358, 617 1358, 617 1365" class="arrow" marker-end="url(#arrowHead)"></path>
+
+  <!-- Legend -->
+  <rect x="60" y="151" width="360" height="44" rx="10" class="chip"></rect>
+  <circle cx="85" cy="173" r="7" fill="#1d4ed8"></circle>
+  <text x="100" y="178" class="muted small">Proposed components</text>
+  <circle cx="250" cy="173" r="7" fill="#b45309"></circle>
+  <text x="265" y="178" class="muted small">Verbosity debiasing</text>
+
+  <!-- Caption area -->
+  <rect x="60" y="1415" width="0" height="0" fill="none"></rect>
+
+  <rect x="60" y="1450" width="1080" height="0" fill="none"></rect>
+
+  <rect x="60" y="1430" width="1080" height="0" fill="none"></rect>
+
+  <rect x="60" y="1460" width="1080" height="0" fill="none"></rect>
+
+  <!-- Dedicated caption box at bottom -->
+  <rect x="60" y="1405" width="1080" height="0" fill="none"></rect>
+
+  <rect x="60" y="1395" width="1080" height="0" fill="none"></rect>
+
+  <rect x="60" y="0" width="0" height="0" fill="none"></rect>
+
+  <rect x="60" y="0" width="0" height="0" fill="none"></rect>
+
+  <rect x="60" y="0" width="0" height="0" fill="none"></rect>
+
+  <!-- Bottom caption region (fixed) -->
+  <rect x="60" y="1435" width="1080" height="55" rx="10" class="caption-bg"></rect>
+  <text x="75" y="1466" class="muted small">
+    Overview of RLHF and the proposed reward-modeling pipeline: a multi-objective reward model predicts fine-grained objective scores from prompt–response pairs, then a prompt-conditioned mixture-of-experts gating network debiases verbosity and scalarizes objectives to rank responses for policy optimization.
+  </text>
+
+</svg>
+</div>
+</body>
+</html>

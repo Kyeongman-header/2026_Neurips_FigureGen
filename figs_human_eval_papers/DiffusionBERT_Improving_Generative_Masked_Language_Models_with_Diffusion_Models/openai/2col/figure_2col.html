@@ -1,0 +1,251 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Overview of DiffusionBERT</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#1a1a1a;
+    --muted:#555;
+    --light:#f6f7f9;
+    --lighter:#fbfcfe;
+    --stroke:#222;
+    --grid:#d9dde3;
+    --accent:#2b6cb0;
+    --accent2:#7a2ea8;
+    --accent3:#1b7f5a;
+    --warn:#b45309;
+  }
+  html, body { margin:0; padding:0; background:var(--bg); }
+  #figure-root{
+    width:1800px; height:1200px;
+    margin:0 auto;
+    position:relative;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+  }
+  .caption{
+    position:absolute;
+    left:0; bottom:0;
+    width:1800px; height:120px;
+    box-sizing:border-box;
+    padding:14px 22px;
+    border-top:2px solid #111;
+    font-size:22px;
+    line-height:1.25;
+    color:#111;
+  }
+  .smallnote{
+    font-size:18px;
+    color:var(--muted);
+  }
+  /* SVG text styling: must use fill, not color */
+  .title { font-size:34px; font-weight:700; fill:var(--ink); }
+  .subtitle { font-size:22px; fill:var(--muted); }
+  .section { font-size:24px; font-weight:700; fill:var(--ink); }
+  .label { font-size:22px; fill:var(--ink); }
+  .labelSmall { font-size:18px; fill:var(--muted); }
+  .mono { font-family: "Arial", "Helvetica", sans-serif; font-size:22px; fill:var(--ink); }
+  .monoSmall { font-family: "Arial", "Helvetica", sans-serif; font-size:18px; fill:var(--muted); }
+  .pillText { font-size:20px; font-weight:700; fill:#fff; }
+  .pillTextDark { font-size:20px; font-weight:700; fill:#111; }
+  .tokenText { font-size:22px; fill:#111; }
+  .tokenMask { font-size:22px; font-weight:700; fill:#6b7280; }
+  .tokenOk { font-size:22px; font-weight:700; fill:#111; }
+  .axisLabel { font-size:18px; fill:var(--muted); }
+  .tick { font-size:16px; fill:var(--muted); }
+  .box { fill:var(--lighter); stroke:var(--stroke); stroke-width:2; }
+  .boxSoft { fill:var(--light); stroke:var(--stroke); stroke-width:2; }
+  .boxAccent { fill:#eef6ff; stroke:var(--accent); stroke-width:3; }
+  .boxPurple { fill:#f4ecfb; stroke:var(--accent2); stroke-width:3; }
+  .boxGreen { fill:#ecfbf4; stroke:var(--accent3); stroke-width:3; }
+  .divider { stroke:#111; stroke-width:2; }
+  .dashed { stroke-dasharray:8 8; }
+  .arrow { stroke:#111; stroke-width:3; fill:none; }
+  .arrowAccent { stroke:var(--accent); stroke-width:4; fill:none; }
+  .arrowPurple { stroke:var(--accent2); stroke-width:4; fill:none; }
+  .arrowGreen { stroke:var(--accent3); stroke-width:4; fill:none; }
+  .hint { fill:#fff7ed; stroke:var(--warn); stroke-width:2; }
+  .legendDot { stroke:#111; stroke-width:1.5; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+  <svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1080" viewBox="0 0 1800 1080">
+    <defs>
+      <marker id="arrowHead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#111"/>
+      </marker>
+      <marker id="arrowHeadAccent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2b6cb0"/>
+      </marker>
+      <marker id="arrowHeadPurple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#7a2ea8"/>
+      </marker>
+      <marker id="arrowHeadGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#1b7f5a"/>
+      </marker>
+    </defs>
+
+    <!-- Header -->
+    <text x="60" y="70" class="title">DiffusionBERT (absorbing-state discrete diffusion + denoising PLM)</text>
+    <text x="60" y="105" class="subtitle">Forward: progressively mask tokens into the absorbing state [MASK]. Reverse: a pre-trained denoising PLM iteratively reconstructs the sentence.</text>
+
+    <!-- Left panel: Forward process -->
+    <rect x="60" y="150" width="790" height="820" rx="14" class="box"/>
+    <text x="90" y="200" class="section">Forward process (data → noise)</text>
+    <text x="90" y="232" class="labelSmall">Absorbing-state discrete corruption: each token either stays or transitions to [MASK]</text>
+
+    <!-- time axis -->
+    <line x1="130" y1="290" x2="130" y2="900" class="divider"/>
+    <text x="92" y="305" class="axisLabel">t=0</text>
+    <text x="92" y="905" class="axisLabel">t=T</text>
+    <text x="70" y="610" class="axisLabel" transform="rotate(-90 70 610)">time (forward)</text>
+
+    <!-- Sequence boxes along forward -->
+    <!-- t=0 -->
+    <rect x="190" y="270" width="610" height="110" rx="12" class="boxSoft"/>
+    <text x="215" y="305" class="labelSmall">clean sentence x₀</text>
+    <text x="230" y="350" class="mono">
+      <tspan class="tokenOk">Hello</tspan>
+      <tspan dx="14" class="tokenOk">world</tspan>
+      <tspan dx="14" class="tokenOk">!</tspan>
+    </text>
+
+    <!-- t=1 -->
+    <rect x="190" y="410" width="610" height="110" rx="12" class="boxSoft"/>
+    <text x="215" y="445" class="labelSmall">x₁ (partially masked)</text>
+    <text x="230" y="490" class="mono">
+      <tspan class="tokenOk">Hello</tspan>
+      <tspan dx="14" class="tokenMask">[MASK]</tspan>
+      <tspan dx="14" class="tokenOk">!</tspan>
+    </text>
+
+    <!-- t=... -->
+    <rect x="190" y="550" width="610" height="110" rx="12" class="boxSoft"/>
+    <text x="215" y="585" class="labelSmall">xₜ (progressive corruption)</text>
+    <text x="230" y="630" class="mono">
+      <tspan class="tokenMask">[MASK]</tspan>
+      <tspan dx="14" class="tokenMask">[MASK]</tspan>
+      <tspan dx="14" class="tokenOk">!</tspan>
+      <tspan dx="18" class="monoSmall">…</tspan>
+    </text>
+
+    <!-- t=T -->
+    <rect x="190" y="720" width="610" height="140" rx="12" class="boxSoft"/>
+    <text x="215" y="755" class="labelSmall">fully absorbed noise x_T</text>
+    <text x="230" y="805" class="mono">
+      <tspan class="tokenMask">[MASK]</tspan>
+      <tspan dx="14" class="tokenMask">[MASK]</tspan>
+      <tspan dx="14" class="tokenMask">[MASK]</tspan>
+      <tspan dx="18" class="monoSmall">…</tspan>
+    </text>
+    <text x="215" y="845" class="labelSmall">stationary absorbing state: all tokens are [MASK]</text>
+
+    <!-- arrows between forward states -->
+    <path d="M 495 380 L 495 410" class="arrow" marker-end="url(#arrowHead)"/>
+    <path d="M 495 520 L 495 550" class="arrow" marker-end="url(#arrowHead)"/>
+    <path d="M 495 660 L 495 720" class="arrow" marker-end="url(#arrowHead)"/>
+
+    <!-- Spindle schedule inset -->
+    <rect x="90" y="940" width="740" height="20" fill="none"/>
+    <rect x="90" y="900" width="740" height="70" rx="12" class="boxAccent"/>
+    <text x="110" y="930" class="label">Proposed spindle noise schedule</text>
+    <text x="110" y="958" class="labelSmall">Token-dependent masking probability to distribute corrupted information across steps (easy-first reverse generation)</text>
+
+    <!-- simple spindle curves -->
+    <rect x="520" y="910" width="295" height="50" rx="10" fill="#ffffff" stroke="#2b6cb0" stroke-width="2"/>
+    <!-- axes -->
+    <line x1="540" y1="952" x2="795" y2="952" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="540" y1="952" x2="540" y2="922" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="540" y="970" class="tick">0</text>
+    <text x="785" y="970" class="tick">T</text>
+    <text x="546" y="920" class="tick">α(t)</text>
+    <!-- curves: three tokens with different information -->
+    <path d="M 540 945 C 590 940, 645 930, 667 927 C 700 922, 740 932, 795 945" fill="none" stroke="#2b6cb0" stroke-width="3"/>
+    <path d="M 540 948 C 600 947, 655 942, 675 940 C 705 936, 745 940, 795 948" fill="none" stroke="#7a2ea8" stroke-width="3"/>
+    <path d="M 540 950 C 610 952, 660 952, 680 952 C 710 952, 750 952, 795 950" fill="none" stroke="#1b7f5a" stroke-width="3"/>
+
+    <!-- Legend for curves -->
+    <circle cx="610" cy="918" r="6" fill="#2b6cb0" class="legendDot"/>
+    <text x="622" y="923" class="labelSmall">high-information token</text>
+    <circle cx="740" cy="918" r="6" fill="#7a2ea8" class="legendDot"/>
+    <text x="752" y="923" class="labelSmall">mid-information token</text>
+    <circle cx="610" cy="938" r="6" fill="#1b7f5a" class="legendDot"/>
+    <text x="622" y="943" class="labelSmall">low-information token</text>
+
+    <!-- Right panel: Reverse process -->
+    <rect x="950" y="150" width="790" height="820" rx="14" class="box"/>
+    <text x="980" y="200" class="section">Reverse process (noise → data)</text>
+    <text x="980" y="232" class="labelSmall">Learn denoising transitions with a pre-trained denoising PLM (e.g., BERT) to recover x₀ from xₜ</text>
+
+    <!-- top: denoising PLM block -->
+    <rect x="1010" y="270" width="670" height="170" rx="16" class="boxGreen"/>
+    <text x="1040" y="315" class="label">Pre-trained denoising PLM (pθ)</text>
+    <text x="1040" y="348" class="labelSmall">Input: noised sentence xₜ (tokens + [MASK])</text>
+    <text x="1040" y="375" class="labelSmall">Output: distribution over x₍ₜ₋₁₎ (denoised tokens)</text>
+
+    <!-- time-agnostic decoding pill -->
+    <rect x="1380" y="290" width="280" height="42" rx="21" fill="#111"/>
+    <text x="1520" y="318" text-anchor="middle" class="pillText">Time-agnostic decoding (TAD)</text>
+    <text x="1040" y="418" class="labelSmall">Key choice: ignore explicit time embedding; infer “how noisy” from xₜ (e.g., number of [MASK])</text>
+
+    <!-- Reverse trajectory samples -->
+    <text x="980" y="495" class="labelSmall">Iterative reverse denoising (non-autoregressive; all tokens predicted each step):</text>
+
+    <!-- x_T to x_0 boxes (reverse direction) -->
+    <rect x="1010" y="530" width="670" height="95" rx="12" class="boxSoft"/>
+    <text x="1035" y="562" class="labelSmall">start from x_T</text>
+    <text x="1045" y="600" class="mono">
+      <tspan class="tokenMask">[MASK]</tspan>
+      <tspan dx="14" class="tokenMask">[MASK]</tspan>
+      <tspan dx="14" class="tokenMask">[MASK]</tspan>
+      <tspan dx="18" class="monoSmall">…</tspan>
+    </text>
+
+    <rect x="1010" y="655" width="670" height="95" rx="12" class="boxSoft"/>
+    <text x="1035" y="687" class="labelSmall">xₜ (some tokens filled)</text>
+    <text x="1045" y="725" class="mono">
+      <tspan class="tokenOk">Hello</tspan>
+      <tspan dx="14" class="tokenMask">[MASK]</tspan>
+      <tspan dx="14" class="tokenMask">[MASK]</tspan>
+      <tspan dx="18" class="monoSmall">…</tspan>
+    </text>
+
+    <rect x="1010" y="780" width="670" height="110" rx="12" class="boxSoft"/>
+    <text x="1035" y="812" class="labelSmall">x₁ → x₀ (final sample)</text>
+    <text x="1045" y="855" class="mono">
+      <tspan class="tokenOk">Hello</tspan>
+      <tspan dx="14" class="tokenOk">world</tspan>
+      <tspan dx="14" class="tokenOk">!</tspan>
+    </text>
+    <text x="1035" y="885" class="labelSmall">coherent sentence after iterative refinement</text>
+
+    <!-- arrows for reverse -->
+    <path d="M 1345 625 L 1345 655" class="arrowGreen" marker-end="url(#arrowHeadGreen)"/>
+    <path d="M 1345 750 L 1345 780" class="arrowGreen" marker-end="url(#arrowHeadGreen)"/>
+
+    <!-- Connector between panels -->
+    <path d="M 850 520 C 910 520, 900 520, 950 520" class="arrowAccent" marker-end="url(#arrowHeadAccent)"/>
+    <text x="900" y="500" text-anchor="middle" class="labelSmall">x_T (all [MASK])</text>
+
+    <!-- Forward-to-reverse conceptual arrows -->
+    <path d="M 800 330 C 930 330, 910 320, 1010 320" class="arrowPurple dashed" marker-end="url(#arrowHeadPurple)"/>
+    <text x="905" y="305" text-anchor="middle" class="labelSmall">learn reverse transitions</text>
+
+    <!-- Callout: absorbing state -->
+    <rect x="980" y="910" width="760" height="60" rx="12" class="hint"/>
+    <text x="1010" y="946" class="label"><tspan fill="#b45309" font-weight="700">Absorbing state:</tspan> once a token becomes <tspan font-weight="700">[MASK]</tspan> in the forward process, it stays [MASK].</text>
+
+    <!-- Minimal equation-like annotation without heavy math -->
+    <rect x="90" y="250" width="740" height="40" rx="10" fill="#fff" stroke="#111" stroke-width="1.5"/>
+    <text x="110" y="276" class="labelSmall">Forward kernel (per token): stay with prob α(t), transition to [MASK] with prob 1−α(t)</text>
+
+  </svg>
+
+  <div class="caption">
+    Overview of DiffusionBERT: an absorbing-state discrete forward process progressively masks a clean sentence (e.g., “Hello world!” → “[MASK] …”), while a pre-trained denoising PLM learns the reverse denoising transitions, aided by the proposed spindle noise schedule and time-agnostic decoding.
+  </div>
+</div>
+</body>
+</html>

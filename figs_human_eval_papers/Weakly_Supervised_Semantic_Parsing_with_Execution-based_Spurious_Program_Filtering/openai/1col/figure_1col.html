@@ -1,0 +1,332 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Execution-based filtering overview</title>
+<style>
+  :root{
+    --w: 1200px;
+    --h: 1500px;
+    --font: Arial, Helvetica, sans-serif;
+    --ink: #222;
+    --muted: #555;
+    --light: #f6f7f9;
+    --panel: #ffffff;
+    --stroke: #1f2a37;
+    --stroke2: #4b5563;
+    --accent: #1d4ed8;
+    --good: #15803d;
+    --bad: #b91c1c;
+    --mid: #0f766e;
+  }
+  html, body { margin:0; padding:0; background:#fff; }
+  #figure-root{
+    width: var(--w);
+    height: var(--h);
+    margin: 0;
+    position: relative;
+    font-family: var(--font);
+  }
+  .caption{
+    position:absolute;
+    left: 60px;
+    top: 1390px;
+    width: 1080px;
+    height: 90px;
+    font-size: 16px;
+    line-height: 1.25;
+    color: var(--ink);
+  }
+  .caption .label{
+    font-weight: 700;
+  }
+  .smallnote{
+    font-size: 13px;
+    color: var(--muted);
+  }
+  svg { display:block; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+  <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500">
+    <defs>
+      <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 Z" fill="#1f2a37"></path>
+      </marker>
+      <marker id="arrowAccent" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 Z" fill="#1d4ed8"></path>
+      </marker>
+      <marker id="arrowGood" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 Z" fill="#15803d"></path>
+      </marker>
+      <marker id="arrowBad" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 Z" fill="#b91c1c"></path>
+      </marker>
+
+      <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.10"/>
+      </filter>
+
+      <style>
+        .title { font: 700 28px Arial, Helvetica, sans-serif; fill: #111827; }
+        .subtitle { font: 400 15px Arial, Helvetica, sans-serif; fill: #374151; }
+        .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; }
+        .panelHeader { font: 700 18px Arial, Helvetica, sans-serif; fill: #111827; }
+        .label { font: 600 14px Arial, Helvetica, sans-serif; fill: #111827; }
+        .text { font: 14px Arial, Helvetica, sans-serif; fill: #1f2937; }
+        .muted { font: 13px Arial, Helvetica, sans-serif; fill: #4b5563; }
+        .tiny { font: 12px Arial, Helvetica, sans-serif; fill: #4b5563; }
+        .box { fill: #ffffff; stroke: #1f2a37; stroke-width: 1.5; rx: 10; ry: 10; }
+        .boxSoft { fill: #f8fafc; stroke: #334155; stroke-width: 1.3; rx: 10; ry: 10; }
+        .boxAccent { fill: #eff6ff; stroke: #1d4ed8; stroke-width: 1.8; rx: 10; ry: 10; }
+        .boxGood { fill: #ecfdf5; stroke: #15803d; stroke-width: 1.8; rx: 10; ry: 10; }
+        .boxBad { fill: #fef2f2; stroke: #b91c1c; stroke-width: 1.8; rx: 10; ry: 10; }
+        .arrow { stroke: #1f2a37; stroke-width: 2.0; fill: none; marker-end: url(#arrow); }
+        .arrowAccent { stroke: #1d4ed8; stroke-width: 2.2; fill: none; marker-end: url(#arrowAccent); }
+        .arrowGood { stroke: #15803d; stroke-width: 2.2; fill: none; marker-end: url(#arrowGood); }
+        .arrowBad { stroke: #b91c1c; stroke-width: 2.2; fill: none; marker-end: url(#arrowBad); }
+        .dash { stroke-dasharray: 6 5; }
+        .thin { stroke-width: 1.5; }
+        .gridLine { stroke: #e5e7eb; stroke-width: 1.0; }
+        .axis { stroke: #9ca3af; stroke-width: 1.2; }
+        .ptGood { fill: #15803d; stroke: #0f5132; stroke-width: 0.8; }
+        .ptBad { fill: #b91c1c; stroke: #7f1d1d; stroke-width: 0.8; }
+        .ptNeutral { fill: #2563eb; stroke: #1e40af; stroke-width: 0.8; }
+        .centroid { fill: #0f766e; stroke: #064e3b; stroke-width: 1.2; }
+        .chip { fill: #ffffff; stroke: #9ca3af; stroke-width: 1.0; rx: 8; ry: 8; }
+        .matrixCell { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.0; }
+        .matrixHead { fill: #f1f5f9; stroke: #cbd5e1; stroke-width: 1.0; }
+        .hiCell { fill: #ecfdf5; }
+        .loCell { fill: #fef2f2; }
+      </style>
+    </defs>
+
+    <!-- Header -->
+    <text x="60" y="70" class="title">Execution-based filtering for weakly supervised semantic parsing</text>
+    <text x="60" y="96" class="subtitle">Programs consistent with the denotation can still be spurious; filter by agreement of execution-result representations on retrieved worlds.</text>
+
+    <!-- Panel frames (3 steps) -->
+    <rect x="60" y="130" width="1080" height="360" class="panel" filter="url(#shadow)"/>
+    <text x="80" y="165" class="panelHeader">1. Candidate programs consistent with the denotation</text>
+
+    <rect x="60" y="520" width="1080" height="420" class="panel" filter="url(#shadow)"/>
+    <text x="80" y="555" class="panelHeader">2. Represent programs by execution results on retrieved worlds</text>
+
+    <rect x="60" y="970" width="1080" height="390" class="panel" filter="url(#shadow)"/>
+    <text x="80" y="1005" class="panelHeader">3. Majority-vote centroid (hard/soft) and filtering of spurious programs</text>
+
+    <!-- Step 1: Utterance, world/denotation, program pool -->
+    <rect x="90" y="195" width="420" height="260" class="boxSoft"/>
+    <text x="110" y="225" class="label">Training example</text>
+    <rect x="110" y="240" width="380" height="64" class="box"/>
+    <text x="130" y="268" class="label">Utterance x</text>
+    <text x="130" y="292" class="muted">Natural language input</text>
+
+    <rect x="110" y="320" width="380" height="118" class="box"/>
+    <text x="130" y="350" class="label">World(s) w and denotation(s) y</text>
+    <text x="130" y="374" class="muted">Execute candidate program z on w</text>
+    <text x="130" y="398" class="muted">Keep z if result matches y (denotation-consistent)</text>
+
+    <!-- Program search box -->
+    <rect x="540" y="195" width="570" height="260" class="boxSoft"/>
+    <text x="560" y="225" class="label">Program search + denotation consistency</text>
+
+    <!-- Program pool -->
+    <rect x="560" y="245" width="530" height="190" class="box"/>
+    <text x="580" y="273" class="label">Candidate program pool Z (consistent with y)</text>
+
+    <!-- Program chips -->
+    <rect x="590" y="295" width="140" height="36" class="chip"/>
+    <text x="610" y="319" class="text">z₁</text>
+    <rect x="750" y="295" width="140" height="36" class="chip"/>
+    <text x="770" y="319" class="text">z₂</text>
+    <rect x="910" y="295" width="140" height="36" class="chip"/>
+    <text x="930" y="319" class="text">z₃</text>
+
+    <rect x="590" y="345" width="140" height="36" class="chip"/>
+    <text x="610" y="369" class="text">z₄</text>
+    <rect x="750" y="345" width="140" height="36" class="chip"/>
+    <text x="770" y="369" class="text">z₅</text>
+    <rect x="910" y="345" width="140" height="36" class="chip"/>
+    <text x="930" y="369" class="text">z₆</text>
+
+    <text x="580" y="415" class="muted">Note: Some z ∈ Z are spurious (wrong semantics but correct y by chance).</text>
+
+    <!-- Arrows in step 1 -->
+    <path d="M510,320 L540,320" class="arrow"/>
+    <text x="495" y="310" class="tiny" text-anchor="end">beam / search</text>
+
+    <!-- Step 2: retrieve worlds + execute programs to form representation vectors -->
+    <rect x="90" y="590" width="410" height="320" class="boxSoft"/>
+    <text x="110" y="620" class="label">Retrieve informative worlds {wʹ}</text>
+    <rect x="110" y="638" width="370" height="88" class="box"/>
+    <text x="130" y="666" class="text">From other training examples</text>
+    <text x="130" y="690" class="muted">Select related worlds (e.g., similar utterances)</text>
+
+    <rect x="110" y="740" width="370" height="150" class="box"/>
+    <text x="130" y="768" class="label">Retrieved worlds (example)</text>
+    <text x="140" y="796" class="text">wʹ₁</text>
+    <text x="140" y="820" class="text">wʹ₂</text>
+    <text x="140" y="844" class="text">wʹ₃</text>
+    <text x="140" y="868" class="text">…  wʹₙ</text>
+    <text x="260" y="868" class="muted">(n fixed per dataset)</text>
+
+    <!-- Execution to representation -->
+    <rect x="520" y="590" width="620" height="320" class="boxSoft"/>
+    <text x="540" y="620" class="label">Execution-result representation r(z)</text>
+    <text x="540" y="642" class="muted">Each program becomes an n-dimensional vector: r(z)[j] = exec(z, wʹⱼ)</text>
+
+    <!-- Matrix -->
+    <!-- Header row -->
+    <rect x="540" y="660" width="580" height="40" class="matrixHead"/>
+    <text x="560" y="686" class="label">program</text>
+    <text x="720" y="686" class="label">wʹ₁</text>
+    <text x="800" y="686" class="label">wʹ₂</text>
+    <text x="880" y="686" class="label">wʹ₃</text>
+    <text x="960" y="686" class="label">…</text>
+    <text x="1030" y="686" class="label">wʹₙ</text>
+
+    <!-- Rows -->
+    <!-- z1 -->
+    <rect x="540" y="700" width="580" height="42" class="matrixCell"/>
+    <text x="560" y="726" class="text">z₁</text>
+    <rect x="700" y="706" width="70" height="30" class="matrixCell hiCell"/>
+    <text x="735" y="727" class="text" text-anchor="middle">T</text>
+    <rect x="780" y="706" width="70" height="30" class="matrixCell hiCell"/>
+    <text x="815" y="727" class="text" text-anchor="middle">T</text>
+    <rect x="860" y="706" width="70" height="30" class="matrixCell loCell"/>
+    <text x="895" y="727" class="text" text-anchor="middle">F</text>
+    <rect x="940" y="706" width="70" height="30" class="matrixCell"/>
+    <text x="975" y="727" class="muted" text-anchor="middle">…</text>
+    <rect x="1030" y="706" width="70" height="30" class="matrixCell hiCell"/>
+    <text x="1065" y="727" class="text" text-anchor="middle">T</text>
+
+    <!-- z2 -->
+    <rect x="540" y="742" width="580" height="42" class="matrixCell"/>
+    <text x="560" y="768" class="text">z₂</text>
+    <rect x="700" y="748" width="70" height="30" class="matrixCell hiCell"/>
+    <text x="735" y="769" class="text" text-anchor="middle">T</text>
+    <rect x="780" y="748" width="70" height="30" class="matrixCell hiCell"/>
+    <text x="815" y="769" class="text" text-anchor="middle">T</text>
+    <rect x="860" y="748" width="70" height="30" class="matrixCell loCell"/>
+    <text x="895" y="769" class="text" text-anchor="middle">F</text>
+    <rect x="940" y="748" width="70" height="30" class="matrixCell"/>
+    <text x="975" y="769" class="muted" text-anchor="middle">…</text>
+    <rect x="1030" y="748" width="70" height="30" class="matrixCell hiCell"/>
+    <text x="1065" y="769" class="text" text-anchor="middle">T</text>
+
+    <!-- z3 (spurious/outlier example) -->
+    <rect x="540" y="784" width="580" height="42" class="matrixCell"/>
+    <text x="560" y="810" class="text">z₃</text>
+    <rect x="700" y="790" width="70" height="30" class="matrixCell loCell"/>
+    <text x="735" y="811" class="text" text-anchor="middle">F</text>
+    <rect x="780" y="790" width="70" height="30" class="matrixCell loCell"/>
+    <text x="815" y="811" class="text" text-anchor="middle">F</text>
+    <rect x="860" y="790" width="70" height="30" class="matrixCell hiCell"/>
+    <text x="895" y="811" class="text" text-anchor="middle">T</text>
+    <rect x="940" y="790" width="70" height="30" class="matrixCell"/>
+    <text x="975" y="811" class="muted" text-anchor="middle">…</text>
+    <rect x="1030" y="790" width="70" height="30" class="matrixCell loCell"/>
+    <text x="1065" y="811" class="text" text-anchor="middle">F</text>
+
+    <!-- z4 -->
+    <rect x="540" y="826" width="580" height="42" class="matrixCell"/>
+    <text x="560" y="852" class="text">z₄</text>
+    <rect x="700" y="832" width="70" height="30" class="matrixCell hiCell"/>
+    <text x="735" y="853" class="text" text-anchor="middle">T</text>
+    <rect x="780" y="832" width="70" height="30" class="matrixCell hiCell"/>
+    <text x="815" y="853" class="text" text-anchor="middle">T</text>
+    <rect x="860" y="832" width="70" height="30" class="matrixCell loCell"/>
+    <text x="895" y="853" class="text" text-anchor="middle">F</text>
+    <rect x="940" y="832" width="70" height="30" class="matrixCell"/>
+    <text x="975" y="853" class="muted" text-anchor="middle">…</text>
+    <rect x="1030" y="832" width="70" height="30" class="matrixCell hiCell"/>
+    <text x="1065" y="853" class="text" text-anchor="middle">T</text>
+
+    <text x="540" y="895" class="tiny">Illustrative entries (e.g., Boolean for NLVR; general denotations for WTQ).</text>
+
+    <!-- Connections Step 1 -> Step 2 -->
+    <path d="M830,455 L830,520" class="arrow"/>
+    <text x="840" y="498" class="tiny">for each z ∈ Z</text>
+
+    <!-- Step 3: centroid vote + filter -->
+    <rect x="90" y="1040" width="520" height="290" class="boxSoft"/>
+    <text x="110" y="1070" class="label">Majority-vote centroid representation</text>
+
+    <rect x="110" y="1090" width="480" height="110" class="boxAccent"/>
+    <text x="130" y="1118" class="label">Hard vote (entry-wise winner)</text>
+    <text x="130" y="1142" class="muted">For each world index j: r* [j] = argmax_e  Σ W(z)·1(r(z)[j]=e)</text>
+    <text x="130" y="1166" class="muted">Score example: s(z)= (1/n) Σ 1(r(z)[j]=r*[j])</text>
+
+    <rect x="110" y="1210" width="480" height="110" class="boxAccent"/>
+    <text x="130" y="1238" class="label">Soft vote (proportion-aware)</text>
+    <text x="130" y="1262" class="muted">Score example: s(z)= Σ_j Σ_{z′} W(z′)·1(r(z)[j]=r(z′)[j])</text>
+    <text x="130" y="1286" class="muted">Normalize scores; filter if s(z) &lt; τ</text>
+
+    <rect x="650" y="1040" width="490" height="290" class="boxSoft"/>
+    <text x="670" y="1070" class="label">Filter by similarity to centroid</text>
+
+    <!-- Embedding space sketch -->
+    <rect x="670" y="1090" width="450" height="190" class="box"/>
+    <text x="690" y="1116" class="muted">Program representations r(z) as points</text>
+
+    <!-- axes -->
+    <line x1="700" y1="1248" x2="1088" y2="1248" class="axis"/>
+    <line x1="720" y1="1266" x2="720" y2="1120" class="axis"/>
+    <text x="1092" y="1252" class="tiny">dimension 1</text>
+    <text x="705" y="1120" class="tiny" transform="rotate(-90 705 1120)">dimension 2</text>
+
+    <!-- grid -->
+    <line x1="800" y1="1130" x2="800" y2="1260" class="gridLine"/>
+    <line x1="900" y1="1130" x2="900" y2="1260" class="gridLine"/>
+    <line x1="1000" y1="1130" x2="1000" y2="1260" class="gridLine"/>
+    <line x1="720" y1="1160" x2="1090" y2="1160" class="gridLine"/>
+    <line x1="720" y1="1200" x2="1090" y2="1200" class="gridLine"/>
+    <line x1="720" y1="1240" x2="1090" y2="1240" class="gridLine"/>
+
+    <!-- points: cluster -->
+    <circle cx="820" cy="1205" r="7" class="ptGood"/>
+    <circle cx="850" cy="1188" r="7" class="ptGood"/>
+    <circle cx="875" cy="1215" r="7" class="ptGood"/>
+    <circle cx="910" cy="1198" r="7" class="ptGood"/>
+    <circle cx="885" cy="1172" r="7" class="ptGood"/>
+    <circle cx="940" cy="1210" r="7" class="ptGood"/>
+
+    <!-- centroid -->
+    <circle cx="885" cy="1196" r="10" class="centroid"/>
+    <text x="902" y="1200" class="tiny">centroid r*</text>
+
+    <!-- outliers/spurious -->
+    <circle cx="1040" cy="1145" r="8" class="ptBad"/>
+    <circle cx="1020" cy="1168" r="8" class="ptBad"/>
+    <text x="950" y="1138" class="tiny">dissimilar → likely spurious</text>
+
+    <!-- Filtering decision boxes -->
+    <rect x="670" y="1290" width="218" height="36" class="boxGood"/>
+    <text x="779" y="1314" class="label" text-anchor="middle">Keep (s(z) ≥ τ)</text>
+    <rect x="902" y="1290" width="218" height="36" class="boxBad"/>
+    <text x="1011" y="1314" class="label" text-anchor="middle">Remove (s(z) &lt; τ)</text>
+
+    <!-- Arrow from representation to voting and to filtering -->
+    <path d="M610,750 L520,750" class="arrow" transform="translate(0,0)"/>
+    <text x="515" y="740" class="tiny" text-anchor="end">r(z) vectors</text>
+    <path d="M600,820 L650,820" class="arrowAccent"/>
+    <text x="625" y="808" class="tiny" text-anchor="middle">compute similarity / score</text>
+
+    <!-- Outputs -->
+    <path d="M885,1330 L885,1350" class="arrowGood"/>
+    <rect x="330" y="1345" width="540" height="32" class="boxSoft"/>
+    <text x="600" y="1367" class="text" text-anchor="middle">Filtered program pool Z′ used for training (reduced spuriousness)</text>
+
+    <!-- Optional weight term annotation -->
+    <rect x="90" y="910" width="1050" height="36" class="boxSoft"/>
+    <text x="110" y="934" class="muted">Optional weighting W(z): e.g., lexicon recall or model likelihood, used to weight votes when forming centroid/score.</text>
+  </svg>
+
+  <div class="caption">
+    <span class="label">Figure:</span>
+    Overview of execution-based filtering for weakly supervised semantic parsing: candidate programs consistent with the denotation are represented by their execution results on retrieved worlds, a hard/soft majority-vote centroid is computed, and programs with dissimilar representations are removed as spurious.
+  </div>
+</div>
+</body>
+</html>

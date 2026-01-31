@@ -1,0 +1,118 @@
+{
+  "paper_name": "Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning",
+  "evaluated_at": "2026-01-12T01:26:41.685585",
+  "figure_summary": "## 1. Core Contributions\n- Establishes an empirical framework to test whether LLMs exhibit a *latent* two-hop reasoning pathway for compositional factual prompts (e.g., \\(r_2(r_1(e_1))\\)), by separately probing hop-1 “bridge entity identification” and hop-2 “attribute utilization.”\n- Introduces **TWOHOPFACT**, a Wikidata-derived dataset with **45,595** paired two-hop/one-hop prompts spanning **52** fact-composition types, enabling analysis across diverse relations/templates.\n- Proposes two proxy metrics aligned with the two reasoning hops: **internal entity recall score** (for bridge entity recall) and **consistency score** (for whether two-hop completions align with the model’s own one-hop knowledge about the bridge entity).\n- Uses *causal-effect frequency* (how often interventions produce the expected directional changes) to detect a latent pathway even when it is not the dominant driver of the model’s final prediction.\n\n## 2. Method Components & Relations relevant to figures\n- **Data/model objects**\n  - Two facts with a **bridge entity**: \\((e_1, r_1, e_2)\\) and \\((e_2, r_2, e_3)\\), composing into \\(r_2(r_1(e_1))\\).\n  - **Two-hop prompt** \\(\\tau_{2H} = \\tau(r_2(r_1(e_1)))\\) contains a **descriptive mention** \\(\\mu(r_1(e_1))\\) (a noun phrase that refers to \\(e_2\\) indirectly).\n  - **One-hop prompt** \\(\\tau_{1H} = \\tau(r_2(e_2))\\) is the “equivalent” direct query about \\(e_2\\)’s attribute.\n- **Hop 1 probe (bridge entity recall)**\n  - Computes an **entity recall score** intended to approximate whether internal representations (via projection to vocabulary space) give higher probability mass to the **bridge entity name** \\(e_2\\).\n  - **Intervention for hop 1:** modify the two-hop prompt to “refer to / indirectly mention” the true bridge entity (as opposed to other entities), and test whether this increases internal recall of \\(e_2\\), especially in later transformer layers.\n- **Hop 2 probe (utilization of bridge knowledge)**\n  - Computes a **consistency score** between the completion distribution for \\(\\tau_{2H}\\) and the completion distribution for \\(\\tau_{1H}\\). This is meant to capture whether the model’s answer to the two-hop prompt aligns with what it “already knows” when directly asked about \\(r_2(e_2)\\).\n  - **Intervention for hop 2:** artificially increase the internal recall signal for \\(e_2\\) and test whether this causes **higher consistency** (i.e., better alignment between two-hop and one-hop completions).\n- **Multi-hop pathway evidence (co-occurrence)**\n  - Counts how often both expected effects occur together: (i) prompt change → entity recall ↑, and (ii) entity recall ↑ → consistency ↑, as evidence of a full latent two-hop traversal.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To visually define and operationalize what “latent multi-hop reasoning” means in this paper: a *two-stage causal pathway* linking (a) internal recall of the bridge entity and (b) downstream usage of the bridge entity’s attribute knowledge to produce a two-hop answer.\n- To depict the experimental logic as *intervention-and-effect* tests (rather than raw accuracy): showing how manipulating the prompt or internal recall is expected to change internal recall and output distributions if a latent multi-hop pathway exists.\n- To communicate the mapping from abstract symbolic structure \\((e_1,r_1,e_2,r_2,e_3)\\) and prompts \\((\\tau_{2H}, \\tau_{1H})\\) to measurable quantities (entity recall, consistency) that can be compared across relation/composition types and model sizes.\n\n## 4. What Figures are NOT intended to show\n- Not a claim that the latent two-hop pathway is always the *most salient* or dominant mechanism determining the model’s final output for two-hop prompts.\n- Not a direct measurement of “true reasoning” in a human-logical sense; the figures support *proxy-based* evidence (entity recall and distributional consistency), not definitive proof of explicit step-by-step inference.\n- Not primarily about end-task multi-hop QA accuracy; the focus is on internal recall/utilization effects and their co-occurrence under interventions, even when the model might answer correctly/incorrectly for other reasons.\n- Not a full circuit-level mechanistic explanation (specific attention heads/neurons); the figures frame higher-level causal tests rather than detailed interpretability of components.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+      "caption": "Figure 1: We investigate the latent multi-hop reasoning of LLMs. For the first hop, we change the input prompt to refer to the bridge entity (Stevie Wonder) and check how often it increases the model’s internal recall of the bridge entity. For the second hop, we check if increasing this recall causes the model output to be more consistent with respect to what it knows about the bridge entity’s attribute (mother of Stevie Wonder).",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 3.0,
+              "reason": "The figure captures the paper’s key two-hop causal pathway: (Hop 1) prompt change to better refer to the bridge entity → increased internal entity recall, and (Hop 2) increased entity recall → higher output consistency with a one-hop query about the bridge entity’s attribute. It visually includes the main proxy concepts (entity recall, consistency) and the two interventions/effects described in the summary and caption. However, it omits several major aspects from the summary, including the formal symbolic setup (e1,r1,e2,r2,e3; τ2H, τ1H; μ(r1(e1))), the causal-effect frequency/co-occurrence counting logic across many samples, and the dataset context (TWOHOPFACT size and composition types)."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the figure alone, a reader can understand the operating principle at a high level: a two-stage process where (i) the model internally recalls a bridge entity when prompted indirectly, and (ii) strengthening that recall makes the final answer distribution more consistent with what the model would answer when asked directly about the bridge entity’s attribute. The depiction of two prompts (indirect vs direct) and arrows labeled Hop 1/Hop 2 supports this. Still, the exact definitions/measurement procedures for 'entity recall' (projection to vocab/probability mass) and 'consistency' (distributional similarity between τ2H and τ1H) are not specified, so the mechanism is understandable but not fully operationalized standalone."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure summarizes only the core experimental logic for the two proxy metrics and their causal linkage, but does not reflect the broader end-to-end scope described in the summary: construction and scale of TWOHOPFACT (45,595 pairs; 52 composition types), evaluation across relation/template types and model sizes, and the co-occurrence/causal-effect frequency framing used to claim evidence of a latent pathway even when not dominant. Thus it is not a beginning-to-end summary of the paper’s full content."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure largely matches the summary: it depicts an LLM, a two-hop prompt with an indirect descriptive mention (e.g., “the singer of …”) referring to a bridge entity, an internal ‘Entity Recall’ signal for the bridge entity, and a ‘Consistency’ notion comparing/aligning outputs. Minor elements such as the small bar-chart icons, the internal boxed module with an “x”, and the explicit highlighting/crossing-out styling are not explicitly described in the summary, but they function as conventional visual aids and do not introduce new core method components or claims."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 5.0,
+              "reason": "The causal/structural relationships are consistent with the summary and caption: Hop 1 is shown as a prompt change that increases internal recall of the bridge entity (“Entity Recall” for Stevie Wonder). Hop 2 is shown as increased entity recall leading to higher output ‘Consistency’ with what the model knows when queried about the bridge entity’s attribute (mother of Stevie Wonder), aligning with the described interventions and proxy metrics."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 4.0,
+              "reason": "Key labels (‘Hop 1’, ‘Hop 2’, ‘Entity Recall’, ‘Consistency’) align with the summary’s terminology (internal entity recall score and consistency score) and the figure caption. The figure does not explicitly label \fτ_{2H}/τ_{1H}\f or the symbolic tuples (e1,r1,e2,r2,e3), but omission is not a fidelity error; it is simply less explicit than the summary."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Design Quality": {
+          "score": 3.571,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure generally reads top-to-bottom: the top panel (LLM + direct mention of the bridge entity “Stevie Wonder”) relates to the one-hop knowledge/consistency target, and the bottom panel (LLM + indirect descriptive mention “the singer of …”) relates to the two-hop prompt and hop-1 entity recall. Arrows labeled “Hop 1” and “Hop 2” indicate intended causal flow, though the hop arrows are slightly diagonal rather than strictly left-to-right or top-to-bottom."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 3.0,
+              "reason": "There are no heavy line crossings, but the two diagonal hop arrows (Hop 1 and Hop 2) visually intersect/overlap in the middle region, which mildly hurts traceability of the two-stage pathway described in the summary (prompt change → entity recall ↑; entity recall ↑ → consistency ↑)."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Elements that belong together are mostly co-located: the bottom panel contains the entity-recall visualization near the bridge entity token (“Stevie”) and the hop-1 label, while the top panel places the consistency indicator near the completion distribution. This matches the summary’s separation of hop-1 probe (internal entity recall) and hop-2 probe (consistency)."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 3.0,
+              "reason": "The two main panels are neatly stacked and horizontally aligned, but within the bottom panel the recall bar chart, the purple module, and the diagonal arrows do not align to a clear grid. The mixed rotations and diagonal placements reduce the clean structural mapping from (tau_2H, tau_1H) to metrics emphasized in the summary."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The main components (two LLM panels; highlighted bridge entity text; hop labels; metric labels “Entity Recall” and “Consistency”) stand out via size, color, and placement. This supports the intended purpose of depicting a two-stage causal pathway rather than raw task accuracy."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "Spacing is adequate between the two major panels, but inside the bottom panel several elements are tight/overlapping: the “Hop 1” arrow runs across the entity recall area and toward the token, and the crossed-out “Superstition” sits close to the prompt text. This crowding slightly harms readability of the intervention-and-effect story."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles are mostly encoded consistently: both panels are rounded rectangles for LLM contexts; distributions are shown as small histograms; key entities are highlighted in color. The hop arrows use distinct colors (pink/orange) to differentiate hop-1 vs hop-2, consistent with the summary’s two-hop decomposition, though the mapping of each color to a specific metric could be slightly more uniform/explicit."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces the abstract two-hop causal pathway with concrete visual metaphors: a highlighted bridge entity name (“Stevie Wonder”), a descriptive mention (“the singer of ‘…’”) to represent indirect reference, and bar-chart glyphs to depict internal probability mass/recall and output distribution consistency. The hop structure is conveyed via explicit arrows labeled “Hop 1” and “Hop 2,” making the latent-process idea tangible rather than purely symbolic."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "While the iconography (LLM boxes, arrows, small bar charts) is fairly standard for intervention/causal-diagram style NLP figures, the specific combination—showing both a prompt-level intervention (indirect mention vs. true bridge entity) and an internal-recall-to-consistency effect in a single compact schematic aligned with the paper’s two proxy metrics—is somewhat distinctive to this framework, though not a highly unique visual style overall."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s two-stage causal test: it stacks two prompt/LLM panels to contrast the two-hop prompt with an intervention and explicitly overlays the internal ‘Entity Recall’ and external ‘Consistency’ signals in the positions matching the hypothesized pathway. This departs from a generic pipeline by directly mapping the hop-1 and hop-2 proxies and interventions into a single causal narrative diagram rather than a uniform block flow."
+            }
+          ]
+        },
+        "weighted_total": 2.914
+      }
+    }
+  ]
+}

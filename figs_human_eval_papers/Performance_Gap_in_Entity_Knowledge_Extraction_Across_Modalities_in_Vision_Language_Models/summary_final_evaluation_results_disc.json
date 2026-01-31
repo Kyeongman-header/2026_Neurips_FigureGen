@@ -1,0 +1,261 @@
+{
+  "paper_name": "Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models",
+  "evaluated_at": "2026-01-12T03:23:58.786476",
+  "figure_summary": "## 1. Core Contributions\n- Establishes and measures a **systematic accuracy gap** in factual entity-question answering when the entity is provided **visually (image)** vs **textually (name string)**, with drops reported up to ~18% for some VLMs.\n- Introduces **POPVQA**, a dataset designed to **separate (and validate) entity identification** from **factual knowledge extraction**, enabling controlled comparison between visual vs textual entity representations.\n- Uses **mechanistic interpretability interventions** (activation patching, forward patching / “freezing”, attention knockout) to probe **where and when image-token information influences** query/generation tokens, supporting the claim that **identification consumes substantial depth**, constraining downstream factual reasoning.\n\n## 2. Method Components & Relations relevant to figures\n- **Model architecture (LLaVA-style):**\n  - Vision encoder: \\(g(X_v)\\rightarrow Z_v\\)\n  - Projection/alignment: \\(W\\cdot Z_v \\rightarrow H_v\\) (visual tokens in LLM embedding space)\n  - Text embedding: \\(X_t \\rightarrow H_t\\)\n  - Concatenation into LLM: \\(f([H_v, H_t])\\), producing hidden states across layers \\(\\ell\\) for visual tokens \\(h^\\ell_{\\cdot,v}\\), text tokens \\(h^\\ell_{\\cdot,t}\\), and generated tokens \\(h^\\ell_{\\cdot,g}\\).\n- **Task decomposition emphasized by figures:**\n  - (i) **Entity identification** from image (map image tokens → an entity identity)\n  - (ii) **Knowledge extraction** (use entity identity to answer factual relation question)\n- **Intervention logic depicted/required for figure interpretation:**\n  - **Activation patching (Sec. 5):** replace visual-token hidden states at a chosen **source layer** with those from a different (“injected”) entity’s forward pass, to test whether entity identity is already encoded/usable at that layer.\n  - **Forward patching / freezing (Sec. 6):** starting at a source layer, **repeatedly patch** the same visual-token hidden states into subsequent layers up to a target layer, effectively preventing further LLM-side transformation of visual tokens, to test whether later layers are necessary to make visual information usable for answering.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **operationalize and visualize the central failure mode**: models can (a) answer factual questions when the entity is text-specified and (b) recognize the entity in the image, yet (c) **fail to route that recognized identity into factual answering** when the entity is only visual.\n- To clarify the **experimental manipulations and information-flow probes** used to localize *when* (which layers) visual tokens begin to carry task-relevant entity information and *how* that information can affect query/generation tokens.\n- To support the paper’s mechanistic hypothesis that **visual-entity processing occupies substantial model depth**, leaving fewer layers for **consecutive reasoning** needed for factual retrieval—i.e., showing a **layer-allocation/flow inefficiency** between modalities.\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide a broad benchmark of generic VQA, scene understanding, or perception (e.g., counting, spatial reasoning) beyond **entity-centric factual retrieval**.\n- Not intended to claim that the models *lack* the factual knowledge; the emphasis is on **failure to leverage/propagate** knowledge when the entity is visually specified.\n- Not intended as a full architectural redesign or training method; the figures illustrate **diagnostic interventions** (patching/freezing/knockouts), not a new learned component.\n- Not intended to validate POPVQA as an exhaustive or bias-free knowledge dataset; figures support its role as a **controlled tool** for separating identification vs extraction, not as a complete representation of real-world entity knowledge.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+      "caption": "Figure 2: The left pane is an illustration for the experiment in Section 5. The hidden states at the positions of the visual tokens are copied from the forward pass of the injected entity at the source layer (in this case layer 1) replacing the hidden states of the original entity’s forward pass at the same layer and position. The right pane is an illustration of the experiment in Section 6. Starting from the source layer, the hidden states at the positions of the visual tokens are copied and patched instead of the hidden states at the same positions in the subsequent layers until the target layer, effectively \"freezing\" their processing by the LLM.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure directly covers the key method components relevant to this figure per the summary and caption: a LLaVA-style stack (vision encoder g, projector W, LLM/text embedder f), separation of visual vs text tokens, and the two mechanistic interventions—activation patching (Sec. 5; left) and forward patching/freezing (Sec. 6; right)—including source/target layers and copying hidden states at visual-token positions. However, it omits other paper-level contributions from the summary (e.g., the POPVQA dataset design and the reported visual-vs-text accuracy gap), and it does not depict attention knockout, which is also listed in the summary as part of the intervention suite."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "Visually, one can infer the operating principle: (i) images are encoded into visual tokens via a vision encoder and projector, (ii) these tokens enter a transformer with text tokens, and (iii) experiments manipulate visual-token hidden states across layers—either swapping them from an injected entity at a chosen layer (left) or repeatedly re-inserting them to freeze subsequent processing (right). The source-layer red arrows and the repeated patching arrows on the right make the interventions understandable without the paper. Still, understanding the experimental goal (testing when identity is encoded/usable for downstream factual QA and the visual-vs-text gap motivation) is not fully recoverable from the diagram alone."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure is focused on illustrating the Sec. 5 and Sec. 6 interventions and does not summarize content spanning the paper from beginning to end as described in the summary. In particular, it does not present the core empirical finding of a systematic accuracy gap, the POPVQA dataset setup to separate identification from knowledge extraction, or outcomes/plots showing layer-allocation/flow inefficiency; thus it is not a complete paper-level summary figure."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 4.0,
+              "reason": "The figure largely stays within the paper summary’s described components: LLaVA-style vision encoder g, projector W, LLM f, layerwise hidden states for visual/text/generated tokens, and the two interventions (activation patching and forward patching/freezing). It adds concrete example entities/questions (e.g., Meryl Streep, Che Guevara, Mona Lisa) and a depiction of a final layer index (e.g., “Transformer Layer 31”), which are not mentioned in the summary but function as illustrative/auxiliary details and do not change the claimed method structure."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 5.0,
+              "reason": "Left pane correctly depicts activation patching as described: at a chosen source layer (shown as Layer 1), visual-token hidden states are replaced with those from an injected entity forward pass at the same layer/positions, to test whether entity identity is encoded/usable at that depth. Right pane correctly depicts forward patching/freezing: starting at the source layer, the same visual-token hidden states are repeatedly patched into subsequent layers up to a target layer, preventing further LLM-side transformation of visual tokens. The relationships among vision encoder → projector → LLM layers and the distinction between visual vs text tokens are consistent with the summary."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled in line with the summary: “Visual Encoder (g)”, “Projector (W)”, “LM (F) Embedder”, and transformer layers with visual-token hidden states (h_{\\ell,v}) and text-token hidden states (h_{\\ell,t}). The intervention depictions match the caption’s terminology (copy/patch visual-token hidden states at source layer; freeze via repeated patching until target). No major methodology/component appears mislabeled relative to the summary."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the paper’s core mechanistic interventions: (left) activation patching at a chosen source layer and (right) forward patching/freezing of visual-token hidden states through subsequent layers. It clearly shows the LLaVA-style pipeline (vision encoder → projector → LLM with visual/text tokens) and highlights only the relevant token groups and layers. Minor clutter comes from duplicating full layer stacks (0–31) and including example entity/question text, which are illustrative but not strictly necessary for conveying the intervention logic."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "As supplementary material, it closely matches the caption and summary: it visually distinguishes source vs injected entity passes for activation patching (red transfer arrows at a specific layer) and depicts freezing by repeatedly patching visual-token states from the source layer up to a target layer (repeated arrows across layers). The labeling of components (vision encoder g, projector W, LM embedder, transformer layers) supports understanding when reading Sections 5–6."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The main redundancy is the repeated depiction of many transformer layers with ellipses plus two full forward-pass stacks on the left, which increases visual load without adding new conceptual content beyond ‘choose a layer and patch/freeze’. The example photos/entities (e.g., Meryl Streep/Che Guevara/Mona Lisa) are not essential to the intervention mechanism and add some non-core detail, though they do not contradict or alter the claimed method structure."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.714,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "Both panes present a clear bottom-to-top processing stack (image/question at bottom, then visual encoder/projector & text embedder, then transformer layers up to generated output at top). The left pane additionally implies left-to-right comparison between original vs injected forward passes, but the dominant flow is vertical and readable."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 3.0,
+              "reason": "Most connections are clean (straight vertical arrows and curved freeze arrows). However, in the left pane the red patching arcs between the two stacks create multiple crossings/overlaps and visual clutter, making it harder to trace which visual-token states are being replaced at the source layer."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related modules are colocated: vision encoder sits directly under projector; text question sits under the LM embedder; transformer layers are stacked contiguously. The two forward passes in the left pane are adjacent, supporting the intervention narrative (copy injected entity states into original)."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Blocks and token rows are largely aligned to an implicit grid across layers (consistent row widths and layer separators). Minor irregularities appear due to hand-drawn styling and the curved patching arrows, but overall alignment is neat enough for layer-by-layer correspondence."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Key components stand out: the transformer layers are prominent horizontal bars; the vision encoder/projector and LM embedder are clearly labeled; intervention is highlighted via salient red arcs (activation patching) and repeated green visual tokens plus curved arrows (freezing). The hierarchy could be stronger with clearer labeling of 'source layer'/'target layer' within the drawing itself."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "Margins are generally sufficient, but the left pane is dense: the patching arcs crowd the token row around the source layer, and the top labels ('Generated Output') are close to the boundary. The right pane has better spacing than the left."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles use consistent visual language: transformer layers repeat the same structure; visual-token positions are consistently colored (greens in the freezing pane; colored blocks for token types across layers); projector/encoder boxes share a consistent style. Some inconsistency exists because the left pane uses red arrows to indicate patching while the right pane uses repeated green-token rows and curved arrows, which are semantically consistent but stylistically different."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces abstract intervention operations (activation/forward patching of hidden states) with concrete visual metaphors: colored token blocks for visual vs text tokens, red arrows to depict copying/patching between forward passes, and a \"freezing\" effect shown by repeatedly re-inserting the same visual-token states across layers. It also uses recognizable entity examples (e.g., portraits/paintings) to concretize the notion of \"injected entity\" vs \"original entity,\" aligning with the summary’s identification→knowledge-extraction decomposition."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "The style is a relatively standard mechanistic-interpretability schematic: stacked transformer layers, token grids, and arrows indicating information flow and interventions. While clean and readable, the overall visual language (layer blocks + token positions + arrows) is common in patching/freezing papers, with only modest differentiation via the two-pane comparison and the entity-example callouts."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific intervention logic by splitting into two panes that mirror Sections 5 and 6: left shows one-time replacement at a chosen source layer using an injected entity forward pass; right shows iterative patching across layers to operationalize \"freezing.\" This directly supports the paper’s core claim about when visual-token information becomes usable, rather than using a generic model-architecture diagram alone."
+            }
+          ]
+        },
+        "weighted_total": 3.876
+      }
+    },
+    {
+      "figure_file": "Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p1__score1.00.png",
+      "caption": "Figure 1: Illustration of our motivating observation. The model successfully extracts its knowledge about the entity when the entity is represented in text. It further successfully identifies the entity in the image, but it fails to combine the two.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 2.0,
+              "reason": "The figure clearly depicts the paper’s motivating failure mode (text-specified entity enables correct factual answer; image enables correct identification; image-only entity specification fails factual QA), which matches the summary’s core contribution about a visual-vs-text accuracy gap and the need to separate identification from extraction. However, it omits essentially all major method components and formulas described in the summary (LLaVA-style pipeline g(Xv)->Zv, projection W*Zv->Hv, concatenation with Ht, layerwise hidden states, and the mechanistic interventions: activation patching, forward patching/freezing, attention knockout). Thus it does not cover most major components mentioned in the summary."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "Without reading the paper, one can understand the general operating principle being highlighted: the model can answer a factual question when given an entity name in text; it can identify the entity shown in an image; but when asked the factual question with the entity only specified via the image, it fails—suggesting a breakdown in combining visual identification with knowledge retrieval. The input/output/meaning columns and checkmarks/cross make the intended observation easy to grasp, even though internal mechanisms are not shown."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 1.0,
+              "reason": "The figure is a narrow illustrative example of the motivating observation only. It does not summarize the dataset contribution (POPVQA design/validation), the measured systematic gap magnitudes (e.g., up to ~18%), nor the mechanistic interpretability experiments (patching/freezing/knockouts and layer-allocation hypothesis). Therefore it is not a complete beginning-to-end summary of the paper’s content."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 5.0,
+              "reason": "The figure stays within the paper’s stated motivating observation: text-specified entity enables correct factual QA; the model can identify the image entity by name; but fails when asked the factual question with the entity only visually specified. It does not introduce unmentioned architectural blocks, patching/freezing/knockout mechanisms, equations, or dataset-specific components."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 5.0,
+              "reason": "The relationships depicted match the summary and caption: (i) when the entity is provided textually (“Who is the spouse of Robin Williams?”), the model answers correctly (knowledge extraction succeeds); (ii) when prompted to identify the person in the image, it outputs the correct name (entity identification succeeds); (iii) when asked the spouse question conditioned on the image’s subject, it outputs an incorrect spouse (failure to combine identification with knowledge extraction). This aligns with the core claim of a visual-vs-text entity representation gap and the failure to route recognized identity into factual answering."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 4.0,
+              "reason": "Major labels (‘Input’, ‘Output’, and the right-column interpretations ‘Knowledge Extracted’, ‘Entity Identified’, ‘Failure’) are consistent with the paper’s decomposition into entity identification vs knowledge extraction and the stated failure mode. Minor mismatch: the figure does not explicitly label the two sub-tasks as ‘Entity identification’ and ‘Knowledge extraction’ (it uses descriptive outcomes instead), but it does not misname any methodology."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The schematic directly visualizes the paper’s motivating failure mode: (1) correct factual answering when the entity is text-specified, (2) correct entity identification from an image, and (3) failure when the question requires using the visually specified entity for factual retrieval. It focuses on the main contribution (the visual-vs-text entity accuracy gap and the identification→extraction disconnect) without introducing method-level details (e.g., patching/freezing) that are not needed for Figure 1’s purpose per the caption/summary."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "Given the caption (“motivating observation”), the three-row input/output layout and the ‘Meaning’ column make the intended contrast immediately legible and strongly aligned with the summary’s goal of operationalizing the central failure: the model can identify the entity and can answer the fact when given text, but cannot combine them when the entity is only visual."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure is largely free of irrelevant decoration and uses simple visual cues (checkmarks/cross, columns) that aid comprehension. Minor redundancy exists in the repeated portrait and repeated phrasing across rows, but this repetition serves a clarifying role (controlled comparison across conditions) rather than adding unrelated information."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 5.0,
+              "reason": "The figure clearly reads left-to-right: a left column labeled \"Input\" maps via an implicit model (center icon) to a right column labeled \"Output,\" with a further right-side \"Meaning\" column summarizing success/failure. This matches the motivating observation in the summary/caption (text entity succeeds, image identification succeeds, combined visual-to-fact fails)."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 5.0,
+              "reason": "There are no visible connector lines at all (only spatial adjacency between columns), so there is no risk of line crossing. The separation into rows provides an unambiguous mapping from each input to its output/meaning."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 4.0,
+              "reason": "Each of the three examples is organized in a row, keeping the corresponding input, output, and meaning close together, which supports the intended contrast (text-specified entity vs image identification vs combined failure). The central model icon is slightly detached from any one row, but still located between input and output columns."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "Boxes are largely aligned into three neat columns and three rows, forming an implicit grid. Minor unevenness (hand-drawn style and slight positional offsets) reduces perfect horizontal/vertical alignment but does not harm readability."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "Main structure is emphasized by column headers (\"Input\", \"Output\", \"Meaning\") and consistent row layout. The success/failure signals (green checkmarks vs red X) make outcomes salient. However, the three cases are visually similar in weight; the central claim (failure to combine identification and knowledge) is not given extra prominence beyond being the third row."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is sufficient whitespace between rows and between columns; elements are not cramped. The right-side \"Meaning\" annotations sit close to the output boxes but remain legible and non-overlapping."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 5.0,
+              "reason": "Similar roles are depicted consistently: all inputs/outputs use the same rounded rectangle style; the three rows share the same visual grammar; and success/failure is encoded consistently with green checkmarks and red X with matching text labels. This supports the paper’s core observation without introducing inconsistent visual encodings."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces the abstract failure mode (visual-vs-text entity routing) with concrete icons and compact labels: a face thumbnail to denote a visually specified entity, a small robot icon to stand for the model, and green check/red X marks plus short tags (“Knowledge Extracted,” “Entity Identified,” “Failure”) to encode outcomes. This effectively concretizes the paper’s core claim that identification and factual extraction can succeed in isolation but fail when combined."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "The hand-drawn/sketch aesthetic and simplified comic-like three-row example give it a somewhat distinctive look, but the overall structure (input→output with success/failure markers) is a common explanatory template in ML papers. It does not introduce a notably unique visual language beyond the informal styling."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s motivating observation by juxtaposing three carefully chosen cases: (i) text-specified entity enables correct factual QA, (ii) image-only identification works, and (iii) image-only factual QA fails. This directly operationalizes the summary’s decomposition (identification vs knowledge extraction) rather than using a generic pipeline diagram, making the arrangement specifically fit the paper’s central narrative."
+            }
+          ]
+        },
+        "weighted_total": 3.952
+      }
+    }
+  ]
+}

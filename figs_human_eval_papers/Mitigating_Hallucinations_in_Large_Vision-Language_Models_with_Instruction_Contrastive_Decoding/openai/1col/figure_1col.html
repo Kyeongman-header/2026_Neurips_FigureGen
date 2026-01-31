@@ -1,0 +1,673 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Disturbance-aware decoding overview and results table</title>
+<style>
+  body { margin: 0; background: #ffffff; font-family: Arial, Helvetica, sans-serif; }
+  #figure-root { width: 1200px; height: 1500px; margin: 0 auto; position: relative; }
+  svg { width: 1200px; height: 1500px; display: block; }
+
+  .panel-title { font-size: 22px; font-weight: 700; fill: #111; }
+  .section-title { font-size: 18px; font-weight: 700; fill: #111; }
+
+  .box { fill: #ffffff; stroke: #222; stroke-width: 2; rx: 10; ry: 10; }
+  .box-soft { fill: #fbfbfd; stroke: #2a2a2a; stroke-width: 2; rx: 10; ry: 10; }
+  .box-emph { fill: #f6fbff; stroke: #0b5ea8; stroke-width: 2.2; rx: 12; ry: 12; }
+
+  .label { font-size: 15px; fill: #1a1a1a; }
+  .label-small { font-size: 13px; fill: #1a1a1a; }
+  .mono { font-family: "Courier New", Courier, monospace; }
+  .eq { font-size: 14px; fill: #111; }
+  .eq-small { font-size: 13px; fill: #111; }
+
+  .muted { fill: #555; }
+  .note { font-size: 12px; fill: #444; }
+  .chip { fill: #ffffff; stroke: #333; stroke-width: 1.5; rx: 9; ry: 9; }
+  .chipfill1 { fill: #fff7e6; stroke: #9a6b00; }
+  .chipfill2 { fill: #e9f6ff; stroke: #0b5ea8; }
+  .chipfill3 { fill: #f0fff4; stroke: #1f7a3a; }
+
+  .arrow { stroke: #222; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+  .arrow-thin { stroke: #333; stroke-width: 1.8; fill: none; marker-end: url(#arrow); }
+  .arrow-blue { stroke: #0b5ea8; stroke-width: 2.4; fill: none; marker-end: url(#arrowBlue); }
+  .arrow-dashed { stroke: #444; stroke-width: 2; fill: none; marker-end: url(#arrow); stroke-dasharray: 6 5; }
+
+  .brace { stroke: #444; stroke-width: 2; fill: none; }
+  .divider { stroke: #b7b7b7; stroke-width: 1; }
+  .gridline { stroke: #d6d6d6; stroke-width: 1; }
+  .thead { fill: #f2f2f2; stroke: #333; stroke-width: 1.5; }
+  .tcell { fill: #ffffff; stroke: #333; stroke-width: 1; }
+  .tcell-alt { fill: #fafafa; stroke: #333; stroke-width: 1; }
+  .ttext { font-size: 12px; fill: #111; }
+  .ttext-head { font-size: 12px; font-weight: 700; fill: #111; }
+  .ttext-subhead { font-size: 11px; font-weight: 700; fill: #111; }
+  .ttext-muted { font-size: 11px; fill: #333; }
+
+  .caption-bg { fill: #ffffff; stroke: #c9c9c9; stroke-width: 1; }
+  .caption { font-size: 12px; fill: #111; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-label="Overview of disturbance-aware decoding and evaluation table">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#222"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#0b5ea8"/>
+    </marker>
+  </defs>
+
+  <!-- ===================== TOP PANEL: METHOD OVERVIEW ===================== -->
+  <text x="40" y="50" class="panel-title">Disturbance-aware decoding for multimodal LLMs</text>
+  <line x1="40" y1="62" x2="1160" y2="62" class="divider"/>
+
+  <!-- Left: inputs and Q mapping -->
+  <rect x="50" y="90" width="420" height="360" class="box-soft"/>
+  <text x="70" y="120" class="section-title">Inputs and mappings</text>
+
+  <!-- X image -->
+  <rect x="80" y="145" width="170" height="90" class="box"/>
+  <text x="95" y="175" class="label mono">X</text>
+  <text x="95" y="200" class="label-small muted">image</text>
+
+  <!-- X~ disturbed image -->
+  <rect x="270" y="145" width="170" height="90" class="box"/>
+  <text x="285" y="175" class="label mono">X&#771;</text>
+  <text x="285" y="200" class="label-small muted">disturbance</text>
+
+  <!-- Q question -->
+  <rect x="80" y="255" width="360" height="70" class="box"/>
+  <text x="95" y="285" class="label mono">Q</text>
+  <text x="135" y="285" class="label-small muted">question / prompt</text>
+
+  <!-- Q mapping box -->
+  <rect x="80" y="340" width="360" height="90" class="box-emph"/>
+  <text x="95" y="372" class="label"><tspan class="mono">Z = Q(X, Q, X&#771;)</tspan></text>
+  <text x="95" y="396" class="note">Query encoder produces multimodal query <tspan class="mono">Z</tspan> from image, question, and disturbed image.</text>
+  <text x="95" y="418" class="eq-small mono">(1)</text>
+
+  <!-- Connections inside left panel -->
+  <path d="M 165 235 L 165 255" class="arrow-thin"/>
+  <path d="M 355 235 L 355 255" class="arrow-thin"/>
+  <path d="M 260 325 L 260 340" class="arrow-blue"/>
+
+  <!-- Middle: LLM mapping and conditionals -->
+  <rect x="490" y="90" width="660" height="360" class="box-soft"/>
+  <text x="510" y="120" class="section-title">Decoding with disturbance awareness</text>
+
+  <!-- H representations -->
+  <rect x="520" y="145" width="260" height="90" class="box"/>
+  <text x="535" y="175" class="label mono">H</text>
+  <text x="565" y="175" class="label-small muted">visual-text features</text>
+  <text x="535" y="200" class="note mono">H = f(Z, X)</text>
+
+  <rect x="800" y="145" width="320" height="90" class="box"/>
+  <text x="815" y="175" class="label mono">LLM(H, X)</text>
+  <text x="815" y="200" class="note">Autoregressive decoding over tokens <tspan class="mono">y</tspan></text>
+
+  <path d="M 440 385 L 490 385" class="arrow-blue"/>
+  <text x="450" y="370" class="label-small muted">Z</text>
+
+  <path d="M 700 235 L 800 235" class="arrow"/>
+  <text x="720" y="225" class="label-small muted">H</text>
+
+  <!-- Equations group -->
+  <rect x="520" y="255" width="600" height="175" class="box"/>
+  <text x="535" y="280" class="label">Conditional likelihoods and disturbances</text>
+
+  <text x="545" y="305" class="eq mono">Y = LLM(H, X)</text>
+  <text x="890" y="305" class="eq mono">(2)</text>
+
+  <text x="545" y="330" class="eq mono">p(Y | X, X&#771;) = &prod;<tspan baseline-shift="sub">y</tspan> p(y | H, X, y)</text>
+  <text x="1035" y="330" class="eq mono">(3)</text>
+
+  <text x="545" y="355" class="eq mono">X&#772; = { [X, X&#771;] if disturbance X&#771; otherwise }</text>
+  <text x="1035" y="355" class="eq mono">(4)</text>
+
+  <text x="545" y="380" class="eq mono">p(Y | X, X&#771;) = &prod;<tspan baseline-shift="sub">y</tspan> ( p(y | X, X, y) &minus; &lambda; p(y | X, X&#771;, y) )</text>
+  <text x="1035" y="380" class="eq mono">(5)</text>
+
+  <text x="545" y="405" class="eq mono">y &sim; softmax( logit(y | X, X, y) &minus; &lambda; logit(y | X, X&#771;, y) )</text>
+  <text x="1035" y="405" class="eq mono">(6)</text>
+
+  <!-- Right: alpha-filtered valid token set -->
+  <rect x="50" y="470" width="1100" height="260" class="box-soft"/>
+  <text x="70" y="500" class="section-title">Valid-token filtering</text>
+
+  <rect x="80" y="520" width="650" height="190" class="box"/>
+  <text x="95" y="548" class="label mono">V(y) = { y &in; V : p(y | X, X&#771;, y) &ge; &alpha; max p(token | X, X&#771;, y) }</text>
+  <text x="95" y="572" class="eq-small mono">(7)</text>
+  <text x="95" y="600" class="note">Constrain sampling/selection in (6) to tokens whose disturbed-conditional likelihood is within an <tspan class="mono">&alpha;</tspan>-fraction of the maximum.</text>
+  <text x="95" y="624" class="note">This defines a filtered valid set <tspan class="mono">V(y)</tspan> used during decoding.</text>
+
+  <!-- Token chips illustration -->
+  <rect x="760" y="520" width="360" height="190" class="box"/>
+  <text x="780" y="548" class="label">Example: token set and filtering</text>
+
+  <!-- chips -->
+  <rect x="785" y="570" width="90" height="26" class="chip chipfill2"/>
+  <text x="830" y="588" text-anchor="middle" class="label-small mono">"a"</text>
+
+  <rect x="885" y="570" width="90" height="26" class="chip chipfill2"/>
+  <text x="930" y="588" text-anchor="middle" class="label-small mono">"the"</text>
+
+  <rect x="985" y="570" width="110" height="26" class="chip chipfill1"/>
+  <text x="1040" y="588" text-anchor="middle" class="label-small mono">"dog"</text>
+
+  <rect x="785" y="605" width="120" height="26" class="chip chipfill3"/>
+  <text x="845" y="623" text-anchor="middle" class="label-small mono">"cat"</text>
+
+  <rect x="915" y="605" width="180" height="26" class="chip"/>
+  <text x="1005" y="623" text-anchor="middle" class="label-small mono">"... (others)"</text>
+
+  <path d="M 780 650 L 1100 650" class="gridline"/>
+  <text x="780" y="672" class="note">
+    Keep y where <tspan class="mono">p(y|X,X&#771;,y)</tspan> &ge; <tspan class="mono">&alpha;</tspan> &times; max.
+  </text>
+
+  <!-- Flow arrow showing logit subtraction to constrained selection -->
+  <path d="M 600 450 L 600 470" class="arrow"/>
+  <text x="615" y="463" class="label-small muted">subject to y &in; V(y)</text>
+
+  <!-- ===================== BOTTOM PANEL: TABLE ===================== -->
+  <text x="40" y="780" class="panel-title">Results table (accuracy, precision, recall, F1)</text>
+  <line x1="40" y1="792" x2="1160" y2="792" class="divider"/>
+
+  <!-- Table geometry -->
+  <!-- Table origin -->
+  <!-- x0=50, y0=820 -->
+  <!-- Column widths: 110, 95, 90, 70, 70,70,70, 70,70,70,70  (sum = 805) + left columns total? Let's compute:
+       Dataset 110
+       Setting 95
+       Method 90
+       mini: Acc 70 Prec 70 Rec 70 F1 70 = 280
+       instruct: Acc 70 Prec 70 Rec 70 F1 70 = 280
+       Total = 110+95+90+280+280 = 855
+     Fits within 1100 width.
+  -->
+  <g id="table" transform="translate(50,820)">
+    <!-- Header row 1 -->
+    <rect x="0" y="0" width="855" height="34" class="thead"/>
+    <line x1="0" y1="34" x2="855" y2="34" class="divider"/>
+
+    <!-- Vertical lines for header row 1 -->
+    <line x1="110" y1="0" x2="110" y2="34" class="divider"/>
+    <line x1="205" y1="0" x2="205" y2="34" class="divider"/>
+    <line x1="295" y1="0" x2="295" y2="34" class="divider"/>
+    <line x1="575" y1="0" x2="575" y2="34" class="divider"/>
+
+    <text x="55" y="22" text-anchor="middle" class="ttext-head">Dataset</text>
+    <text x="157.5" y="22" text-anchor="middle" class="ttext-head">Setting</text>
+    <text x="250" y="22" text-anchor="middle" class="ttext-head">Method</text>
+    <text x="435" y="22" text-anchor="middle" class="ttext-head">miniGPT4 Backbone</text>
+    <text x="715" y="22" text-anchor="middle" class="ttext-head">InstructBLIP Backbone</text>
+
+    <!-- Header row 2 -->
+    <rect x="0" y="34" width="855" height="30" class="thead"/>
+    <!-- lines -->
+    <line x1="0" y1="64" x2="855" y2="64" class="divider"/>
+    <line x1="110" y1="34" x2="110" y2="64" class="divider"/>
+    <line x1="205" y1="34" x2="205" y2="64" class="divider"/>
+    <line x1="295" y1="34" x2="295" y2="64" class="divider"/>
+    <!-- mini columns -->
+    <line x1="365" y1="34" x2="365" y2="64" class="divider"/>
+    <line x1="435" y1="34" x2="435" y2="64" class="divider"/>
+    <line x1="505" y1="34" x2="505" y2="64" class="divider"/>
+    <line x1="575" y1="34" x2="575" y2="64" class="divider"/>
+    <!-- instruct columns -->
+    <line x1="645" y1="34" x2="645" y2="64" class="divider"/>
+    <line x1="715" y1="34" x2="715" y2="64" class="divider"/>
+    <line x1="785" y1="34" x2="785" y2="64" class="divider"/>
+
+    <text x="330" y="54" text-anchor="middle" class="ttext-subhead">Acc</text>
+    <text x="400" y="54" text-anchor="middle" class="ttext-subhead">Prec</text>
+    <text x="470" y="54" text-anchor="middle" class="ttext-subhead">Rec</text>
+    <text x="540" y="54" text-anchor="middle" class="ttext-subhead">F1</text>
+
+    <text x="610" y="54" text-anchor="middle" class="ttext-subhead">Acc</text>
+    <text x="680" y="54" text-anchor="middle" class="ttext-subhead">Prec</text>
+    <text x="750" y="54" text-anchor="middle" class="ttext-subhead">Rec</text>
+    <text x="820" y="54" text-anchor="middle" class="ttext-subhead">F1</text>
+
+    <!-- Data rows: 27 rows, height 26 -->
+    <!-- Helper positions -->
+    <!-- col centers: Dataset 55, Setting 157.5, Method 250,
+         mini: 330,400,470,540
+         instruct: 610,680,750,820
+    -->
+    <!-- Row backgrounds and grid -->
+    <!-- We'll draw each row rect across table; alternate shading per row group for readability -->
+    <!-- MSCOCO -->
+    <!-- Random -->
+    <rect x="0" y="64" width="855" height="26" class="tcell"/>
+    <rect x="0" y="90" width="855" height="26" class="tcell-alt"/>
+    <rect x="0" y="116" width="855" height="26" class="tcell"/>
+    <!-- Popular -->
+    <rect x="0" y="142" width="855" height="26" class="tcell-alt"/>
+    <rect x="0" y="168" width="855" height="26" class="tcell"/>
+    <rect x="0" y="194" width="855" height="26" class="tcell-alt"/>
+    <!-- Adversarial -->
+    <rect x="0" y="220" width="855" height="26" class="tcell"/>
+    <rect x="0" y="246" width="855" height="26" class="tcell-alt"/>
+    <rect x="0" y="272" width="855" height="26" class="tcell"/>
+
+    <!-- A-OKVQA -->
+    <!-- Random -->
+    <rect x="0" y="298" width="855" height="26" class="tcell-alt"/>
+    <rect x="0" y="324" width="855" height="26" class="tcell"/>
+    <rect x="0" y="350" width="855" height="26" class="tcell-alt"/>
+    <!-- Popular -->
+    <rect x="0" y="376" width="855" height="26" class="tcell"/>
+    <rect x="0" y="402" width="855" height="26" class="tcell-alt"/>
+    <rect x="0" y="428" width="855" height="26" class="tcell"/>
+    <!-- Adversarial -->
+    <rect x="0" y="454" width="855" height="26" class="tcell-alt"/>
+    <rect x="0" y="480" width="855" height="26" class="tcell"/>
+    <rect x="0" y="506" width="855" height="26" class="tcell-alt"/>
+
+    <!-- GQA -->
+    <!-- Random -->
+    <rect x="0" y="532" width="855" height="26" class="tcell"/>
+    <rect x="0" y="558" width="855" height="26" class="tcell-alt"/>
+    <rect x="0" y="584" width="855" height="26" class="tcell"/>
+    <!-- Popular -->
+    <rect x="0" y="610" width="855" height="26" class="tcell-alt"/>
+    <rect x="0" y="636" width="855" height="26" class="tcell"/>
+    <rect x="0" y="662" width="855" height="26" class="tcell-alt"/>
+    <!-- Adversarial -->
+    <rect x="0" y="688" width="855" height="26" class="tcell"/>
+    <rect x="0" y="714" width="855" height="26" class="tcell-alt"/>
+    <rect x="0" y="740" width="855" height="26" class="tcell"/>
+
+    <!-- Vertical grid lines spanning all rows (64 to 766) -->
+    <g class="grid">
+      <line x1="110" y1="64" x2="110" y2="766" class="divider"/>
+      <line x1="205" y1="64" x2="205" y2="766" class="divider"/>
+      <line x1="295" y1="64" x2="295" y2="766" class="divider"/>
+      <line x1="365" y1="64" x2="365" y2="766" class="divider"/>
+      <line x1="435" y1="64" x2="435" y2="766" class="divider"/>
+      <line x1="505" y1="64" x2="505" y2="766" class="divider"/>
+      <line x1="575" y1="64" x2="575" y2="766" class="divider"/>
+      <line x1="645" y1="64" x2="645" y2="766" class="divider"/>
+      <line x1="715" y1="64" x2="715" y2="766" class="divider"/>
+      <line x1="785" y1="64" x2="785" y2="766" class="divider"/>
+      <line x1="855" y1="64" x2="855" y2="766" class="divider"/>
+      <!-- row lines -->
+      <line x1="0" y1="90" x2="855" y2="90" class="gridline"/>
+      <line x1="0" y1="116" x2="855" y2="116" class="gridline"/>
+      <line x1="0" y1="142" x2="855" y2="142" class="gridline"/>
+      <line x1="0" y1="168" x2="855" y2="168" class="gridline"/>
+      <line x1="0" y1="194" x2="855" y2="194" class="gridline"/>
+      <line x1="0" y1="220" x2="855" y2="220" class="gridline"/>
+      <line x1="0" y1="246" x2="855" y2="246" class="gridline"/>
+      <line x1="0" y1="272" x2="855" y2="272" class="gridline"/>
+      <line x1="0" y1="298" x2="855" y2="298" class="gridline"/>
+
+      <line x1="0" y1="324" x2="855" y2="324" class="gridline"/>
+      <line x1="0" y1="350" x2="855" y2="350" class="gridline"/>
+      <line x1="0" y1="376" x2="855" y2="376" class="gridline"/>
+      <line x1="0" y1="402" x2="855" y2="402" class="gridline"/>
+      <line x1="0" y1="428" x2="855" y2="428" class="gridline"/>
+      <line x1="0" y1="454" x2="855" y2="454" class="gridline"/>
+      <line x1="0" y1="480" x2="855" y2="480" class="gridline"/>
+      <line x1="0" y1="506" x2="855" y2="506" class="gridline"/>
+      <line x1="0" y1="532" x2="855" y2="532" class="gridline"/>
+
+      <line x1="0" y1="558" x2="855" y2="558" class="gridline"/>
+      <line x1="0" y1="584" x2="855" y2="584" class="gridline"/>
+      <line x1="0" y1="610" x2="855" y2="610" class="gridline"/>
+      <line x1="0" y1="636" x2="855" y2="636" class="gridline"/>
+      <line x1="0" y1="662" x2="855" y2="662" class="gridline"/>
+      <line x1="0" y1="688" x2="855" y2="688" class="gridline"/>
+      <line x1="0" y1="714" x2="855" y2="714" class="gridline"/>
+      <line x1="0" y1="740" x2="855" y2="740" class="gridline"/>
+      <line x1="0" y1="766" x2="855" y2="766" class="divider"/>
+    </g>
+
+    <!-- Dataset labels (merged visually by repeating first row and leaving others blank) -->
+    <text x="55" y="82" text-anchor="middle" class="ttext-head">MSCOCO</text>
+    <text x="55" y="316" text-anchor="middle" class="ttext-head">A-OKVQA</text>
+    <text x="55" y="550" text-anchor="middle" class="ttext-head">GQA</text>
+
+    <!-- Setting labels for each 3-row block -->
+    <text x="157.5" y="82" text-anchor="middle" class="ttext-head">Random</text>
+    <text x="157.5" y="160" text-anchor="middle" class="ttext-head">Popular</text>
+    <text x="157.5" y="238" text-anchor="middle" class="ttext-head">Adversarial</text>
+
+    <text x="157.5" y="316" text-anchor="middle" class="ttext-head">Random</text>
+    <text x="157.5" y="394" text-anchor="middle" class="ttext-head">Popular</text>
+    <text x="157.5" y="472" text-anchor="middle" class="ttext-head">Adversarial</text>
+
+    <text x="157.5" y="550" text-anchor="middle" class="ttext-head">Random</text>
+    <text x="157.5" y="628" text-anchor="middle" class="ttext-head">Popular</text>
+    <text x="157.5" y="706" text-anchor="middle" class="ttext-head">Adversarial</text>
+
+    <!-- Methods repeated each row -->
+    <!-- Row y centers start at 64+13=77 then +26 -->
+    <!-- MSCOCO Random -->
+    <text x="250" y="82" text-anchor="middle" class="ttext mono">default</text>
+    <text x="250" y="108" text-anchor="middle" class="ttext mono">+vcd</text>
+    <text x="250" y="134" text-anchor="middle" class="ttext mono">+icd</text>
+    <!-- MSCOCO Popular -->
+    <text x="250" y="160" text-anchor="middle" class="ttext mono">default</text>
+    <text x="250" y="186" text-anchor="middle" class="ttext mono">+vcd</text>
+    <text x="250" y="212" text-anchor="middle" class="ttext mono">+icd</text>
+    <!-- MSCOCO Adversarial -->
+    <text x="250" y="238" text-anchor="middle" class="ttext mono">default</text>
+    <text x="250" y="264" text-anchor="middle" class="ttext mono">+vcd</text>
+    <text x="250" y="290" text-anchor="middle" class="ttext mono">+icd</text>
+
+    <!-- A-OKVQA Random -->
+    <text x="250" y="316" text-anchor="middle" class="ttext mono">default</text>
+    <text x="250" y="342" text-anchor="middle" class="ttext mono">+vcd</text>
+    <text x="250" y="368" text-anchor="middle" class="ttext mono">+icd</text>
+    <!-- A-OKVQA Popular -->
+    <text x="250" y="394" text-anchor="middle" class="ttext mono">default</text>
+    <text x="250" y="420" text-anchor="middle" class="ttext mono">+vcd</text>
+    <text x="250" y="446" text-anchor="middle" class="ttext mono">+icd</text>
+    <!-- A-OKVQA Adversarial -->
+    <text x="250" y="472" text-anchor="middle" class="ttext mono">default</text>
+    <text x="250" y="498" text-anchor="middle" class="ttext mono">+vcd</text>
+    <text x="250" y="524" text-anchor="middle" class="ttext mono">+icd</text>
+
+    <!-- GQA Random -->
+    <text x="250" y="550" text-anchor="middle" class="ttext mono">default</text>
+    <text x="250" y="576" text-anchor="middle" class="ttext mono">+vcd</text>
+    <text x="250" y="602" text-anchor="middle" class="ttext mono">+icd</text>
+    <!-- GQA Popular -->
+    <text x="250" y="628" text-anchor="middle" class="ttext mono">default</text>
+    <text x="250" y="654" text-anchor="middle" class="ttext mono">+vcd</text>
+    <text x="250" y="680" text-anchor="middle" class="ttext mono">+icd</text>
+    <!-- GQA Adversarial -->
+    <text x="250" y="706" text-anchor="middle" class="ttext mono">default</text>
+    <text x="250" y="732" text-anchor="middle" class="ttext mono">+vcd</text>
+    <text x="250" y="758" text-anchor="middle" class="ttext mono">+icd</text>
+
+    <!-- Numeric cells: miniGPT4 then InstructBLIP -->
+    <!-- MSCOCO Random -->
+    <text x="330" y="82" text-anchor="middle" class="ttext">67.04</text>
+    <text x="400" y="82" text-anchor="middle" class="ttext">69.06</text>
+    <text x="470" y="82" text-anchor="middle" class="ttext">66.54</text>
+    <text x="540" y="82" text-anchor="middle" class="ttext">67.77</text>
+    <text x="610" y="82" text-anchor="middle" class="ttext">80.71</text>
+    <text x="680" y="82" text-anchor="middle" class="ttext">81.67</text>
+    <text x="750" y="82" text-anchor="middle" class="ttext">79.19</text>
+    <text x="820" y="82" text-anchor="middle" class="ttext">80.41</text>
+
+    <text x="330" y="108" text-anchor="middle" class="ttext">69.60</text>
+    <text x="400" y="108" text-anchor="middle" class="ttext">72.76</text>
+    <text x="470" y="108" text-anchor="middle" class="ttext">66.73</text>
+    <text x="540" y="108" text-anchor="middle" class="ttext">69.62</text>
+    <text x="610" y="108" text-anchor="middle" class="ttext">84.53</text>
+    <text x="680" y="108" text-anchor="middle" class="ttext">88.55</text>
+    <text x="750" y="108" text-anchor="middle" class="ttext">79.32</text>
+    <text x="820" y="108" text-anchor="middle" class="ttext">83.68</text>
+
+    <text x="330" y="134" text-anchor="middle" class="ttext">73.51</text>
+    <text x="400" y="134" text-anchor="middle" class="ttext">74.36</text>
+    <text x="470" y="134" text-anchor="middle" class="ttext">76.87</text>
+    <text x="540" y="134" text-anchor="middle" class="ttext">75.60</text>
+    <text x="610" y="134" text-anchor="middle" class="ttext">86.43</text>
+    <text x="680" y="134" text-anchor="middle" class="ttext">92.01</text>
+    <text x="750" y="134" text-anchor="middle" class="ttext">80.73</text>
+    <text x="820" y="134" text-anchor="middle" class="ttext">85.61</text>
+
+    <!-- MSCOCO Popular -->
+    <text x="330" y="160" text-anchor="middle" class="ttext">60.89</text>
+    <text x="400" y="160" text-anchor="middle" class="ttext">61.34</text>
+    <text x="470" y="160" text-anchor="middle" class="ttext">65.74</text>
+    <text x="540" y="160" text-anchor="middle" class="ttext">63.46</text>
+    <text x="610" y="160" text-anchor="middle" class="ttext">78.22</text>
+    <text x="680" y="160" text-anchor="middle" class="ttext">77.87</text>
+    <text x="750" y="160" text-anchor="middle" class="ttext">78.85</text>
+    <text x="820" y="160" text-anchor="middle" class="ttext">78.36</text>
+
+    <text x="330" y="186" text-anchor="middle" class="ttext">62.91</text>
+    <text x="400" y="186" text-anchor="middle" class="ttext">63.69</text>
+    <text x="470" y="186" text-anchor="middle" class="ttext">64.81</text>
+    <text x="540" y="186" text-anchor="middle" class="ttext">64.24</text>
+    <text x="610" y="186" text-anchor="middle" class="ttext">81.47</text>
+    <text x="680" y="186" text-anchor="middle" class="ttext">82.89</text>
+    <text x="750" y="186" text-anchor="middle" class="ttext">79.32</text>
+    <text x="820" y="186" text-anchor="middle" class="ttext">81.07</text>
+
+    <text x="330" y="212" text-anchor="middle" class="ttext">67.61</text>
+    <text x="400" y="212" text-anchor="middle" class="ttext">66.69</text>
+    <text x="470" y="212" text-anchor="middle" class="ttext">76.87</text>
+    <text x="540" y="212" text-anchor="middle" class="ttext">71.42</text>
+    <text x="610" y="212" text-anchor="middle" class="ttext">82.93</text>
+    <text x="680" y="212" text-anchor="middle" class="ttext">84.45</text>
+    <text x="750" y="212" text-anchor="middle" class="ttext">80.73</text>
+    <text x="820" y="212" text-anchor="middle" class="ttext">82.55</text>
+
+    <!-- MSCOCO Adversarial -->
+    <text x="330" y="238" text-anchor="middle" class="ttext">59.42</text>
+    <text x="400" y="238" text-anchor="middle" class="ttext">59.64</text>
+    <text x="470" y="238" text-anchor="middle" class="ttext">64.45</text>
+    <text x="540" y="238" text-anchor="middle" class="ttext">61.95</text>
+    <text x="610" y="238" text-anchor="middle" class="ttext">75.84</text>
+    <text x="680" y="238" text-anchor="middle" class="ttext">74.30</text>
+    <text x="750" y="238" text-anchor="middle" class="ttext">79.03</text>
+    <text x="820" y="238" text-anchor="middle" class="ttext">76.59</text>
+
+    <text x="330" y="264" text-anchor="middle" class="ttext">62.07</text>
+    <text x="400" y="264" text-anchor="middle" class="ttext">62.15</text>
+    <text x="470" y="264" text-anchor="middle" class="ttext">66.76</text>
+    <text x="540" y="264" text-anchor="middle" class="ttext">64.37</text>
+    <text x="610" y="264" text-anchor="middle" class="ttext">79.56</text>
+    <text x="680" y="264" text-anchor="middle" class="ttext">79.67</text>
+    <text x="750" y="264" text-anchor="middle" class="ttext">79.39</text>
+    <text x="820" y="264" text-anchor="middle" class="ttext">79.52</text>
+
+    <text x="330" y="290" text-anchor="middle" class="ttext">64.36</text>
+    <text x="400" y="290" text-anchor="middle" class="ttext">63.68</text>
+    <text x="470" y="290" text-anchor="middle" class="ttext">75.11</text>
+    <text x="540" y="290" text-anchor="middle" class="ttext">68.93</text>
+    <text x="610" y="290" text-anchor="middle" class="ttext">80.87</text>
+    <text x="680" y="290" text-anchor="middle" class="ttext">80.95</text>
+    <text x="750" y="290" text-anchor="middle" class="ttext">80.73</text>
+    <text x="820" y="290" text-anchor="middle" class="ttext">80.84</text>
+
+    <!-- A-OKVQA Random -->
+    <text x="330" y="316" text-anchor="middle" class="ttext">64.79</text>
+    <text x="400" y="316" text-anchor="middle" class="ttext">65.26</text>
+    <text x="470" y="316" text-anchor="middle" class="ttext">65.73</text>
+    <text x="540" y="316" text-anchor="middle" class="ttext">65.50</text>
+    <text x="610" y="316" text-anchor="middle" class="ttext">80.91</text>
+    <text x="680" y="316" text-anchor="middle" class="ttext">77.97</text>
+    <text x="750" y="316" text-anchor="middle" class="ttext">86.16</text>
+    <text x="820" y="316" text-anchor="middle" class="ttext">81.86</text>
+
+    <text x="330" y="342" text-anchor="middle" class="ttext">66.68</text>
+    <text x="400" y="342" text-anchor="middle" class="ttext">66.47</text>
+    <text x="470" y="342" text-anchor="middle" class="ttext">68.21</text>
+    <text x="540" y="342" text-anchor="middle" class="ttext">67.33</text>
+    <text x="610" y="342" text-anchor="middle" class="ttext">84.11</text>
+    <text x="680" y="342" text-anchor="middle" class="ttext">82.21</text>
+    <text x="750" y="342" text-anchor="middle" class="ttext">87.05</text>
+    <text x="820" y="342" text-anchor="middle" class="ttext">84.56</text>
+
+    <text x="330" y="368" text-anchor="middle" class="ttext">69.04</text>
+    <text x="400" y="368" text-anchor="middle" class="ttext">68.50</text>
+    <text x="470" y="368" text-anchor="middle" class="ttext">77.04</text>
+    <text x="540" y="368" text-anchor="middle" class="ttext">72.52</text>
+    <text x="610" y="368" text-anchor="middle" class="ttext">85.82</text>
+    <text x="680" y="368" text-anchor="middle" class="ttext">83.80</text>
+    <text x="750" y="368" text-anchor="middle" class="ttext">88.94</text>
+    <text x="820" y="368" text-anchor="middle" class="ttext">86.29</text>
+
+    <!-- A-OKVQA Popular -->
+    <text x="330" y="394" text-anchor="middle" class="ttext">60.75</text>
+    <text x="400" y="394" text-anchor="middle" class="ttext">60.67</text>
+    <text x="470" y="394" text-anchor="middle" class="ttext">68.84</text>
+    <text x="540" y="394" text-anchor="middle" class="ttext">64.50</text>
+    <text x="610" y="394" text-anchor="middle" class="ttext">76.19</text>
+    <text x="680" y="394" text-anchor="middle" class="ttext">72.16</text>
+    <text x="750" y="394" text-anchor="middle" class="ttext">85.28</text>
+    <text x="820" y="394" text-anchor="middle" class="ttext">78.17</text>
+
+    <text x="330" y="420" text-anchor="middle" class="ttext">62.22</text>
+    <text x="400" y="420" text-anchor="middle" class="ttext">62.23</text>
+    <text x="470" y="420" text-anchor="middle" class="ttext">68.55</text>
+    <text x="540" y="420" text-anchor="middle" class="ttext">65.24</text>
+    <text x="610" y="420" text-anchor="middle" class="ttext">79.78</text>
+    <text x="680" y="420" text-anchor="middle" class="ttext">76.00</text>
+    <text x="750" y="420" text-anchor="middle" class="ttext">87.05</text>
+    <text x="820" y="420" text-anchor="middle" class="ttext">81.15</text>
+
+    <text x="330" y="446" text-anchor="middle" class="ttext">62.81</text>
+    <text x="400" y="446" text-anchor="middle" class="ttext">61.62</text>
+    <text x="470" y="446" text-anchor="middle" class="ttext">75.78</text>
+    <text x="540" y="446" text-anchor="middle" class="ttext">67.97</text>
+    <text x="610" y="446" text-anchor="middle" class="ttext">81.64</text>
+    <text x="680" y="446" text-anchor="middle" class="ttext">78.50</text>
+    <text x="750" y="446" text-anchor="middle" class="ttext">88.77</text>
+    <text x="820" y="446" text-anchor="middle" class="ttext">83.32</text>
+
+    <!-- A-OKVQA Adversarial -->
+    <text x="330" y="472" text-anchor="middle" class="ttext">58.88</text>
+    <text x="400" y="472" text-anchor="middle" class="ttext">58.56</text>
+    <text x="470" y="472" text-anchor="middle" class="ttext">68.50</text>
+    <text x="540" y="472" text-anchor="middle" class="ttext">63.14</text>
+    <text x="610" y="472" text-anchor="middle" class="ttext">70.71</text>
+    <text x="680" y="472" text-anchor="middle" class="ttext">65.91</text>
+    <text x="750" y="472" text-anchor="middle" class="ttext">85.83</text>
+    <text x="820" y="472" text-anchor="middle" class="ttext">75.56</text>
+
+    <text x="330" y="498" text-anchor="middle" class="ttext">60.67</text>
+    <text x="400" y="498" text-anchor="middle" class="ttext">60.56</text>
+    <text x="470" y="498" text-anchor="middle" class="ttext">68.47</text>
+    <text x="540" y="498" text-anchor="middle" class="ttext">64.28</text>
+    <text x="610" y="498" text-anchor="middle" class="ttext">74.33</text>
+    <text x="680" y="498" text-anchor="middle" class="ttext">69.46</text>
+    <text x="750" y="498" text-anchor="middle" class="ttext">86.87</text>
+    <text x="820" y="498" text-anchor="middle" class="ttext">77.19</text>
+
+    <text x="330" y="524" text-anchor="middle" class="ttext">60.71</text>
+    <text x="400" y="524" text-anchor="middle" class="ttext">59.27</text>
+    <text x="470" y="524" text-anchor="middle" class="ttext">77.68</text>
+    <text x="540" y="524" text-anchor="middle" class="ttext">67.24</text>
+    <text x="610" y="524" text-anchor="middle" class="ttext">74.42</text>
+    <text x="680" y="524" text-anchor="middle" class="ttext">70.24</text>
+    <text x="750" y="524" text-anchor="middle" class="ttext">88.93</text>
+    <text x="820" y="524" text-anchor="middle" class="ttext">78.48</text>
+
+    <!-- GQA Random -->
+    <text x="330" y="550" text-anchor="middle" class="ttext">65.13</text>
+    <text x="400" y="550" text-anchor="middle" class="ttext">65.38</text>
+    <text x="470" y="550" text-anchor="middle" class="ttext">66.77</text>
+    <text x="540" y="550" text-anchor="middle" class="ttext">66.07</text>
+    <text x="610" y="550" text-anchor="middle" class="ttext">79.75</text>
+    <text x="680" y="550" text-anchor="middle" class="ttext">77.14</text>
+    <text x="750" y="550" text-anchor="middle" class="ttext">84.29</text>
+    <text x="820" y="550" text-anchor="middle" class="ttext">80.56</text>
+
+    <text x="330" y="576" text-anchor="middle" class="ttext">67.08</text>
+    <text x="400" y="576" text-anchor="middle" class="ttext">68.30</text>
+    <text x="470" y="576" text-anchor="middle" class="ttext">69.04</text>
+    <text x="540" y="576" text-anchor="middle" class="ttext">68.67</text>
+    <text x="610" y="576" text-anchor="middle" class="ttext">83.69</text>
+    <text x="680" y="576" text-anchor="middle" class="ttext">81.84</text>
+    <text x="750" y="576" text-anchor="middle" class="ttext">86.61</text>
+    <text x="820" y="576" text-anchor="middle" class="ttext">84.16</text>
+
+    <text x="330" y="602" text-anchor="middle" class="ttext">72.24</text>
+    <text x="400" y="602" text-anchor="middle" class="ttext">75.08</text>
+    <text x="470" y="602" text-anchor="middle" class="ttext">79.54</text>
+    <text x="540" y="602" text-anchor="middle" class="ttext">77.24</text>
+    <text x="610" y="602" text-anchor="middle" class="ttext">85.10</text>
+    <text x="680" y="602" text-anchor="middle" class="ttext">84.21</text>
+    <text x="750" y="602" text-anchor="middle" class="ttext">86.40</text>
+    <text x="820" y="602" text-anchor="middle" class="ttext">85.29</text>
+
+    <!-- GQA Popular -->
+    <text x="330" y="628" text-anchor="middle" class="ttext">57.19</text>
+    <text x="400" y="628" text-anchor="middle" class="ttext">58.55</text>
+    <text x="470" y="628" text-anchor="middle" class="ttext">60.81</text>
+    <text x="540" y="628" text-anchor="middle" class="ttext">59.66</text>
+    <text x="610" y="628" text-anchor="middle" class="ttext">73.87</text>
+    <text x="680" y="628" text-anchor="middle" class="ttext">60.63</text>
+    <text x="750" y="628" text-anchor="middle" class="ttext">84.69</text>
+    <text x="820" y="628" text-anchor="middle" class="ttext">76.42</text>
+
+    <text x="330" y="654" text-anchor="middle" class="ttext">62.14</text>
+    <text x="400" y="654" text-anchor="middle" class="ttext">61.14</text>
+    <text x="470" y="654" text-anchor="middle" class="ttext">72.26</text>
+    <text x="540" y="654" text-anchor="middle" class="ttext">66.24</text>
+    <text x="610" y="654" text-anchor="middle" class="ttext">78.57</text>
+    <text x="680" y="654" text-anchor="middle" class="ttext">74.62</text>
+    <text x="750" y="654" text-anchor="middle" class="ttext">86.61</text>
+    <text x="820" y="654" text-anchor="middle" class="ttext">80.17</text>
+
+    <text x="330" y="680" text-anchor="middle" class="ttext">62.84</text>
+    <text x="400" y="680" text-anchor="middle" class="ttext">61.09</text>
+    <text x="470" y="680" text-anchor="middle" class="ttext">80.54</text>
+    <text x="540" y="680" text-anchor="middle" class="ttext">69.48</text>
+    <text x="610" y="680" text-anchor="middle" class="ttext">78.80</text>
+    <text x="680" y="680" text-anchor="middle" class="ttext">75.15</text>
+    <text x="750" y="680" text-anchor="middle" class="ttext">87.53</text>
+    <text x="820" y="680" text-anchor="middle" class="ttext">80.87</text>
+
+    <!-- GQA Adversarial -->
+    <text x="330" y="706" text-anchor="middle" class="ttext">56.75</text>
+    <text x="400" y="706" text-anchor="middle" class="ttext">56.26</text>
+    <text x="470" y="706" text-anchor="middle" class="ttext">67.99</text>
+    <text x="540" y="706" text-anchor="middle" class="ttext">61.57</text>
+    <text x="610" y="706" text-anchor="middle" class="ttext">70.56</text>
+    <text x="680" y="706" text-anchor="middle" class="ttext">66.12</text>
+    <text x="750" y="706" text-anchor="middle" class="ttext">84.33</text>
+    <text x="820" y="706" text-anchor="middle" class="ttext">74.12</text>
+
+    <text x="330" y="732" text-anchor="middle" class="ttext">57.78</text>
+    <text x="400" y="732" text-anchor="middle" class="ttext">57.70</text>
+    <text x="470" y="732" text-anchor="middle" class="ttext">69.82</text>
+    <text x="540" y="732" text-anchor="middle" class="ttext">63.18</text>
+    <text x="610" y="732" text-anchor="middle" class="ttext">75.08</text>
+    <text x="680" y="732" text-anchor="middle" class="ttext">70.59</text>
+    <text x="750" y="732" text-anchor="middle" class="ttext">85.99</text>
+    <text x="820" y="732" text-anchor="middle" class="ttext">77.53</text>
+
+    <text x="330" y="758" text-anchor="middle" class="ttext">59.64</text>
+    <text x="400" y="758" text-anchor="middle" class="ttext">58.21</text>
+    <text x="470" y="758" text-anchor="middle" class="ttext">76.81</text>
+    <text x="540" y="758" text-anchor="middle" class="ttext">66.23</text>
+    <text x="610" y="758" text-anchor="middle" class="ttext">75.17</text>
+    <text x="680" y="758" text-anchor="middle" class="ttext">70.59</text>
+    <text x="750" y="758" text-anchor="middle" class="ttext">86.27</text>
+    <text x="820" y="758" text-anchor="middle" class="ttext">77.65</text>
+
+    <!-- Outline -->
+    <rect x="0" y="0" width="855" height="766" fill="none" stroke="#222" stroke-width="1.8"/>
+  </g>
+
+  <!-- Right-side legend / reminders -->
+  <rect x="930" y="820" width="220" height="240" class="box-soft"/>
+  <text x="950" y="850" class="label" font-weight="700">Methods</text>
+  <rect x="950" y="865" width="180" height="26" class="chip"/>
+  <text x="1040" y="883" text-anchor="middle" class="label-small mono">default</text>
+  <rect x="950" y="899" width="180" height="26" class="chip chipfill2"/>
+  <text x="1040" y="917" text-anchor="middle" class="label-small mono">+vcd</text>
+  <rect x="950" y="933" width="180" height="26" class="chip chipfill1"/>
+  <text x="1040" y="951" text-anchor="middle" class="label-small mono">+icd</text>
+
+  <text x="950" y="985" class="note">
+    Reported metrics per backbone:
+  </text>
+  <text x="950" y="1005" class="note mono">Accuracy, Precision, Recall, F1</text>
+
+  <text x="950" y="1035" class="note">
+    Settings per dataset:
+  </text>
+  <text x="950" y="1055" class="note mono">Random / Popular / Adversarial</text>
+
+  <!-- ===================== CAPTION AREA ===================== -->
+  <rect x="40" y="1420" width="1120" height="60" class="caption-bg"/>
+  <text x="60" y="1444" class="caption">
+    Overview of the proposed disturbance-aware decoding for multimodal LLMs, defining Q and LLM mappings, conditional likelihoods, logit subtraction with weight λ, and the α-filtered valid token set V(y). Table reports accuracy, precision, recall, and F1 for miniGPT4 and InstructBLIP backbones across MSCOCO, A-OKVQA, and GQA under random, popular, and adversarial settings (default, +vcd, +icd).
+  </text>
+</svg>
+</div>
+</body>
+</html>

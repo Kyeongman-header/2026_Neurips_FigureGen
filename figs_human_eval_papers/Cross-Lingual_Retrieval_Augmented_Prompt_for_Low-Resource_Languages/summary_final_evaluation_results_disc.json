@@ -1,0 +1,134 @@
+{
+  "paper_name": "Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages",
+  "evaluated_at": "2026-01-12T01:03:29.892121",
+  "figure_summary": "## 1. Core Contributions (2–4 bullet points)\n\n- Proposes **PARC (Prompts Augmented by Retrieval Crosslingually)**: a zero-shot pipeline that improves low-resource language (LRL) task performance by **retrieving semantically similar high-resource language (HRL) examples** and turning them into **prompt context**.\n- Defines a **single prompt-based classification formulation** (pattern + verbalizer + masked-token scoring) that accommodates **cross-lingual retrieved context** and works **without parameter updates**.\n- Supports **two retrieval regimes** for HRL sources: **labeled HRL corpora** (use gold labels) and **unlabeled HRL corpora** (obtain labels via **self-prediction** using the same prompting setup).\n- Introduces using **multiple retrieved examples (K)** via a **Bag-of-Retrieval (BoR)** aggregation of verbalizer probabilities (and contrasts with a less effective concatenation alternative).\n\n## 2. Method Components & Relations relevant to figures\n\n- **Key modules**\n  - **Cross-lingual retriever (CLR):** takes an LRL input and an HRL corpus; returns an ordered list of HRL sentences by semantic similarity (Eq. 1).\n  - **Prompt pattern `P(·)` (cloze template):** converts inputs into a masked-token prompt (task-specific patterns for sentiment / topic / NLI).\n  - **Verbalizer `v(·)` (label-word mapping):** bijection from class labels to HRL vocabulary tokens used to fill/score the mask.\n  - **MPLM `M` (masked language model):** outputs probabilities over candidate verbalizer tokens for the mask; prediction via argmax over verbalizer probabilities (Eq. 4).\n\n- **Key relations / data flows**\n  - **Retrieval:** \\( D^R_i = CLR(X^L_i, D^H) \\) returns top similar HRL examples for LRL test input \\(X^L_i\\).\n  - **Label acquisition for retrieved HRL example**\n    - **Labeled setting:** use gold \\(y^R\\) from the HRL labeled corpus.\n    - **Unlabeled setting:** infer \\( \\hat{y}^R \\) by **self-prediction** on the HRL example alone using prompting (Eq. 5).\n  - **Cross-lingual context construction:** form \\(C^i_k = P(X^R_k, v(y^R_k))\\) by inserting the (gold or predicted) verbalized label into the retrieved HRL prompt (Eq. 2).\n  - **Final inference input:** concatenate **cross-lingual context + prompted LRL query**, \\(I_i = C^i_k \\circ P(X^L_i)\\) (Eq. 3), then score verbalizers at the mask in the LRL portion via the MPLM.\n  - **Multiple retrievals (K):** **BoR** sums verbalizer probabilities across retrieved contexts to select the final class; **CONC** (concatenating multiple contexts) is mentioned as worse.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n\n- To **visually convey the PARC pipeline end-to-end**, showing how an LRL test input is used to retrieve HRL examples, how labels are obtained (gold vs self-predicted), and how retrieved items are **re-expressed as prompt context** appended to the LRL query for MPLM prediction.\n- To clarify the **conceptual role of cross-lingual retrieval**: retrieved HRL instances provide task-relevant, semantically aligned context that compensates for LRL data scarcity in zero-shot prompting.\n- To illustrate the **two-stage structure** (retrieval → prompt-based prediction) and the **information interfaces** among components (retriever output → prompt construction → MPLM scoring).\n\n## 4. What Figures are NOT intended to show\n\n- Not intended to depict **model training or parameter updating**, since PARC operates **without finetuning** in the described zero-shot setting.\n- Not intended to provide **retriever architecture details** (e.g., embedding models, indexing choices) beyond the abstract “cross-lingual retriever” role.\n- Not intended to justify or analyze **why particular patterns/verbalizers are optimal**, only that tasks are cast into cloze prompts with label words.\n- Not intended to present **full experimental results, ablations, or statistical analyses** (e.g., correlations with language similarity, robustness across MPLMs), except insofar as figures may motivate that such evaluations exist.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+      "caption": "Figure 1: Main idea of PARC: we enhance zero-shot learning for low-resource languages (LRLs) by crosslingual retrieval from labeled/unlabeled high-resource languages (HRLs). (a) An LRL input sample is taken as query by the cross-lingual retriever to retrieve the semantically most similar HRL sample from the HRL corpus. The label of the retrieved HRL sample is obtained either from the corpus (labeled setting) or by self-prediction (unlabeled setting). (b) The retrieved HRL sample together with its label and the input sample are reformulated as prompts. The cross-lingual retrievalaugmented prompt is created by concatenation and taken by the MPLM for prediction. Our experiments show that PARC outperforms other zero-shot methods and even finetuning.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1",
+              "score": 4.0,
+              "reason": "The figure covers the major pipeline components highlighted in the summary: an LRL input query goes to a cross-lingual retriever, an HRL example is retrieved, the label is obtained either from the labeled corpus or via self-prediction in the unlabeled setting, both HRL and LRL are reformulated via prompting, and the concatenated retrieval-augmented prompt is fed to an MPLM for prediction. However, several key formulation details from the summary are not depicted: the explicit pattern/verbalizer notation P(·), v(·), the masked-token scoring/argmax over verbalizer words (Eq. 4), and especially the multiple-retrieval (K) and Bag-of-Retrieval (BoR) aggregation (the figure shows a single retrieved example and simple concatenation rather than BoR)."
+            },
+            {
+              "question": "1.2",
+              "score": 4.0,
+              "reason": "The end-to-end operating principle is largely understandable from the visual flow alone: retrieve a semantically similar HRL instance, get its label (gold or self-predicted), convert both into prompts, concatenate into a retrieval-augmented prompt, and use an MPLM to output a label prediction. The figure’s separation into (a) retrieval/labeling and (b) prompting/prediction supports standalone comprehension. What is less clear without the paper is the exact mechanism of prediction (verbalizer token probabilities at the mask) and how the label word (e.g., “great”) maps to the class (“pos”), which are central in the summary’s prompt-based classification formulation."
+            },
+            {
+              "question": "1.3",
+              "score": 2.0,
+              "reason": "The figure summarizes the central method idea (PARC pipeline) but does not aim to, and does not, cover the paper from beginning to end. It omits major aspects mentioned in the summary such as the multi-retrieval setting (K), the BoR probability aggregation and its contrast with concatenation as a worse baseline, and it does not include broader experimental/analysis content (which the summary notes figures are not intended to show). Thus it is informative about the core pipeline but not a complete paper-level summary."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 3.0,
+              "reason": "The figure matches the summary’s core pipeline pieces (cross-lingual retriever, labeled vs self-predicted labels, prompt reformulation, MPLM scoring). However, it introduces an explicit intermediate token output “great” from the MPLM and shows a single retrieved example plus a “concatenating” module without depicting the Bag-of-Retrieval (BoR) aggregation that the summary highlights as the multi-retrieval method. The extra token depiction is minor/conventional, but the emphasis on concatenation without BoR makes the method portrayal potentially incomplete relative to the described contributions."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 4.0,
+              "reason": "Relations are largely consistent with the summary: an LRL input queries a cross-lingual retriever to fetch an HRL example; the HRL label is obtained either from a labeled corpus or via self-prediction; both the retrieved HRL (with label verbalized in-prompt) and the prompted LRL query are concatenated into a retrieval-augmented prompt, then passed to an MPLM for prediction. This matches retrieval → prompt construction → MPLM scoring. The only concern is that the figure depicts only concatenation and single retrieval rather than the BoR multi-retrieval probability aggregation mentioned in the summary."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled in line with the summary/caption: “Cross-lingual Retriever,” “Self-prediction,” “Prompting engineering” (corresponding to prompt pattern/verbalizer construction), “MPLM,” and the distinction between labeled vs unlabeled HRL settings. Terminology aligns with the described PARC pipeline modules."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is largely schematized around the main PARC pipeline described in the summary: LRL input → cross-lingual retriever → HRL example → label (gold or self-predicted) → prompt reformulation/concatenation → MPLM prediction. It avoids retriever-architecture details and focuses on the retrieval→prompting→prediction flow. Minor clutter comes from showing concrete sentence text, label tokens, and multiple intermediate boxes, which slightly distracts from the abstract method components (pattern/verbalizer/BoR) emphasized in the summary."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "With the caption, the two panels (a) retrieval/label acquisition and (b) prompt concatenation and prediction) map well to the described two-stage structure and interfaces among components. Key roles (CLR, self-prediction for unlabeled HRL, concatenated retrieval-augmented prompt, MPLM scoring) are visually traceable via arrows and labeled blocks. However, some method aspects central in the summary are not clearly readable/explicit (e.g., verbalizer mapping and masked-token scoring formulation, and the multi-retrieval K with BoR vs concatenation), so the figure is helpful but not fully self-contained relative to the full method description."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The figure mostly avoids decorative elements, but it includes repeated text snippets and multiple small labels (e.g., separate 'Prompting engineering' callouts in both branches, explicit example sentences, and both label boxes and predicted-word boxes) that add visual density without adding new conceptual structure. Additionally, it highlights single-example concatenation prominently while the summary stresses multiple retrievals (K) with BoR aggregation; this omission does not add redundancy per se, but it makes some displayed detail (single retrieved example text) less aligned with the core contribution focus."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.714,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "Both subfigures largely follow a left-to-right flow consistent with the PARC pipeline in the summary: LRL input/query -> cross-lingual retriever -> retrieved HRL example + label acquisition -> prompt construction/concatenation -> MPLM -> prediction. Minor deviations occur due to callout-style boxes and the dashed self-prediction path, which introduces a small loop-like visual."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Most connectors are routed cleanly without line crossings. The only potentially confusing area is the dashed/self-prediction connections near the MPLM and label box in (a), but it does not create heavy multi-line intersections that obscure the main retrieval-to-prompt-to-MLM sequence described in the summary."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related items are placed near each other: the retrieved HRL text sits next to its label; the self-prediction MPLM is placed close to the retrieved example it labels; and the final concatenated prompt is directly above the MPLM used for prediction. This matches the summary’s modular interfaces (retriever output -> label acquisition -> context construction -> inference)."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 3.0,
+              "reason": "Key blocks are roughly aligned (e.g., retrieval text/label boxes and the bottom MPLM/prediction path), but the layout mixes aligned rectangles with offset ellipses ('Prompting engineering') and a slanted/irregular placement of some annotations. The two-panel structure helps, yet within each panel the invisible-grid alignment is only moderate."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Main components stand out via color and size: 'Cross-lingual Retriever' and 'MPLM' are highlighted in orange, and the retrieval-augmented prompt/concatenation step is emphasized with a large central element in (b). This supports the summary’s emphasis on retrieval + prompt-based prediction as the core pipeline."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "Elements are generally separated, but several regions are dense: the retrieval text box, label box, and dashed self-prediction structure in (a), and the stacked prompt-construction components in (b). Margins are sufficient for readability but occasionally tight where multiple annotations compete for space."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles use consistent visual encodings: text samples are in similar rectangular boxes (with green emphasis for HRL retrieval), labels are small boxed tokens, and MPLM blocks are consistently orange. Minor inconsistency arises from using ellipses for 'Prompting engineering' while other operations (e.g., concatenation) use different shapes, but overall role-to-style mapping is stable."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 2.0,
+              "reason": "The figure mostly uses literal labeled boxes and arrows to depict the PARC pipeline (cross-lingual retriever → retrieved HRL example + label → prompt concatenation → MPLM prediction). It relies on abbreviations (CLR/MPLM) and schematic modules rather than replacing abstractions with concrete icons/symbols. The only mildly metaphor-like element is the use of compact module boxes (e.g., 'Cross-lingual Retriever', 'MPLM') to stand in for complex processes, which is conventional."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 2.0,
+              "reason": "Visually, the design follows a common NLP method-diagram template: rectangular text boxes, dashed callouts for self-prediction, and a two-panel (a)/(b) pipeline illustration. This is consistent with the summary’s standard end-to-end depiction goals and does not introduce a distinctive artistic style or unconventional visual language beyond typical retrieval-augmented prompting schematics."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 3.0,
+              "reason": "The figure is reasonably tailored to the paper’s specific two-stage structure and the labeled-vs-unlabeled retrieval regime described in the summary: panel (a) explicitly separates retrieval and label acquisition (gold vs self-prediction), and panel (b) shows prompt reformulation and concatenation into a retrieval-augmented prompt for MPLM scoring. While the layout is still conventional, the split-panel organization and explicit self-prediction branch are adapted to PARC’s method narrative."
+            }
+          ]
+        },
+        "weighted_total": 3.41
+      }
+    }
+  ]
+}

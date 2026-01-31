@@ -1,0 +1,261 @@
+{
+  "paper_name": "Conditional_MASK_Discrete_Diffusion_Language_Model",
+  "evaluated_at": "2026-01-12T01:02:16.131163",
+  "figure_summary": "## 1. Core Contributions\n- Introduces **Diffusion-EAGS**, a discrete diffusion language modeling framework that **integrates conditional masked language models (CMLMs)** into diffusion generation via a **conditional Markov Random Field (cMRF)** perspective.\n- Proposes **Entropy-Adaptive Gibbs Sampling (EAGS)** for inference: at each denoising step, **update only the highest-uncertainty (high-entropy) token positions** to improve stability and conditional generation.\n- Proposes **Entropy-based Noise Scheduling (ENS)** for training: **mask tokens progressively according to entropy** so the model learns a structured denoising process aligned with the intended inference dynamics.\n- Claims a principled mechanism (via the D-cMRF view) for **progressive energy reduction / stable convergence**, targeting reduced degeneration and improved quality–diversity tradeoff in non-autoregressive conditional generation.\n\n## 2. Method Components & Relations relevant to figures\n- **cMRF formulation of MLM (Section 3.1)**  \n  - Defines sequence distribution as an energy-based model: \\(P_\\theta(X;Y)\\propto \\exp(-E_\\theta(X;Y))\\).  \n  - Energy decomposes over positions using MLM logits/potentials: \\(E_\\theta(X;Y) = -\\sum_l \\log \\phi_l(X;Y)\\), with \\(\\log\\phi_l\\) derived from MLM output \\(f_\\theta(X_{\\setminus \\{x_l\\}};Y)\\).\n- **Entropy computation and selection (Section 3.2)**  \n  - Per-position entropy \\(H_i(X^{(t)})\\) is computed from MLM softmax at timestep \\(t\\).  \n  - A **threshold \\(\\tau_t\\)** defines the update set \\(M_t=\\{i\\mid H_i(X^{(t)})\\ge \\tau_t\\}\\).\n- **Diffusion-style iterative generation using MLM as denoiser (Section 3.2–3.3)**  \n  - At each diffusion step, sample/update **only positions in \\(M_t\\)** from the conditional distribution induced by the MLM/cMRF.  \n  - The paper’s D-cMRF narrative ties this to **expected energy reduction across steps** (with stochastic fluctuations), motivating stability.\n- **Training vs inference roles (Figure 2 caption + Section 4 intro)**  \n  - **Training (forward/noising): ENS** decides which tokens become/are treated as masked at each timestep based on entropy ordering; optimization uses **cross-entropy diffusion loss**.  \n  - **Inference (backward/denoising): EAGS** starts from **fully masked** sequence (conditioned on \\(Y\\)) and iteratively refines by repeatedly selecting high-entropy positions and resampling them.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To visually **position the problem and motivation**: why AR models are limited (diversity/controllability) and why combining **MLM strengths (contextual understanding)** with **diffusion strengths (iterative controllability/diversity)** is desirable.\n- To communicate the **conceptual integration**: MLM reinterpreted as a **cMRF/energy-based denoiser** inside a **discrete diffusion** process rather than a one-shot predictor.\n- To clarify the **operational workflow** of the approach: the **two key entropy-driven mechanisms** and how they map onto **training (ENS masking schedule)** and **inference (EAGS token update order)**.\n- To emphasize the central design choice that **uncertainty/entropy governs which tokens are modified at each timestep**, framing this as the mechanism that improves stability and conditional generation.\n\n## 4. What Figures are NOT intended to show\n- Not a detailed architectural specification of the underlying transformer/MLM (e.g., exact layers, attention structure), nor implementation hyperparameters.\n- Not a formal proof of the D-cMRF “guarantees” (energy reduction / convergence); figures only illustrate the intuition and procedure, while proofs are deferred (e.g., Appendix M) and empirical support is referenced elsewhere.\n- Not comprehensive empirical validation (benchmarks, metrics, ablations, statistical significance); figures here primarily explain **mechanism and motivation**, not results.\n- Not a complete depiction of all baselines or alternative diffusion/MLM integration strategies; the visuals focus on the proposed ENS/EAGS-centric pipeline rather than exhaustive methodological comparisons.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Conditional_MASK_Discrete_Diffusion_Language_Model__p0__score1.00.png",
+      "caption": "Figure 1: Overview of how our approach (DiffusionEAGS) combines the strengths of MLM and diffusionbased models to overcome the limitations of AR models, achieving a better diversity-quality tradeoff and finegrained controllability",
+      "scores": {
+        "Informativeness": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 2.0,
+              "reason": "The figure conveys the high-level motivation stated in the summary/caption—AR limitations (diversity/controllability) and the idea of combining MLM strengths (contextual understanding) with diffusion strengths (multi-step controllability) into a non-AR solution. However, it omits essentially all major method-defining components from the summary: the cMRF/energy-based formulation (Eθ, φl), entropy computation Hi, threshold τt and update set Mt, the EAGS rule (update only high-entropy positions), and the ENS training/noising schedule. Thus it does not cover the major technical components/formulas described as core contributions."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 3.0,
+              "reason": "From the visual alone, a reader can grasp the general operating principle only at a coarse level: Diffusion-EAGS is positioned as a non-AR approach that combines MLM and diffusion to improve diversity–quality tradeoff and controllability. But the actual operational workflow (entropy-driven token selection, iterative resampling procedure, and how training differs from inference) is not depicted, so one cannot understand how the system works beyond the conceptual mashup."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 1.0,
+              "reason": "The figure functions purely as an overview/motivation diagram rather than summarizing the paper end-to-end. It does not include the paper’s main mechanism (ENS/EAGS), the cMRF/D-cMRF perspective, nor any depiction of training vs inference roles (forward noising vs backward denoising) described in the summary. As a result, it is not a complete summary of the paper’s content from beginning to end."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure stays at a high-level motivation/overview consistent with the summary: AR limitations (diversity/controllability), MLM strengths (contextual understanding) but one-step generation weakness, diffusion strengths (multi-step controllability) but downstream degradation, and combining them into Diffusion-EAGS. It does not introduce unmentioned formulas or method components (e.g., cMRF equations, ENS/EAGS mechanics) beyond what an overview would imply. Minor risk: the explicit claim that diffusion causes \"downstream degradation\" is not stated verbatim in the provided summary (though 'degeneration' is mentioned as a target issue), but it does not change the core claimed structure."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 4.0,
+              "reason": "Relationships are broadly aligned with the summary’s intent: AR models have limitations; moving to non-AR motivates diffusion/MLM; diffusion provides iterative controllability; MLM provides contextual understanding; combining yields improved diversity–quality tradeoff and fine-grained controllability. However, the key paper-specific integration mechanism (MLM as a cMRF/energy-based denoiser inside discrete diffusion, with entropy-driven ENS/EAGS) is not depicted, so the figure is correct as an overview but incomplete relative to the method relations emphasized in the summary."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Major labels used in the figure—\"AR Models\", \"Non-AR\", \"MLM\", \"Diffusion\", and \"Diffusion-EAGS\"—match the terminology and positioning described in the summary and the provided caption. No major component is mislabeled."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_Summarization",
+              "score": 4.0,
+              "reason": "The schematic highlights the paper’s high-level motivation and main claim from the summary/caption: AR limitations (diversity/controllability) and a Non-AR solution that combines MLM strengths (contextual understanding) with diffusion strengths (multi-step controllability), culminating in “Diffusion-EAGS” with a better diversity–quality tradeoff and fine-grained controllability. It stays at the overview level (appropriate for Figure 1) and does not drift into architectural details. However, it does not visually convey the summary’s central mechanism (entropy-driven ENS/EAGS, cMRF/D-cMRF perspective), so the ‘main contribution’ is only captured as a generic “combine MLM + diffusion” story rather than the method’s distinctive entropy-adaptive integration."
+            },
+            {
+              "question": "3.2_Contextual_Match",
+              "score": 4.0,
+              "reason": "As a companion to the caption (‘overview of how Diffusion-EAGS combines strengths...’), the figure is easy to map to the narrative: it contrasts MLM vs diffusion pros/cons and motivates their combination to address AR limitations. The flow (limitations → Non-AR solution → MLM/diffusion blocks → combined output) supports quick comprehension. The match is weaker if the reader expects the specific operational workflow described in the summary (entropy-based token selection, training vs inference roles), which is not depicted here, but that omission is consistent with an ‘overview’ figure."
+            },
+            {
+              "question": "3.3_Redundancy",
+              "score": 3.0,
+              "reason": "The figure includes multiple emoji icons (angry/smiling/party) that are decorative and do not add technical clarity; they slightly distract from the conceptual message. The rest of the elements are concise and largely relevant to the stated overview (limitations, strengths/weaknesses, combination). There is no excessive technical clutter, but the decorative icons reduce the figure’s academic cleanliness and readability."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.714,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The layout establishes a mostly top-to-bottom narrative: AR limitations at the top, then two middle blocks (MLM and Diffusion), then a bottom combined outcome (Diffusion-EAGS). There is also a clear left-to-right comparison within the middle row (MLM on the left, Diffusion on the right) and an arrow from the top block toward the right-side “Solution! Non-AR”, so overall flow is understandable though slightly mixed."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 3.0,
+              "reason": "Key connections are mostly non-crossing (top-to-solution arrow; downward arrows into the MLM/Diffusion region). However, the large bottom horizontal line feeding into the central plus symbol creates a visually busy junction and can be read as intersecting/competing with the vertical connection into the “+” merge. It doesn’t fully tangle the diagram, but it reduces clarity around the merge."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related items are grouped: AR limitations (diversity/controllability) are colocated; MLM-related benefits/limitations are inside the MLM box; diffusion-related benefits/limitations are inside the Diffusion box; the merge (“+”) is placed centrally above the final Diffusion-EAGS outcome. This matches the summary’s intent to contrast AR vs (MLM, diffusion) and then combine strengths."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major blocks appear aligned to an implicit grid: the MLM and Diffusion panels form a clean two-column arrangement, headers sit consistently at the top of each panel, and the final output box is centered below. Minor misalignments exist (e.g., the ‘Solution! Non-AR’ callout sits offset relative to the top dashed group), but overall alignment is neat."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Hierarchy is visually clear: the top ‘AR Models Limitations’ group is prominent; the two mid-level panels (MLM vs Diffusion) are clearly secondary; the bottom ‘Diffusion-EAGS’ result is emphasized with a large highlighted box and central merge symbol. This supports the caption’s goal of showing how combining strengths yields improved diversity–quality and controllability (even if the figure stays conceptual rather than detailing ENS/EAGS)."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "Most elements have adequate spacing inside panels, but margins are tighter around the central merge (‘+’) and the bottom region where the long horizontal line and vertical connector converge. The proximity of connectors and boundaries makes that area feel crowded."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles use consistent visual encoding: module headers (AR Models, MLM, Diffusion) share a similar tab style; benefit/limitation items use similar rounded rectangles with repeated color semantics; dashed containers consistently indicate grouped concepts. Some extra visual elements (emoji icons) introduce a slightly different style but do not break the core consistency of shapes/colors."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces abstract properties (diversity, controllability, degradation, contextual understanding) with concrete visual cues: boxed labels, plus-operator fusion, and emotive icons (angry/neutral/smiling faces) to signal drawbacks vs benefits. This aligns with the summary’s intent to motivate why combining MLM (contextual understanding) with diffusion (iterative controllability) improves the diversity–quality tradeoff. The metaphors are clear and help compress concepts, though they are fairly lightweight (emojis + flowchart) rather than deeper symbolic encoding."
+            },
+            {
+              "question": "novelty",
+              "score": 3.0,
+              "reason": "The overall composition is a standard conceptual overview diagram (limitations → solution; two modules → combined method) with conventional rounded rectangles, arrows, and a merge node. The use of expressive icons adds some distinctiveness, but the style remains close to common paper-figure templates for high-level motivation and does not introduce a notably unique visual language beyond that."
+            },
+            {
+              "question": "adaptability",
+              "score": 3.0,
+              "reason": "The layout is tailored to the paper’s high-level story stated in the caption and summary—positioning AR limitations, then contrasting MLM (one-step + contextual understanding) and diffusion (multi-step controllability + downstream degradation), and finally merging into Diffusion-EAGS with the claimed benefits. However, it stays within a generic two-column comparison + fusion pattern and does not visually encode the paper’s key distinctive mechanisms (entropy-driven ENS/EAGS, cMRF/D-cMRF perspective), so it only moderately departs from uniform design conventions."
+            }
+          ]
+        },
+        "weighted_total": 3.41
+      }
+    },
+    {
+      "figure_file": "Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+      "caption": "Figure 2: Overview of the training (forward) and inference (backward) processes in Diffusion-EAGS. Training (left): Entropy-based Noise Scheduling (ENS) determines which tokens in the masked sequence, denoted by [M ], should be denoised at each timestep based on the position entropy H(xi). These tokens are then generated using the diffusion model with parameters θ, and the loss is computed using a cross-entropy (C.E.) diffusion loss. Inference (right): Starting from a fully masked sequence conditioned on Y , Entropy-Adaptive Gibbs Sampling (EAGS) iteratively refines the sequence by focusing on high-entropy tokens, denoted as Mt, based on a threshold τt, yielding stable and coherent text generation.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_Content_Coverage",
+              "score": 4.0,
+              "reason": "The figure covers the core operational components highlighted in the summary/caption: (i) training forward/noising with Entropy-based Noise Scheduling (ENS) driven by per-position entropy H(x_i), (ii) diffusion/MLM model parameterized by θ, (iii) cross-entropy (C.E.) diffusion loss, and (iv) inference backward/denoising with Entropy-Adaptive Gibbs Sampling (EAGS) selecting a high-entropy update set M_t using a threshold τ. However, it omits the cMRF/D-cMRF energy-based formulation details (Pθ ∝ exp(-Eθ), Eθ decomposition via MLM potentials/logits) and the explicit statement/visualization of progressive expected energy reduction, which are part of the method’s principled framing in the summary."
+            },
+            {
+              "question": "1.2_Standalone_Intelligibility",
+              "score": 4.0,
+              "reason": "From the visual alone, one can infer the overall workflow: compute token entropies with an MLM; during training, mask/denoise tokens according to an entropy-ordered schedule (ENS) and optimize with C.E. loss; during inference, start from fully masked and iteratively update only high-entropy positions chosen by τ (EAGS). The left/right separation and the explicit labels H(x_i), Q_t masks, M_0 selection, and τ make the operating principle reasonably clear. What is not fully intelligible without the paper is why this corresponds to a diffusion process from a cMRF perspective (the probabilistic/energy rationale and conditional distributions are not shown)."
+            },
+            {
+              "question": "1.3_Completeness",
+              "score": 3.0,
+              "reason": "The figure provides a focused end-to-end overview of the central pipeline (training ENS + inference EAGS), which aligns with the paper’s primary procedural contributions. But it does not summarize the broader conceptual contribution (MLM-as-cMRF / D-cMRF energy-based reinterpretation) and does not attempt to cover additional paper content beyond the mechanism (e.g., the principled energy-reduction narrative, any theoretical notes, or empirical validation—though results are not intended per the summary). Thus it is complete for the workflow explanation but not for the full set of paper contributions and framing."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1",
+              "score": 4.0,
+              "reason": "The figure mostly sticks to elements described in the summary/caption: ENS (entropy-based masking/noising), EAGS (high-entropy position selection via threshold τt and iterative refinement), a diffusion-style MLM denoiser parameterized by θ, and cross-entropy diffusion loss. It adds minor conventional details not explicitly in the summary (e.g., naming example backbone models like BERT/RoBERTa, and showing illustrative entropy curves), but these do not change the core method structure or claims."
+            },
+            {
+              "question": "2.2",
+              "score": 5.0,
+              "reason": "Relationships match the summary: training/forward uses ENS to decide which tokens are masked/denoised at each timestep based on per-position entropy H(x_i), then uses the diffusion MLM θ and optimizes with a cross-entropy diffusion loss; inference/backward starts from a fully masked sequence conditioned on Y and iteratively applies the diffusion MLM, selecting update positions Mt using an entropy threshold τt (high-entropy positions) and resampling them via EAGS."
+            },
+            {
+              "question": "2.3",
+              "score": 5.0,
+              "reason": "Major components are labeled consistently with the summary and caption: 'Entropy based Noise Scheduling (ENS)' for training, 'Entropy Adaptive Gibbs Sampling (EAGS)' for inference, entropy H(x_i), the update set M_t, and the threshold τt. The depiction of 'diffusion MLM θ' aligns with the described use of an MLM as the diffusion denoiser."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The schematic cleanly foregrounds the main contributions described in the summary: a two-panel overview separating Training/Forward (ENS) and Inference/Backward (EAGS), with explicit depiction of entropy computation H(x_i), entropy-ordered masking (ENS), cross-entropy diffusion loss during training, and high-entropy position selection M_t via threshold τ_t during inference. It avoids drifting into architectural specifics beyond a minimal 'MLM (e.g., BERT, RoBERTa)' placeholder, which matches the paper’s stated intent not to detail the transformer architecture."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "The figure directly operationalizes what the caption and summary emphasize: (i) ENS as entropy-based progressive masking/noising during training and (ii) EAGS as iterative refinement from a fully masked sequence conditioned on Y, updating only high-entropy positions. The flow arrows, timestep annotations (t=0…T), and labels (Gold Labels, C.E.) make it easy to map the visual steps to the described forward/noising vs backward/denoising processes without requiring extra context."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "Most elements are functional and method-relevant (entropy blocks, masking sets Q_t, M_t selection, τ/threshold cue, loss). Minor redundancy/visual clutter comes from repeated token-sequence boxes across timesteps and some decorative styling (3D block for 'diffusion MLM θ', wavy curve) that does not add much to the core ENS/EAGS logic, but these do not materially distract from the main contribution."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.286,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 5.0,
+              "reason": "The figure is clearly organized left-to-right: the Training (Forward) Process is on the left and flows toward a diffusion training block and cross-entropy loss; the Inference (Backward) Process is on the right and flows from a fully masked input through diffusion MLM to selection and EAGS updates. This matches the summary/caption’s forward (training) vs backward (inference) workflow."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 4.0,
+              "reason": "Most connections are routed cleanly without intersections. The main potential clutter is within the inference panel where the loopback line returning from the EAGS box to the diffusion MLM runs alongside other connectors, but it does not meaningfully cross through multiple lines or obscure key relationships."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 5.0,
+              "reason": "Functionally linked modules are placed near each other: in training, MLM entropy computation is adjacent to ENS and the masking schedule, which then feeds directly into diffusion training and the C.E. loss; in inference, the diffusion MLM, high-entropy position selection (Mt, τt), and EAGS are grouped tightly in a single iterative loop. This spatial grouping aligns with the ENS/EAGS roles described in the summary."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "Major blocks (panel titles, MLM/diffusion modules, ENS/EAGS boxes) are aligned in a visually grid-like manner within each panel. Minor elements (e.g., example sequences and callouts such as Mt selection) are slightly offset, but the overall layout remains orderly and readable."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "The two primary processes are emphasized via large dashed containers and prominent titles, and the key mechanisms (ENS and EAGS) are called out in distinct labeled boxes. However, within the training panel, several similarly sized subcomponents (gold labels, intermediate sequences, diffusion training) compete for attention, slightly weakening the visual prioritization of ENS as the central driver."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient spacing between the two main panels and between most blocks. Some dense areas—particularly the stack of intermediate masked sequences and labels in the training diffusion section—feel tight, though still legible without major overlap."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 4.0,
+              "reason": "Similar roles use consistent visual encoding: process-level separation is consistent (two dashed panels), key method modules (ENS/EAGS) are shown as pink rectangular callouts, and token/sequence examples use consistent yellow boxes. A minor inconsistency is that selection (high-entropy positions) is shown as a separate callout box in inference rather than being visually mirrored by an analogous selection depiction in training, even though both rely on entropy-driven decisions per the summary."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure uses concrete visual abbreviations to stand in for abstract ideas described in the summary: token boxes with [M] for masking, entropy boxes H(x_i), a highlighted update set M_t with threshold \u0003c4_t, and a diffusion/MLM block representing the denoiser within the diffusion process. These are clear symbolic encodings rather than rich metaphors; it largely stays within standard schematic notation instead of introducing more illustrative icons beyond conventional blocks/arrows."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Visually it resembles a common method-overview template: two-panel (training vs inference) flow diagram with labeled modules, arrows, and callout boxes. While it includes the paper-specific elements (ENS/EAGS, entropy-driven selection, fully masked start, C.E. diffusion loss), the style itself is not distinctive or unusually inventive relative to typical NLP/diffusion pipeline figures."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper\u0002s core contribution by explicitly mirroring the summary\u0002s forward/noising (ENS) vs backward/denoising (EAGS) roles and making entropy-based position selection central in both panels. The stepwise masking schedule (Q_t) and the inference loop emphasizing high-entropy updates reflect the method structure rather than a generic diffusion diagram, showing deliberate adaptation to the ENS/EAGS workflow."
+            }
+          ]
+        },
+        "weighted_total": 4.057
+      }
+    }
+  ]
+}

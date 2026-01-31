@@ -1,0 +1,134 @@
+{
+  "paper_name": "AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation",
+  "evaluated_at": "2026-01-12T00:38:36.758954",
+  "figure_summary": "## 1. Core Contributions\n- Establishes that *Best-of-N prompting* for conversational query reformulation (CQR) has strong scaling potential, while common training-time fine-tuning and prior test-time aggregation methods fail to close the gap to the Best-of-N “oracle” upper bound.\n- Proposes **AdaRewriter**, a **test-time adaptation** framework that selects among multiple LLM-generated reformulation candidates using an **outcome-supervised reward model**.\n- Introduces a **lightweight (BERT-sized) reward model** trained with a **contrastive ranking loss** using **implicit supervision** derived from end-to-end retrieval outcomes (rather than human preference labels).\n- Demonstrates that this selection-based test-time scaling is designed to work in **black-box LLM settings** (e.g., commercial APIs), since it does not require updating the LLM—only scoring its outputs.\n\n## 2. Method Components & Relations relevant to figures\n- **Candidate generator (LLM prompting)**\n  - Inputs: current query `q`, conversation history `H`, instruction `I`, few-shot demos `D`.\n  - Outputs: multiple candidate reformulations `{S(1)…S(N)}`, where each `S` is formed by concatenating the reformulated query and pseudo-response (`S = q̂ ⊕ r̂`).\n\n- **Outcome-based ranking signal construction (for training the reward model)**\n  - For each candidate `S(i)`, compute an end-to-end retrieval-based *fusion score* `M(S(i))` based on ranks of the gold passage under:\n    - a **sparse retriever** (BM25-like), and\n    - a **dense retriever**,\n  - producing an induced ordering of candidates (best to worst) used as supervision.\n\n- **Reward model `gθ` (BERT-sized scorer)**\n  - Input: `(S, {q,H})`; Output: scalar reward score `r = gθ(S, {q,H})`.\n\n- **Training loss (contrastive ranking loss)**\n  - Encourages higher reward scores for better-ranked candidates with a margin that increases with rank distance:\n  - \\( L=\\sum_i \\sum_{j>i} \\max(0, r_j - r_i + (j-i)\\lambda) \\)\n\n- **Inference / test-time adaptation (Best-of-N selection)**\n  - Generate `N` candidates with the LLM; score each with `gθ`; select:\n  - \\( S \\leftarrow S(k),\\; k=\\arg\\max_j g_\\theta(S^{(j)},\\{q,H\\}) \\)\n  - Use selected `S` as the standalone query representation for retrieval.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To visually motivate **why** a new test-time scaling/selection mechanism is needed by contrasting:\n  - the *scaling gains* available under Best-of-N (oracle),\n  - versus the *limitations* of prior training-time fine-tuning and simple test-time aggregation/self-consistency methods.\n- To depict the **end-to-end pipeline** of AdaRewriter, emphasizing the separation between:\n  - LLM candidate generation,\n  - retrieval-based outcome assessment used to train the reward model,\n  - and reward-model-based candidate selection at inference.\n- To clarify that the approach is **plug-and-play** at inference time: it adapts behavior by *choosing outputs*, not by updating the LLM.\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide a full architectural deep dive of the LLM or retrievers (e.g., internal layers, attention patterns, indexing details).\n- Not intended to claim the reward model is trained with explicit human preference labels or binary relevance labels for reformulations; supervision is **implicit** and derived from retrieval outcomes/rankings.\n- Not intended to demonstrate improvements stemming from *fine-tuning the LLM itself* at test time; the adaptation is via **scoring and selection**.\n- Not intended to establish universal optimality of the fusion metric or retrieval setup; the figures use these components to operationalize “outcome supervision,” not to benchmark retriever designs.",
+  "figure_evaluations": [
+    {
+      "figure_file": "AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+      "caption": "Figure 2: Overview of AdaRewriter.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure covers the key pipeline components described in the summary: LLM-based candidate generation from {q,H}, producing multiple candidates S1…Sn; an outcome-based ranking assessment via retrieval during training; training of a (lightweight) reward model; and inference-time Best-of-N selection using the reward model. However, it omits the main explicit formulas from the summary (contrastive ranking loss with margin (j−i)λ, and the argmax selection equation), and it does not explicitly show the fusion score M(S(i)) combining sparse+dense retrievers—only a generic 'Retrieval' block."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the figure alone, one can understand the general operating principle: generate multiple reformulations with an LLM, use retrieval outcomes during training to rank candidates and train a reward model, then at inference score candidates with that reward model to select the best (Best-of-N). The main ambiguity is that the exact supervision signal (fusion of sparse+dense ranks) and the specific training objective are not readable from the figure, so the mechanism is clear but not fully specified."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 3.0,
+              "reason": "As an 'Overview of AdaRewriter', it summarizes the end-to-end method (training signal construction + reward model + test-time selection) but does not capture broader paper-level claims emphasized in the summary, such as the scaling comparison against fine-tuning and prior test-time aggregation methods or the explicit emphasis on black-box LLM constraints. It is complete for the method overview, but not for the paper's full narrative and empirical motivation."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure largely matches the summary’s described AdaRewriter pipeline: LLM generates multiple candidates S1..Sn; a retrieval-based assessment provides ranking supervision for a BERT-sized reward model; at inference the reward model scores candidates and selects the best (Best-of-N). One potentially hallucinated/underspecified element is that the figure’s left example panel depicts a conversational assistant producing full natural-language answers and marking candidates with ✓/✗, whereas the summary specifies candidates are reformulations formed as S = q̂ ⊕ r̂ (reformulated query + pseudo-response) for retrieval, not necessarily end-user answers with correctness marks. This extra illustrative QA-style content is not in the summary but does not fundamentally change the method depiction."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 5.0,
+              "reason": "Relationships are consistent with the summary: during training, {q,H} goes to an LLM to generate candidate reformulations (S1..Sn); retrieval is used to produce a ranking/assessment signal; that ranking trains the reward model. During inference, the LLM again generates candidates, the reward model scores them, and a Best-of-N selection outputs the chosen candidate. This preserves the key separation that the LLM is not updated—only outputs are scored/selected."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 4.0,
+              "reason": "Major components are correctly labeled in line with the summary: 'AdaRewriter', 'LLM', 'Retrieval', 'Ranking Assessment', 'Reward Model', and 'Best-of-N Inference'. However, the figure does not explicitly label the outcome supervision as a fusion score M(S(i)) from sparse+dense retrievers, nor does it label S as q̂ ⊕ r̂; these omissions reduce label specificity relative to the summary, though the high-level labels remain faithful."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "summarization",
+              "score": 4.0,
+              "reason": "The figure is largely schematized around the main contribution described in the summary: LLM generates multiple candidate reformulations, retrieval-based outcome ranking is used during training to supervise a reward model, and the reward model selects the best candidate at inference (Best-of-N). The split into Training vs Inference matches the method structure. Minor readability dilution comes from the left-side illustrative dialogue examples, which take substantial space and add narrative detail beyond the core pipeline."
+            },
+            {
+              "question": "contextual_match",
+              "score": 5.0,
+              "reason": "As an overview figure, it functions well alongside the caption and paper text: it clearly communicates the plug-and-play test-time adaptation idea (selection without updating the LLM) and the use of retrieval outcomes to train the reward model. The key components in the summary (candidate generator, ranking assessment via retrieval, reward model training, reward-model-based selection at inference) are visually present and correctly related."
+            },
+            {
+              "question": "redundancy",
+              "score": 4.0,
+              "reason": "The main flow avoids decorative graphics and mostly uses standard blocks/arrows. However, the multi-turn chat snippets and correctness marks on the left are somewhat redundant for an 'overview' and can distract from the central pipeline, even though they serve as a conventional motivating example. They do not appear to alter the core claimed structure, but they add non-essential visual complexity."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The pipeline clearly flows left-to-right in both the Training (top band) and Inference (bottom band) sections: {q,H} samples → LLM → N candidate reformulations → (Training: retrieval-based ranking assessment → reward model) / (Inference: reward model scoring → best-of-N selection). This matches the summary’s staged generation→scoring/selection structure."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Most connectors are clean and non-overlapping, with arrows progressing horizontally. The only mild visual congestion is around the candidate stacks and the bracketed grouping (S1…Sn) where multiple arrows and the ranking/selection boxes are close, but there are no severe line crossings that impede tracing the core method."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related modules are placed near each other: the LLM is adjacent to the candidate list it produces; in Training, retrieval/ranking assessment sits directly between candidates and the reward model; in Inference, the reward model is directly between candidates and best-of-N selection. The split into Training vs Inference reinforces the summary’s separation of reward-model training vs test-time adaptation."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major blocks align well on an implicit grid (left input, central LLM, mid candidate stack, right-side scoring/selection). Minor misalignments appear in the stacked candidate boxes and the right-side selected outputs (S(1) etc.), which are visually offset for emphasis rather than strict alignment."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Key components stand out via sectioning (two large colored bands for Training/Inference) and distinct highlighting for the Reward Model (consistent orange) and best-of-N output. However, the LLM and candidate-generation portion occupies substantial visual space similar to the reward model, so the ‘selection-based adaptation’ core idea is emphasized but not overwhelmingly dominant."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient spacing between major modules, and the two horizontal bands create clear separation. Some tight spacing occurs within the candidate reformulation stacks and near the ranking/assessment area where icons and labels are dense, but readability of the main flow remains intact."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Similar roles use consistent visual encodings: both Training and Inference reuse the same shapes for {q,H} samples, the same LLM block, the same candidate-stack style, and the same orange Reward Model styling. The repeated candidate-list motif supports the summary’s shared generation process across phases."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces several abstract operations with concrete visual symbols consistent with the summary: a chat-style conversation panel for {q,H}, an LLM box with recognizable API/provider icons to convey black-box prompting, a database-cylinder icon for retrieval/outcome supervision, and a small network-like icon for the BERT-sized reward model. These metaphors make candidate generation, retrieval-based ranking, and reward-model selection more tangible than pure text/math."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Stylistically it largely follows a common method-overview template (two horizontal lanes for Training vs Inference, arrows, boxes, and braces). While the inclusion of chat snippets and provider icons adds some flavor, the overall visual language is conventional for NLP pipeline diagrams and does not present a notably unique illustrative style beyond standard block-diagram conventions."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s core claim of test-time adaptation via selection rather than LLM updates: it explicitly separates Training (retrieval-based ranking signal feeding reward model learning) from Inference (reward model scoring + Best-of-N selection). The use of braces to emphasize multiple candidates {S(1)…S(N)} and the depiction of ranking assessment only in training directly matches the described components and is more adapted than a generic single-pass pipeline."
+            }
+          ]
+        },
+        "weighted_total": 4.019
+      }
+    }
+  ]
+}

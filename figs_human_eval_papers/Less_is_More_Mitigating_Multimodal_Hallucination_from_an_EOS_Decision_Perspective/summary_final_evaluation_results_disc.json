@@ -1,0 +1,245 @@
+{
+  "paper_name": "Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective",
+  "evaluated_at": "2026-01-12T02:36:59.640677",
+  "figure_summary": "## 1. Core Contributions\n- Reframes multimodal hallucination as, in part, an **EOS (end-of-sentence) decision failure**: overly detailed instruction data pushes LVLMs to keep generating past what they can visually verify.\n- Empirically supports that LVLMs’ EOS prediction reflects a **sequence-level “completeness” check** against visual input (i.e., whether the generated text sufficiently covers what the model can perceive).\n- Proposes **Selective EOS Supervision (SES)**: a modified training objective that leverages regular instruction data to encourage appropriate stopping behavior and reduce hallucinations.\n- Proposes a **Scoring EOS Supervision**-based **data filtering strategy** to identify/remove training examples that degrade EOS-stopping tendency and thus exacerbate hallucinations.\n\n## 2. Method Components & Relations relevant to figures\n- **Autoregressive LVLM generation with EOS**: at each next-token prediction step, the model implicitly chooses between a content token and the special token \\(v_{EOS}\\); the paper treats this as the key decision governing over-generation/hallucination.\n- **Saliency-based “information flow” analysis (for EOS vs non-EOS targets)**  \n  - Uses a saliency matrix based on attention scores \\(A\\) and gradient of cross-entropy loss \\(L(x)\\): \\(I = |A \\odot \\partial L(x)/\\partial A|\\).  \n  - Aggregates token contributions by grouping context into **image tokens**, **preceding sentences**, and **current sentence**, then compares flow patterns when predicting **EOS** vs a **regular token**.\n- **Context manipulation to test “semantic completeness” hypothesis** (while keeping sequence length fixed):  \n  - **image−**: add Gaussian noise mask → reduces visual semantics.  \n  - **image+**: concatenate an unrelated random image → adds extra visual semantics not covered by text.  \n  - **text−**: attention-mask early text tokens → reduces accessible textual semantics.  \n  - Measure effect on **probability/tendency to output EOS** at sentence-ending positions.\n- **Selective EOS Supervision (training objective)**  \n  - Alters the supervision signal so EOS is treated specially: when the gold next token is not EOS, **EOS is excluded from the normalized distribution**, changing gradients so the model is not incentivized to “compete” EOS against content tokens at non-EOS steps (while still learning EOS when it is labeled).\n- **Training-data effect link**  \n  - Tracks how instruction-tuning on **overly detailed** data changes average **EOS log-likelihood at labeled EOS positions**, tying dataset style/detail to stopping propensity.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **motivate** the central claim that overly detailed training targets can suppress EOS stopping behavior and thereby promote hallucination (by showing a measurable decline in EOS likelihood/tendency under such training signals).\n- To **provide mechanistic evidence** that EOS decisions are driven by **sequence-level aggregation** over generated content (not just local sentence context), consistent with a “completeness of the whole description” assessment.\n- To **causally validate** that EOS tendency responds to **semantic alignment/misalignment between text and visual input** (via controlled image/text context manipulations that change semantics without changing length).\n- To **depict how the proposed training objective reshapes probability mass/gradients**, clarifying what SES is designed to increase/decrease during optimization (especially EOS vs non-EOS steps).\n\n## 4. What Figures are NOT intended to show\n- Not a full accounting of all hallucination causes (e.g., vision encoder limits, language priors) or a comprehensive comparison to every mitigation method; figures focus narrowly on the **EOS-stopping perspective**.\n- Not direct proof that every hallucinated token arises exactly at the moment EOS should have occurred; rather, they argue **over-generation risk** increases when EOS stopping is suppressed.\n- Not a claim that EOS behavior is explained purely by **positional/length bias**; the manipulations are used to argue semantics matter, but figures are not exhaustive disentanglement of all confounders.\n- Not an architectural novelty for LVLM backbones; figures aim to illustrate **behavioral/optimization effects** (information flow, EOS probabilities, objective shaping), not new model components.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective__p0__score0.60.png",
+      "caption": "Figure 1: Top: An example from the LLaVA instruction data. The training data can be overly detailed to exceed the model’s visual perception limits. Bottom: Average log-likelihood of the LLaVA (7b) model predicting EOS at positions labeled as EOS during instruction tuning. Training the model with overly detailed data leads to a decrease in its tendency to stop generation.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 2.0,
+              "reason": "The figure covers the specific elements described in its caption: (top) an overly detailed LLaVA instruction example and (bottom) a plot of average EOS log-likelihood at labeled EOS positions across instruction-tuning epochs, supporting the claim that overly detailed data reduces stopping tendency. However, relative to the paper summary’s major components, it omits key method details/formulas (e.g., SES objective excluding EOS from normalization at non-EOS steps, saliency-based information flow I = |A ⊙ ∂L/∂A|, and image/text context manipulations), so it does not include most major components mentioned in the summary."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 3.0,
+              "reason": "Without reading the paper, a reader can grasp the high-level message: training data can be overly detailed beyond visual evidence, and during instruction tuning the model’s EOS likelihood declines over epochs, suggesting reduced tendency to stop. Still, the figure does not explain mechanisms (why EOS is tied to “completeness”) or how this links to hallucination beyond the implied narrative, so the operating principle is only partially understandable from the figure alone."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 1.0,
+              "reason": "It is not a begin-to-end summary of the work. It only motivates the dataset-detail → decreased EOS stopping tendency link, and does not include the proposed SES training objective, scoring-based data filtering strategy, saliency/attention-gradient analysis, or semantic context manipulation experiments described in the summary."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 5.0,
+              "reason": "The figure contains (i) an instruction-data example labeled as overly detailed and (ii) a plot of average EOS log-likelihood across instruction-tuning epochs. These elements align with the summary/caption and do not introduce extra method components (e.g., SES objective, saliency formulas, context manipulations) or unrelated formulas/architectural claims."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 5.0,
+              "reason": "The depicted relationship matches the stated claim: overly detailed instruction data corresponds to a decreasing average log-likelihood of predicting EOS at EOS-labeled positions during instruction tuning (downward trend across epochs). This directly supports the summary’s training-data effect link between overly detailed targets and reduced stopping tendency."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 4.0,
+              "reason": "Key labels present (e.g., 'Training Data', 'overly detailed', axis labels 'Log-likelihood' and 'Epoch') are consistent with the caption’s described quantities (average EOS log-likelihood over instruction-tuning epochs). However, the plot axes/annotations in the visual do not explicitly specify 'EOS' or 'LLaVA (7b)', which are central identifiers in the caption/summary, making the labeling slightly underspecified rather than incorrect."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the main claim in the caption/summary: (top) a concrete example of overly detailed instruction data exceeding visual evidence, and (bottom) a single, clear trend showing decreasing EOS log-likelihood during instruction tuning. The top panel highlights the key phrase (“overly detailed”), keeping attention on the contribution rather than enumerating many auxiliary details."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "As a supplement to the caption, the layout maps cleanly to the narrative: an illustrative data example above and the empirical aggregate effect below. The axes/labels (“Log-likelihood” vs “Epoch”) make the intended reading straightforward, and the downward curve visually supports the statement that EOS stopping tendency decreases with overly detailed training."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "Most elements directly support the core idea (example instruction snippet + EOS log-likelihood trend). Minor redundancy comes from the top panel including more descriptive text than strictly needed to make the point (the essential cue is that the answer adds unverifiable details), but it is not strongly decorative and does not distract from the main message."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure has a clear top-to-bottom structure: the top panel shows an instruction-data example (image + text bubble), and the bottom panel shows the EOS log-likelihood trend plot across epochs. Within the top panel, the example itself reads left-to-right (image on the left, associated training text on the right), supporting a coherent reading order."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "There are no connection lines or arrows in this figure, so there is no risk of line crossings. The separation between the example panel and the plot is clean and does not introduce visual ambiguity."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are placed near each other: the training image and its corresponding instruction text are adjacent in the top panel, and the quantitative result (average EOS log-likelihood over instruction-tuning epochs) is directly beneath as the outcome of the stated issue (overly detailed data). The relationship is clear, though the causal linkage is implied by stacking rather than explicit graphical linkage."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "The top panel elements are neatly aligned in a two-column layout (image block aligned with the text block). The bottom plot is aligned under them with consistent margins. Minor misalignment is visible in the sense that the plot does not visually share a strict column boundary with the two top blocks, but overall it follows a clean grid-like arrangement."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The main components stand out by layout and scale: the top illustrative example is prominent and immediately readable, and the bottom plot is the sole quantitative result, with the trend line clearly emphasized. The key cue 'overly detailed' is visually highlighted in the text bubble, reinforcing the central message described in the caption."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is sufficient whitespace/margin between the top example area and the bottom plot to distinguish them. The content within the top text bubble is somewhat dense, but it remains contained without crowding other elements, and the overall figure is not cramped."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles are represented consistently within each panel: the top panel uses a unified card-like style (rounded rectangles and consistent background tones) for the example, and the bottom panel uses a standard scatter + line plot style consistently. Because the figure mixes an illustrative example and a plot (different roles), differing visual encodings are appropriate; within each role, styling is consistent."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 2.0,
+              "reason": "The figure conveys the abstract idea of “overly detailed instruction data” mostly through a literal example (image + Q/A text) and a standard metric plot (EOS log-likelihood vs epoch). Aside from the small 'overly detailed' tag, there are few concrete icons/symbols/abbreviations used to stand in for concepts like EOS-decision failure or stopping tendency."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "Visually, it follows a common paper-figure template: top qualitative example panel and bottom line/scatter plot. The styling (rounded boxes, grayscale photo, simple annotation) is conventional and does not introduce a distinctive visual language for the EOS framing beyond the standard presentation described in the summary/caption."
+            },
+            {
+              "question": "adaptability",
+              "score": 3.0,
+              "reason": "The two-tier layout is purpose-fit to the paper’s motivation claim in the summary: it directly links an 'overly detailed' training example (top) to a measured decline in EOS log-likelihood during instruction tuning (bottom). While still conventional, the pairing is tailored to the paper’s EOS-stopping argument rather than a generic standalone plot."
+            }
+          ]
+        },
+        "weighted_total": 3.495
+      }
+    },
+    {
+      "figure_file": "Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective__p4__score0.70.png",
+      "caption": "Figure 4: Illustration of the probability distribution derived from our proposed Selective EOS Supervision. Arrows indicate the maximizing and minimizing effects of the training objective on the probability of each word. When the label is not EOS, the EOS token is excluded from the probability distribution.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_Content_Coverage",
+              "score": 3.0,
+              "reason": "The figure directly covers the key component described in the caption/summary for Selective EOS Supervision: it illustrates that when the gold label is not EOS (y ≠ EOS), the EOS token is excluded from the normalized distribution (shown via the dotted p_EOS) and the objective pushes up the probability of the labeled token while pushing down competitors; when y = EOS, EOS is included and maximized. However, it does not include the explicit objective/probability renormalization formula or gradient expression mentioned in the summary (it is purely schematic), and it omits other major paper components (information-flow saliency definition I = |A ⊙ ∂L/∂A|, context manipulations image±/text−, and EOS-likelihood tracking)."
+            },
+            {
+              "question": "1.2_Standalone_Intelligibility",
+              "score": 4.0,
+              "reason": "As a standalone schematic, it is fairly clear that SES changes training depending on whether the label is EOS: exclude EOS from the distribution when y ≠ EOS, and maximize EOS when y = EOS. The arrows labeled “maximize” and the visual removal (dotted) of p_EOS communicate the operating principle without needing much text. What is less clear purely from the figure is the exact mechanism (how renormalization is done, what happens to non-target tokens quantitatively, and how this connects to hallucination reduction)."
+            },
+            {
+              "question": "1.3_Completeness",
+              "score": 2.0,
+              "reason": "The figure is focused narrowly on illustrating the SES objective effect on probability mass for EOS vs non-EOS steps, which matches one method component in the summary. It does not attempt to summarize the paper from beginning to end: it excludes the EOS-as-completeness framing evidence, the saliency-based information-flow analysis, the controlled context manipulations (image−/image+/text−), and the scoring-based data filtering strategy. Thus it is not a complete summary of the paper’s content."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The figure is highly schematic and isolates the main SES contribution described in the summary/caption: two cases (y ≠ EOS vs y = EOS) and how the objective pushes probability mass (maximize/minimize) across tokens, with the key mechanism that p_EOS is excluded from normalization when the label is not EOS. It avoids drifting into unrelated method components (e.g., saliency, context manipulations)."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "With the caption, it functions well as supplementary clarification of how SES reshapes the probability distribution and gradients: the left panel conveys 'EOS excluded when y ≠ EOS' and the right panel conveys normal supervision when y = EOS. Minor ambiguity remains because the arrows and shading do not explicitly label which tokens are being minimized versus merely not updated, so a reader may need the surrounding text to interpret the exact optimization effect."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The visual includes minimal elements (bars, token probabilities, arrows, and the dashed/absent EOS bar on the non-EOS side) and largely avoids decoration. Slight redundancy comes from repeated maximize labels/arrows and ellipses that could be simplified, but they do not introduce irrelevant content or distract from the core SES idea."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.571,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The figure is organized as two side-by-side panels (y ≠ EOS on the left, y = EOS on the right) with the probability bars and labels laid out left-to-right within each panel, making the reading/flow direction unambiguous."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "There are no connecting lines between elements; only vertical arrows above individual bars. Hence, there is no line crossing and the visual is clean."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Closely related elements are grouped well: each panel contains its own probability bars (p1 … py … pEOS) and its condition label (y ≠ EOS or y = EOS) directly beneath. The only mild drawback is that the meaning of the dotted-outline pEOS (excluded distribution) relies on the caption rather than an in-figure legend, slightly weakening immediate association."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 5.0,
+              "reason": "Bars are uniformly baseline-aligned and evenly spaced; labels (p1, p2, …, py/pj, pEOS) are placed consistently beneath their bars, indicating neat grid-based alignment."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The key contrast (non-EOS vs EOS label case) is made salient by the two-panel layout and by visually emphasizing EOS via a darker bar and, in the non-EOS case, a dotted/greyed exclusion. However, the hierarchy cue for the panel distinction is primarily the small text labels; stronger panel headers or separators could make the main comparison stand out more."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is sufficient spacing between bars and between the two panels to prevent clutter. The top margin is somewhat tight because arrows and the word “maximize” sit close to the upper boundary, but it does not significantly impair readability."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Both panels use the same bar shapes, typography, and color scheme; corresponding probability terms (p1, p2, …, pEOS) are represented consistently, supporting the intended comparison of distributions under SES when y ≠ EOS versus y = EOS."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure replaces the abstract optimization effect of Selective EOS Supervision with concrete visual metaphors: bar heights for probabilities (p1…pEOS), dashed/removed bar to indicate excluding EOS from the normalized distribution when y≠EOS, and up/down arrows labeled “maximize” to depict gradient push/pull. This is a clear iconographic encoding, though it remains a conventional probability-bar schematic rather than a richer metaphor."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Stylistically it follows a common ML-paper template: minimalist bar-chart-like probability vectors and arrows. While the dashed EOS bar to signify exclusion is a neat touch aligned with the summary’s objective change, the overall visual language is standard and not particularly distinctive."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific SES mechanism by juxtaposing the two key cases (y≠EOS vs y=EOS) side-by-side and explicitly showing the structural change to the distribution (EOS removed only in the non-EOS case). This directly supports the core method explanation in the summary rather than using a generic loss-function diagram."
+            }
+          ]
+        },
+        "weighted_total": 2.981
+      }
+    }
+  ]
+}

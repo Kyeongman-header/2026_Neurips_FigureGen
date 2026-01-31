@@ -1,0 +1,431 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=1800, initial-scale=1"/>
+<title>Overview of Diffusion-EAGS and D-cMRF</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#1a1a1a;
+    --muted:#5a6470;
+    --panel:#f7f8fb;
+    --panel2:#fbfbfe;
+    --stroke:#2b2f36;
+    --line:#6b7280;
+    --softline:#c8ced8;
+    --accent:#5b5bd6;     /* purple */
+    --accent2:#1f7a8c;    /* teal */
+    --accent3:#b14a73;    /* magenta */
+    --good:#1f7a3a;       /* green */
+    --warn:#b45309;       /* amber */
+  }
+
+  html, body { margin:0; padding:0; background:var(--bg); }
+  #figure-root{
+    width:1800px;
+    height:1200px;
+    margin:0;
+    position:relative;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  .caption{
+    font-size:22px;
+    line-height:1.25;
+    color:#111;
+  }
+  .small{
+    font-size:18px;
+    fill: var(--muted);
+  }
+  .title{
+    font-size:34px;
+    font-weight:700;
+    fill: var(--ink);
+    letter-spacing:0.2px;
+  }
+  .subtitle{
+    font-size:22px;
+    fill: var(--muted);
+  }
+  .panel-title{
+    font-size:26px;
+    font-weight:700;
+    fill: var(--ink);
+  }
+  .label{
+    font-size:22px;
+    fill: var(--ink);
+  }
+  .label-bold{
+    font-size:22px;
+    font-weight:700;
+    fill: var(--ink);
+  }
+  .mono{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size:20px;
+    fill: var(--ink);
+  }
+  .token{
+    font-size:22px;
+    font-weight:700;
+    fill: var(--ink);
+  }
+  .token-muted{
+    font-size:22px;
+    font-weight:700;
+    fill: #9aa3af;
+  }
+  .badgeText{
+    font-size:18px;
+    font-weight:700;
+    fill:#ffffff;
+  }
+
+  /* Shapes */
+  .panel{
+    fill: var(--panel);
+    stroke: var(--softline);
+    stroke-width:2;
+    rx:18; ry:18;
+  }
+  .panel2{
+    fill: var(--panel2);
+    stroke: var(--softline);
+    stroke-width:2;
+    rx:16; ry:16;
+  }
+  .box{
+    fill:#ffffff;
+    stroke: var(--line);
+    stroke-width:2;
+    rx:14; ry:14;
+  }
+  .box-accent{
+    fill:#ffffff;
+    stroke: var(--accent);
+    stroke-width:3;
+    rx:14; ry:14;
+  }
+  .box-teal{
+    fill:#ffffff;
+    stroke: var(--accent2);
+    stroke-width:3;
+    rx:14; ry:14;
+  }
+  .box-mag{
+    fill:#ffffff;
+    stroke: var(--accent3);
+    stroke-width:3;
+    rx:14; ry:14;
+  }
+  .chip{
+    fill:#ffffff;
+    stroke: var(--softline);
+    stroke-width:2;
+    rx:12; ry:12;
+  }
+  .chip-fill{
+    fill:#f1f5ff;
+    stroke: var(--accent);
+    stroke-width:2;
+    rx:12; ry:12;
+  }
+  .mask{
+    fill:#f3f4f6;
+    stroke:#cfd6e1;
+    stroke-width:2;
+    rx:10; ry:10;
+  }
+  .mask-strong{
+    fill:#eef2ff;
+    stroke: var(--accent);
+    stroke-width:2;
+    rx:10; ry:10;
+  }
+  .hi{
+    fill:#fff7ed;
+    stroke:#f59e0b;
+    stroke-width:2;
+    rx:10; ry:10;
+  }
+  .lo{
+    fill:#ecfdf5;
+    stroke:#10b981;
+    stroke-width:2;
+    rx:10; ry:10;
+  }
+
+  .arrow{
+    stroke: var(--stroke);
+    stroke-width:2.5;
+    fill:none;
+  }
+  .arrow-soft{
+    stroke: var(--line);
+    stroke-width:2.5;
+    fill:none;
+  }
+  .dash{
+    stroke-dasharray:8 7;
+  }
+  .connectorLabel{
+    font-size:18px;
+    fill: var(--muted);
+  }
+  .note{
+    font-size:18px;
+    fill: var(--muted);
+  }
+  .emph{
+    font-size:20px;
+    font-weight:700;
+    fill: var(--ink);
+  }
+
+  .legend-title{
+    font-size:20px;
+    font-weight:700;
+    fill: var(--ink);
+  }
+  .legend-text{
+    font-size:18px;
+    fill: var(--muted);
+  }
+</style>
+</head>
+
+<body>
+<div id="figure-root">
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200" role="img" aria-label="Overview of Diffusion-EAGS and D-cMRF: training with ENS and inference with EAGS">
+  <defs>
+    <marker id="arrowhead" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#2b2f36"></path>
+    </marker>
+    <marker id="arrowheadSoft" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 5 L 0 10 z" fill="#6b7280"></path>
+    </marker>
+    <linearGradient id="timeGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#e9edf7"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="timeGrad2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e9edf7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Top header -->
+  <text x="70" y="70" class="title">Diffusion-EAGS within D-cMRF: training (ENS) and inference (EAGS)</text>
+  <text x="70" y="106" class="subtitle">Discrete diffusion with an MLM-as-cMRF denoiser; entropy guides which tokens to mask (training) and update (inference)</text>
+
+  <!-- Left: Training panel -->
+  <rect x="60" y="140" width="830" height="900" class="panel"></rect>
+  <text x="90" y="190" class="panel-title">Training: Entropy-based Noise Scheduling (ENS)</text>
+  <text x="90" y="220" class="small">Progressively mask <tspan font-weight="700">low-entropy</tspan> (high-confidence) tokens so the model learns a structured denoising process</text>
+
+  <!-- Right: Inference panel -->
+  <rect x="910" y="140" width="830" height="900" class="panel"></rect>
+  <text x="940" y="190" class="panel-title">Inference: Entropy-Adaptive Gibbs Sampling (EAGS)</text>
+  <text x="940" y="220" class="small">Start from a fully masked sequence; iteratively update <tspan font-weight="700">high-entropy</tspan> (uncertain) tokens using conditional sampling to denoise</text>
+
+  <!-- Middle: D-cMRF core module bridging both -->
+  <rect x="640" y="250" width="520" height="170" class="box-accent"></rect>
+  <text x="900" y="290" text-anchor="middle" class="label-bold">D-cMRF / Diffusion-EAGS core</text>
+  <text x="900" y="320" text-anchor="middle" class="label">MLM as conditional MRF (cMRF) denoiser</text>
+  <text x="900" y="350" text-anchor="middle" class="note">Energy-based view enables stable iterative updates</text>
+  <text x="900" y="378" text-anchor="middle" class="note">Entropy H(xᵢ) computed from MLM token distributions</text>
+
+  <!-- Arrows from panels to core -->
+  <path d="M 430 260 C 520 260, 560 280, 640 310" class="arrow-soft" marker-end="url(#arrowheadSoft)"></path>
+  <text x="470" y="250" class="connectorLabel">uses entropy to schedule masking</text>
+
+  <path d="M 1370 260 C 1280 260, 1240 280, 1160 310" class="arrow-soft" marker-end="url(#arrowheadSoft)"></path>
+  <text x="1235" y="250" class="connectorLabel">uses entropy to select Gibbs updates</text>
+
+  <!-- TRAINING PIPELINE -->
+  <!-- Step boxes -->
+  <rect x="90" y="270" width="770" height="310" class="panel2"></rect>
+  <text x="110" y="305" class="label-bold">Forward (noising) process guided by entropy</text>
+
+  <!-- Input with conditions -->
+  <rect x="120" y="330" width="330" height="90" class="box"></rect>
+  <text x="135" y="360" class="label-bold">Conditional input</text>
+  <text x="135" y="390" class="note">[ Y | X ] (conditions + tokens)</text>
+
+  <!-- Entropy estimation -->
+  <rect x="480" y="330" width="350" height="90" class="box-teal"></rect>
+  <text x="495" y="360" class="label-bold">Entropy estimation</text>
+  <text x="495" y="390" class="note">Compute H(xᵢ) from MLM softmax</text>
+
+  <path d="M 450 375 L 480 375" class="arrow-soft" marker-end="url(#arrowheadSoft)"></path>
+
+  <!-- Masking schedule -->
+  <rect x="120" y="440" width="710" height="115" class="box-mag"></rect>
+  <text x="135" y="470" class="label-bold">ENS: progressively mask low-entropy tokens</text>
+  <text x="135" y="498" class="note">At step t, mask L/T positions with the <tspan font-weight="700">lowest</tspan> entropy → structured corruption</text>
+  <text x="135" y="526" class="note">Produces Xₜ with more [MASK] tokens over time</text>
+
+  <path d="M 655 420 L 655 440" class="arrow-soft" marker-end="url(#arrowheadSoft)"></path>
+
+  <!-- Mini timeline illustrating progressive masking -->
+  <text x="110" y="610" class="label-bold">Example (increasing noise across training timesteps)</text>
+  <rect x="120" y="632" width="740" height="80" fill="url(#timeGrad)" stroke="#d6dbe6" stroke-width="2" rx="14" ry="14"></rect>
+  <text x="145" y="662" class="note">t=1 (few masked)</text>
+  <text x="740" y="662" class="note">t=T (more masked)</text>
+
+  <!-- Sequence row t=1 -->
+  <g transform="translate(140,675)">
+    <rect x="0" y="0" width="92" height="44" class="lo"></rect>
+    <text x="46" y="29" text-anchor="middle" class="token">the</text>
+
+    <rect x="102" y="0" width="92" height="44" class="lo"></rect>
+    <text x="148" y="29" text-anchor="middle" class="token">cat</text>
+
+    <rect x="204" y="0" width="92" height="44" class="mask"></rect>
+    <text x="250" y="29" text-anchor="middle" class="token-muted">MASK</text>
+
+    <rect x="306" y="0" width="92" height="44" class="lo"></rect>
+    <text x="352" y="29" text-anchor="middle" class="token">quietly</text>
+
+    <rect x="408" y="0" width="92" height="44" class="lo"></rect>
+    <text x="454" y="29" text-anchor="middle" class="token">slept</text>
+
+    <rect x="510" y="0" width="92" height="44" class="lo"></rect>
+    <text x="556" y="29" text-anchor="middle" class="token">.</text>
+  </g>
+
+  <!-- Sequence row t=T -->
+  <g transform="translate(590,675)">
+    <rect x="0" y="0" width="92" height="44" class="mask-strong"></rect>
+    <text x="46" y="29" text-anchor="middle" class="token-muted">MASK</text>
+
+    <rect x="102" y="0" width="92" height="44" class="mask-strong"></rect>
+    <text x="148" y="29" text-anchor="middle" class="token-muted">MASK</text>
+
+    <rect x="204" y="0" width="92" height="44" class="mask-strong"></rect>
+    <text x="250" y="29" text-anchor="middle" class="token-muted">MASK</text>
+
+    <rect x="306" y="0" width="92" height="44" class="mask-strong"></rect>
+    <text x="352" y="29" text-anchor="middle" class="token-muted">MASK</text>
+
+    <rect x="408" y="0" width="92" height="44" class="mask-strong"></rect>
+    <text x="454" y="29" text-anchor="middle" class="token-muted">MASK</text>
+
+    <rect x="510" y="0" width="92" height="44" class="mask-strong"></rect>
+    <text x="556" y="29" text-anchor="middle" class="token-muted">MASK</text>
+  </g>
+
+  <!-- Training objective -->
+  <rect x="90" y="740" width="770" height="265" class="panel2"></rect>
+  <text x="110" y="775" class="label-bold">Backward (denoising) learning</text>
+
+  <rect x="120" y="800" width="350" height="95" class="box"></rect>
+  <text x="135" y="830" class="label-bold">Denoiser: MLM-as-cMRF</text>
+  <text x="135" y="860" class="note">Predict masked tokens given [Y | Xₜ]</text>
+
+  <rect x="510" y="800" width="320" height="95" class="box"></rect>
+  <text x="525" y="830" class="label-bold">Loss</text>
+  <text x="525" y="860" class="note">Cross-entropy on masked positions</text>
+
+  <path d="M 470 847 L 510 847" class="arrow-soft" marker-end="url(#arrowheadSoft)"></path>
+
+  <rect x="120" y="915" width="710" height="70" class="chip-fill"></rect>
+  <text x="135" y="945" class="emph">Training outcome:</text>
+  <text x="325" y="945" class="note">Model learns stepwise denoising aligned with entropy-ordered corruption (ENS)</text>
+
+  <!-- INFERENCE PIPELINE -->
+  <rect x="940" y="270" width="770" height="735" class="panel2"></rect>
+  <text x="960" y="305" class="label-bold">Iterative denoising from a fully masked sequence</text>
+
+  <!-- Start state -->
+  <rect x="970" y="330" width="330" height="90" class="box"></rect>
+  <text x="985" y="360" class="label-bold">Initialization</text>
+  <text x="985" y="390" class="note">X₀ = fully masked sequence (max entropy)</text>
+
+  <!-- Conditional sampling -->
+  <rect x="1330" y="330" width="350" height="90" class="box-teal"></rect>
+  <text x="1345" y="360" class="label-bold">Conditional distribution</text>
+  <text x="1345" y="390" class="note">p(xᵢ | X\\{xᵢ}, Y) from MLM-as-cMRF</text>
+
+  <path d="M 1300 375 L 1330 375" class="arrow-soft" marker-end="url(#arrowheadSoft)"></path>
+
+  <!-- EAGS selection -->
+  <rect x="970" y="440" width="710" height="115" class="box-mag"></rect>
+  <text x="985" y="470" class="label-bold">EAGS: update high-entropy tokens first (Gibbs)</text>
+  <text x="985" y="498" class="note">At each step: compute H(xᵢ) → select set M of <tspan font-weight="700">highest</tspan>-entropy positions</text>
+  <text x="985" y="526" class="note">Sample and replace tokens at i ∈ M; recompute entropies; iterate for T steps</text>
+
+  <path d="M 1505 420 L 1505 440" class="arrow-soft" marker-end="url(#arrowheadSoft)"></path>
+
+  <!-- Iteration illustration -->
+  <text x="960" y="610" class="label-bold">Example (entropy-adaptive updates across inference steps)</text>
+  <rect x="970" y="632" width="710" height="270" fill="url(#timeGrad2)" stroke="#d6dbe6" stroke-width="2" rx="14" ry="14"></rect>
+
+  <!-- Step 0 fully masked -->
+  <text x="990" y="667" class="note">Step 0: fully masked</text>
+  <g transform="translate(990,685)">
+    <rect x="0" y="0" width="96" height="44" class="mask-strong"></rect><text x="48" y="29" text-anchor="middle" class="token-muted">MASK</text>
+    <rect x="106" y="0" width="96" height="44" class="mask-strong"></rect><text x="154" y="29" text-anchor="middle" class="token-muted">MASK</text>
+    <rect x="212" y="0" width="96" height="44" class="mask-strong"></rect><text x="260" y="29" text-anchor="middle" class="token-muted">MASK</text>
+    <rect x="318" y="0" width="96" height="44" class="mask-strong"></rect><text x="366" y="29" text-anchor="middle" class="token-muted">MASK</text>
+    <rect x="424" y="0" width="96" height="44" class="mask-strong"></rect><text x="472" y="29" text-anchor="middle" class="token-muted">MASK</text>
+    <rect x="530" y="0" width="96" height="44" class="mask-strong"></rect><text x="578" y="29" text-anchor="middle" class="token-muted">MASK</text>
+  </g>
+
+  <!-- Step 1 update high-entropy positions (highlight as hi boxes) -->
+  <text x="990" y="764" class="note">Step 1: update highest-entropy positions</text>
+  <g transform="translate(990,782)">
+    <rect x="0" y="0" width="96" height="44" class="hi"></rect><text x="48" y="29" text-anchor="middle" class="token">the</text>
+    <rect x="106" y="0" width="96" height="44" class="mask"></rect><text x="154" y="29" text-anchor="middle" class="token-muted">MASK</text>
+    <rect x="212" y="0" width="96" height="44" class="hi"></rect><text x="260" y="29" text-anchor="middle" class="token">cat</text>
+    <rect x="318" y="0" width="96" height="44" class="mask"></rect><text x="366" y="29" text-anchor="middle" class="token-muted">MASK</text>
+    <rect x="424" y="0" width="96" height="44" class="mask"></rect><text x="472" y="29" text-anchor="middle" class="token-muted">MASK</text>
+    <rect x="530" y="0" width="96" height="44" class="mask"></rect><text x="578" y="29" text-anchor="middle" class="token-muted">MASK</text>
+  </g>
+
+  <!-- Step T converged -->
+  <text x="990" y="858" class="note">Step T: low-entropy (stable) sequence</text>
+  <g transform="translate(990,876)">
+    <rect x="0" y="0" width="96" height="44" class="lo"></rect><text x="48" y="29" text-anchor="middle" class="token">the</text>
+    <rect x="106" y="0" width="96" height="44" class="lo"></rect><text x="154" y="29" text-anchor="middle" class="token">cat</text>
+    <rect x="212" y="0" width="96" height="44" class="lo"></rect><text x="260" y="29" text-anchor="middle" class="token">quietly</text>
+    <rect x="318" y="0" width="96" height="44" class="lo"></rect><text x="366" y="29" text-anchor="middle" class="token">slept</text>
+    <rect x="424" y="0" width="96" height="44" class="lo"></rect><text x="472" y="29" text-anchor="middle" class="token">on</text>
+    <rect x="530" y="0" width="96" height="44" class="lo"></rect><text x="578" y="29" text-anchor="middle" class="token">.</text>
+  </g>
+
+  <!-- Inference outcome -->
+  <rect x="940" y="920" width="770" height="85" class="chip-fill"></rect>
+  <text x="960" y="952" class="emph">Inference outcome:</text>
+  <text x="1160" y="952" class="note">Entropy-guided iterative updates improve conditional controllability, diversity, and stability</text>
+  <text x="960" y="980" class="note">EAGS prioritizes uncertain tokens, reducing degeneration and semantic drift</text>
+
+  <!-- Cross-panel summary arrows -->
+  <path d="M 510 1035 C 750 1095, 1050 1095, 1290 1035" class="arrow dash" marker-end="url(#arrowhead)"></path>
+  <text x="900" y="1102" text-anchor="middle" class="connectorLabel">Shared principle: entropy-guided token selection (mask low-entropy in training; update high-entropy in inference)</text>
+
+  <!-- Legend -->
+  <rect x="60" y="1055" width="650" height="110" fill="#ffffff" stroke="#d6dbe6" stroke-width="2" rx="16" ry="16"></rect>
+  <text x="85" y="1090" class="legend-title">Legend</text>
+
+  <rect x="90" y="1106" width="44" height="30" class="lo"></rect>
+  <text x="145" y="1128" class="legend-text">Low entropy (high confidence / stable token)</text>
+
+  <rect x="410" y="1106" width="44" height="30" class="hi"></rect>
+  <text x="465" y="1128" class="legend-text">High entropy (uncertain / prioritized for update in EAGS)</text>
+
+  <rect x="90" y="1145" width="44" height="30" class="mask-strong"></rect>
+  <text x="145" y="1167" class="legend-text">[MASK] token (corruption state)</text>
+
+  <!-- Caption area -->
+  <rect x="60" y="1120" width="1680" height="70" fill="#ffffff" stroke="#cfd6e1" stroke-width="2" rx="14" ry="14"></rect>
+  <text x="80" y="1165" class="caption">
+    Overview of Diffusion-EAGS and D-cMRF: during training, entropy-based noise scheduling (ENS) progressively masks low-entropy tokens; during inference, entropy-adaptive Gibbs sampling (EAGS) iteratively updates high-entropy tokens to denoise a fully masked sequence, improving conditional controllability, diversity, and stability.
+  </text>
+
+</svg>
+</div>
+</body>
+</html>

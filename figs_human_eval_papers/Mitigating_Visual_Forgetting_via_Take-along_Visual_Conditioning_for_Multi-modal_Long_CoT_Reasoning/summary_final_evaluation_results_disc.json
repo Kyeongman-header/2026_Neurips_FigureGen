@@ -1,0 +1,499 @@
+{
+  "paper_name": "Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning",
+  "evaluated_at": "2026-01-12T03:15:06.085973",
+  "figure_summary": "## 1. Core Contributions\n- **Diagnose “visual forgetting” in multimodal long-CoT reasoning**: show that, as reasoning proceeds, the model becomes increasingly insensitive to the original image evidence and over-relies on its own generated text.\n- **Introduce Take-along Visual Conditioning (TVC)** to sustain visual grounding in long reasoning chains by **re-introducing visual evidence at critical stages** and **compressing visual tokens** to limit context burden.\n- **Provide training- and inference-time mechanisms** (Dynamic Visual Reaffirmation in training; Periodic Visual Calibration in testing) meant to counteract attention decay to images and improve multimodal math/geometry reasoning accuracy.\n\n## 2. Method Components & Relations relevant to figures\n- **Baseline MLLM long-CoT formulation**: \\(C_{MLLM}=f(V, T_1,\\dots,T_n)\\) where **visual tokens \\(V\\)** are only provided at the start, while text tokens accumulate over the chain—setting up the forgetting mechanism.\n- **Diagnostic ablation procedure (visual removal mid-reasoning)**:\n  - Run normal long-CoT to produce a partial reasoning prefix.\n  - **Reset KV cache / mask image tokens** at a cutoff \\(k\\) (multiple stages), then **re-complete** reasoning using only text history.\n  - Compare accuracy vs normal reasoning to quantify reliance on image vs generated text; characterize decay (Eq. 2: \\(\\Delta_{visual}(k)\\propto e^{-k}\\)).\n- **Attention-based measurement**:\n  - Compute **layer-level attention proportion on image tokens** across response positions.\n  - Visualize **token-level attention maps** showing shift from image tokens toward prior text tokens over time.\n- **TVC intervention (system-level dataflow)**:\n  - **Training: Dynamic Visual Reaffirmation (DVR)**: curated long-chain data + **manual re-injection of visual content** (visual embeddings + a “bridging prompt”) at designated points to force repeated visual grounding.\n  - **Inference: Periodic Visual Calibration (PVC)**: trigger “self-reflection intervals” where the model **reactivates visual input** mid-chain to validate/correct reasoning.\n  - **Image token compression** (adaptive pooling) to reduce token count while preserving spatial semantics, preventing the reintroduced visual tokens from overwhelming textual context.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **make the visual-forgetting phenomenon observable and measurable**, both behaviorally (accuracy under staged image removal) and mechanistically (attention shifting away from image tokens as generation proceeds).\n- To **situate TVC as a targeted fix** by visually conveying *where* and *how* the method reintroduces visual evidence during long-CoT, and how token compression supports repeated conditioning.\n- To **connect pipeline → mechanism → outcome**: (i) how long-chain data is generated/filtered for training, (ii) how TVC changes the interaction between image/text over time, and (iii) how this leads to corrected reasoning in illustrative cases.\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide a complete proof that attention weights are a definitive causal explanation of reasoning (they are used as indicative diagnostics of visual-token reliance/decay).\n- Not intended to claim the model never uses images; rather, they aim to show **image dependence diminishes with reasoning length/stage**, especially after early steps.\n- Not intended to isolate every confound (e.g., dataset biases, text-only solvability, or full architectural effects); the figures primarily support the paper’s **staged-ablation and re-conditioning narrative** rather than exhaustive causal attribution.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p4__score1.00.png",
+      "caption": "Figure 4: Data Generation Pipeline of TVC. We use iterative distillation to collect long-chain reasoning data, followed by a comprehensive response filtering process to ensure high-quality reasoning.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 2.0,
+              "reason": "The figure matches the captioned scope (data generation via iterative distillation/sampling and response filtering) and is consistent with the summary’s mention of curated long-chain data and filtering for training. However, relative to the paper summary’s major method components, it omits core TVC mechanisms and structures (baseline long-CoT formulation, staged visual-removal diagnostic, attention-based measurement, DVR/PVC visual re-injection, and image-token compression). Thus it does not cover most major components/formulas mentioned in the summary."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 3.0,
+              "reason": "From the graphic alone, one can infer a two-stage pipeline: (i) a generator producing candidate responses via best-of-N resampling/iterative sampling, and (ii) a filtering stage including dataset filtering, dynamic token truncation, and reflection-word pruning leading to a final dataset/response set. But the figure does not explain what task/domain the data is for (e.g., multimodal long-CoT/visual grounding), what the acceptance/rejection criteria are, or how this connects to the central TVC idea of reintroducing visual evidence; so the operating principle is only partially clear without the paper."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 1.0,
+              "reason": "The figure covers only the training-data generation/filtering portion and does not summarize the end-to-end paper narrative described in the summary (diagnosing visual forgetting behaviorally and via attention, introducing TVC with DVR/PVC, and the role of visual-token compression). As a result, it is far from a beginning-to-end summary of the paper’s content."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 2.0,
+              "reason": "The summary and caption describe a data-generation pipeline using iterative distillation plus response filtering. The figure introduces several specific mechanisms—\"Best-of-N Resampling,\" \"Iterative Sampling,\" \"Dynamic Token Truncation,\" and \"Reflection Word Pruning\"—that are not mentioned in the provided summary. These additions materially specify *how* distillation/filtering is done, so they count as hallucinated details relative to the reference."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 4.0,
+              "reason": "At a high level, the relationships shown (data generation via iterative sampling/resampling producing responses, then a response/dataset filtering stage applied to a dataset) are consistent with the caption’s claim of iterative distillation followed by comprehensive filtering. However, because the summary does not define the specific sub-steps (resampling, truncation, pruning) or their ordering, the correctness of these particular relations cannot be fully verified from the summary."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 3.0,
+              "reason": "The figure title/theme aligns with the caption’s \"Data Generation Pipeline\" and includes a \"Response Filtering\" stage consistent with the summary’s notion of response filtering. But key labels correspond to unmentioned components in the summary (e.g., \"Best-of-N Resampling,\" \"Dynamic Token Truncation,\" \"Reflection Word Pruning\"), so their accuracy relative to the provided paper summary cannot be confirmed."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The schematic is compact and centered on the data-generation story stated in the caption: a data generator produces candidate responses via best-of-N/iterative sampling, followed by a filtering stage. It avoids diving into model-internal details (e.g., attention/KV cache) that are outside this figure’s purpose. However, the pipeline is a bit underspecified relative to the paper summary’s training-side TVC narrative (e.g., no explicit depiction of visual re-injection/bridging prompts), which slightly weakens how well it communicates the main method contribution beyond generic data distillation+filtering."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption ('iterative distillation' + 'comprehensive response filtering'), the two-stage layout (generation on top, filtering on bottom) is easy to follow and matches the described intent. The labeled components (Data Generator → Response; Response Filtering with truncation/pruning; dataset filtering) provide a coherent overview, though some labels (e.g., icons/checkmarks/cross) are not fully self-explanatory without surrounding text, and the link to TVC-specific training mechanisms in the summary (DVR) is not explicit."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure largely avoids decorative clutter and uses conventional flowchart elements to convey process. Still, several stylistic elements (multiple icons, background color blocks, repeated 'Response' boxes, check/cross symbols) add minor visual noise and could be simplified without losing meaning. These do not appear to alter the core claims but slightly reduce clarity-to-ink ratio."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 4.0,
+              "reason": "The pipeline mostly reads left-to-right: input icons on the left feed into “Data Generator,” then to “Response.” The lower section also starts with “Dataset” on the left and routes to filtering modules. However, two thick black arrows point leftward from “Response Filtering” to the two pruning/truncation boxes, which slightly disrupts a single consistent flow direction."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 5.0,
+              "reason": "Connection lines are routed cleanly with no visible crossings. The red loop for “Best-of-N Resampling / Iterative Sampling” stays separated from the main black arrow, and the blue dataset-filtering links remain within the lower panel without intersecting other connectors."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are grouped: the upper (pink) region contains data generation and response selection/resampling, and the lower (blue) region contains dataset/response filtering with its two sub-operations. Within the lower region, “Dynamic Token Truncation” and “Reflection Word Pruning” are placed close to each other and close to “Response Filtering,” supporting their relationship. Minor proximity ambiguity arises because “Response Filtering” is placed to the far right while its outputs point back left, which is slightly counterintuitive spatially."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "Boxes are generally aligned on an implicit grid: top row (“Data Generator” → “Response”) is horizontally aligned; the two middle boxes in the lower panel are vertically stacked and similarly sized. Some elements (icons/labels like “Iterative Sampling” and “Dataset Filtering,” and the right-side “Response Filtering” box) are not perfectly aligned with the main grid, but overall layout remains neat."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "Main stages stand out via paneling (pink vs blue), larger central boxes (“Data Generator,” “Response,” “Response Filtering”), and thicker primary arrows. The two filtering sub-steps are visually subordinate (smaller boxes). Hierarchy is clear, though the large check/cross icons between generator and response draw strong attention that can compete with the primary module titles."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient spacing between boxes and between the two colored panels, and arrows have room to route without clutter. A few areas are tighter: the red resampling loop and its label sit close to the central arrow path, and the right-side “Response Filtering” box is close to the panel boundary, but readability is still acceptable."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 4.0,
+              "reason": "Similar roles are mostly encoded consistently: process modules are rounded rectangles with icons, and the two panel backgrounds consistently indicate two stages (generation vs filtering). However, some semantics are conveyed with mixed visual language (e.g., check/cross symbols, multiple icon styles, and varying arrow colors/thicknesses), which slightly reduces uniformity across components."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces abstract pipeline steps with concrete icons and compact labels (e.g., image/file-like input, “Data Generator” box with model icon, check/X symbols for accept/reject, and tool/filter icons for truncation/pruning/filtering). This metaphorical encoding makes the iterative distillation + response filtering process visually legible. While effective, the iconography (checks, Xs, arrows) is still fairly conventional rather than deeply domain-specific."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 3.0,
+              "reason": "Stylistically, it goes beyond a plain black-and-white flowchart by using color-coded regions (pink for iterative sampling, blue for dataset filtering) and integrated icons, but the overall look remains close to common ML paper pipeline diagrams (rounded rectangles, arrows, standard symbols). Nothing in the summary suggests a distinctive visual language unique to TVC beyond clear grouping."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the described data-generation narrative: an upper loop indicating iterative sampling/resampling and a lower section emphasizing a multi-step filtering stage, with arrows showing how responses feed into filtering and how the dataset is formed. This breaks from a single linear pipeline and matches the caption’s emphasis on iterative distillation plus comprehensive filtering, indicating deliberate adaptation to the paper’s process structure."
+            }
+          ]
+        },
+        "weighted_total": 3.362
+      }
+    },
+    {
+      "figure_file": "Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+      "caption": "Figure 2: Illustration of layer-level and token-level attention weights. (a) The layer-level attention weights of image tokens across different response token positions. (b) The token-level attention weights at the middle layer. It shows that the model’s attention to the image gradually decreases during the reasoning process.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "1.1",
+              "score": 2.0,
+              "reason": "The figure covers only the attention-based measurement part mentioned in the summary: (i) layer-level attention proportion on image tokens across response positions and (ii) token-level attention maps showing decreasing reliance on image tokens over time. However, it omits other major components/formulas central in the summary (baseline long-CoT formulation C_MLLM=f(V,T1..Tn), staged visual-removal/KV-reset ablation and Δ_visual(k)∝e^{-k}, and the TVC intervention with DVR/PVC and visual token compression). Thus it is informative for one diagnostic but not for the major components overall."
+            },
+            {
+              "question": "1.2",
+              "score": 3.0,
+              "reason": "As a standalone, the figure can communicate the local takeaway that attention to image tokens decreases as generation proceeds: the layer-wise curves across different response-token positions and the token-level heatmap with diminishing intensity support the caption’s claim. But it does not explain the broader system/method operating principle in the summary (how visual forgetting is behaviorally diagnosed via staged image removal, or how TVC re-injects/compresses visual tokens to fix it), so understanding is limited to the attention-decay observation."
+            },
+            {
+              "question": "1.3",
+              "score": 1.0,
+              "reason": "The figure does not summarize content from beginning to end of the paper’s narrative as described in the summary. It provides only one mechanistic diagnostic (attention shift away from image tokens) and excludes the behavioral ablation results, the proposed TVC pipeline (DVR/PVC), and the token-compression mechanism and outcomes. Therefore it is not complete with respect to the paper-level story."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1",
+              "score": 5.0,
+              "reason": "The figure focuses on layer-level attention proportion on image tokens across response positions and a token-level attention heatmap, which are explicitly described in the summary’s attention-based measurement. It does not introduce new method components (e.g., TVC/DVR/PVC), ablation formulas (e.g., Eq. 2 decay), or unrelated architectural claims beyond conventional depiction of layers and attention weights."
+            },
+            {
+              "question": "2.2",
+              "score": 5.0,
+              "reason": "Relationships are consistent with the summary: (a) shows attention share on image tokens varying by response token position and generally decreasing as generation proceeds, matching the stated ‘attention shifting away from image tokens toward prior text tokens over time.’ (b) provides a token-level attention visualization (middle layer) with higher weights concentrated earlier/closer to the image token region and diminishing across the question/response span, aligning with the claimed gradual decrease during reasoning."
+            },
+            {
+              "question": "2.3",
+              "score": 4.0,
+              "reason": "Major labels are broadly accurate and consistent with the summary/caption (layer-level attention weights; token-level attention weights; image tokens vs question/response tokens). A minor ambiguity is that the plot labels multiple response-token positions (e.g., 1/8, 4/8, 7/8) and an example ‘first layer’ attention sum, while the caption describes token-level attention at the ‘middle layer’; this is not contradictory but could be clearer about which specific layer(s) each panel summarizes."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the core diagnostic claim from the summary/caption: attention to image tokens decreases as reasoning proceeds. Panel (a) directly plots layer-level image-token attention across response token positions (multiple position slices), and panel (b) gives a token-level heatmap at a middle layer with an evident downward shift. Most elements (layers diagram, position legend, color/weight cue) support the main point rather than trivial details, though the small numeric annotations (e.g., 0.539, 0.465, etc.) add minor clutter without clearly adding additional insight."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As supplementary material for the paper’s attention-based measurement described in the summary, this figure matches well: it provides both an aggregate layer-level view and a token-level attention map, aligning with the stated goal of making the attention shift from image tokens toward text over time observable. However, readability would improve with clearer axis labeling/definitions (e.g., explicitly naming x-axis as response token position and y-axis as attention proportion) and a more explicit linkage between panel (b) axes and the caption’s “middle layer” description."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure largely avoids decorative or irrelevant components: the two panels provide complementary views (layer-level trend vs token-level map) without introducing unrelated method structure. The small MLLM-layer block diagram in (a) is somewhat redundant given the plot already communicates the trend, but it does not contradict or materially distract from the core claim. No hallucinated elements appear that would alter the paper’s claimed method."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.714,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure has a clear left-to-right progression in panel (a): image/text inputs on the left feed into a horizontal sequence of “MLLM Layers,” and the attention trends are plotted along response token positions. Panel (b) also reads left-to-right along the bottom axis (IMG → Question and Response)."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Connection arrows in the layer schematic are linear and do not cross. The only potential visual clutter comes from multiple colored trend lines in the same plot, but these are plotted curves rather than inter-module connectors and do not create ambiguous crossings of structural links."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Elements that belong together are co-located: the layer sequence is directly above the layer-level attention plot it explains, and the token-level heatmap is separated into its own panel (b) with its own axis labels. This supports the summary’s intent to show layer-level and token-level attention decay."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "The layer blocks are evenly spaced and aligned on a horizontal baseline, and panel boundaries and titles (a)/(b) are centrally aligned. Minor misalignment comes from mixed placements of numeric annotations on the curves and the legend, which are not on a strict grid."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 3.0,
+              "reason": "The two-panel structure and labels (a)/(b) establish a basic hierarchy, and the top ‘MLLM Layers’ band visually frames the main concept. However, the key message (attention to image decreases over reasoning) does not strongly ‘pop’—the plot lines, numeric callouts, and the layer diagram compete for attention without a single dominant focal element."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "Margins are adequate between panels (a) and (b), but within panel (a) the plot region is relatively dense: the legend, multiple colored curves, and numeric labels sit close together. This reduces breathing room and can make the trend harder to parse quickly."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Visual encoding is mostly consistent: response positions are consistently mapped to line colors in the legend, and attention magnitude is consistently encoded via color intensity in the heatmap (with an explicit note that lighter means higher). Shapes for the layer blocks are uniform, supporting consistent representation of similar components."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 2.0,
+              "reason": "The figure uses a few concrete icons (image/file symbols) and compact labels (e.g., 'IMG', layer blocks) to stand in for abstract components like visual tokens and MLLM layers, which modestly reduces abstraction. However, most concepts are still communicated through standard plots (line chart and heatmap) rather than richer symbolic/metaphoric encoding."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "The visual style largely follows common analysis templates consistent with the summary: a layer-wise attention trend line plot and a token-level attention heatmap. Color-coding and the simple layer-block schematic are conventional and do not introduce a distinctive visual language beyond typical attention-visualization figures."
+            },
+            {
+              "question": "adaptability",
+              "score": 3.0,
+              "reason": "The layout is reasonably tailored to the paper’s diagnostic narrative in the summary by pairing (a) layer-level attention proportions across response positions with (b) a token-level heatmap illustrating decay of attention to image tokens during reasoning. While the components are standard, the side-by-side structure and explicit mapping to 'response token positions' fits the specific 'visual forgetting' claim rather than a generic single attention plot."
+            }
+          ]
+        },
+        "weighted_total": 3.343
+      }
+    },
+    {
+      "figure_file": "Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+      "caption": "Figure 6: Case Study of TVC. TVC effectively re-examines the image during the reflection process to correct mistakes, guiding the model to the correct answer.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 2.0,
+              "reason": "The figure supports the summary’s case-study claim for TVC/PVC: it contrasts a failed Base CoT that stops re-checking the image with a TVC-style “reflection” that explicitly re-injects an image token and corrects the answer. It also includes an attention-weight heatmap consistent with the summary’s attention-based measurement. However, it omits several major components/formulas emphasized in the summary: the staged mid-reasoning visual removal diagnostic (KV reset/masking across cutoffs k), the exponential decay characterization (Eq. 2), the baseline formulation C_MLLM=f(V,T1..Tn), and the token compression mechanism; DVR training-time dataflow is also not depicted."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "Without reading the paper, a viewer can infer the high-level operating principle relevant to this figure: Base CoT can make errors by not revisiting image evidence, while TVC re-examines the image during a reflection step (via an explicit image-token reintroduction) to correct reasoning, with attention maps suggesting shifting focus between image vs text. It is less self-contained about how/when reflections are triggered (PVC policy), what “IMG TOKEN” precisely represents, and how this scales beyond the single example."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 1.0,
+              "reason": "This figure is a narrow case study illustration rather than a start-to-end summary of the paper. It does not cover the paper’s broader diagnostic methodology (staged image removal with KV cache reset/masking), quantitative decay characterization, training-time DVR procedure, or the visual-token compression component, which are central in the summary."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 4.0,
+              "reason": "The figure largely stays within the summary’s described scope for a TVC case study: it contrasts a base long-CoT answer vs a TVC/reflection step that re-examines the image, and it includes a token-level attention heatmap (consistent with the summary’s attention-based measurement). However, the figure introduces specific object/material attributes (e.g., “matte/metallic”) and a concrete arithmetic outcome for this toy scene that are not mentioned in the summary. These are example-specific details rather than new method components, so they are mild/auxiliary rather than core-claim hallucinations."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 4.0,
+              "reason": "The depicted relationships match the summary’s narrative: baseline CoT appears to rely on its own generated text and makes an error; TVC triggers a mid-chain reflection that reintroduces visual evidence (“IMG TOKEN”) and corrects the reasoning, aligning with the described Periodic Visual Calibration idea at inference time. The attention visualization supports the claimed shift in reliance, which is consistent with the summary. The figure does not explicitly show KV-cache reset/masking or visual token compression, but that omission does not contradict the relationships shown for this case-study figure."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Major labels align with the summary and caption: 'Base CoT Reasoning' corresponds to the baseline long-CoT formulation, 'Take-along Visual Conditioning' matches the proposed method name (TVC), and 'Token-level Attention Weights' matches the attention-based measurement described. The notion of re-checking the image during a 'reflection process' is consistent with the summary’s inference-time PVC mechanism."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the main contribution of the case study: baseline long-CoT makes an error due to insufficient re-checking of the image, while TVC explicitly re-examines the image during a reflection step and corrects the answer. The side-by-side ‘Base CoT Reasoning’ (wrong) vs ‘Take-along Visual Conditioning’ (correct) clearly foregrounds the intended narrative from the summary/caption. However, the inclusion of a token-level attention heatmap is only loosely tied to the caption’s case-study claim and may dilute the focus for this specific figure."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As supplementary material, it functions well with the caption: it visually demonstrates that TVC re-injects visual evidence mid-reasoning (“double-check the image / [IMG TOKEN]”) and leads to correction. The use of check/cross markers and the arrow linking baseline to TVC helps a reader understand the intervention without deep background. Context would be even clearer if the figure explicitly labeled the reflection interval/PVC step (as named in the summary) rather than relying on implicit ‘double-check’ phrasing."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The main elements (image + question, baseline reasoning error, TVC reflection/correction) are relevant and not decorative. But the token-level attention weights panel adds complexity and occupies substantial space while not being necessary to understand the case-study message that TVC re-examines the image to fix mistakes. Additionally, long bullet lists of object properties in both baseline and TVC blocks are somewhat verbose for readability and could be shortened to the minimal details needed to illustrate the correction."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure presents a mostly left-to-right narrative: the input image/question on the left, base CoT reasoning on the upper right (leading to an error), then TVC on the lower right (showing correction). The curved dashed arrow from the attention plot toward the TVC panel and the downward arrow from the base-CoT panel support a top-to-bottom refinement within the right side. Minor ambiguity comes from having two right-side panels (base vs TVC) that are read as a pair rather than a single linear pipeline."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "Connection lines (the dashed red arrow and the downward gray arrow) do not cross other connectors or clutter the layout. The arrows are routed around text blocks and panels cleanly."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are placed near each other: base CoT and TVC panels are adjacent on the right, emphasizing the ‘before vs after’ case study described in the caption/summary (reflection process re-checking the image). The attention heatmap is placed bottom-left and linked to TVC via a dashed arrow; it is slightly distant from the reasoning panels but still clearly associated through the connector."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major blocks align to an implicit grid: left input panel aligns with the right-side panels’ overall height, and the right panels are stacked with consistent margins. Some elements (icons, the dashed arrow curvature, and the heatmap’s internal labels) introduce slight misalignment, but not enough to impair readability."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The main components (Base CoT Reasoning vs Take-along Visual Conditioning) are emphasized with large, labeled panels and contrasting background colors, making the correction story salient (red cross vs green check). The left input is also prominent. The attention plot is visually smaller and secondary, matching its diagnostic/supporting role."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between panels and within text boxes to keep the case-study readable. A few regions are text-dense (especially the base CoT and TVC bullet lists), which slightly tightens internal margins, but the overall separation between modules remains clear."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles are represented consistently: both reasoning stages use similarly styled rounded rectangles and comparable typography; correctness is consistently coded with red (error) vs green (correct). The attention plot uses a different visual language (heatmap) appropriate for its role. Minor inconsistency comes from mixed iconography (clipboard/image icons) that is not reused elsewhere and does not encode a systematic role."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure uses concrete icons and visual shorthand (red cross for the wrong Base CoT outcome, green check for the corrected TVC outcome, dashed arrow indicating intervention flow, and an attention heatmap to stand in for the abstract notion of “visual-token reliance”). However, most of the key concepts are still conveyed through literal text blocks (reasoning transcripts and lists), with limited symbolic abstraction beyond these conventional cues."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Stylistically, the figure largely follows common paper-diagram patterns: side-by-side/stacked panels, rounded boxes, pastel callouts, and standard success/failure badges plus a generic attention heatmap. While it is clean and readable, it does not present a particularly unique visual language or unconventional rendering that differentiates it strongly from typical MLLM method/case-study figures described in the summary."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific narrative in the summary: it contrasts Base long-CoT (error) versus TVC with mid-chain “re-examination/reflection” (correction), and ties this to the mechanistic diagnostic via a token-level attention visualization and a linking arrow. This is more purpose-fit than a uniform template because it explicitly connects pipeline outcome (wrong vs right) with the intended mechanism (renewed visual grounding during reflection) in a single, coherent case-study composition."
+            }
+          ]
+        },
+        "weighted_total": 3.495
+      }
+    },
+    {
+      "figure_file": "Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+      "caption": "Figure 3: Overview of TVC System Design. We enable the model to have take-along visual conditioning capabilities through two stages: training and inference.",
+      "scores": {
+        "Informativeness": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure largely matches the summary’s TVC design: training-time SFT with Dynamic Visual Reaffirmation (DVR), inference-time Periodic Visual Calibration (PVC), and visual-token compression via pooling. It adds some generic/conventional elements not explicitly stated in the summary (e.g., cartoon cat avatars, a gear/checkmark flow, and the explicit text 'Step 1/Step .../Step n'), but these do not change the core claimed method structure."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 4.0,
+              "reason": "Relationships are mostly consistent with the summary: (i) training stage shows SFT with DVR where visual evidence is reinjected during reasoning using curated data; (ii) inference stage shows PVC where the model periodically re-examines the figure mid-chain; (iii) compression is depicted as '4×4 Pooling,' aligning with the summary’s image token compression/adaptive pooling concept. Minor potential mismatch is that the figure implies a specific pooling granularity (4×4) rather than the summary’s more general 'adaptive pooling,' but it still represents the intended compression-before-reinjection relationship."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled in a way that matches the summary and caption: 'SFT with DVR' for training, 'Inference with PVC' for testing, and visual token compression/pooling is explicitly indicated. The overall title ('Overview of TVC System Design') and the reinjection/re-examination phrasing align with the described TVC mechanisms."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the main TVC contribution described in the summary: (i) training-time Dynamic Visual Reaffirmation (shown as “SFT with DVR” with mid-reasoning reinjection using a dataset) and (ii) inference-time Periodic Visual Calibration (“Inference with PVC” with a “Re-examine the figure” prompt inserted into the reasoning steps). It also includes the visual-token compression idea via “4×4 Pooling,” matching the summary’s token-compression component. However, the use of cartoon cat icons for “Base Model/Reasoning Model” is less explicit than standard model blocks and slightly distracts from the core method depiction."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "With the caption (“Overview of TVC System Design…training and inference”), the two-panel layout clearly supports the summary’s narrative of a training mechanism (DVR) and an inference mechanism (PVC), including where reinjection happens mid-chain and how compressed visual tokens are used. The arrows and labels make the high-level dataflow understandable as supplementary material. Some key terms from the summary (e.g., “bridging prompt,” “visual embeddings,” or explicit ‘KV cache’ context) are not shown, but those omissions do not prevent understanding of the TVC system-level idea."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The diagram mostly avoids irrelevant technical detail and stays focused on DVR/PVC and compression, but it includes decorative elements (cartoon cats, large gear/check icons) that are not mentioned in the summary and do not add methodological clarity. These elements slightly reduce signal-to-noise, though they do not alter or confuse the core claimed structure (reinjection during training/inference and token compression)."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.714,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure has a clear two-stage top-to-bottom structure (training on top, inference on bottom). Within each stage, the main flow is left-to-right (Base Model → dataset/SFT with DVR → Reasoning Model; then image/compression → steps → output), matching the summary’s training/inference split and mid-chain reinjection narrative. Some curved arrows for reinjection/self-calibration introduce minor ambiguity but do not break the overall direction."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Connection lines are mostly non-crossing: the main horizontal pipelines are clean, and the curved reinjection arrow in the training panel does not create clutter. In the inference panel, the looping/iterative arrows around the multi-step blocks add visual complexity, but they largely avoid hard crossings that would obscure the method structure."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are placed near each other: the training-related items (base model, dataset, reinjection arrow, SFT with DVR) are grouped in the top band; inference elements (image tokens, pooling/compression, periodic ‘re-examine’ cue, multi-step reasoning) are grouped in the bottom band. This proximity supports the summary’s separation between DVR (training) and PVC (inference) and the placement of token compression before re-conditioning."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 3.0,
+              "reason": "Major elements follow rough horizontal alignment (left-to-right arrows, stage titles). However, several icons and blocks (e.g., step blocks, gear, speech bubble, and token squares) appear placed more illustratively than on a strict grid, reducing perceived neatness and making precise correspondences between modules slightly harder to read."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The two key stages (training vs inference) stand out via distinct colored backgrounds and titles, consistent with the caption and summary. Main entities (models at left/right) are prominent and separated by a strong arrow. Some internal submodules (pooling vs reinjection vs step chain) compete for attention due to decorative icons, but the overall stage-level hierarchy remains clear."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace within each band and between bands, preventing crowding of the core pipeline. The inference panel contains many small elements (token squares, pooling bar, step blocks, loop arrows), which slightly tightens spacing, but readability is still acceptable."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 3.0,
+              "reason": "Stage encoding is consistent (top/training vs bottom/inference with distinct background colors; arrows indicating flow). However, similar-role components are not consistently represented with a unified visual grammar (e.g., modules mix icons, speech bubbles, geometric blocks, and cartoons). This stylistic heterogeneity does not contradict the summary’s method structure but slightly weakens systematic interpretability."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces several abstract system components from the summary with concrete icons: cat mascots for models (base vs reasoning), an image icon for visual input, a dataset/table icon for curated long-chain data used in DVR, a pooling block for image-token compression, and a speech bubble (“Re-examine the figure”) to concretize PVC self-reflection intervals. These metaphors align with the TVC narrative (re-injection and periodic calibration) and make the dataflow easier to grasp than pure equations."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "While the iconography (cartoon cats, colorful rounded panels, gear/step blocks) gives a playful, distinctive look, the overall style still follows common ML system-diagram conventions: two-stage (training/inference) separation, left-to-right arrows, and modular blocks for components. It is moderately differentiated but not strongly unique in visual language beyond the mascots."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific training–inference split in the summary: the top band depicts SFT with DVR and mid-reasoning reinjection, and the bottom band depicts inference with PVC plus explicit token-compression (4×4 pooling) feeding iterative reasoning steps. This departs from a generic single-stream pipeline by emphasizing the ‘take-along’ reconditioning points and the compression-to-manage-context idea as parallel design concerns."
+            }
+          ]
+        },
+        "weighted_total": 3.076
+      }
+    }
+  ]
+}

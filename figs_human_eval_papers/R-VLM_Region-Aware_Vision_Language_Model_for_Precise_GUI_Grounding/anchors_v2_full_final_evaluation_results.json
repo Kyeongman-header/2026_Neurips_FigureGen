@@ -1,0 +1,1101 @@
+{
+  "paper_name": "R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding",
+  "mode": "full",
+  "evaluated_at": "2026-01-29T06:25:54.567438",
+  "figure_evaluations": [
+    {
+      "figure_file": "R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+      "caption": "Figure 4: Efficient IoU-aware weighted cross-entropy computation. (a) M pseudo boxes are generated from the ground-truth box using a GIoU threshold (here, M=3), and concatenated with the original label, enabling a single forward pass for M+1 predictions. (b) The attention map is masked to prevent pseudo boxes from attending to each other. (c) The positional embedding of the ground-truth box is assigned to all pseudo boxes, ensuring a single prediction at inference. Crossentropy is weighted by GIoU relative to ground-truth.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Real ground-truth (GT) bounding box b(0) input', 'Pseudo GT bounding box generation around GT (M boxes b(1)...b(M), with GIoU thresholding)', 'Concatenation of label tokens into a single sequence: y = {y_other, b(0), b(1)...b(M)} (single forward pass)', 'Model forward pass / decoder that outputs predicted boxes/tokens for each concatenated box slot', 'IoU/GIoU computation module between each pseudo box b(i) and GT b(0)', 'Dynamic weight computation from IoU/GIoU: w_i = 1 + 1/2 * log(GIoU(b(i), b(0)))', 'IoU-aware weighted cross-entropy loss computation over pseudo boxes (weighted CE term) plus standard CE over y_other tokens', 'Flow: pseudo boxes + GT -> (single pass) predictions -> IoU/GIoU -> weights -> weighted CE loss -> training signal', 'Cost-efficient modification 1: attention mask modification preventing attention to previous bounding box coordinates during training', 'Cost-efficient modification 2: RoPE/relative positional encoding adjustment: assign positional embeddings of the first (GT) box to pseudo boxes', 'Decoding/training effect: training on (M+1) distinct labels while enabling inference to predict only a single coordinate']\nContext: For the IoU- aware weighted cross-entropy loss function, multi- ple pseudo Ground Truth (GT) bounding boxes are generated around the real GT. The cross-entropy weights are dynamically adjusted during training according to the IoU values between the pseudo GT and real GT, providing continuous learning signals that guide the model toward higher IoU grounding predictions. Furthermore, to mitigate computational overhead from additional pseudo GTs, we propose a cost-efficient way for the IoU- aware loss by modifying the attention map and relative positional encoding. This design maintains the effectiveness of our approach while reducing computational demands.\n\nWith this goal in mind, we devise an IoU-aware weighted cross-entropy loss func- tion. One straightforward approach for this loss is to generate pseudo bounding boxes, slightly de- viated from ground-truth bounding boxes, to use as augmented labels. Each pseudo bounding box is weighted in the cross-entropy loss calculation based on its IoU with the ground-truth: lower IoU values receive lower weights. While this simple design could guide the model toward better IoU alignment, it requires repetitive forward passes for the same GUI screenshot and user instruction (e.g., adding five different pseudo boxes for one label would require five forward passes). To solve this issue, we concatenate M different pseudo bound- ing boxes with the label of ground-truth bounding box in a single forward pass (Figure 4), assigning each pseudo bounding box a different weight when computing the cross-entropy loss.\n\nThis approach largely reduces computational costs by avoiding repetitive processing of the same GUI screenshot, though it results in the model predicting multiple boxes during inference. Thus, we introduce two simple modifications to ensure the model predicts only a single coordinate: (1) Modifying the atten- tion mask to prevent attending to previous bound- ing box coordinates during training. (2) Adjusting the rotary positional embedding (RoPE) (Su et al., 2024) by assigning the positional embeddings of the first bounding box (i.e., ground-truth bound- ing box) to those of the pseudo bounding boxes. By applying these modifications in the decoding steps, we achieve the effect of training the model on (M+1) distinct labels in a cost-efficient manner.\n\nFormulation Given randomly generated M pseudo bounding boxes, denoted as b(1), ..., b(M), and a ground-truth bounding box b(0) = (xmin, ymin, xmax, ymax), the label would be y = {yother, b(0), b(1), ..., b(M)} where yother repre- sents other non-coordinate parts of the label (such as “click\") and consist of N tokens. For simplic- ity, if we assume b(i) as a single token (though it consists of multiple tokens in real), our IoU-aware weighted cross-entropy LCE IoU can be formulated as: LCE IoU = − M X i=1 w(i) IoUb(i) log ˆb(i) − N X j=1 y(j) other log ˆy(j) other, w(i) IoU = 1 + 1 2 log(GIoU(b(i), b(0))), (1) where GIoU(b(i), b(0)) represents the generalized IoU between pseudo bounding box b(i) and ground- truth bounding box b(0). We use a log-scale of IoU to penalize low IoU pseudo boxes more while as- signing weights close to 1 for high IoU pseudo boxes similar to the ground-truth. Here the pseudo bounding boxes are randomly generated to ensure a generalized IoU above a threshold, acquiring mod- erately deviated boxes from ground-truth boxes.",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': '(a) Pseudo bounding box generation', 'status': 'Supported', 'evidence': 'The text explicitly describes generating multiple pseudo bounding boxes around the real ground-truth (GT) and weighting them by IoU/GIoU: “multiple pseudo Ground Truth (GT) bounding boxes are generated around the real GT… weights are dynamically adjusted… according to the IoU values between the pseudo GT and real GT” and “Given randomly generated M pseudo bounding boxes… and a ground-truth bounding box b(0)…”. Figure 4 caption also states: “M pseudo boxes are generated from the ground-truth box using a GIoU threshold… Cross-entropy is weighted by GIoU relative to ground-truth.” This supports relationships from the pseudo box generation concept to Ground-truth and to pseudo bounding boxes.'}, {'element': '(b) Attention masking', 'status': 'Supported', 'evidence': 'The paper states: “we introduce two simple modifications… (1) Modifying the attention mask to prevent attending to previous bounding box coordinates during training.” Figure 4 caption: “(b) The attention map is masked to prevent pseudo boxes from attending to each other.” This supports “Attention masking -> Attention (X)” and “Attention (X) -> masked.”'}, {'element': '(c) Position embedding modification', 'status': 'Supported', 'evidence': 'The text directly mentions modifying rotary positional embeddings as part of the efficient IoU-aware loss: “(2) Adjusting the rotary positional embedding (RoPE)… by assigning the positional embeddings of the first bounding box (i.e., ground-truth bounding box) to those of the pseudo bounding boxes.” Figure 4 caption also mentions: “(c) The positional embedding of the ground-truth box is assigned to all pseudo boxes…”. This supports links involving “Rotary Positional Embedding (e) -> Position embedding modification” and that this is done within the (vision-)language model.'}], [{'element': '(a) Pseudo bounding box generation', 'status': 'Not Mentioned', 'evidence': 'The chunk discusses a two-stage zoom-in grounding approach and improved grounding accuracy/IoU, but does not mention pseudo bounding boxes, ground-truth vs pseudo boxes, or light/dark variants.'}, {'element': '(b) Attention masking', 'status': 'Not Mentioned', 'evidence': 'No description of attention maps, attention masking, or anything being \"masked\" appears in the provided text.'}, {'element': '(c) Position embedding modification', 'status': 'Not Mentioned', 'evidence': 'The text mentions integrating zoom-in grounding into pretrained VLMs in a training-free manner (e.g., UGround/LLaVA-NeXT) but does not mention position embedding modification, rotary positional embedding, or labels like \"Touch\"/\"Left\".'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 4,
+              "reason": "The target figure captures most of the major architectural components described: (a) pseudo bounding box generation around the GT; concatenation of the original label with multiple pseudo box labels into a single sequence; a single vision-language model forward pass producing outputs for multiple box slots; IoU-aware weighting shown as per-box weights (w_i) used in the loss; and the two cost-efficient modifications—attention masking across box-coordinate tokens and RoPE/position-embedding reuse for pseudo boxes. However, some key formulation details are not explicitly depicted: the IoU/GIoU computation module and the exact weight formula w_i = 1 + 1/2 * log(GIoU) are not clearly written, and the combined loss decomposition (weighted CE over pseudo boxes + standard CE over y_other tokens) is only implied rather than shown as an explicit equation/module. Overall, coverage is strong but not fully complete at the formula/module level."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure is largely intelligible on its own and conveys the main operating principle: (a) pseudo bounding boxes are generated around a real GT box, (b) attention masking is applied to control information flow across box-coordinate tokens, and (c) position-embedding (RoPE) modification ties pseudo boxes to the GT box’s positional embedding while training in a single forward pass with concatenated labels. This aligns well with the provided evidence: GT + M pseudo boxes, concatenation into one sequence, model decoding multiple box slots, and the two cost-efficient modifications (attention mask + RoPE adjustment) to enable training on (M+1) labels but inference of a single coordinate.\n\nHowever, as a standalone, it is not fully self-contained: the IoU/GIoU computation and the dynamic weight formula (w_i based on log(GIoU)) are not explicitly shown, nor is the weighted cross-entropy loss module depicted with enough clarity to infer how pseudo boxes influence gradients beyond ‘training signal’. The single-pass concatenation idea is implied by the token sequence, but the loss reweighting mechanism and the exact “IoU-aware weighted CE” step would still require text to fully understand."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 2,
+              "reason": "The target figure captures the core mid-paper method for IoU-aware weighted cross-entropy with pseudo GT boxes: (a) pseudo box generation around the real GT, (b) attention masking to block attention to previous box coordinates, and (c) RoPE/position embedding reuse across pseudo boxes. This aligns well with the evidence items on pseudo GT creation, single-pass concatenation of multiple box labels, dynamic IoU/GIoU-based weighting, and the two cost-efficient modifications. However, it is not complete with respect to summarizing content from the beginning to the end of the paper: it focuses narrowly on this loss/training trick and omits broader pipeline components (full model/decoder behavior beyond the box slots, overall task setup, other contributions such as two-stage zoom-in grounding shown in the references, inference workflow, experiments/results/ablations). Thus, it is a partial summary rather than an end-to-end paper summary."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 2,
+              "reason": "The target figure contains several components that are not supported by the provided paper evidence, indicating likely hallucinated or at least unsubstantiated details. While the evidence supports the three high-level mechanisms—(a) generating multiple pseudo boxes around a real GT box and weighting by IoU/GIoU, (b) masking attention to prevent pseudo boxes attending to each other/previous box coordinates, and (c) assigning the GT box’s RoPE/positional embedding to pseudo boxes—the figure adds extra elements not mentioned in the cited text: (i) a “Light/Dark” UI example and phone-like screenshots, (ii) a “Touch/Left” style tokenization/label strip and explicit coordinate-token sequence depiction beyond what is described, and (iii) additional layout/notations (e.g., specific token-level blocks, coordinate indices) that are not evidenced. Given the second evidence chunk explicitly does not mention pseudo boxes/attention masking/position embedding, and the supported chunk does not substantiate these extra UI/label specifics, the figure does not fully avoid introducing unmentioned components."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 4,
+              "reason": "The target figure’s major relations match the supported evidence: (a) pseudo bounding boxes are generated around the real ground-truth box and are associated with IoU/GIoU-based weighting; (b) an attention mask is applied so pseudo boxes do not attend to each other / to prior box coordinates during training; and (c) RoPE/positional embeddings for pseudo boxes are set/assigned to the ground-truth box’s positional embedding. These relationships are also visually consistent with the closest reference (Ref Score 2), which depicts IoU-aware weighted cross-entropy and pseudo-box generation, and with the textual excerpts quoted in the evidence. Minor uncertainty remains because the figure includes UI labels (e.g., “Touch”, “Left”) and specific layout/token flows not explicitly validated in the provided evidence snippet, but these do not contradict the core component relationships."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 4,
+              "reason": "Major labels in the target figure—(a) “Pseudo bounding box generation,” (b) “Attention masking,” and (c) “Position embedding modification”—match the paper evidence, which explicitly describes generating multiple pseudo GT boxes weighted by IoU/GIoU, masking attention so pseudo boxes don’t attend to each other/previous box coordinates, and modifying RoPE by assigning the ground-truth box positional embedding to pseudo boxes. The figure’s use of “Vision-language Model” and “Rotary Positional Embedding (e)” is consistent with the described RoPE-based modification. Minor ambiguity remains because the exact UI labels like “Touch”/“Left” appear in the schematic but are not confirmed in the provided evidence excerpt, so small label-specific details may not be fully verifiable from the text provided."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 5,
+              "reason": "The target figure is a high-level schematic centered on the paper’s main contribution: IoU-aware weighted cross-entropy via multiple pseudo-GT boxes in a single forward pass, and the two cost-efficient decoding/training modifications. It explicitly depicts (a) pseudo box generation around the real GT, (b) attention masking to block attending to prior box coordinates, and (c) RoPE/position-embedding reassignment so pseudo boxes share the GT box positions—matching the evidence bullets on concatenation, single-pass prediction, IoU/GIoU-based weighting, and efficiency tricks. It omits low-level implementation trivia (exact tokenization, full loss algebra, optimizer details) and instead communicates the core training flow and architectural changes, consistent with a “main contribution” schematic (similar in intent to the IoU-aware loss panel in Ref 4)."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "The target figure aligns tightly with the described method and serves as an effective supplementary visual for the caption/text. It explicitly depicts: (a) pseudo GT box generation around the real GT with multiple pseudo boxes; (b) the cost-efficient attention mask modification that blocks attention to previous bounding box coordinates during training; and (c) the positional/RoPE embedding modification where pseudo boxes reuse the positional embedding of the first (GT) box. It also visually conveys the single-forward-pass concatenation idea by showing multiple box slots/tokens flowing through the same vision-language model and the notion of per-pseudo-box weighting (weights annotated near pseudo boxes), matching the evidence’s pipeline narrative (pseudo boxes + GT → single pass → predictions → IoU-aware weighting → loss). Compared to the reference figures, it is the most directly contextual (Ref 4 shows the same concept at a higher level, while this target provides the concrete architectural/token-level mechanics), making it highly helpful for understanding during reading."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure largely avoids decorative or off-topic elements and stays focused on the method’s core components described in the evidence: (a) pseudo GT box generation around the real GT, (b) attention masking to block attention to previous box coordinates, and (c) positional/RoPE embedding modification to reuse the first box’s positions for pseudo boxes. It also visualizes the single-pass concatenated label sequence and per-pseudo-box IoU-derived weights (w(i)), aligning with the described training flow. Minor redundancy remains: the repeated token blocks and the large ‘Vision-language Model’ band are somewhat verbose and could be simplified, and the small GUI screenshots (while contextual) add limited extra explanatory value beyond showing where pseudo boxes come from. Overall, it is mostly non-decorative with only modest extraneous detail."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.286,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 4,
+              "reason": "The Target Figure predominantly flows left-to-right: panels (a) and (b) show sequences moving horizontally (phone UI/boxes to the right; attention-masking grids arranged left-to-right), and the main pipeline in (c) runs from the left (“Touch”) through token/embedding blocks toward the right. This matches the common left-to-right process-flow seen in the evidence figures (e.g., Ref 1, Ref 3, Ref 5). While there are stacked components (multiple rows and a central model block), the primary directional reading is left-to-right rather than top-to-bottom."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "The Target Figure’s connection/association lines are largely routed in a single direction and do not visibly intersect: arrows from the subpanels (a) and (b) flow downward into the central Vision-Language Model block, and the bracket/label connector for “Attention (X)” stays above without crossing other connectors. This is cleaner than some Evidence figures where multiple arrows and dashed curves overlap/cross (e.g., Ref 2’s intersecting dashed/solid paths). Minor potential congestion exists around the dense top annotations and arrows near (a) ‘Pseudo bounding box generation’ and (b) ‘Attention masking’, but no clear line crossings are apparent."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "The target figure groups functionally related components in close spatial proximity. In (a), the ground-truth and pseudo bounding-box generation visuals are co-located with direct red box cues; in (b), the attention masking grid and its label are adjacent; and in (c), elements involved in position embedding modification (rotary positional embeddings, token blocks, masking indicators) are arranged contiguously around the central Vision-Language Model block. This mirrors the proximity principle seen in the evidence/reference pipeline figures where related stages are clustered. Minor proximity issues remain because the overall figure is dense and spans multiple subpanels, requiring some cross-panel scanning to follow the full process end-to-end."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 3,
+              "reason": "The figure shows partial grid-like alignment: the main green Vision-Language Model block and the rows of token boxes beneath it are largely aligned horizontally, and the (a)/(b) top subpanels are placed in a consistent row. However, overall alignment is not fully neat—element sizes vary, spacing between boxes is inconsistent, and several labels/arrows (e.g., attention masking/position embedding annotations) appear slightly offset and crowded, breaking clean vertical alignment across sections. Compared with the reference figures that use more uniform spacing and consistent margins, the target looks moderately aligned but not rigorously grid-structured."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 3,
+              "reason": "The target figure shows a recognizable hierarchy: the central green “Vision-Language Model” block is the largest element and positioned centrally, making it the primary focal component. The three subpanels (a)–(c) are arranged in a standard top-to-bottom, left-to-right reading order, which helps structure the narrative.\n\nHowever, the hierarchy is only moderately effective because many secondary elements (dense token boxes, repeated labels, and numerous small icons) compete for attention with similar visual weight. Line thickness and font sizes are fairly uniform across annotations, and the top subpanels (a) and (b) are small relative to their internal details, reducing their prominence and readability. Compared with the evidence figures (especially Ref 4 and Ref 5), which use stronger size contrast, clearer grouping, and more whitespace to emphasize main modules and stages, the target’s main components stand out but not as cleanly or consistently."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 2,
+              "reason": "Margins between many elements are tight and inconsistent. In the target figure, subpanels (a)/(b)/(c) are packed closely, with minimal whitespace between the top row and the large middle panel, and dense token/label blocks in (c) that nearly touch adjacent annotations and the model block. This creates a crowded appearance compared to the cleaner spacing in the references (e.g., Ref 4’s structured panel separation and Ref 2’s generous whitespace). While some outer padding exists, internal margins between key components (boxes, arrows, text labels) are insufficient for comfortable visual separation."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 3,
+              "reason": "Partially consistent. The Target uses repeated token-like squares/rectangles (orange/blue) across the lower sequence, suggesting similar units are rendered similarly. However, role encoding is not fully uniform: the top subpanels use different visual conventions (photos with red boxes in (a), grid heatmap cells in (b), and sequential colored tokens/labels in (c)) without a clearly consistent mapping of shape/color to role across panels. This is less consistent than Ref 4/5 where modules and flows keep stable shapes/colors, but comparable to some mixed-panel pipeline figures (e.g., Ref 3) that also vary depiction by substep."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 2,
+              "reason": "The target figure is primarily a technical pipeline/architecture diagram using concrete visual encodings (boxes, arrows, grids, token bars) and explicit text labels (e.g., pseudo bounding box, attention masking, position embedding modification). Abstract concepts are not strongly replaced by metaphorical icons or symbolic abbreviations; instead they are explained directly via standard diagrammatic primitives. Compared to the references, it includes fewer illustrative metaphors than Ref 2/4/5 (which use more UI/app-like iconography and contextual symbols), but similar low-metaphor, mechanism-focused notation to Ref 1/3. Minor symbolic shorthand exists (e.g., small modality icons and token blocks), but it does not dominate the communication."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a very common VLM/ML pipeline-illustration template: (i) multiple subpanels labeled (a)(b)(c), (ii) a central green rounded rectangle for the “Vision-Language Model,” (iii) arrows and callout boxes, (iv) token/embedding blocks in a row, and (v) red bounding-box annotations. This composition and visual vocabulary strongly overlaps with the references—especially Ref 2 and Ref 3 (module-in-a-box + arrows + UI/bbox callouts) and Ref 5 (dataset/pipeline schematic with similar iconography and boxed stages). While the target combines three components (pseudo box generation, attention masking, position embedding modification) into one cohesive multi-part schematic, the styling (fonts, color palette, box shapes, flow layout) is conventional rather than distinctive, indicating limited novelty."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure largely follows common, template-like VLM diagram conventions: multiple subpanels (a)(b)(c), red boxed highlights, a central model block, and token/embedding strips with arrows—elements that closely resemble the reference visuals’ standardized pipeline/architecture schematics (e.g., zoom-in grounding, attention/weight illustrations, and modular blocks). While it adapts content-specific components (pseudo bounding box generation, attention masking, position embedding modification) and includes a relatively dense token-level depiction, the overall layout does not meaningfully break from uniform design principles or show a paper-specific, distinctive compositional strategy. The result feels more like a conventional multi-part method figure than a bespoke layout tailored to unique narrative needs."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.324,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+            "similarity": 0.6614
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.748
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.7492
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7416
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.748
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7273
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7572
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7416
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.748
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7119
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7273
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7416
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.6861
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.748
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7572
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.7492
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.592
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.748
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7572
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.7492
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6821
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p4__score1.00.png",
+            "similarity": 0.6672
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.701
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.7492
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6415
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.748
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7572
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7416
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.748
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p3__score0.95.png",
+            "similarity": 0.6896
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7273
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.7492
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.748
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7465
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7273
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7416
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.6242
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7119
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.748
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7572
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p0__score0.95.png",
+            "similarity": 0.6428
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.6557
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p3__score1.00.png",
+            "similarity": 0.6973
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7572
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.479
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p3__score0.95.png",
+            "similarity": 0.6896
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7572
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7465
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.6813
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6658
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7465
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6473
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7119
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7572
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7465
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6661
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.6566
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.748
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7465
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p7__score1.00.png",
+            "similarity": 0.6645
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models/How_Do_Moral_Emotions_Shape_Political_Participation_A_Cross-Cultural_Analysis_of_Online_Petitions_Using_Language_Models__p3__score1.00.png",
+            "similarity": 0.6845
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7572
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7465
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.748
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7465
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.7492
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7074
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.748
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.7492
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7349
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p3__score1.00.png",
+            "similarity": 0.6973
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.748
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7119
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7572
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6969
+          }
+        }
+      }
+    },
+    {
+      "figure_file": "R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+      "caption": "Figure 1: Illustration of the Region-Aware Vision Language Model (R-VLM). Our approach consists of two modules for precise GUI grounding: (a) A two-stage zoom-in grounding process that refines predictions via a zoomed-in view of region proposal. After obtaining an initial prediction from the model using GUI screenshot and user instruction, which serves as a region proposal, we zoom-in around this region and pass it through the model again for second-stage grounding. (b) An IoU-aware weighted cross-entropy loss that provides a smooth learning signal based on the IoU value rather than strictly fitting to ground-truth bounding box. This loss assigns weights to pseudo bounding boxes according to their IoU value with ground-truth to emphasize high IoU grounding predictions.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Two-stage zoom-in grounding module', 'Stage 1: initial bounding box prediction (region proposal)', 'Crop/zoom-in operation centered on the initial prediction (region proposal cropping)', 'Zoom-in scale computation based on estimated element size (proportional to initial box width/height; magnification factor k)', 'Stage 2: run agent/model on zoomed-in view to predict refined coordinates within the cropped region', 'Coordinate transform: invert/map refined zoomed-in coordinates back to original image coordinates (final coordinates)', 'IoU-aware weighted cross-entropy loss module', 'Pseudo bounding box generation (slight deviations from ground-truth) used as augmented labels', 'IoU computation between each pseudo box and the ground-truth box', 'Weight assignment in cross-entropy based on IoU (lower IoU -> lower weight)', 'Single forward pass concatenating ground-truth label with M pseudo boxes', 'Weighted cross-entropy aggregation over ground-truth + M pseudo boxes']\nContext: Our approach con-\n sists of two key components: a two-stage zoom-in grounding approach inspired by region proposal networks (Ren et al., 2016) (Figure 1(a)), and an IoU-aware weighted cross-entropy loss function that emphasizes achieving high IoU grounding, similar to how conventional object detection mod-\n els are optimized (Girshick et al., 2014; Girshick,\n 2015) (Figure 1(b)). In the two-stage zoom-in grounding approach, we first predict a bounding box that serves as a region proposal, followed by a zoom-in around this region to obtain a more fine-grained prediction.\n\n3.2 Two-Stage Zoom-In Grounding For higher accuracy in locating GUI elements, we extract coordinates from zoomed-in region propos-\n als that are likely to contain the target instance.\n The intuition behind here is that, given GUI environ-\n ments often contain multiple elements with vary-\n ing sizes, this process allows model to focus solely\n on object detection tasks within a small region,\n thereby significantly reducing the need to handle\n irrelevant context. This approach aligns with the\n conventional two-stage object detection strategies\n (Girshick et al., 2014; Ren et al., 2016), which sep-\n arate the detection process into two steps, using the\n second step as a refinement stage to improve object regression accuracy.\n\nOur method begins with an initial prediction of a bounding box coordinate from the model during in-\n ference. We then crop a region centered around\n this initial prediction for zooming, assuming this\n region as a region proposal. Here the zoom-in scale is de-\n termined based on the estimated size of the GUI el-\n ement, i.e., we zoom-in more for smaller elements,\n which visual agents often struggle to localize as\n discussed in Section 3.1. Specifically, the zoom-in\n scale is set in proportion to the width and height\n of the initial prediction, and the cropped region is\n obtained by magnifying the initial prediction by a\n factor of k. The zoomed-in view around the initial\n prediction is then passed through the agent model,\n which predicts the coordinate within this selected\n region. Final coordinates are obtained by inverting\n the zoom-in view coordinate back to the original\n image perspective.\n\n3.3 IoU-Aware Weighted Cross-Entropy A remaining challenge is that current models lack a learning signal indicating that their predictions should have a high IoU with the ground-truth bounding boxes... With this goal in mind, we devise an IoU-aware weighted cross-entropy loss func-\n tion. One straightforward approach for this loss is to generate pseudo bounding boxes, slightly de-\n viated from ground-truth bounding boxes, to use\n as augmented labels. Each pseudo bounding box is\n weighted in the cross-entropy loss calculation based\n on its IoU with the ground-truth: lower IoU values\n receive lower weights... we concatenate M different pseudo bound-\n ing boxes with the label of ground-truth bounding\n box in a single forward pass (Figure 4), assigning\n each pseudo bounding box a different weight when\n computing the cross-entropy loss.",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': 'First response', 'status': 'Supported', 'evidence': 'Figure 1 text in the provided chunk shows the first-stage output: “The initial prediction is (0.61, 0.27, 0.73, 0.35)” and describes obtaining an initial prediction from the model.'}, {'element': 'Second response', 'status': 'Supported', 'evidence': 'Figure 1 text shows the second-stage output: “The refined prediction is (0.32, 0.47, 0.71, 0.65)” and describes passing the zoomed-in view through the model again for second-stage grounding.'}, {'element': 'Vision-Language Model', 'status': 'Supported', 'evidence': 'The paper repeatedly refers to VLMs and labels “Vision-Language Model” in Figure 1; text: “advances in large Vision Language Models (VLMs)” and Figure 1 illustration uses a Vision-Language Model in both stages.'}, {'element': 'User Instruction', 'status': 'Supported', 'evidence': 'Figure 1 includes “User Instruction” and the text describes “given GUI screenshots and natural language instructions” and the first-stage uses “GUI screenshot and user instruction”.'}, {'element': 'Graphical User Interface', 'status': 'Supported', 'evidence': 'The paper is about GUI grounding; text: “Graphical User Inter- face (GUI)” and refers to “GUI screenshots” throughout.'}, {'element': 'Region Proposal', 'status': 'Supported', 'evidence': 'Figure 1 caption: “zoomed-in view of region proposal.” Section 3.2: “initial prediction … serves as a region proposal”.'}, {'element': 'Zoom', 'status': 'Supported', 'evidence': 'Figure 1(a) describes “two-stage zoom-in grounding” and text: “we zoom-in around this region and pass it through the model again”.'}, {'element': 'IoU-guided training', 'status': 'Supported', 'evidence': 'Abstract and Figure 1(b) mention an “IoU-aware objective function”; Section 3.3 describes “IoU-aware weighted cross-entropy” that guides training toward higher IoU predictions.'}, {'element': 'Vision-Language Model (duplicate)', 'status': 'Supported', 'evidence': 'Same as earlier: VLM appears in Figure 1 and throughout the text, including the two-stage process.'}, {'element': '(a) Two-stage zoom-in grounding', 'status': 'Supported', 'evidence': 'Figure 1 caption explicitly names component (a): “A two-stage zoom-in grounding process…”. Section 3.2 is titled “Two-Stage Zoom-In Grounding”.'}, {'element': '(b) IoU-aware weighted cross-entropy', 'status': 'Supported', 'evidence': 'Figure 1 caption names (b): “An IoU-aware weighted cross-entropy loss…”. Section 3.3 is titled “IoU-Aware Weighted Cross-Entropy”.'}, {'element': '\"The initial prediction is\"', 'status': 'Supported', 'evidence': 'Quoted directly in the Figure 1 text: “The initial prediction is (0.61, 0.27, 0.73, 0.35)”.'}, {'element': '\"The refined prediction is\"', 'status': 'Supported', 'evidence': 'Quoted directly in the Figure 1 text: “The refined prediction is (0.32, 0.47, 0.71, 0.65)”.'}, {'element': '\"In this UI screenshot, what is the position of the element corresponding to the [INSTRUCTION]?\"', 'status': 'Supported', 'evidence': 'This exact quoted prompt appears in the figure text in the provided chunk (above Figure 1).'}, {'element': '\"Given the zoomed-in view on the initial prediction, predict a detailed location for [INSTRUCTION].\"', 'status': 'Supported', 'evidence': 'This exact quoted prompt appears in the figure text in the provided chunk (above Figure 1) and aligns with Section 3.2’s zoom-in second stage.'}, {'element': '\"I want to add a profile picture for the new contact.\"', 'status': 'Not Mentioned', 'evidence': 'This specific instruction text does not appear anywhere in the provided paper chunk. The chunk shows generic prompts with [INSTRUCTION] placeholders but not this concrete example.'}, {'element': 'pseudo box1', 'status': 'Supported', 'evidence': 'Section 3.3 describes generating multiple pseudo ground-truth boxes; Figure 4 caption/text: “M pseudo boxes are generated from the ground-truth box…” (pseudo boxes are explicitly part of the method).'}, {'element': 'pseudo box2', 'status': 'Supported', 'evidence': 'Same evidence as pseudo box1: multiple pseudo boxes b(1)...b(M) are generated (Figure 4 and Section 3.3 formulation).'}, {'element': 'pseudo box3', 'status': 'Supported', 'evidence': 'Same evidence as pseudo box1: Figure 4 explicitly exemplifies M=3 pseudo boxes (“here, M=3”).'}, {'element': 'Generalized IoU (GIoU)', 'status': 'Supported', 'evidence': 'Section 3.2: “ensuring a Generalized Intersection-over-Union (GIoU) score…”. Section 3.3 uses GIoU in the weighting formula: “w(i)_IoU = 1 + 1/2 log(GIoU(b(i), b(0)))”.'}, {'element': 'relationship: User Instruction -> Vision-Language Model', 'status': 'Supported', 'evidence': 'Figure 1 and description: the model takes “GUI screenshot and user instruction” to produce an initial prediction.'}, {'element': 'relationship: Graphical User Interface -> Vision-Language Model', 'status': 'Supported', 'evidence': 'Figure 1 and text: model input includes “GUI screenshot” (i.e., the GUI image) together with instruction.'}, {'element': 'relationship: Vision-Language Model -> First response', 'status': 'Supported', 'evidence': 'Figure 1: the VLM outputs the initial prediction (“The initial prediction is …”), corresponding to the first response.'}, {'element': 'relationship: Graphical User Interface -> Region Proposal', 'status': 'Supported', 'evidence': 'Section 3.2: the initial prediction is produced from the GUI screenshot; that predicted box is then used as a “region proposal.” (Thus the region proposal is derived from processing the GUI screenshot.)'}, {'element': 'relationship: Region Proposal -> Zoom', 'status': 'Supported', 'evidence': 'Figure 1 caption and Section 3.2: “zoomed-in view of region proposal” and “we then crop a region centered around this initial prediction for zooming”.'}, {'element': 'relationship: Zoom -> Vision-Language Model', 'status': 'Supported', 'evidence': 'Figure 1 caption: “we zoom-in around this region and pass it through the model again”.'}, {'element': 'relationship: Vision-Language Model -> Second response', 'status': 'Supported', 'evidence': 'Figure 1: the VLM outputs the refined prediction (“The refined prediction is …”), corresponding to the second response.'}, {'element': 'relationship: pseudo box1 -> pseudo box2', 'status': 'Not Mentioned', 'evidence': 'The paper mentions multiple pseudo boxes b(1)...b(M), but does not state any directed relationship/edge from one pseudo box to another.'}, {'element': 'relationship: pseudo box2 -> pseudo box3', 'status': 'Not Mentioned', 'evidence': 'Same as above: pseudo boxes are generated as a set; no explicit sequential or directed relation between pseudo boxes is described.'}, {'element': 'relationship: pseudo box1 -> Generalized IoU (GIoU)', 'status': 'Supported', 'evidence': 'Section 3.3 computes GIoU between each pseudo box b(i) and the ground-truth box b(0), and uses it for weighting; thus each pseudo box is associated with a GIoU value.'}, {'element': 'relationship: pseudo box2 -> Generalized IoU (GIoU)', 'status': 'Supported', 'evidence': 'Same as above: for each pseudo box b(i), GIoU(b(i), b(0)) is computed (Eq. 1).'}, {'element': 'relationship: pseudo box3 -> Generalized IoU (GIoU)', 'status': 'Supported', 'evidence': 'Same as above: for each pseudo box b(i), GIoU(b(i), b(0)) is computed (Eq. 1); Figure 4 example uses M=3.'}, {'element': 'relationship: Generalized IoU (GIoU) -> IoU-guided training', 'status': 'Supported', 'evidence': 'Section 3.3: cross-entropy weights are “adjusted… according to the IoU values between the pseudo GT and real GT”; Eq. 1 uses GIoU in the weight w(i)_IoU, making GIoU part of the IoU-aware training objective.'}, {'element': 'relationship: IoU-guided training -> Vision-Language Model', 'status': 'Supported', 'evidence': 'The method trains the VLM with an IoU-aware weighted cross-entropy loss (Section 3.3), i.e., IoU-guided objective directly optimizes the vision-language model during training.'}], [{'element': 'First response', 'status': 'Not Mentioned', 'evidence': \"The chunk discusses two-stage zoom-in grounding and improvements in localization accuracy, but does not mention a 'First response' label.\"}, {'element': 'Second response', 'status': 'Not Mentioned', 'evidence': \"No mention of 'Second response' in the provided text.\"}, {'element': 'Vision-Language Model', 'status': 'Supported', 'evidence': 'The text repeatedly refers to pretrained VLMs: \"integrated into pretrained VLMs\" and mentions specific VLM architectures (e.g., \"LLaVA-NeXT\").'}, {'element': 'User Instruction', 'status': 'Not Mentioned', 'evidence': \"The text mentions 'queries generated by the planner' but does not use the label 'User Instruction'.\"}, {'element': 'Graphical User Interface', 'status': 'Supported', 'evidence': 'The chunk is explicitly about GUI grounding/localization: \"GUI element size\", \"GUI grounding setting\", \"GUI localization accuracy\".'}, {'element': 'Region Proposal', 'status': 'Supported', 'evidence': 'It states: \"fine-grained coordinate regression from the zoomed-in region proposal\".'}, {'element': 'Zoom', 'status': 'Supported', 'evidence': 'It describes \"two-stage zoom-in grounding\" and \"zoomed-in region proposal\".'}, {'element': 'IoU-guided training', 'status': 'Supported', 'evidence': 'It explicitly contrasts training-free inference with training: \"without ... training with IoU-aware loss\" (i.e., IoU-aware/IoU-guided training is part of the broader method setting but not used here).'}, {'element': 'Vision-Language Model (duplicate label)', 'status': 'Supported', 'evidence': 'Same evidence as the other \\'Vision-Language Model\\' entry: \"pretrained VLMs\" and the baseline built on \"LLaVA-NeXT\".'}, {'element': '(a) Two-stage zoom-in grounding', 'status': 'Supported', 'evidence': 'The text explicitly discusses \"our two-stage zoom-in grounding\" and \"Training-Free Zoom-In Grounding\".'}, {'element': '(b) IoU-aware weighted cross-entropy', 'status': 'Not Mentioned', 'evidence': 'The chunk mentions \"IoU-aware loss\" but does not mention weighted cross-entropy.'}, {'element': '\"The initial prediction is\"', 'status': 'Not Mentioned', 'evidence': 'No quoted phrase like this appears in the provided chunk.'}, {'element': '\"The refined prediction is\"', 'status': 'Not Mentioned', 'evidence': 'No quoted phrase like this appears in the provided chunk.'}, {'element': '\"In this UI screenshot, what is the position of the element corresponding to the [INSTRUCTION]?\"', 'status': 'Not Mentioned', 'evidence': 'The chunk discusses tasks and grounding, but does not include this prompt text.'}, {'element': '\"Given the zoomed-in view on the initial prediction, predict a detailed location for [INSTRUCTION].\"', 'status': 'Not Mentioned', 'evidence': 'The chunk does not include this quoted instruction/prompt.'}, {'element': '\"I want to add a profile picture for the new contact.\"', 'status': 'Not Mentioned', 'evidence': 'No such example instruction is present in the provided text.'}, {'element': 'pseudo box1', 'status': 'Not Mentioned', 'evidence': 'The chunk does not mention pseudo boxes.'}, {'element': 'pseudo box2', 'status': 'Not Mentioned', 'evidence': 'The chunk does not mention pseudo boxes.'}, {'element': 'pseudo box3', 'status': 'Not Mentioned', 'evidence': 'The chunk does not mention pseudo boxes.'}, {'element': 'Generalized IoU (GIoU)', 'status': 'Not Mentioned', 'evidence': 'The chunk mentions IoU histograms and IoU-aware loss but does not mention Generalized IoU (GIoU).'}, {'element': 'relationship: User Instruction -> Vision-Language Model', 'status': 'Not Mentioned', 'evidence': \"The chunk does not specify a diagrammed flow from 'User Instruction' to VLM; it only mentions prompts/queries generated by a planner.\"}, {'element': 'relationship: Graphical User Interface -> Vision-Language Model', 'status': 'Supported', 'evidence': 'GUI grounding implies feeding GUI screenshots into the model; explicitly: \"GUI grounding setting on ScreenSpot\" and \"GUI localization accuracy\" in a VLM setting.'}, {'element': 'relationship: Vision-Language Model -> First response', 'status': 'Not Mentioned', 'evidence': \"No 'First response' concept is described.\"}, {'element': 'relationship: Graphical User Interface -> Region Proposal', 'status': 'Not Mentioned', 'evidence': 'Although region proposals are mentioned, the chunk does not explicitly state that they are generated directly from the GUI in a diagrammatic relationship.'}, {'element': 'relationship: Region Proposal -> Zoom', 'status': 'Supported', 'evidence': 'Implied by: \"zoomed-in region proposal\" and \"two-stage zoom-in grounding\" where a proposal is used for zooming.'}, {'element': 'relationship: Zoom -> Vision-Language Model', 'status': 'Supported', 'evidence': 'Supported by: \"integrated into pretrained VLMs\" and \"fine-grained coordinate regression from the zoomed-in region proposal\" (i.e., zoomed-in input used for VLM grounding).'}, {'element': 'relationship: Vision-Language Model -> Second response', 'status': 'Not Mentioned', 'evidence': \"No 'Second response' concept is described.\"}, {'element': 'relationship: pseudo box1 -> pseudo box2', 'status': 'Not Mentioned', 'evidence': 'No pseudo boxes are described in the chunk.'}, {'element': 'relationship: pseudo box2 -> pseudo box3', 'status': 'Not Mentioned', 'evidence': 'No pseudo boxes are described in the chunk.'}, {'element': 'relationship: pseudo box1 -> Generalized IoU (GIoU)', 'status': 'Not Mentioned', 'evidence': 'Neither pseudo boxes nor GIoU are mentioned.'}, {'element': 'relationship: pseudo box2 -> Generalized IoU (GIoU)', 'status': 'Not Mentioned', 'evidence': 'Neither pseudo boxes nor GIoU are mentioned.'}, {'element': 'relationship: pseudo box3 -> Generalized IoU (GIoU)', 'status': 'Not Mentioned', 'evidence': 'Neither pseudo boxes nor GIoU are mentioned.'}, {'element': 'relationship: Generalized IoU (GIoU) -> IoU-guided training', 'status': 'Not Mentioned', 'evidence': 'GIoU is not mentioned; only IoU histograms and IoU-aware loss are referenced.'}, {'element': 'relationship: IoU-guided training -> Vision-Language Model', 'status': 'Supported', 'evidence': 'The text references training the model with such a loss: \"without ... training with IoU-aware loss\"—indicating IoU-aware training would otherwise be applied to the VLM.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 4,
+              "reason": "The target figure captures the major components of both contributions. For the two-stage zoom-in grounding, it shows (i) an initial prediction/region proposal, (ii) a zoom/crop around that proposal, (iii) a second pass on the zoomed view producing a refined prediction, and (iv) an implicit mapping back to the original view (refined coordinates shown on the zoomed region and success indicated). For the IoU-aware weighted cross-entropy, it depicts pseudo boxes around a ground-truth region and an IoU-guided training signal, aligning with pseudo-box generation and IoU-based weighting. However, several key specifics from the evidence are not explicitly represented: the zoom-in scale computation via magnifying the initial box by factor k (proportional to width/height), the explicit coordinate inversion/transform formula back to original coordinates, and the training detail of concatenating the ground-truth label with M pseudo boxes in a single forward pass with weighted cross-entropy aggregation. Thus, coverage is strong but not fully complete on the formulaic/implementation details."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "Yes, largely. The target figure visually communicates the two core operating principles aligned with the evidence: (a) a two-stage pipeline where an initial bounding-box prediction is used as a region proposal, followed by a crop/zoom-in and a second pass producing a refined box (with an implicit mapping back to original coordinates), and (b) an IoU-guided/weighted cross-entropy training concept using pseudo boxes around a ground-truth box with weighting based on IoU. The left panel clearly shows first vs second response, zoomed crop, and refinement; the right panel shows pseudo boxes and an IoU-guided training loop. However, a few key mechanics are only implied rather than explicit: the zoom-in scale rule (magnification factor k proportional to initial box size), the exact coordinate transform/inversion back to original image coordinates, and the ‘single forward pass concatenating GT + M pseudo boxes’ detail are not directly readable from the figure alone. Thus, the general principle is understandable, but some operational specifics require text."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 2,
+              "reason": "The target figure captures the two main components described in the provided paper excerpt: (a) a two-stage zoom-in grounding pipeline (initial prediction → crop/zoom-in around the proposal → refined prediction) and (b) an IoU-aware weighted cross-entropy concept with pseudo boxes and IoU-guided training. However, it is not complete with respect to the detailed elements listed in the evidence: it does not clearly depict (i) the zoom-in scale computation proportional to initial box width/height with magnification factor k, (ii) the explicit coordinate inversion/transform mapping refined coordinates back to original image coordinates, (iii) the explicit IoU computation between each pseudo box and ground-truth, (iv) the weight assignment rule (lower IoU → lower weight) and the aggregation of weighted cross-entropy over ground-truth + M pseudo boxes in a single forward pass. Also, as a single figure focused on these modules, it cannot be said to summarize content from the beginning to the end of the paper; it omits broader paper components beyond these two methods."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 2,
+              "reason": "The target figure largely matches the paper chunk for the two-stage zoom-in grounding pipeline (GUI + instruction → VLM → initial box → zoom → VLM → refined box), including the example coordinate tuples and the two quoted prompts, all supported by the evidence. However, it introduces at least one unsupported component: the concrete instruction text “I want to add a profile picture for the new contact.” is explicitly marked as Not Mentioned in the provided paper chunk, indicating a likely hallucinated example. Additionally, the depiction of three specific pseudo boxes (pseudo box1/2/3) is supported in the paper’s method (pseudo boxes exist and M=3 is exemplified), but any implied directed relations among them (if suggested visually) would not be supported. Overall, there is some hallucination risk due to the unmentioned concrete instruction example, despite most elements being grounded."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 4,
+              "reason": "The target figure’s main relational flow matches the paper chunk: (a) GUI screenshot + user instruction are inputs to a Vision-Language Model producing an initial prediction (used as a region proposal), then a zoomed-in crop is passed through the VLM again to produce a refined prediction—this is explicitly supported by the cited Figure 1 text and Section 3.2 evidence (region proposal → zoom → second-stage VLM → refined box). (b) The training diagram also aligns with Section 3.3: multiple pseudo boxes are generated from the ground-truth box, each pseudo box is associated with a GIoU value against the real GT, and these IoU/GIoU-derived weights guide an IoU-aware weighted cross-entropy loss that trains the VLM (GIoU → IoU-guided training → VLM), consistent with the evidence. Minor concern: the target’s depiction of pseudo boxes may visually suggest sequential relations among pseudo boxes, but the evidence states pseudo boxes are a set with no directed relations; however, the figure does not explicitly encode directed edges between pseudo boxes, so this is a small ambiguity rather than an error."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 4,
+              "reason": "Major component/method labels in the Target Figure are largely accurate and consistent with the provided evidence: (a) correctly labels the two-stage pipeline elements (Graphical User Interface/GUI screenshot, User Instruction, Vision-Language Model, Region Proposal, Zoom) and the outputs (initial and refined predictions) exactly as quoted in the figure text; (b) correctly labels the training method as an IoU-aware/IoU-guided objective (IoU-aware weighted cross-entropy) and includes pseudo boxes and GIoU, matching the method description (pseudo boxes b(1)...b(M) and GIoU-based weighting). Minor issues: the concrete example instruction “I want to add a profile picture for the new contact.” is marked 'Not Mentioned' in the evidence chunk provided, so its presence cannot be verified from that text excerpt; additionally, some labels such as 'First response/Second response' appear figure-specific rather than paper-terminology in one evidence chunk, though they are supported by the figure text excerpt. Overall, labels are accurate with small unverifiable/mismatch elements."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 5,
+              "reason": "Yes. The target figure is clearly schematized around the paper’s two stated main contributions: (a) the two-stage zoom-in grounding pipeline and (b) the IoU-aware weighted cross-entropy training. Panel (a) abstracts the core steps from the evidence—Stage-1 initial box/region proposal, crop/zoom-in centered on the proposal with a zoom operation, Stage-2 refined prediction on the zoomed view, and the implied mapping back to final coordinates—without drowning in architectural or UI minutiae. Panel (b) likewise focuses on the essential training idea from the evidence: pseudo boxes around GT, IoU-based weighting, and IoU-guided training/weighted loss aggregation, presented at a conceptual level. Compared to the reference figures, it matches the intended high-level ‘method overview’ style (closest to Ref 5’s pseudo-box/weighting schematic), and avoids irrelevant implementation details."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "Yes. The target figure closely mirrors the described method and serves as an effective supplement to the text. Panel (a) visually instantiates the two-stage zoom-in grounding pipeline: an initial coarse box (region proposal), a crop/zoom-in centered on that prediction, a refined second prediction on the zoomed view, and an implicit coordinate mapping back to the original image (shown via the zoomed inset and refined box on the full UI). Panel (b) clearly depicts the IoU-aware weighted cross-entropy concept with pseudo boxes around a ground-truth box, IoU-based weighting/selection and a training signal labeled as IoU-guided training, matching the paper’s description of weighting pseudo boxes by IoU and aggregating them in a single training objective. Compared to the reference figures, it is the most directly aligned with the evidence (especially Ref 4, which also visualizes pseudo-box generation and weighting). Minor missing details (explicit k/magnification formula and explicit coordinate inversion equation) do not materially hinder comprehension."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely focused on the two core ideas described in the evidence: (a) two-stage zoom-in grounding (initial box → crop/zoom → refined prediction → mapping back) and (b) IoU-aware weighted cross-entropy using pseudo boxes with IoU-based weighting. Most visual elements (UI screenshots, bounding boxes, arrows, module labels) directly support these mechanisms and are not merely decorative. Minor redundancy/unnecessary detail remains: the realistic GUI screenshots are visually heavy and include interface details not needed to convey the algorithmic flow, and the inclusion of both example numeric coordinate strings and multiple pseudo-box plots could be simplified without losing the core idea. Overall, it avoids major decorative clutter but is not maximally minimal."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The target figure’s primary narrative flow is left-to-right. Panel (a) progresses from the left (“First response”) to the right (“Second response”) with arrows guiding the sequence, and panel (b) similarly lays out elements left-to-right (inputs/illustrations on the left feeding into the central Vision-Language Model, then to the right-side loss/training block). This matches the predominant left-to-right process-flow style in the evidence reference diagrams."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "The target figure’s connectors are mostly well-routed: the main arrows/links between components (user instruction → GUI → VLM, zoom callout connectors, and VLM → output) are arranged to be largely non-intersecting. Any overlaps are minimal and occur only in tight areas (e.g., within the zoom/callout region and near the right subfigure’s side annotations), but they do not create prominent line-crossing clutter. Compared with the references, it maintains generally clean, readable routing with only minor local congestion."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "Yes—most functionally related modules are placed in close physical proximity. In panel (a), the user instruction, GUI screenshot, and VLM output are aligned vertically with arrows, and the zoomed-in region proposal is positioned adjacent to the corresponding refined prediction, making the two-stage pipeline easy to follow. In panel (b), the VLM block is centrally located with inputs (prompt/UI) nearby and the IoU-guided training components grouped on the right. There is minor separation between some training/metric plots and the core model block (requiring a small visual jump), but overall the layout maintains strong proximity among related elements."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "The Target Figure shows generally consistent horizontal and vertical alignment across major modules (top-row panels, central green blocks, arrows, and bottom labels), suggesting an underlying grid. In subfigure (a), the two-stage layout is cleanly columnar with matching block widths and consistent spacing. In subfigure (b), the central model block and surrounding elements are mostly aligned, but several smaller components (e.g., the plots/icons/text callouts near the top-right and the stacked images on the left) appear slightly offset relative to each other, creating minor grid breaks. Overall alignment is strong but not as perfectly regimented as the best-aligned evidence examples."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 4,
+              "reason": "The target figure exhibits clear hierarchical emphasis: it is split into two labeled subfigures (a) and (b) with large, centered captions, and each panel is organized around a prominent green “Vision-Language Model” block that serves as the visual anchor. Key stages (“First response” vs “Second response”) are separated into distinct columns with check/cross markers that quickly communicate outcome importance. In (b), the central VLM block and the right-side “IoU-guided training” callout are visually salient via size, position, and boxed grouping. Compared to the references, the hierarchy is similar to Ref 4/5 (multi-part pipeline diagrams with emphasized central modules and callouts). Minor weaknesses: some secondary elements (small UI screenshots, tiny text labels, and multiple small arrows/boxes) compete for attention and reduce immediate prominence of the main flow, so the hierarchy is strong but not maximally clean."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "Overall, the target figure provides sufficient margin between major elements. The two subfigures (a) and (b) are clearly separated by a vertical divider and each has its own internal grouping with consistent padding (headers, VLM blocks, arrows, and inset/plots). Within (a), the two-stage panels have adequate whitespace and the zoom inset is separated cleanly from surrounding items. Within (b), the UI screenshot, VLM block, and right-side plots are spaced to avoid overlap. However, some local regions are slightly tight: small text/labels and arrows are dense near the bottom captions and around the zoom/region-proposal callout, and the right-side plots/labels sit close together. These issues reduce comfort slightly but do not significantly harm readability."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 4,
+              "reason": "The target figure is largely consistent in encoding similar roles with the same shapes and colors. In both subfigures, the Vision-Language Model is shown as the same green rounded rectangle, and the VLM icon is reused consistently. User inputs are consistently indicated with quote-style callouts and person icons. However, there are minor inconsistencies: the response callouts differ between the first and second response panels (red ✗ vs green ✓ with slightly different framing), and auxiliary modules are not consistently styled across subfigures (e.g., 'Graphical User Interface' and 'Region Proposal' use different box fills/lines and do not share a unified color/shape scheme for “processing modules”). Overall, the main repeated components are consistent, with some variability in secondary elements."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 2,
+              "reason": "The target figure is largely literal and procedural: it uses screenshots, bounding boxes, arrows, and block-diagram modules (e.g., “Vision-Language Model,” “Region Proposal,” “IoU-guided training”) to depict the method. Abstract concepts are mostly expressed as text labels rather than being replaced by concrete metaphoric icons or symbols. There are a few light symbolic elements (robot/agent avatar, checkmark/cross for correct/incorrect, abbreviations like IoU), but these function as standard UI/annotation conventions rather than strong metaphorical substitutions. Compared with the evidence figures, which also rely primarily on pipeline diagrams and technical labels, the target is similarly low-to-moderate in metaphor usage."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a common CV/ML paper template: two subfigures (a)/(b), pipeline arrows, rounded rectangles for modules, small UI screenshots with red bounding boxes, and standard iconography. Its layout, typography, and color scheme (pastel blocks, green module boxes, callouts) are highly similar to the provided references—especially Ref 4 (vision-language model + pseudo boxes/attention/embedding schematic) and Ref 2/3 (workflow panels with highlighted regions and acceptance marks). There are minor stylistic touches (e.g., “first/second response” panels with check/cross), but they do not constitute a distinctive visual identity beyond conventional diagram conventions."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 4,
+              "reason": "The target figure adopts a layout tailored to its specific contribution (UI grounding), combining two distinct subpanels (two-stage zoom-in grounding vs. IoU-aware loss) with different visual structures, ample white space, and a clear narrative flow (user instruction → GUI → region proposal → refined prediction). This departs from a uniform, template-like pipeline diagram seen in several references (e.g., Ref 2/3), and the inclusion of realistic UI screenshots plus callouts/zooms is paper-specific rather than generic. However, it still relies on common VLM-figure conventions (rounded boxes, arrows, module blocks), so it is not a complete break from standardized design patterns—hence not a 5."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.629,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6629
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7413
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7495
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7185
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7244
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7413
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7758
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7185
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7244
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7758
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.764
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7422
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p0__score1.00.png",
+            "similarity": 0.7013
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7244
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7244
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7758
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6251
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7244
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7244
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7758
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6596
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7495
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.7013
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7758
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.643
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7244
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7495
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.764
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7244
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7053
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7196
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7758
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7244
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7192
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7413
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7185
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.6441
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.6935
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7758
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.764
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6352
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.6756
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7185
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7758
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5129
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p3__score0.95.png",
+            "similarity": 0.6898
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7495
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7413
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.6935
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.7185
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model/WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p2__score1.00.png",
+            "similarity": 0.7207
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6629
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.7244
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7758
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7196
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6993
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6802
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7244
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7758
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.6454
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6993
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7495
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7758
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7244
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7495
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.764
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7758
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7244
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.7758
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.764
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p3__score1.00.png",
+            "similarity": 0.6776
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.7244
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.7422
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.764
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7986
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6746
+          }
+        }
+      }
+    }
+  ]
+}

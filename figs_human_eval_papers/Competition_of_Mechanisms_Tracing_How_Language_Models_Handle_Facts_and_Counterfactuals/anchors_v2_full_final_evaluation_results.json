@@ -1,0 +1,554 @@
+{
+  "paper_name": "Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals",
+  "mode": "full",
+  "evaluated_at": "2026-01-29T01:32:20.145702",
+  "figure_evaluations": [
+    {
+      "figure_file": "Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+      "caption": "Figure 1: Top: An example showing that LLMs can fail to recognize the correct mechanism when multiple possible mechanisms exist. Bottom: Our mechanistic inspection of where and how the competition of mechanisms takes place within the LLMs.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Two mechanisms being compared/competing: (1) factual knowledge recall and (2) in-context counterfactual adaptation', 'Mechanism 1 localized to MLP layers (factual knowledge recall)', 'Mechanism 2 enabled by copy mechanism via induction heads in attention layers (in-context adaptation)', 'Competition outcome: one mechanism becomes dominant in the final prediction (wins the competition)', 'Residual stream traced across tokens and layers (x, x_i^l)', 'Token embeddings via embedding matrix W_E producing initial residual stream x_i^0', 'Stack of L transformer layers, each consisting of an attention block a^l and an MLP block m^l', 'LayerNorm (norm) applied before attention and before MLP (pre-norm dataflow)', 'Residual update/additive skip connection flow: x^l = x^{l-1} + a^l + m^l', 'Final projection to vocabulary/logits via unembedding matrix W_U', 'Method 1 (Logit Inspection): project outputs/residual contributions of components through W_U to inspect logits', 'Method 2 (Attention Modification): modify/scale a specific post-softmax attention matrix entry A_{ij}^{h,l} (j<i) by multiplier alpha', 'Attention head granularity (specific head h in layer l) and specific (i,j) attention link from token position i to earlier token position j', 'Assessment at macroscopic (per-layer) and microscopic (per-head/position) views to identify critical positions/heads involved in competition']\nContext: We show a motivating example in Figure 1, where the model fails to recognize the correct mechanism when it needs to judge between two possible mech- anisms: whether to recall the factual knowledge on who developed the iPhone (i.e., Mechanism 1) or to follow its counterfactual redefinition in the new given context (i.e., Mechanism 2). We propose a novel formulation of competition of mechanisms, which focuses on tracing each mech- anism in the model and understanding how one of them becomes dominant in the final prediction by winning the “competition”. Specifically, we build our work on two single mechanisms that are well-studied separately in literature: (1) the factual knowledge recall mechanism, which can be located in the MLP layers (Geva et al., 2021; Meng et al., 2022; Geva et al., 2023); and (2) the in-context adaptation to a counterfactual statement, which is enabled by the copy mechanism conducted by in- duction heads of attention layers (Elhage et al., 2021; Olsson et al., 2022).\n\nTechnically, we deploy two main methods: logit inspection (Nostalgebraist, 2020; Geva et al., 2022) by projecting the outputs of each model component by an unembedding matrix, and attention modifica- tion (Geva et al., 2023; Wang et al., 2023). Using these methods, we assess the contributions of vari- ous model components, both from a macroscopic view (e.g., each layer) and a microscopic view (e.g., attention heads), and identify critical positions and attention heads involved in the competition of the two mechanisms.\n\nMethod 1: Logit Inspection. To inspect the in- ner workings of the two mechanisms, we trace the residual stream (Elhage et al., 2021), or logits of each component in the LLM. Given a text sequence of k tokens, LLMs map it into the residual stream, namely a matrix x ∈Rd×k, where d is the dimen- sion of the internal states of the model. We use the term xl i to specify the residual stream at position i and layer l. An LLM produces the initial residual stream x0 i by applying an embedding matrix WE ∈R|V |×d to each token ti, where |V | is the size of the vocab- ulary. Then, it modifies the residual stream by a sequence of L layers, each consisting of an atten- tion block al and MLP ml. Finally, after the last layer, it projects the internal state of the residual stream back to the vocabulary space with an un- embedding matrix WU ∈Rd×|V |. Formally, the update of the residual stream at the lth layer is: xl = xl−1 + al + ml , (2) where both the attention and the MLP block take as input the x after layer normalization norm: al = al(norm(xl−1)) , (3) ml = ml(norm(xl−1 + al)) . (4)\n\nMethod 2: Attention Modification. Modifying or ablating the activation of a specific model com- ponent is also a strategy used to improve the un- derstanding of the information flow within LLMs, including techniques such as causal tracing (Meng et al., 2022) and attention knockout (Wang et al., 2023; Geva et al., 2023). In our work, we focus on modifying a small number of entries in the attention matrix. Namely, in the attention matrix Ahl of the h-th head of the l-th attention layer al, we focus on a certain entry, e.g., at the (i, j) position, where j < i, which is the attention value of the token xl i attending to one of its earlier tokens xl j. Following recent work (Yu et al., 2023) , the modification is after the softmax layer, so the other attention values of the matrix stay unchanged. For the target entry Ahl ij , we scale it up by a multiplier of α: Ahl ij ←α · Ahl ij , where j < i . (5)",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': \"{'type': 'relationship', 'from': 'iPhone', 'to': 'Google', 'label': 'was developed by'}\", 'status': 'Supported', 'evidence': 'The paper’s Figure 1 and problem setup explicitly use the counterfactual statement “iPhone was developed by Google.” (e.g., “Redefine: iPhone was developed by Google.”).'}, {'element': \"{'type': 'relationship', 'from': 'iPhone', 'to': 'Apple', 'label': 'was developed by'}\", 'status': 'Supported', 'evidence': 'The paper repeatedly uses the factual statement “iPhone was developed by Apple.” (Figure 1; Section 3 examples; dataset example: “iPhone was developed by Apple”, with attribute a = “Apple”).'}, {'element': \"{'type': 'relationship', 'from': 'Mechanism 1. Factual knowledge recall', 'to': 'iPhone was developed by Apple', 'label': 'recalling from memory'}\", 'status': 'Supported', 'evidence': 'Figure 1 labels “Mechanism 1. Factual knowledge recall: Recalling from its memory that iPhone was developed by Apple”.'}, {'element': \"{'type': 'relationship', 'from': 'Mechanism 2. Counterfactual statement comprehension', 'to': 'new statement in context (iPhone was developed by Google)', 'label': 'aligning to in-context statement'}\", 'status': 'Supported', 'evidence': 'Figure 1 labels “Mechanism 2. Counterfactual statement comprehension: Aligning to the in-context new statement …”, and the example context is “Redefine: iPhone was developed by Google.”'}, {'element': \"{'type': 'relationship', 'from': 'LLMs might mis-activate Mechanism 1 instead of 2', 'to': 'Apple', 'label': 'predicts'}\", 'status': 'Supported', 'evidence': 'Figure 1 text: “LLMs might mis-activate Mechanism 1 instead of 2” in the scenario where Mechanism 1 recalls “iPhone was developed by Apple,” implying the model would output the factual token (Apple) rather than follow the counterfactual.'}, {'element': \"{'type': 'relationship', 'from': 'Redefine: iPhone was developed by Google', 'to': 'Inspection of the Competition of Mechanisms', 'label': 'input/condition for'}\", 'status': 'Supported', 'evidence': 'Figure 1 shows the prompt “Redefine: iPhone was developed by Google” as the input condition used in their “mechanistic inspection of where and how the competition of mechanisms takes place within the LLMs.” Section 3 also defines the exact prompt format starting with “Redefine: c. …” for studying competition.'}, {'element': \"{'type': 'relationship', 'from': 'iPhone', 'to': 'Knowledge Recall (MLP layer 0)', 'label': 'activates'}\", 'status': 'Not Mentioned', 'evidence': 'While the figure depicts “Knowledge Recall MLP layer 0,” the text provided does not explicitly state that the token “iPhone” activates “Knowledge Recall (MLP layer 0)” specifically. The closest statement is more general: factual recall mechanism can be located in MLP layers, and they “locate the factual attribute in the subject positions by the first MLP layer.”'}, {'element': \"{'type': 'relationship', 'from': 'Knowledge Recall (MLP layer 0)', 'to': 'Apple', 'label': 'retrieves'}\", 'status': 'Not Mentioned', 'evidence': 'The chunk states generally that factual knowledge recall is associated with MLP layers, and specifically: “we also locate the factual attribute in the subject positions by the first MLP layer… increase … the value of tfact.” It does not explicitly say “MLP layer 0 retrieves Apple” (nor that it is exactly layer 0).'}, {'element': \"{'type': 'relationship', 'from': 'Google', 'to': 'Induction Circuit', 'label': 'activates'}\", 'status': 'Not Mentioned', 'evidence': 'The paper links counterfactual/in-context adaptation to copy/induction heads in attention layers in general, but does not explicitly say the token “Google” activates an “Induction Circuit.”'}, {'element': \"{'type': 'relationship', 'from': 'Induction Circuit', 'to': 'Intermediate positions', 'label': 'feeds into'}\", 'status': 'Not Mentioned', 'evidence': 'The provided text does not explicitly describe an “Induction Circuit” feeding into “Intermediate positions,” although Figure 1 visually includes “Induction Circuit” and “Intermediate positions.”'}, {'element': \"{'type': 'relationship', 'from': 'Knowledge Recall (MLP layer 0)', 'to': 'Intermediate positions', 'label': 'feeds into'}\", 'status': 'Not Mentioned', 'evidence': 'The text discusses information flow across token positions and layers, but does not explicitly state that “Knowledge Recall (MLP layer 0)” feeds into “Intermediate positions.”'}, {'element': \"{'type': 'relationship', 'from': 'Intermediate positions', 'to': 'Counterfactual Token (Attention layer 5-9)', 'label': 'supports'}\", 'status': 'Contradicted', 'evidence': 'The paper says “stronger signals of the competition … start after the fifth layer,” but it does not specify “Counterfactual Token (Attention layer 5-9)” as a discrete component supported by “Intermediate positions.” Also, the chunk’s Figure 4 highlights strong counterfactual-supporting heads in later layers (e.g., layer 9 and layer 10), not a dedicated ‘counterfactual token’ module for layers 5–9.'}, {'element': \"{'type': 'relationship', 'from': 'Intermediate positions', 'to': 'Factual Token (Attention layer 10,11)', 'label': 'supports'}\", 'status': 'Not Mentioned', 'evidence': 'Although the text identifies factual-supporting heads in layers 10 and 11 (e.g., L10H7 and L11H10), it does not frame them as a ‘Factual Token (Attention layer 10,11)’ component supported by ‘Intermediate positions.’'}, {'element': \"{'type': 'relationship', 'from': 'Counterfactual Token (Attention layer 5-9)', 'to': 'Final Prediction', 'label': 'contributes to'}\", 'status': 'Supported', 'evidence': 'The paper shows counterfactual mechanism contributions become dominant after ~layer 5 and grow in later layers; it also identifies individual heads (e.g., L9H6, L9H9, L10H0, L10H10) that “strongly promote the counterfactual mechanism,” affecting the final token prediction.'}, {'element': \"{'type': 'relationship', 'from': 'Factual Token (Attention layer 10,11)', 'to': 'Final Prediction', 'label': 'contributes to'}\", 'status': 'Supported', 'evidence': 'Section 6.3: two heads (L10H7 and L11H10) “strongly support the factual mechanism,” and they explain much of the negative contribution to the counterfactual margin, hence contributing to the final prediction.'}, {'element': \"{'type': 'relationship', 'from': 'Counterfactual Token (Attention layer 5-9)', 'to': 'Factual Token (Attention layer 10,11)', 'label': 'competition (vs)'}\", 'status': 'Supported', 'evidence': 'The paper’s core claim is “competition of mechanisms” between factual recall and counterfactual adaptation, traced across layers/heads. It specifically finds counterfactual-favoring heads (e.g., layer 9/10) and factual-favoring heads (layer 10/11) with opposing logit-margin contributions (∆cofa), i.e., direct competition.'}], [{'element': {'type': 'relationship', 'from': 'iPhone', 'to': 'Google', 'label': 'was developed by'}, 'status': 'Not Mentioned', 'evidence': 'The chunk does not mention iPhone, Google, or this specific example.'}, {'element': {'type': 'relationship', 'from': 'iPhone', 'to': 'Apple', 'label': 'was developed by'}, 'status': 'Not Mentioned', 'evidence': 'The chunk does not mention iPhone, Apple, or this specific example.'}, {'element': {'type': 'relationship', 'from': 'Mechanism 1. Factual knowledge recall', 'to': 'iPhone was developed by Apple', 'label': 'recalling from memory'}, 'status': 'Not Mentioned', 'evidence': \"The chunk discusses a 'factual recall mechanism' vs a 'counterfactual' one, but does not ground it in the iPhone/Apple example.\"}, {'element': {'type': 'relationship', 'from': 'Mechanism 2. Counterfactual statement comprehension', 'to': 'new statement in context (iPhone was developed by Google)', 'label': 'aligning to in-context statement'}, 'status': 'Not Mentioned', 'evidence': 'Counterfactual mechanism is discussed generally, but not with the iPhone/Google statement.'}, {'element': {'type': 'relationship', 'from': 'LLMs might mis-activate Mechanism 1 instead of 2', 'to': 'Apple', 'label': 'predicts'}, 'status': 'Not Mentioned', 'evidence': \"The chunk says models can be 'confused' and 'mistakenly let the factual mechanism dominate' to predict tfact, but does not mention Apple or this specific prediction.\"}, {'element': {'type': 'relationship', 'from': 'Redefine: iPhone was developed by Google', 'to': 'Inspection of the Competition of Mechanisms', 'label': 'input/condition for'}, 'status': 'Not Mentioned', 'evidence': \"No mention of this specific 'Redefine' input or a section titled 'Inspection of the Competition of Mechanisms' in the provided chunk.\"}, {'element': {'type': 'relationship', 'from': 'iPhone', 'to': 'Knowledge Recall (MLP layer 0)', 'label': 'activates'}, 'status': 'Not Mentioned', 'evidence': \"The chunk does not mention 'MLP layer 0' or activation from iPhone to any module.\"}, {'element': {'type': 'relationship', 'from': 'Knowledge Recall (MLP layer 0)', 'to': 'Apple', 'label': 'retrieves'}, 'status': 'Not Mentioned', 'evidence': 'The chunk discusses boosting factual recall via attention modifications at specific heads/layers, but not an MLP-layer retrieval of Apple.'}, {'element': {'type': 'relationship', 'from': 'Google', 'to': 'Induction Circuit', 'label': 'activates'}, 'status': 'Not Mentioned', 'evidence': \"No mention of Google or an 'Induction Circuit' in this chunk.\"}, {'element': {'type': 'relationship', 'from': 'Induction Circuit', 'to': 'Intermediate positions', 'label': 'feeds into'}, 'status': 'Not Mentioned', 'evidence': 'The chunk does not discuss an induction circuit or intermediate positions.'}, {'element': {'type': 'relationship', 'from': 'Knowledge Recall (MLP layer 0)', 'to': 'Intermediate positions', 'label': 'feeds into'}, 'status': 'Not Mentioned', 'evidence': 'No mention of MLP layer 0 or intermediate positions in the provided text.'}, {'element': {'type': 'relationship', 'from': 'Intermediate positions', 'to': 'Counterfactual Token (Attention layer 5-9)', 'label': 'supports'}, 'status': 'Not Mentioned', 'evidence': \"The chunk mentions attention heads/layers used for modification (e.g., L10H7, L11H10) but not layers 5–9, intermediate positions, or a 'Counterfactual Token'.\"}, {'element': {'type': 'relationship', 'from': 'Intermediate positions', 'to': 'Factual Token (Attention layer 10,11)', 'label': 'supports'}, 'status': 'Not Mentioned', 'evidence': \"While L10 and L11 attention heads are mentioned in the context of attention modification, the chunk does not describe them as 'Factual Token' support coming from intermediate positions.\"}, {'element': {'type': 'relationship', 'from': 'Counterfactual Token (Attention layer 5-9)', 'to': 'Final Prediction', 'label': 'contributes to'}, 'status': 'Not Mentioned', 'evidence': \"No mention of 'Counterfactual Token', attention layers 5–9, or a contribution-to-final-prediction pathway.\"}, {'element': {'type': 'relationship', 'from': 'Factual Token (Attention layer 10,11)', 'to': 'Final Prediction', 'label': 'contributes to'}, 'status': 'Not Mentioned', 'evidence': \"The chunk discusses modifying attention at L10H7 and L11H10 to increase factual recall rate, but does not explicitly frame this as a 'Factual Token' contributing to the final prediction.\"}, {'element': {'type': 'relationship', 'from': 'Counterfactual Token (Attention layer 5-9)', 'to': 'Factual Token (Attention layer 10,11)', 'label': 'competition (vs)'}, 'status': 'Supported', 'evidence': \"The chunk explicitly describes a competition between a 'factual recall mechanism' and a 'counterfactual' mechanism: 'the strength of the factual mechanism increases drastically that it wins over the other mechanism...' and 'mistakenly let the factual mechanism dominate'.\"}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 2,
+              "reason": "The target figure captures the high-level story of two competing mechanisms (factual knowledge recall vs counterfactual/in-context adaptation) and suggests localization (MLP for knowledge recall; attention/induction circuit for copying) plus a “winner-takes-final-prediction” framing. However, it omits most major technical components and formulas described in the paper: the residual stream notation (x, x_i^l), embedding/unembedding matrices (W_E, W_U), the L-layer transformer stack with explicit attention block a^l and MLP block m^l, the pre-norm LayerNorm placements, and the residual update equations (x^l = x^{l-1} + a^l + m^l, etc.). It also does not include the methodological details central to the paper’s analysis: logit inspection via projecting component outputs through W_U, and attention modification at head/entry granularity (A_{ij}^{h,l} scaled by α post-softmax). Compared to the evidence, it is more of an illustrative schematic than a coverage of the main components/formalism."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure largely communicates the high-level operating principle without needing the paper: a prompt introduces a counterfactual redefinition (\"iPhone was developed by Google\"), two internal mechanisms are depicted (factual knowledge recall vs counterfactual/in-context adaptation via induction/copy), and their outputs compete, with one becoming dominant in the final prediction. It also gives a coarse localization across components/layers (MLP for knowledge recall; attention/induction circuit for adaptation; later attention layers contributing to factual token vs counterfactual token). However, some key technical elements from the evidence that would improve true standalone clarity are missing or only implied: the residual stream tracing (x_i^l), the pre-norm/additive residual update structure, and the logit inspection/unembedding (W_U) and attention-modification (A_{ij}^{h,l} scaled by α) methods used to make these attributions. The figure is therefore understandable at a conceptual level but not fully self-contained regarding the paper’s mechanistic tracing methodology and exact intervention granularity."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 3,
+              "reason": "The target figure captures the paper’s core motivating example and the high-level competition framing (factual recall vs. counterfactual in-context adaptation), and it aligns with the cited localization claims (MLP for factual recall; induction/copy via attention for in-context adaptation). However, it is not complete with respect to the technical methods and formalism described in the evidence: it does not explicitly include residual stream notation (x, x_i^l), embedding/unembedding matrices (W_E, W_U), the pre-norm transformer dataflow and additive residual update equations, nor the two analysis methods in their stated forms (logit inspection via W_U projection; attention modification as scaling a specific post-softmax A_{ij}^{h,l} entry by α with head/layer/position granularity and macroscopic vs microscopic views). Overall, it summarizes an early conceptual slice but omits substantial methodological and end-to-end paper content, so completeness is partial."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 2,
+              "reason": "The target figure contains several mechanistic components and specific layer/module claims that are not supported by the provided paper evidence and, in one case, appear inconsistent with it. Supported parts include the two-mechanism framing (factual recall vs counterfactual comprehension), the iPhone/Apple vs iPhone/Google example prompt, and the idea that competing contributions affect the final prediction. However, the figure hallucinates or over-specifies: (i) “Knowledge Recall (MLP layer 0)” and its activation/retrieval paths (the evidence only generally ties factual recall to early MLP layers / ‘first MLP layer,’ not ‘layer 0’ nor explicit iPhone→MLP0→Apple wiring); (ii) an explicit “Induction Circuit” module and its token-trigger/flow (not mentioned in the text evidence); (iii) “Intermediate positions” as a distinct hub with specific incoming/outgoing pathways (not described); (iv) discrete ‘Counterfactual Token’ and ‘Factual Token’ modules with hard layer ranges (5–9 vs 10–11), where the evidence instead describes distributed head-level effects across later layers and even flags that 5–9 token-module wording is not grounded and partly contradicted. Overall, it introduces ungrounded architectural elements beyond what the paper text supports, so it does not avoid hallucinated components."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 3,
+              "reason": "The target figure captures the paper’s high-level relationship correctly: a competition between (1) factual knowledge recall (leading to the factual answer “Apple”) and (2) counterfactual/in-context comprehension (aligning with “iPhone was developed by Google”), and that both mechanisms contribute to final prediction with opposing effects. However, several depicted internal relations are not supported (or are overspecified) by the provided evidence: (i) the explicit mapping to “Knowledge Recall (MLP layer 0)” and arrows like “iPhone → MLP layer 0 → Apple” are not stated; the paper discusses early MLP involvement but not this specific layer/module linkage; (ii) the “Induction Circuit” component and its activation by “Google,” and its feeding into “Intermediate positions,” are not mentioned in the text excerpt; (iii) the figure’s structured pathway via “Intermediate positions” supporting a dedicated “Counterfactual Token (Attention layer 5–9)” is at least misleading/partially contradicted—while counterfactual-favoring signals emerge after ~layer 5 and specific heads are identified later, the paper does not define a discrete counterfactual-token module spanning layers 5–9 supported by intermediate positions. Thus, the overall mechanism-competition relation is accurate, but the component-to-component wiring and layer assignments are only partially correct and not well-justified by the cited text."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 2,
+              "reason": "Several high-level labels align with the paper’s described concepts (e.g., the two mechanisms: factual knowledge recall vs. counterfactual/in-context comprehension; and the overall framing of a competition affecting final prediction). However, multiple major component/methodology labels in the target figure appear over-specified or not accurately grounded in the paper text: (i) “Knowledge Recall (MLP layer 0)” is not supported—evidence only indicates factual recall can be localized to early MLP layers/first MLP layer, not explicitly ‘layer 0’ nor this exact module name; (ii) “Induction Circuit” is not explicitly named/introduced in the provided evidence (paper discusses copy/induction heads generally, but the label as a distinct circuit is not substantiated here); (iii) labeling distinct modules as “Counterfactual Token (Attention layer 5–9)” and “Factual Token (Attention layer 10,11)” is not how the paper describes components—evidence supports that competition signals grow after ~layer 5 and identifies certain heads in layers 9–11 supporting counterfactual/factual mechanisms, but not discrete ‘token modules’ with these layer ranges; and one relation involving ‘counterfactual token (5–9)’ was flagged as contradicted in the consistency report. Overall, the figure’s component labels are partially aligned conceptually but contain notable inaccuracies/unsupported specificity."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is schematized around the paper’s main contribution—\"competition of mechanisms\" between (1) factual knowledge recall and (2) in-context/counterfactual adaptation—and illustrates how one becomes dominant in the final prediction. It correctly emphasizes the macro-level storyline aligned with the evidence: MLP-associated knowledge recall vs attention/induction-copy-driven counterfactual following, and the notion of a competition that resolves at the output. It avoids low-level implementation details (e.g., residual stream notation x_i^l, pre-norm equations, W_E/W_U, logit inspection projections, or the precise attention-entry scaling A_{ij}^{h,l}←α·A_{ij}^{h,l}), which is appropriate for a motivating schematic. Minor limitation: it introduces specific layer numbers (e.g., attention layer 5–9 vs 10–11) and an \"intermediate positions\" box without clearly tying them to the two proposed analysis methods (logit inspection / attention modification), but overall it stays focused on the key conceptual contribution rather than trivial details."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 4,
+              "reason": "The target figure aligns well with the paper’s framing of two competing mechanisms—(1) factual knowledge recall (localized to MLP layers) versus (2) in-context/counterfactual adaptation (via induction/copy behavior in attention). It provides an intuitive, caption-friendly narrative using the motivating iPhone example, and visually conveys a “competition” culminating in a dominant final prediction. The layer ranges (e.g., attention layer 5–9 vs 10–11) and the notion of intermediate positions roughly correspond to the macroscopic/microscopic tracing story in the text. However, as supplementary material for the specific methods described, it is somewhat underspecified: it does not depict the residual stream notation (x_i^l), the pre-norm + additive residual updates (x^l = x^{l-1} + a^l + m^l), logit inspection via W_U, or the precise attention-modification operation (scaling a specific post-softmax A_{ij}^{h,l} entry). Thus it helps conceptual understanding of the competition hypothesis, but less so for understanding the technical tracing/modification procedures."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 3,
+              "reason": "The target figure is mostly focused on the core idea (competition between factual recall vs counterfactual in-context adaptation) and presents a compact pipeline from “redefine” prompt to competing mechanisms to final prediction. However, it includes several decorative or non-essential elements that add visual clutter without adding technical content: the robot icon, user silhouette, multiple gear icons, and the large “VS” badge. Some labels are also more illustrative than necessary (e.g., repeated “Knowledge Recall MLP layer 0” boxes) relative to the paper’s technical framing (residual stream x_i^l, pre-norm blocks, W_E/W_U, logit inspection, attention modification). Overall, redundancy is moderate: the figure communicates the concept but could be simplified by removing decorative icons and collapsing repeated elements."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.286,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 4,
+              "reason": "The Target Figure’s main process flows predominantly left-to-right: the bottom pipeline runs from the left-side prompts/inputs through intermediate positions to token competition and then to the final prediction on the right. While there is also a top-to-bottom component (the explanatory text block above and some downward arrows into the intermediate/competition area), the primary diagrammatic progression is left-to-right. This is consistent with the evidence figures that commonly depict pipelines left-to-right with some vertical sub-structure."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 3,
+              "reason": "The target figure still contains multiple intersecting connection lines in the lower ‘Competition of Mechanisms’ diagram, especially where red ‘Induction Circuit’ arrows and blue ‘Knowledge Recall’ arrows converge around the central ‘Intermediate positions’ node. These crossings are not as dense as some complex multi-arrow schematics, but they are noticeable and reduce path traceability. Compared to the references, which generally route arrows more cleanly with fewer intersections, the target shows moderate line-crossing issues rather than clearly avoiding them."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "Functionally related elements are generally co-located. In the target figure, the two mechanisms (factual knowledge recall and counterfactual statement comprehension) are introduced together at the top and their corresponding pathways are arranged in parallel and feed into a shared intermediate block, with the key comparison (counterfactual vs factual token) placed adjacent near the bottom. This supports proximity for understanding the competition between modules. Minor proximity issues remain: some explanatory callouts (e.g., the Apple label and the note about LLM mis-activation) sit slightly detached from the main flow, and the duplicated “knowledge recall” components could be more tightly grouped/visually linked to reduce scanning."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 3,
+              "reason": "The target figure shows some grid-like alignment (e.g., the left-side sentence fragments stack cleanly, and the bottom token boxes and rightward flow to “Final Prediction” are roughly on a common baseline). However, several elements break neat horizontal/vertical alignment: the top callout boxes (“Redefine…”) and the “Apple” label/arrow are not aligned to the main grid; the central “Intermediate positions” box is not centered relative to the incoming/outgoing arrows; and the two “Knowledge Recall” blocks and their arrows have slight offsets. Compared with the cleaner, more uniformly aligned reference diagrams, the target’s layout is only moderately aligned."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 3,
+              "reason": "The target figure establishes a reasonable hierarchy via layout: the top banner (counterfactual statement) is prominent, and the central gray box (“Intermediate positions”) acts as a clear focal hub with converging arrows. However, within the main diagram, many elements (e.g., “Knowledge Recall,” “Induction Circuit,” token blocks, attention-layer notes) are similar in font size and stroke weight, so the most important pathway/components do not consistently dominate visually. Compared to the references—especially Ref 4–5, which use stronger paneling, boxed regions, and clearer size/contrast separation—the target’s hierarchy is moderate but not strongly emphasized."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 3,
+              "reason": "Margins are generally adequate in the upper annotation area (mechanism bullets) and around the central flow diagram, but spacing becomes tight in several places. The left-side sentence fragments (“iPhone was developed by …”) sit close to the diagram boundary and connecting arrows, and the bottom ‘Competition of Mechanisms’ band is close to nearby connectors/text, increasing visual crowding. Compared with the reference figures, which use more consistent padding inside dashed/boxed regions and clearer whitespace between modules, the target has less uniform breathing room and a few near-collisions, though it remains mostly readable."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 3,
+              "reason": "Partially consistent. In the Target, semantically similar elements (tokens like “iPhone/Google/Apple”, mechanism labels, and flow arrows) are often styled similarly (blue token boxes, red vs blue arrows for competing circuits, red/blue highlights for counterfactual vs factual tokens), which supports role consistency. However, several components with comparable communicative roles are not rendered uniformly: (1) key entities appear both as blue token chips and as plain/boxed text in the top dialogue area; (2) process modules are a mix of rounded rectangles (“Intermediate positions”, “Counterfactual Token”, “Factual Token”) and unboxed labels (“Knowledge Recall”, “Induction Circuit”) with differing emphasis; (3) the two ‘mechanism’ callouts use similar iconography but the surrounding typographic/box treatments vary. Compared to the reference figures, which more strictly standardize module shapes and color encodings across repeated roles, the Target shows moderate but incomplete consistency."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 3,
+              "reason": "The target figure uses several concrete visual metaphors/icons to stand in for abstract concepts: a robot icon for the LLM, small gear-like symbols for “mechanisms,” color-coded arrows/paths for competing causal circuits, and compact labeled boxes (e.g., “Knowledge Recall,” “Induction Circuit,” “Counterfactual Token vs Factual Token”) to represent latent processes. This aligns moderately with the references, which also employ strong iconographic substitution (user/LLM avatars, database/retrieval icons, check/cross markers, pipeline blocks). However, the target still relies heavily on textual explanation and schematic boxes rather than more condensed symbolic/abbreviated representations, making the metaphorical replacement present but not as dominant or comprehensive as in the strongest reference examples."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a common LLM/interpretability schematic template: a top prompt box with highlighted entities, iconography (user/robot), labeled “mechanisms,” and a flow/graph-style block diagram with arrows and color-coded paths. This visual grammar (pastel panels, rounded rectangles, red/blue causal arrows, and ‘competition’ framing) is strongly aligned with the provided references, especially Ref 5 (mechanism competition/counterfactual vs factual tokens) and also overlaps with the general retrieval/verification pipeline aesthetics in Refs 2–4. While the specific content combination (factual recall vs counterfactual comprehension mapped to token attention layers) adds a small distinguishing twist, the overall style is not notably unique relative to common academic AI figure conventions."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 3,
+              "reason": "The target figure shows some adaptation to its specific narrative (contrasting factual vs counterfactual statements, then zooming into a mechanism-competition schematic with labeled pathways and a final prediction). This two-part structure and the emphasis on “competition of mechanisms” are tailored to the paper’s conceptual message rather than a purely generic pipeline. However, the overall visual language remains fairly standard and template-like compared with the references: it relies on common flowchart conventions (boxes/arrows), consistent iconography, and a broadly uniform schematic style rather than introducing a distinctly customized layout paradigm. It is moderately adaptable but does not strongly break away from uniform design principles."
+            }
+          ]
+        }
+      },
+      "weighted_total": 2.99,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6847
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6978
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7161
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7014
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6847
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6978
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7161
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7031
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6847
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7161
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6978
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7107
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.5993
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6767
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6819
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7161
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.5806
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6767
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6819
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7161
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6524
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.705
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6583
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7161
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6847
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.705
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7107
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7014
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6819
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.6932
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.6759
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Are_LLM-Judges_Robust_to_Expressions_of_Uncertainty_Investigating_the_effect_of_Epistemic_Markers_on_LLM-based_Evaluation/Are_LLM-Judges_Robust_to_Expressions_of_Uncertainty_Investigating_the_effect_of_Epistemic_Markers_on_LLM-based_Evaluation__p4__score1.00.png",
+            "similarity": 0.7021
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6819
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7161
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.705
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Are_LLM-Judges_Robust_to_Expressions_of_Uncertainty_Investigating_the_effect_of_Epistemic_Markers_on_LLM-based_Evaluation/Are_LLM-Judges_Robust_to_Expressions_of_Uncertainty_Investigating_the_effect_of_Epistemic_Markers_on_LLM-based_Evaluation__p4__score1.00.png",
+            "similarity": 0.7021
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.5977
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6901
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7161
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7107
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6901
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.6649
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7161
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.705
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5223
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6583
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.705
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7161
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.6738
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6721
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7161
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6765
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6767
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.705
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7161
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7031
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.7014
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.705
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7161
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.6274
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.705
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6819
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7161
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VLind-Bench_Measuring_Language_Priors_in_Large_Vision-Language_Models/VLind-Bench_Measuring_Language_Priors_in_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.6875
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.705
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7031
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6962
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6847
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.705
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7031
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6962
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6819
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.6811
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7162
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7031
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6962
+          }
+        }
+      }
+    }
+  ]
+}

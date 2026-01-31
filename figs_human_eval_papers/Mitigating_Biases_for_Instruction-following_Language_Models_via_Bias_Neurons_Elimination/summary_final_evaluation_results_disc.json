@@ -1,0 +1,134 @@
+{
+  "paper_name": "Mitigating_Biases_for_Instruction-following_Language_Models_via_Bias_Neurons_Elimination",
+  "evaluated_at": "2026-01-12T03:08:13.049045",
+  "figure_summary": "## 1. Core Contributions\n- **Define and empirically motivate “bias neurons”**: a small subset of intermediate neurons that disproportionately drive undesirable biased outputs in instruction-following LMs.\n- **Propose CRISPR** (CalibRating InStruction Bias via Bias Neuron PRuning): an inference-time, no-training method that **detects** bias-related neurons via attribution and **mitigates** bias by pruning/eliminating them.\n- **Bias detection tailored to zero-shot instruction following**: quantify bias influence while accounting for variability across synonymous instructions, and **automatically identify biased outputs** (labels) per instance via model confusion rather than manual annotation.\n- **Claimed practicality/generalization**: mitigate bias by removing very few neurons (reported “at least three”) while aiming to preserve task performance and general knowledge.\n\n## 2. Method Components & Relations relevant to figures\n- **Instruction-following LM** \\(P\\): takes an instruction \\(\\iota\\) and input text \\(x\\), produces probabilities over candidate outputs/classes.\n- **Neuron-level attribution (skill relevance)**:\n  - Compute neuron importance for an output \\(y\\) via attribution  \n    \\[\n    A^{(\\iota,x,y)}_i(h)= h_i \\times \\frac{\\partial P(y\\mid \\iota,x)}{\\partial h_i}\n    \\]\n  - This is the base explainability mechanism used to connect internal neurons to outputs.\n- **Automatic biased-output identification (per instance)**:\n  - Define the “biased” output \\(\\hat{y}_j\\) as the **highest-probability wrong class** under the current instruction/input (confusion-based):\n    \\[\n    \\hat{y}_j=\\arg\\max_{c\\in C,\\;c\\neq y} P(c\\mid \\iota,x_j)\n    \\]\n- **Bias attribution (disentangling bias from task skill)**:\n  - Compute bias influence as attribution toward the biased output minus (clipped) attribution toward the gold output:\n    \\[\n    B^{(\\iota,x)}_i(h)=A^{(\\iota,x,\\hat{y})}_i(h)\\;-\\;\\tilde{A}^{(\\iota,x,y)}_i(h)\n    \\]\n  - \\(\\tilde{A}\\) zeroes negative attribution values to avoid treating “negative importance” as skill evidence.\n- **Aggregation across granularity (token → instance → instruction)**:\n  - Because transformers produce token-wise activations/gradients, bias scores are intended to be aggregated over tokens, then over instances, and then over instructions to characterize **instruction-following bias** (the paper states these three aspects explicitly even though the provided excerpt truncates details).\n- **Mitigation action**:\n  - **Identify top bias neurons** by aggregated bias attribution and **eliminate/prune** them, aiming to reduce probability mass on biased outputs without retraining.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **visually ground the problem setting**: show what “undesirable bias” looks like in an instruction-following multiple-choice format (e.g., selecting a protected/minority-group option in an ambiguous negative scenario).\n- To **demonstrate instruction sensitivity as a bias-relevant phenomenon**: highlight that semantically synonymous instructions can yield substantial performance variation, motivating bias handling that explicitly considers the instruction dimension.\n- To **illustrate the conceptual intervention**: connect biased output probabilities to internal “bias neurons,” and convey that removing a small set of neurons can causally reduce biased predictions.\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide a full causal proof that identified neurons are *the only* source of bias, or that pruning cannot introduce other hidden failures.\n- Not intended to establish comprehensive safety/harms coverage across bias types, demographics, or open-ended generation; the illustrated cases focus on specific benchmark-style classification/selection settings.\n- Not intended to validate the attribution method as uniquely correct or to rule out alternative neuron-importance measures; figures mainly motivate and exemplify the approach.\n- Not intended to demonstrate end-to-end preservation of all capabilities/knowledge; claims about maintaining task performance/knowledge are experimental and not something the figures alone substantiate.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Mitigating_Biases_for_Instruction-following_Language_Models_via_Bias_Neurons_Elimination__p0__score0.95.png",
+      "caption": "Figure 1: The example contains an ambiguous context; thus, the correct answer is \"can’t answer\" since it is impossible to judge which group corresponds to the answer for a given negative question (e.g., \"What group of people uses drugs?\"). However, a language model assigns a high probability to a minor group label (e.g., \"poor people\"). Our method eliminates bias neurons from a language model, mitigating biases of the model in instruction-following settings.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 2.0,
+              "reason": "The figure covers the high-level setting (instruction-following multiple-choice with an ambiguous context) and the core intervention idea (eliminating “bias neurons” to reduce probability on a biased label and increase probability on the correct/can’t-answer label). However, it omits essentially all major methodological components/formulas in the summary: neuron attribution A(h)=h_i*∂P/∂h_i, confusion-based biased-output identification (highest-probability wrong class), bias attribution B=A(biased)−clipped A(gold), and the described aggregation across token→instance→instruction. Thus it does not include most major components/formulas."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "Without reading the paper, one can understand the general operating principle at a conceptual level: an instruction-following LM makes a biased choice in an ambiguous question; a subset of internal neurons are treated as bias-driving; removing them shifts probabilities away from the biased option and toward the intended answer (“can’t answer”). The figure does not explain how bias neurons are detected (attribution/confusion-based labeling), but the overall mitigation intuition is clear."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 1.0,
+              "reason": "The figure is a motivating example plus a schematic of pruning effects; it does not summarize the paper from beginning to end. It lacks the detection pipeline (automatic biased-output identification), the specific bias/skill disentangling computation, the aggregation across instructions (instruction sensitivity motivation), and any indication of practicality/generalization claims (e.g., pruning only a few neurons while preserving performance) beyond a brief statement. Therefore it is far from a complete summary of the paper’s content."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 4.0,
+              "reason": "The figure shows an ambiguous instruction-following multiple-choice example where the model puts high probability on a minority-group option (\"poor people\") instead of the correct \"can't answer,\" and depicts mitigating this by eliminating “bias neurons.” These elements align with the summary’s stated purpose (illustrate undesirable bias in instruction-following and the conceptual intervention via pruning a small set of neurons). It does not introduce extra formulas or additional method modules beyond the summary. Minor embellishments like the surgeon/scissor metaphor and bar chart are illustrative and not method-structural."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 4.0,
+              "reason": "The relationships shown—bias neurons inside the LM affecting output probabilities, and neuron elimination during inference decreasing probability of the biased label while increasing probability of the golden label—match the summary’s mitigation action (identify top bias neurons and prune/eliminate them to reduce probability mass on biased outputs without retraining). However, the figure does not represent key detection components described in the summary (confusion-based biased-output identification, attribution definitions, and aggregation across tokens/instances/instructions), so it is conceptually consistent but incomplete relative to the full pipeline."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Major labels used in the figure—\"Instruction,\" \"Context,\" \"Question,\" \"Options,\" \"Bias neuron elimination,\" and the output labels \"biased label\" vs \"golden label\"—are consistent with the summary and caption. The terminology “bias neurons” and the act of eliminating/pruning them are accurately named per the described CRISPR method, even though the acronym CRISPR itself is not explicitly shown in the figure."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure concentrates on the main contribution described in the summary: an instruction-following multiple-choice example with an ambiguous context, a model assigning high probability to a minority-group label (biased output), and a conceptual intervention that removes “bias neurons” to shift probability away from the biased label and toward the correct “can’t answer.” It does not attempt to depict the full attribution formulas or aggregation pipeline, but as a high-level schematic of the core idea it stays focused."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "Given the caption and summary, the visual works as supplementary material: it grounds the setting (instruction + context + question + options), illustrates what counts as an undesirable biased prediction in an ambiguous case, and conveys the intended effect of neuron elimination on output probabilities. Some elements (e.g., the cartoon-like ‘neuron cutting’ depiction and lack of explicit attribution/identification steps) make it more illustrative than explanatory, but it still matches the described purpose of figures."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "Most components are relevant (prompt box, model schematic, probability shift). However, decorative/anthropomorphic graphics (e.g., a person cutting inside the network, stylized ‘bug’/icon) add visual clutter without clarifying the method structure beyond “eliminate bias neurons.” The figure also omits method-specific cues (attribution-based detection, confusion-based biased-output identification), so the extra decoration does not compensate with additional method detail."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.286,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The figure presents a clear left-to-right pipeline: instruction/context/question/options at the left, an arrow into the model depiction, then an 'inference' arrow leading to the output probability bars on the right, matching the intended narrative of biased output and mitigation."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "Connection lines/arrows are minimal and do not cross. The single main flow arrow and the input-to-model connector are visually unobstructed, reducing ambiguity."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are mostly grouped: the instruction and context block is together; the model and the bias-neuron elimination illustration are adjacent; and the output bars are grouped. However, the mitigation action is conveyed via a character/icon near the model rather than a clearly labeled module, so the conceptual mapping between 'elimination' and the output change relies on visual metaphor more than proximity of explicit labeled components."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major components (input panel, model block, bar chart) are placed in a roughly horizontal alignment consistent with the pipeline. Minor elements (e.g., the character and small annotations like 'increase/decrease') are not tightly grid-aligned, but this does not significantly harm readability."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Key parts stand out: the large input panel, central model block, and prominent output bars emphasize the main story. The bias notion is highlighted with red text ('Bias neuron elimination') and the biased/golden labels under bars, though the actual 'bias neurons' are indicated by a small red element inside the model which could be more salient relative to the rest of the network."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is adequate spacing between the three main regions (input, model, outputs). Some right-side annotations ('increase!', 'decrease!') and bar labels are a bit tight, but overall margins prevent clutter and preserve legibility."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "The figure uses consistent visual encoding for roles: the output options are consistently represented as bars with labels; emphasis uses color (red for biased/undesirable, gold for correct). However, conceptual entities (instruction-following LM, bias neurons, pruning) are represented with mixed metaphors (network diagram + character intervention) rather than a consistent set of diagrammatic shapes for modules."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces abstract mechanisms (attribution, bias influence, pruning) with concrete visual metaphors: a highlighted 'bias neuron' inside a network diagram and a personified 'CRISPR' pruning/eliminating it, plus bar charts showing probability mass shifting away from a biased label toward the correct 'can’t answer'. This concretizes the summary’s concept of identifying and removing a small set of bias-driving neurons at inference time."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 3.0,
+              "reason": "While the ‘neural network + intervention + before/after probabilities’ composition is fairly common in ML papers, the specific styling (cartoon-like pruning actor, red ‘bias neuron’ emphasis, explicit biased-vs-golden label callouts) gives it some distinctiveness beyond a standard block diagram. Still, the overall visual language follows recognizable template patterns for method-overview figures."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s instruction-following bias setting by embedding a concrete multiple-choice prompt (ambiguous context leading to ‘can’t answer’) and directly tying it to an internal intervention (bias neuron elimination) and output probability changes. This end-to-end storyline (prompt → internal bias neuron → changed class probabilities) is more purpose-fit than a generic pipeline diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.657
+      }
+    }
+  ]
+}

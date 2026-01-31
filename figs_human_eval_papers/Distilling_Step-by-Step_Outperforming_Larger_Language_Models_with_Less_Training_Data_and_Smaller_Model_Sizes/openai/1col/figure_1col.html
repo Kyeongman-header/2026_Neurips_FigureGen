@@ -1,0 +1,251 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Distilling step-by-step overview</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#1f2937;
+    --muted:#6b7280;
+    --line:#374151;
+    --soft:#e5e7eb;
+    --soft2:#f3f4f6;
+
+    --llmFill:#fff7ed;
+    --llmStroke:#c2410c;
+
+    --dataFill:#eff6ff;
+    --dataStroke:#1d4ed8;
+
+    --promptFill:#f5f3ff;
+    --promptStroke:#6d28d9;
+
+    --outFill:#ecfeff;
+    --outStroke:#0e7490;
+
+    --studentFill:#f0fdf4;
+    --studentStroke:#15803d;
+
+    --trainFill:#fafafa;
+    --trainStroke:#111827;
+
+    --baselineFill:#f9fafb;
+    --baselineStroke:#9ca3af;
+  }
+
+  html, body { height:100%; margin:0; background:var(--bg); }
+  #figure-root{
+    width:1200px; height:1500px;
+    margin:0 auto;
+    background:var(--bg);
+    font-family: Arial, Helvetica, sans-serif;
+    position:relative;
+  }
+
+  .caption{
+    position:absolute;
+    left:70px;
+    top:1378px;
+    width:1060px;
+    height:92px;
+    border-top:1.5px solid var(--soft);
+    padding-top:10px;
+    color:#111827;
+    font-size:15px;
+    line-height:1.35;
+  }
+
+  /* SVG styling */
+  .box { stroke-width:2.2; rx:14; ry:14; }
+  .panel { stroke-width:2.2; rx:18; ry:18; }
+  .title { font-size:22px; font-weight:700; }
+  .subtitle { font-size:16px; font-weight:700; }
+  .small { font-size:13px; }
+  .tiny { font-size:12px; }
+  .mono { font-family: "Arial", "Helvetica", sans-serif; }
+
+  /* IMPORTANT: SVG text color uses fill, not color */
+  .ink { fill: var(--ink); }
+  .muted { fill: var(--muted); }
+
+  .arrow { stroke: var(--line); stroke-width:2.4; fill:none; }
+  .arrow-soft { stroke: #6b7280; stroke-width:2.0; fill:none; stroke-dasharray:6 6; }
+  .divider { stroke: var(--soft); stroke-width:1.5; }
+  .note { font-size:12.5px; }
+  .pill { stroke-width:1.8; rx:14; ry:14; }
+  .bracket { stroke:#111827; stroke-width:2; fill:none; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+  <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-label="Overview of Distilling step-by-step diagram">
+    <defs>
+      <marker id="arrowhead" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 Z" fill="#374151"></path>
+      </marker>
+      <marker id="arrowheadSoft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+        <path d="M0,0 L12,6 L0,12 Z" fill="#6b7280"></path>
+      </marker>
+
+      <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#000000" flood-opacity="0.08"/>
+      </filter>
+    </defs>
+
+    <!-- Header -->
+    <text x="70" y="70" class="title ink">Distilling step-by-step: from LLM chain-of-thought to a deployable T5 student</text>
+    <text x="70" y="98" class="small muted">Two stages: (1) prompt a large language model (teacher) with chain-of-thought demonstrations to generate labels + rationales, (2) train a smaller T5 model with multi-task supervision.</text>
+
+    <!-- Top panel: Teacher prompting -->
+    <rect x="70" y="130" width="1060" height="560" class="panel" fill="#ffffff" stroke="#111827" filter="url(#shadow)"></rect>
+    <text x="95" y="165" class="subtitle ink">Step 1 — Extract supervision from a large language model (teacher) via chain-of-thought prompting</text>
+
+    <!-- Unlabeled dataset box -->
+    <rect x="95" y="205" width="360" height="210" class="box" fill="var(--dataFill)" stroke="var(--dataStroke)"></rect>
+    <text x="115" y="238" class="subtitle ink">Unlabeled examples</text>
+    <text x="115" y="263" class="small ink">Input: x</text>
+    <rect x="115" y="280" width="320" height="48" rx="10" ry="10" fill="#ffffff" stroke="#bfdbfe" stroke-width="1.6"></rect>
+    <text x="130" y="310" class="small muted">e.g., question / premise-hypothesis / text</text>
+    <rect x="115" y="338" width="320" height="48" rx="10" ry="10" fill="#ffffff" stroke="#bfdbfe" stroke-width="1.6"></rect>
+    <text x="130" y="368" class="small muted">x ∈ D (no human label needed)</text>
+
+    <!-- CoT prompt template -->
+    <rect x="95" y="440" width="360" height="220" class="box" fill="var(--promptFill)" stroke="var(--promptStroke)"></rect>
+    <text x="115" y="473" class="subtitle ink">CoT prompt template p</text>
+    <text x="115" y="498" class="small ink">Demonstrations are triples:</text>
+    <text x="115" y="523" class="small muted">(x, r, y)</text>
+
+    <rect x="115" y="540" width="320" height="92" rx="10" ry="10" fill="#ffffff" stroke="#ddd6fe" stroke-width="1.6"></rect>
+    <text x="130" y="564" class="tiny muted">Example demonstration (illustrative):</text>
+    <text x="130" y="586" class="tiny ink">x: &quot;...&quot;</text>
+    <text x="130" y="606" class="tiny ink">r: &quot;Reason step-by-step ...&quot;</text>
+    <text x="130" y="626" class="tiny ink">y: &quot;Label / answer&quot;</text>
+
+    <!-- LLM teacher box -->
+    <rect x="510" y="255" width="330" height="280" class="box" fill="var(--llmFill)" stroke="var(--llmStroke)" filter="url(#shadow)"></rect>
+    <text x="530" y="290" class="subtitle ink">Large language model</text>
+    <text x="530" y="315" class="small muted">Teacher (few-shot CoT prompting)</text>
+
+    <rect x="530" y="340" width="290" height="56" rx="12" ry="12" fill="#ffffff" stroke="#fed7aa" stroke-width="1.6"></rect>
+    <text x="546" y="366" class="small ink">Input: prompt p + new x</text>
+    <text x="546" y="390" class="tiny muted">LLM mimics (x, r, y) format</text>
+
+    <rect x="530" y="410" width="290" height="95" rx="12" ry="12" fill="#ffffff" stroke="#fed7aa" stroke-width="1.6"></rect>
+    <text x="546" y="437" class="small ink">Output: generated supervision</text>
+    <text x="546" y="461" class="small muted">label: ŷ</text>
+    <text x="546" y="485" class="small muted">rationale: r̂ (natural language)</text>
+
+    <!-- Generated dataset box -->
+    <rect x="880" y="235" width="230" height="320" class="box" fill="var(--outFill)" stroke="var(--outStroke)"></rect>
+    <text x="900" y="270" class="subtitle ink">Distilled data</text>
+    <text x="900" y="295" class="small muted">for each x ∈ D</text>
+
+    <rect x="900" y="315" width="190" height="70" rx="10" ry="10" fill="#ffffff" stroke="#a5f3fc" stroke-width="1.6"></rect>
+    <text x="913" y="345" class="small ink">(x, ŷ)</text>
+    <text x="913" y="368" class="tiny muted">pseudo-label supervision</text>
+
+    <rect x="900" y="395" width="190" height="85" rx="10" ry="10" fill="#ffffff" stroke="#a5f3fc" stroke-width="1.6"></rect>
+    <text x="913" y="425" class="small ink">(x, r̂)</text>
+    <text x="913" y="448" class="tiny muted">rationale supervision</text>
+    <text x="913" y="468" class="tiny muted">(task knowledge in NL)</text>
+
+    <rect x="900" y="490" width="190" height="50" rx="10" ry="10" fill="#ffffff" stroke="#a5f3fc" stroke-width="1.6"></rect>
+    <text x="913" y="520" class="tiny ink">No human rationale collection</text>
+
+    <!-- Arrows in step 1 -->
+    <path d="M455,310 C485,310 490,330 510,340" class="arrow" marker-end="url(#arrowhead)"></path>
+    <text x="462" y="298" class="tiny muted">append x to p</text>
+
+    <path d="M275,415 C360,415 435,410 510,370" class="arrow" marker-end="url(#arrowhead)"></path>
+    <text x="145" y="428" class="tiny muted">prompt p</text>
+
+    <path d="M840,430 C860,430 865,430 880,430" class="arrow" marker-end="url(#arrowhead)"></path>
+    <text x="728" y="418" class="tiny muted">generate ŷ and r̂</text>
+
+    <!-- Divider within top panel -->
+    <line x1="95" y1="675" x2="1110" y2="675" class="divider"></line>
+    <text x="95" y="705" class="small muted">Result: a compact supervision set containing both labels and intermediate natural-language rationales.</text>
+
+    <!-- Bottom panel: Student multi-task training -->
+    <rect x="70" y="720" width="1060" height="630" class="panel" fill="#ffffff" stroke="#111827" filter="url(#shadow)"></rect>
+    <text x="95" y="755" class="subtitle ink">Step 2 — Train a smaller T5 student with multi-task label prediction + rationale generation</text>
+
+    <!-- Student model -->
+    <rect x="95" y="820" width="400" height="290" class="box" fill="var(--studentFill)" stroke="var(--studentStroke)" filter="url(#shadow)"></rect>
+    <text x="115" y="855" class="subtitle ink">Smaller T5 model</text>
+    <text x="115" y="880" class="small muted">Student (deployable, lower latency)</text>
+
+    <!-- Task prefixes -->
+    <rect x="115" y="905" width="360" height="78" class="pill" fill="#ffffff" stroke="#bbf7d0"></rect>
+    <text x="130" y="935" class="small ink">Input formatting (text-to-text)</text>
+    <text x="130" y="958" class="tiny muted">prepend task prefixes to x</text>
+
+    <rect x="120" y="995" width="170" height="45" rx="10" ry="10" fill="#dcfce7" stroke="#86efac" stroke-width="1.4"></rect>
+    <text x="132" y="1023" class="small ink">[label] + x → ŷ</text>
+
+    <rect x="305" y="995" width="170" height="45" rx="10" ry="10" fill="#dcfce7" stroke="#86efac" stroke-width="1.4"></rect>
+    <text x="317" y="1023" class="small ink">[rationale] + x → r̂</text>
+
+    <!-- Loss box -->
+    <rect x="115" y="1055" width="360" height="40" rx="10" ry="10" fill="#ffffff" stroke="#bbf7d0" stroke-width="1.6"></rect>
+    <text x="130" y="1081" class="small ink">Multi-task objective: L = L<label> + λ L<rationale></text>
+
+    <!-- Training supervision input -->
+    <rect x="540" y="805" width="570" height="360" class="box" fill="var(--trainFill)" stroke="var(--trainStroke)"></rect>
+    <text x="560" y="840" class="subtitle ink">Training signals from the teacher</text>
+    <text x="560" y="865" class="small muted">Use the distilled dataset containing (x, ŷ, r̂)</text>
+
+    <rect x="560" y="890" width="530" height="110" rx="12" ry="12" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.6"></rect>
+    <text x="575" y="920" class="small ink">Task A: label prediction</text>
+    <text x="575" y="945" class="tiny muted">Supervise T5 on ŷ (cross-entropy over output tokens)</text>
+    <text x="575" y="972" class="tiny ink">input: [label] + x</text>
+    <text x="575" y="992" class="tiny ink">target: ŷ</text>
+
+    <rect x="560" y="1010" width="530" height="130" rx="12" ry="12" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.6"></rect>
+    <text x="575" y="1040" class="small ink">Task B: rationale generation</text>
+    <text x="575" y="1065" class="tiny muted">Supervise T5 to generate intermediate reasoning r̂</text>
+    <text x="575" y="1092" class="tiny ink">input: [rationale] + x</text>
+    <text x="575" y="1112" class="tiny ink">target: r̂</text>
+    <text x="575" y="1132" class="tiny muted">Rationales provide richer task knowledge than labels alone</text>
+
+    <!-- Arrows from distilled data to training + student -->
+    <path d="M995,555 C995,640 980,700 925,760 C860,830 740,860 540,900" class="arrow" marker-end="url(#arrowhead)"></path>
+    <text x="865" y="720" class="tiny muted">distilled (x, ŷ, r̂)</text>
+
+    <path d="M540,980 C515,980 505,980 495,980" class="arrow" marker-end="url(#arrowhead)"></path>
+
+    <!-- Deployment callout -->
+    <rect x="95" y="1140" width="1015" height="185" class="box" fill="#ffffff" stroke="#111827"></rect>
+    <text x="115" y="1175" class="subtitle ink">At test time: deploy the small model (no LLM needed)</text>
+
+    <rect x="115" y="1200" width="480" height="95" rx="14" ry="14" fill="var(--studentFill)" stroke="var(--studentStroke)" stroke-width="2.0"></rect>
+    <text x="135" y="1232" class="small ink">Input: x</text>
+    <text x="135" y="1255" class="tiny muted">Run T5 to produce the output label directly</text>
+    <text x="135" y="1278" class="small ink">Output: ŷ</text>
+
+    <path d="M600,1248 C660,1248 700,1248 765,1248" class="arrow" marker-end="url(#arrowhead)"></path>
+
+    <rect x="785" y="1200" width="305" height="95" rx="14" ry="14" fill="#ffffff" stroke="#9ca3af" stroke-width="1.8"></rect>
+    <text x="805" y="1228" class="small ink">Practical benefits</text>
+    <text x="805" y="1252" class="tiny muted">• better data efficiency than standard finetuning/distillation</text>
+    <text x="805" y="1272" class="tiny muted">• smaller, faster, cheaper to serve (deployable)</text>
+
+    <!-- Baseline comparison (small, within panel) -->
+    <rect x="620" y="1310" width="490" height="28" rx="10" ry="10" fill="var(--baselineFill)" stroke="var(--baselineStroke)" stroke-width="1.4"></rect>
+    <text x="635" y="1330" class="tiny muted">Contrast: standard distillation uses only (x, ŷ); Distilling step-by-step adds (x, r̂) as a second task.</text>
+
+    <!-- Small left-side baseline bracket -->
+    <path d="M560,1168 L560,1338" class="bracket"></path>
+    <path d="M560,1168 L580,1168" class="bracket"></path>
+    <path d="M560,1338 L580,1338" class="bracket"></path>
+    <text x="585" y="1215" class="tiny muted">multi-task</text>
+    <text x="585" y="1233" class="tiny muted">supervision</text>
+
+  </svg>
+
+  <div class="caption">
+    Overview of Distilling step-by-step: a large language model is prompted with chain-of-thought demonstrations to generate both labels and natural-language rationales, which supervise a smaller T5 model via multi-task label prediction and rationale generation, improving data efficiency and deployability over standard finetuning or distillation.
+  </div>
+</div>
+</body>
+</html>

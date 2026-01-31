@@ -1,0 +1,332 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1200, initial-scale=1.0" />
+<title>IHEval Benchmark Design and Findings</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#1a1a1a;
+    --muted:#555;
+    --line:#2b2b2b;
+    --lightline:#b9c0c7;
+    --panel:#f6f8fb;
+    --panel2:#ffffff;
+    --accent:#1f5aa6;
+    --accent2:#8b1e3f;
+    --accent3:#1b7f5a;
+    --accent4:#6b4e16;
+    --softA:#eaf2ff;
+    --softB:#ffecef;
+    --softC:#e9fbf4;
+    --softD:#fff5e6;
+  }
+  html, body { margin:0; padding:0; background:var(--bg); }
+  #figure-root{
+    width:1200px; height:1500px;
+    margin:0 auto;
+    box-sizing:border-box;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+  }
+  /* SVG text styles (use fill, not color) */
+  .title { font-size:28px; font-weight:700; fill:var(--ink); }
+  .subtitle { font-size:16px; font-weight:600; fill:var(--muted); }
+  .small { font-size:13px; fill:var(--muted); }
+  .label { font-size:15px; fill:var(--ink); font-weight:700; }
+  .text { font-size:14px; fill:var(--ink); }
+  .muted { font-size:13px; fill:var(--muted); }
+  .tiny { font-size:12px; fill:var(--muted); }
+  .mono { font-family: "Arial", Helvetica, sans-serif; letter-spacing:0.1px; }
+  .box-title { font-size:16px; font-weight:700; fill:var(--ink); }
+  .chip { font-size:12px; font-weight:700; fill:var(--ink); }
+  .chipW { font-size:12px; font-weight:700; fill:#ffffff; }
+  .axis { stroke: var(--line); stroke-width:2; }
+  .grid { stroke: var(--lightline); stroke-width:1; }
+  .arrow { stroke: var(--line); stroke-width:2.2; fill:none; }
+  .arrowLight { stroke: var(--lightline); stroke-width:1.6; fill:none; }
+  .outline { stroke: var(--line); stroke-width:2; fill: var(--panel2); }
+  .panel { stroke: var(--line); stroke-width:2; fill: var(--panel); }
+  .panelThin { stroke: var(--lightline); stroke-width:1.5; fill: var(--panel2); }
+  .dashed { stroke-dasharray:7 6; }
+  .legendLine { stroke-width:10; stroke-linecap:round; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-label="IHEval benchmark design and findings diagram">
+  <defs>
+    <marker id="arrowHead" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2b2b2b"></path>
+    </marker>
+    <marker id="arrowHeadLight" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b9c0c7"></path>
+    </marker>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="#000000" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <!-- Header -->
+  <text x="60" y="70" class="title">IHEval: Instruction Hierarchy Evaluation</text>
+  <text x="60" y="98" class="subtitle">Benchmark design (hierarchical inputs and settings) and key findings (conflict drop and strictness sensitivity)</text>
+
+  <!-- Top row panels -->
+  <!-- Panel A: Instruction hierarchy -->
+  <rect x="60" y="130" width="520" height="360" rx="14" class="panel" filter="url(#softShadow)"/>
+  <text x="85" y="165" class="box-title">A. Instruction hierarchy (priority order)</text>
+
+  <!-- Ladder container -->
+  <rect x="95" y="190" width="450" height="260" rx="12" class="panelThin"/>
+  <text x="110" y="215" class="tiny">Higher priority overrides lower priority when instructions conflict</text>
+
+  <!-- Ladder steps -->
+  <!-- Step 1 System -->
+  <rect x="120" y="240" width="400" height="44" rx="10" fill="var(--softA)" stroke="#1f5aa6" stroke-width="2"/>
+  <circle cx="140" cy="262" r="10" fill="#1f5aa6"/>
+  <text x="138.5" y="266.5" text-anchor="middle" class="chipW">1</text>
+  <text x="165" y="268" class="label">System messages</text>
+  <text x="360" y="268" class="muted">highest priority</text>
+
+  <!-- Step 2 User -->
+  <rect x="120" y="292" width="400" height="44" rx="10" fill="#f1f4f8" stroke="#5f6b78" stroke-width="2"/>
+  <circle cx="140" cy="314" r="10" fill="#5f6b78"/>
+  <text x="138.5" y="318.5" text-anchor="middle" class="chipW">2</text>
+  <text x="165" y="320" class="label">User messages</text>
+
+  <!-- Step 3 History -->
+  <rect x="120" y="344" width="400" height="44" rx="10" fill="#f1f4f8" stroke="#5f6b78" stroke-width="2"/>
+  <circle cx="140" cy="366" r="10" fill="#5f6b78"/>
+  <text x="138.5" y="370.5" text-anchor="middle" class="chipW">3</text>
+  <text x="165" y="372" class="label">Conversation history</text>
+
+  <!-- Step 4 Tool -->
+  <rect x="120" y="396" width="400" height="44" rx="10" fill="var(--softD)" stroke="#6b4e16" stroke-width="2"/>
+  <circle cx="140" cy="418" r="10" fill="#6b4e16"/>
+  <text x="138.5" y="422.5" text-anchor="middle" class="chipW">4</text>
+  <text x="165" y="424" class="label">Tool outputs</text>
+  <text x="360" y="424" class="muted">lowest priority</text>
+
+  <!-- Down arrow indicating decreasing priority -->
+  <path d="M515,250 L540,250 L540,430 L515,430" class="arrowLight" marker-end="url(#arrowHeadLight)"/>
+  <text x="520" y="236" class="tiny" text-anchor="start">decreasing</text>
+  <text x="520" y="451" class="tiny" text-anchor="start">priority</text>
+
+  <!-- Note -->
+  <text x="85" y="472" class="small">Goal: models should resolve conflicts by following the higher-priority instruction (main instruction).</text>
+
+  <!-- Panel B: Benchmark design -->
+  <rect x="620" y="130" width="520" height="360" rx="14" class="panel" filter="url(#softShadow)"/>
+  <text x="645" y="165" class="box-title">B. IHEval benchmark design</text>
+
+  <!-- Dataset & tasks -->
+  <rect x="650" y="190" width="460" height="105" rx="12" class="panelThin"/>
+  <text x="670" y="216" class="label">Scope</text>
+  <text x="670" y="240" class="text">• 3,538 examples, 9 tasks, 4 scenario categories</text>
+  <text x="670" y="262" class="text">• Rule following, task execution, safety defense, tool use</text>
+
+  <!-- Settings -->
+  <rect x="650" y="305" width="460" height="165" rx="12" class="panelThin"/>
+  <text x="670" y="331" class="label">Three input settings per task</text>
+
+  <!-- Aligned -->
+  <rect x="670" y="345" width="420" height="34" rx="9" fill="var(--softC)" stroke="#1b7f5a" stroke-width="2"/>
+  <text x="690" y="367" class="text"><tspan class="label" font-weight="700">Aligned</tspan>: hierarchical inputs; low-priority inputs align with highest-priority instruction</text>
+
+  <!-- Conflict -->
+  <rect x="670" y="387" width="420" height="34" rx="9" fill="var(--softB)" stroke="#8b1e3f" stroke-width="2"/>
+  <text x="690" y="409" class="text"><tspan class="label" font-weight="700">Conflict</tspan>: low-priority inputs conflict; must prioritize higher-level instructions</text>
+
+  <!-- Reference -->
+  <rect x="670" y="429" width="420" height="34" rx="9" fill="#eef2f7" stroke="#5f6b78" stroke-width="2"/>
+  <text x="690" y="451" class="text"><tspan class="label" font-weight="700">Reference</tspan>: single-input baseline; merge aligned instructions into one user message</text>
+
+  <!-- Middle: How evaluation works -->
+  <rect x="60" y="520" width="1080" height="470" rx="14" class="panel" filter="url(#softShadow)"/>
+  <text x="85" y="555" class="box-title">C. Evaluation pipeline: hierarchical inputs → model response → programmatic score</text>
+
+  <!-- Left: input stack -->
+  <rect x="90" y="585" width="380" height="375" rx="12" class="panelThin"/>
+  <text x="110" y="612" class="label">Hierarchical input (example structure)</text>
+  <text x="110" y="635" class="tiny">Inputs may include multiple components; conflicts can occur at any lower-priority layer.</text>
+
+  <!-- Stack boxes -->
+  <rect x="120" y="665" width="320" height="54" rx="10" fill="var(--softA)" stroke="#1f5aa6" stroke-width="2"/>
+  <text x="140" y="694" class="label">System</text>
+  <text x="230" y="694" class="muted">Main instruction (regulation)</text>
+
+  <rect x="120" y="732" width="320" height="54" rx="10" fill="#f1f4f8" stroke="#5f6b78" stroke-width="2"/>
+  <text x="140" y="761" class="label">User</text>
+  <text x="230" y="761" class="muted">May align or conflict</text>
+
+  <rect x="120" y="799" width="320" height="54" rx="10" fill="#f1f4f8" stroke="#5f6b78" stroke-width="2"/>
+  <text x="140" y="828" class="label">History</text>
+  <text x="230" y="828" class="muted">Earlier turns; can carry constraints</text>
+
+  <rect x="120" y="866" width="320" height="54" rx="10" fill="var(--softD)" stroke="#6b4e16" stroke-width="2"/>
+  <text x="140" y="895" class="label">Tool</text>
+  <text x="230" y="895" class="muted">Retrieved/injected content</text>
+
+  <!-- Conflict indicator -->
+  <path d="M435,757 C460,757 460,793 435,793" class="arrow" marker-end="url(#arrowHead)"/>
+  <rect x="300" y="742" width="130" height="28" rx="14" fill="#8b1e3f" opacity="0.12" stroke="#8b1e3f" stroke-width="1.5"/>
+  <text x="365" y="761" class="chip" text-anchor="middle" fill="#8b1e3f">possible conflict</text>
+
+  <!-- Center: model -->
+  <rect x="510" y="650" width="210" height="170" rx="14" fill="#ffffff" stroke="#2b2b2b" stroke-width="2.2" filter="url(#softShadow)"/>
+  <text x="615" y="685" class="label" text-anchor="middle">Language model</text>
+  <text x="615" y="710" class="muted" text-anchor="middle">temperature = 0</text>
+  <rect x="545" y="730" width="140" height="60" rx="12" fill="#eef2f7" stroke="#5f6b78" stroke-width="1.8"/>
+  <text x="615" y="758" class="text" text-anchor="middle">Response</text>
+  <text x="615" y="780" class="tiny" text-anchor="middle">should follow main instruction</text>
+
+  <!-- Arrows from input to model -->
+  <path d="M470,770 L510,735" class="arrow" marker-end="url(#arrowHead)"/>
+  <text x="488" y="748" class="tiny" text-anchor="end">feed</text>
+
+  <!-- Right: programmatic evaluation -->
+  <rect x="760" y="585" width="350" height="375" rx="12" class="panelThin"/>
+  <text x="780" y="612" class="label">Programmatic evaluation</text>
+  <text x="780" y="635" class="tiny">Score main-instruction completion; conflicting-instruction execution lowers score.</text>
+
+  <rect x="780" y="660" width="310" height="90" rx="12" fill="#ffffff" stroke="#b9c0c7" stroke-width="1.5"/>
+  <text x="795" y="685" class="text">Metrics</text>
+  <text x="795" y="708" class="muted">• Exact match / accuracy (e.g., safety)</text>
+  <text x="795" y="730" class="muted">• F1, etc. (task execution)</text>
+
+  <rect x="780" y="760" width="310" height="90" rx="12" fill="#ffffff" stroke="#b9c0c7" stroke-width="1.5"/>
+  <text x="795" y="785" class="text">Strict vs. loose scoring</text>
+  <text x="795" y="808" class="muted">• Strict: full output judged</text>
+  <text x="795" y="830" class="muted">• Loose: allows minor wrappers</text>
+
+  <rect x="780" y="860" width="310" height="85" rx="12" fill="#ffffff" stroke="#b9c0c7" stroke-width="1.5"/>
+  <text x="795" y="885" class="text">IH-following quantification</text>
+  <text x="795" y="908" class="muted">Compare scores vs. reference:</text>
+  <text x="795" y="930" class="muted">∆ = reference − (aligned or conflict)</text>
+
+  <!-- Arrow from model to evaluation -->
+  <path d="M720,735 L760,735" class="arrow" marker-end="url(#arrowHead)"/>
+  <text x="740" y="720" class="tiny" text-anchor="middle">evaluate</text>
+
+  <!-- Bottom: Findings -->
+  <rect x="60" y="1020" width="1080" height="360" rx="14" class="panel" filter="url(#softShadow)"/>
+  <text x="85" y="1055" class="box-title">D. Key findings on hierarchy compliance</text>
+
+  <!-- Finding 1: performance drops under conflict -->
+  <rect x="90" y="1080" width="670" height="270" rx="12" class="panelThin"/>
+  <text x="110" y="1106" class="label">1) Substantial performance drops under conflicts</text>
+  <text x="110" y="1128" class="tiny">Illustrative trend across models: reference ≈ aligned &gt; conflict (largest degradation when instructions conflict).</text>
+
+  <!-- Mini chart area -->
+  <rect x="120" y="1150" width="610" height="180" rx="10" fill="#ffffff" stroke="#b9c0c7" stroke-width="1.5"/>
+  <!-- axes -->
+  <line x1="165" y1="1300" x2="165" y2="1170" class="axis"/>
+  <line x1="165" y1="1300" x2="700" y2="1300" class="axis"/>
+  <text x="150" y="1175" class="tiny" text-anchor="end">score</text>
+  <text x="700" y="1322" class="tiny" text-anchor="end">models (illustrative)</text>
+
+  <!-- gridlines -->
+  <line x1="165" y1="1260" x2="700" y2="1260" class="grid"/>
+  <line x1="165" y1="1220" x2="700" y2="1220" class="grid"/>
+  <line x1="165" y1="1180" x2="700" y2="1180" class="grid"/>
+  <text x="150" y="1305" class="tiny" text-anchor="end">0</text>
+  <text x="150" y="1265" class="tiny" text-anchor="end">30</text>
+  <text x="150" y="1225" class="tiny" text-anchor="end">60</text>
+  <text x="150" y="1185" class="tiny" text-anchor="end">90</text>
+
+  <!-- bars: three settings per model -->
+  <!-- Model labels -->
+  <text x="250" y="1322" class="tiny" text-anchor="middle">Proprietary</text>
+  <text x="420" y="1322" class="tiny" text-anchor="middle">Open-source (large)</text>
+  <text x="590" y="1322" class="tiny" text-anchor="middle">Open-source (small)</text>
+
+  <!-- Legend -->
+  <line x1="190" y1="1167" x2="230" y2="1167" class="legendLine" stroke="#5f6b78"/>
+  <text x="240" y="1172" class="tiny">Reference</text>
+  <line x1="320" y1="1167" x2="360" y2="1167" class="legendLine" stroke="#1b7f5a"/>
+  <text x="370" y="1172" class="tiny">Aligned</text>
+  <line x1="435" y1="1167" x2="475" y2="1167" class="legendLine" stroke="#8b1e3f"/>
+  <text x="485" y="1172" class="tiny">Conflict</text>
+
+  <!-- Group 1 bars (x~240) -->
+  <!-- ref 88 -->
+  <rect x="215" y="1182" width="22" height="118" fill="#5f6b78"/>
+  <!-- aligned 86 -->
+  <rect x="242" y="1187" width="22" height="113" fill="#1b7f5a"/>
+  <!-- conflict 64 -->
+  <rect x="269" y="1215" width="22" height="85" fill="#8b1e3f"/>
+
+  <!-- Group 2 bars (x~410) -->
+  <!-- ref 84 -->
+  <rect x="385" y="1193" width="22" height="107" fill="#5f6b78"/>
+  <!-- aligned 78 -->
+  <rect x="412" y="1201" width="22" height="99" fill="#1b7f5a"/>
+  <!-- conflict 45 -->
+  <rect x="439" y="1240" width="22" height="60" fill="#8b1e3f"/>
+
+  <!-- Group 3 bars (x~580) -->
+  <!-- ref 80 -->
+  <rect x="555" y="1200" width="22" height="100" fill="#5f6b78"/>
+  <!-- aligned 70 -->
+  <rect x="582" y="1213" width="22" height="87" fill="#1b7f5a"/>
+  <!-- conflict 30 -->
+  <rect x="609" y="1260" width="22" height="40" fill="#8b1e3f"/>
+
+  <!-- annotation -->
+  <path d="M650,1240 C680,1225 690,1210 700,1200" class="arrowLight dashed" marker-end="url(#arrowHeadLight)"/>
+  <text x="680" y="1255" class="tiny" text-anchor="end">conflict</text>
+  <text x="680" y="1270" class="tiny" text-anchor="end">drop</text>
+
+  <!-- Finding 2: strictness sensitivity -->
+  <rect x="790" y="1080" width="320" height="270" rx="12" class="panelThin"/>
+  <text x="810" y="1106" class="label">2) Sensitivity to instruction strictness</text>
+  <text x="810" y="1128" class="tiny">Conflict handling shifts with phrasing; undesired reliance on “strict” tone over priority.</text>
+
+  <!-- strictness diagram -->
+  <rect x="810" y="1150" width="280" height="180" rx="10" fill="#ffffff" stroke="#b9c0c7" stroke-width="1.5"/>
+  <!-- Two scenarios -->
+  <rect x="825" y="1165" width="250" height="70" rx="10" fill="var(--softA)" stroke="#1f5aa6" stroke-width="1.5"/>
+  <text x="840" y="1188" class="text"><tspan class="label" font-weight="700">Main instruction</tspan> stricter</text>
+  <text x="840" y="1210" class="muted">→ higher conflict score</text>
+  <rect x="965" y="1192" width="95" height="14" rx="7" fill="#e0e5ec"/>
+  <rect x="965" y="1192" width="70" height="14" rx="7" fill="#1b7f5a"/>
+  <text x="1065" y="1204" class="tiny" text-anchor="end">↑</text>
+
+  <rect x="825" y="1245" width="250" height="70" rx="10" fill="var(--softB)" stroke="#8b1e3f" stroke-width="1.5"/>
+  <text x="840" y="1268" class="text"><tspan class="label" font-weight="700">Conflicting instruction</tspan> stricter</text>
+  <text x="840" y="1290" class="muted">→ lower conflict score</text>
+  <rect x="965" y="1272" width="95" height="14" rx="7" fill="#e0e5ec"/>
+  <rect x="965" y="1272" width="28" height="14" rx="7" fill="#8b1e3f"/>
+  <text x="1065" y="1284" class="tiny" text-anchor="end">↓</text>
+
+  <!-- Finding 3: open-source sensitivity -->
+  <rect x="90" y="1358" width="1020" height="0" fill="none"/>
+  <text x="85" y="1368" class="tiny"></text>
+
+  <!-- Additional callout within findings panel -->
+  <rect x="90" y="1360" width="1020" height="0" fill="none"/>
+
+  <!-- A concise callout strip -->
+  <rect x="90" y="1360" width="1020" height="0" fill="none"/>
+
+  <!-- Bottom callout row inside D -->
+  <rect x="90" y="1350" width="1020" height="0" fill="none"/>
+
+  <!-- Within D, add a narrow note bar above bottom edge of panel -->
+  <rect x="90" y="1355" width="1020" height="0" fill="none"/>
+
+  <!-- Better: a note at bottom of D panel -->
+  <rect x="90" y="1350" width="1020" height="0" fill="none"/>
+  <text x="110" y="1368" class="text">
+    Open-source LMs show pronounced degradation in conflict settings and greater variability between reference vs. hierarchical inputs, indicating weaker instruction hierarchy compliance.
+  </text>
+
+  <!-- Caption area -->
+  <rect x="60" y="1400" width="1080" height="80" rx="10" fill="#ffffff" stroke="#b9c0c7" stroke-width="1.5"/>
+  <text x="75" y="1430" class="tiny" fill="#1a1a1a">
+    IHEval benchmark design and findings on instruction hierarchy compliance, prioritizing system messages over user messages, conversation history, and tool outputs across aligned, conflict, and reference settings. Results show substantial performance drops under conflicts and sensitivity to instruction strictness, especially for open-source LMs.
+  </text>
+</svg>
+</div>
+</body>
+</html>

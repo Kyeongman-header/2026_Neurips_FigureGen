@@ -1,0 +1,653 @@
+{
+  "paper_name": "Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding",
+  "mode": "full",
+  "evaluated_at": "2026-01-29T20:11:36.151387",
+  "figure_evaluations": [
+    {
+      "figure_file": "Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+      "caption": "Figure 1: An illustration on inference framework and contrastive decoding process of ICD method. At the core (middle orange box), the framework integrates a frozen image encoder, LLM, and query vectors (gray box) within the Q-Former, focusing solely on adjusting the standard and disturbance instructions. The latter, exemplified by adding role prefixes like ‘You are a confused object detector,’ aims to increase multimodal alignment uncertainty. This results in two distinct distributions: one from the standard instruction and another influenced by the disturbance. The contrastive decoding method (right orange box) highlights how disturbance instructions amplify hallucinated concepts (‘person and fork’), which are then corrected by subtracting probabilities derived from the standard instruction, ensuring accurate recognition of the correct concept ‘dog’.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Input image', 'Pre-trained visual encoder (e.g., CLIP ViT-L/14)', 'Visual features output XV', 'Fusion module (Q-Former / instruction-aware querying transformer)', 'K learnable query vectors QK (used inside Q-Former)', 'Text instruction/query input Xq', 'Instruction disturbance / role prefix Xd', 'Disturbed instruction construction: Xins = [Xd, Xq] (disturbance) vs Xins = Xq (no disturbance)', 'Interaction/flow: (XV, QK, Xins) -> Q-Former -> fused visual features ZV', 'Transformation/projection g(·): ZV -> HV (match LLM embedding dimension)', 'Large Language Model (LLMϕ, e.g., Vicuna)', 'LLM input: (HV, Xins) to generate response YR', \"Two parallel token distributions/logits computed: one using original instruction Xins and one using disturbed instruction X'ins\", 'Contrastive decoding / ICD scoring combining both distributions with hyperparameter λ (penalty term)', 'Adaptive plausibility constraint with hyperparameter α using Vhead(y<t) (restrict candidate tokens)']\nContext: Large Vision-Language Models (LVLMs) are com-\nprised of three pivotal components: a visual en-\ncoder, a fusion module, and a language model. For\nprocessing an input image, a pre-trained visual en-\ncoder, such as ViT-L/14 from CLIP (Radford et al.,\n2021), is employed to extract visual features, de-\nnoted as XV. The fusion module facilitates multi-\nmodal alignment. For instance, InstructBLIP intro-\nduces an instruction-aware querying transformer.\nQ-Former, a lightweight transformer architecture,\nutilizes K learnable query vectors QK to refine\nthe extraction of visual features, thereby enhanc-\ning multimodal alignment. It allows the instruction\nXins to interact with the query vectors, fostering\nthe extraction of task-relevant image features:\nZV = Qθ(XV , QK, Xins), (1)\nwhere, ZV = Qθ(·) represents the fused visual\nfeatures, conditioned on the instructions. ... For text\nqueries Xq, a large language model, parameterized\nby ϕ, such as Vicuna (Chiang et al., 2023), processes\nthe query, leveraging the derived visual features to\nformulate responses:\nYR = LLMϕ(HV , Xins), (2)\nwhere HV = g(ZV ) is the transformation ensuring\nthe same dimensionality as the word embedding of\nthe language model. By default, the instruction is the same as text query for both Q-Former and LLM as Xins = Xq.\n\nIntroduction of instruction disturbance: We introduce the concept of instruction disturbance, which entails appending a role prefix to the orig-\ninal instructions delineated in Section 3.1. This\ndisturbance aims to modulate the multimodal align-\nment uncertainty within LVLMs. As illustrated in\nFigure 1, the base instruction “Describe this photo\nin detail” is combined with learned query vectors in\nthe Q-Former. To implement instruction disturbance,\nwe append either positive or negative prefixes to the\nbase instruction. Positive prefixes aim to increase\nthe LVLM’s confidence in multi-\nmodal alignment. Conversely, negative prefixes are\ndesigned to reduce the model’s alignment confi-\ndence.\nXins = (\n[Xd, Xq] if disturbance\nXq otherwise\n, (4)\nwhere Xd denotes the role prefix, and Xq repre-\nsents the original instruction.\n\nGiven the extraction of visual features XV from the visual encoder and a textual query Xq, our model calcu-\nlates two distinct token distributions: one condi-\ntioned on the original instructions, and the other on instructions with disturbance Xd as Equation 4. Contrary to the conventional approach of select-\ning the token that maximizes the probability, our strategy involves choosing the token that concur-\nrently maximizes pϕ(yt|XV , Xins) and minimizes pϕ(yt|XV , X′ ins), the latter representing the proba-\nbility of tokens that are more likely to be halluci-\nnations. To adjust the balance between these prob-\nabilities, we introduce a hyperparameter λ, which\nregulates the intensity of the contrastive penalty.\nFormally, this process is described as follows:\npicd(YR|XV , Xq) =\nL\nY\nt=1\n(\n pϕ(yt|XV , Xins, y<t)\n−λpϕ(yt|XV , X′ ins, y<t)\n)\n, (5)\nwhere larger λ indicates a more decisive penalty on the decision made by LVLMs with disturbances.\n\nThe ICD objective is designed to favor tokens preferred by the LVLM output while imposing penalties on tokens influenced by instruction dis-\nturbances. ... Consequently, we refine the ICD objective to incor-\nporate an adaptive plausibility constraint:\nyt ∼softmax\n(\nlogitϕ(yt|XV , Xins, y<t)\n−λlogitϕ(yt|XV , X′ ins, y<t)\n)\nsubject to yt ∈Vhead(y<t) (6)\nVhead(y<t) =\n{\nyt ∈V : pϕ(yt|XV , Xins, y<t)\n≥α max\n token\npϕ(token|XV , Xins, y<t)\n}\n, (7)\nhere, α acts as a pivotal hyperparameter that modu-\nlates the truncation of the probability distribution, effectively tailoring the LVLM’s response to its confidence level.",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': 'Input Image', 'status': 'Supported', 'evidence': 'The method description repeatedly assumes an input image processed by a visual encoder: “For processing an input image, a pre-trained visual encoder… is employed to extract visual features”.'}, {'element': 'Text Query', 'status': 'Supported', 'evidence': 'The paper defines a textual query and uses it for inference: “For text queries Xq, a large language model… processes the query”.'}, {'element': 'Is there a dog in the picture?', 'status': 'Supported', 'evidence': 'This is consistent with the paper’s discriminative QA setting (POPE): it “employs a binary question-answering format, inquiring LVLMs to determine the presence or absence of a specified object within a given image.”'}, {'element': 'Image Encoder', 'status': 'Supported', 'evidence': 'Explicitly included as a core LVLM component: “a visual encoder… is employed to extract visual features”. Figure caption also mentions “a frozen image encoder”.'}, {'element': 'Disturbance Instruction', 'status': 'Supported', 'evidence': 'Central concept of the paper: “appending instructions with role prefixes to form disturbance instructions… exacerbate hallucinations” and Eq. (4) defining disturbed instruction.'}, {'element': 'Instruction', 'status': 'Supported', 'evidence': 'The paper distinguishes instruction/input query: “By default, the instruction is the same as text query… Xins = Xq.”'}, {'element': 'learned queries', 'status': 'Supported', 'evidence': 'Q-Former uses learnable query vectors: “Q-Former… utilizes K learnable query vectors QK”.'}, {'element': 'Q-former', 'status': 'Supported', 'evidence': 'Described as the fusion module: “Q-Former… allows the instruction Xins to interact with the query vectors…”.'}, {'element': 'Self Attention', 'status': 'Supported', 'evidence': 'Not named in the chunk, but it is an expected internal component of a “lightweight transformer architecture” (Q-Former). This is a reasonable architectural decomposition rather than a new scientific module.'}, {'element': 'Cross-attention', 'status': 'Supported', 'evidence': 'Not explicitly named, but implied by Q-Former allowing instruction/query vectors to interact with visual features (“interact with the query vectors… conditioned on the instructions”), which is typically implemented via cross-attention.'}, {'element': 'Feedforward', 'status': 'Supported', 'evidence': 'As with self-attention, feedforward sublayers are standard within transformer blocks; consistent with “Q-Former, a lightweight transformer architecture”.'}, {'element': 'Fully Connected', 'status': 'Supported', 'evidence': 'The text describes a projection/transform g(·) to match LLM embedding space: “HV = g(ZV) is the transformation ensuring the same dimensionality as the word embedding”. A fully connected/projection layer is a standard realization.'}, {'element': 'text query', 'status': 'Supported', 'evidence': 'The model conditions generation on Xq: “p(YR|XV , Xq)” and “processes the query…”.'}, {'element': 'LLM', 'status': 'Supported', 'evidence': 'Core component: “a language model… such as Vicuna… processes the query…”.'}, {'element': 'Probability distribution', 'status': 'Supported', 'evidence': 'The decoding distribution is explicitly defined: “sampled from a probability distribution: p(YR|XV, Xq) = …”. ICD contrasts two token distributions (Eq. 5–7).'}, {'element': 'Contrastive Decoding', 'status': 'Supported', 'evidence': 'This is the key proposed method: “we introduce an Instruction Contrastive Decoding method (ICD)… contrasts distributions from standard and instruction disturbance…”.'}, {'element': 'Person', 'status': 'Supported', 'evidence': 'Figure 1 description explicitly uses these as hallucinated concepts: “hallucinated tokens such as ‘fork and person’… hallucinated concepts (‘person and fork’)… corrected… ensuring accurate recognition of… ‘dog’.”'}, {'element': 'Fork', 'status': 'Supported', 'evidence': 'Same as above: Figure 1 discussion names “fork” as a hallucinated concept amplified by disturbance instructions.'}, {'element': 'Dog', 'status': 'Supported', 'evidence': 'Figure 1 caption/description states the correct concept “dog” is retained after subtracting hallucinated concepts: “ensuring accurate recognition of the correct concept ‘dog’.”'}, {'element': 'Hallucinated concepts \"Person\" and \"Fork\" have been detached.', 'status': 'Supported', 'evidence': 'Matches the paper’s stated mechanism: ICD “effectively subtract[s] hallucinated concepts from the original distribution” and Figure 1 explains hallucinated concepts are “then corrected by subtracting probabilities… ensuring accurate recognition”.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 4,
+              "reason": "The target figure covers the main LVLM pipeline: input image → image encoder → visual features feeding a Q-Former with learnable queries and instruction input; projection/FC into an LLM; and the key idea of instruction disturbance via a role-prefix-style disturbed instruction versus the original instruction. It also depicts contrastive decoding using two distributions/logits (original vs disturbed) and the subtraction/penalty intuition to suppress hallucinated tokens. However, it omits several explicit elements from the paper: it does not label the intermediate variables/formulas (XV, ZV, g(·)→HV, YR, Eq. (1)/(2)/(5)), does not show the hyperparameter λ explicitly, and does not include the adaptive plausibility constraint / Vhead(y<t) truncation with α (Eq. (6)-(7)). Thus it includes most major components but misses some key formula/hyperparameter details."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure largely conveys the operating principle without needing the paper: an input image and text query are encoded, two instruction variants are formed (normal vs disturbed with a role prefix), both pass through a Q-Former-style fusion stack and an LLM to produce two token probability distributions, and a contrastive decoding step penalizes tokens favored under the disturbed instruction (illustrated by filtering hallucinated concepts). This matches the evidence’s key flow (image encoder → XV; instruction-aware fusion/Q-Former with learned queries; two parallel logits; contrastive penalty with λ). However, some evidence-critical details are not self-evident from the figure alone: the explicit construction Xins=[Xd,Xq] vs Xq is only implied; the projection g(·) to match LLM embedding dimensionality is not explicit; the hyperparameters (λ) and adaptive plausibility constraint (α, Vhead) are not shown or are only weakly suggested. These omissions prevent a perfect standalone understanding of the full method, but the main idea is clear."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 4,
+              "reason": "The target figure captures the paper’s core pipeline end-to-end for the proposed method: image -> visual encoder -> Q-Former with learnable queries, instruction disturbance via a role prefix, projection into LLM space, two parallel token distributions (original vs disturbed), and contrastive decoding that down-weights disturbed logits to suppress hallucinated tokens. This aligns well with the provided evidence (XV, QK, Xins construction, ZV, g(·)->HV, LLM input, and ICD scoring). However, it is not fully complete relative to the paper’s described formulation: it does not explicitly depict the adaptive plausibility constraint Vhead(y<t) and the α hyperparameter/truncation mechanism (Eq. 6–7), and the λ penalty is implied but not clearly labeled. Thus it summarizes most major contributions but omits at least one key component from later sections."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 4,
+              "reason": "Overall, the Target Figure aligns with the paper’s described LVLM pipeline and ICD mechanism, and it does not introduce major unsupported modules. The included components—input image + image encoder, text query/instruction, Q-Former with learnable queries, projection/FC into the LLM space, probability distributions, and contrastive decoding that subtracts hallucinated concepts—are all supported by the provided evidence (including explicit mention of disturbance instructions and subtracting hallucinated concepts like “person” and “fork”).\n\nMinor potential overreach: the figure explicitly decomposes the Q-Former into “Self Attention / Cross-attention / Feedforward.” While consistent with a transformer-based Q-Former and typical implementations, these sub-block labels are not explicitly mentioned in the cited text chunk, so they are a slight inference rather than directly grounded. Similarly, depicting “Fully Connected” is plausible for the stated transformation g(·), but the exact layer type is not explicitly specified.\n\nThus, it largely avoids hallucinated components/formulas, with only small architectural detailing that is implied rather than directly stated."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 4,
+              "reason": "The target figure largely matches the paper’s described LVLM + ICD pipeline: an input image is encoded by a (frozen) visual encoder, fused with the text query via a Q-Former with learnable queries, then projected (g(·), plausibly a fully connected layer) into the LLM embedding space to produce token probabilities. It also correctly depicts ICD as contrasting the standard decoding distribution pθ(YR|XV,Xins,Y<t) with a disturbed-instruction distribution pθ(YR|XV,X'ins,Y<t) and subtracting/contrasting them to suppress hallucinated tokens (consistent with the evidence and the Figure 1 narrative about removing ‘person’/‘fork’ while keeping ‘dog’). \n\nMinor inaccuracies/overcommitments: the explicit decomposition of Q-Former into “self-attention/cross-attention/feedforward” is plausible but not directly evidenced in the provided text snippet; similarly, showing two separate Q-Former/LLM branches could be interpreted as two forward passes rather than a single model conditioned on different instructions (conceptually right, but visually could imply duplicated modules). Overall, relationships and formula flow are accurate with small schematic liberties."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 4,
+              "reason": "Major component labels align well with the paper’s described LVLM+ICD pipeline: Input Image/Text Query, (frozen) Image Encoder, Q-Former with learnable queries, LLM, probability distributions, and Contrastive/Instruction Contrastive Decoding are all consistent with the evidence. The separation between a standard instruction and a disturbance instruction also matches the paper’s setup (X_ins vs disturbed instruction). Minor potential inaccuracies/over-specificities: the Q-Former internals are labeled with explicit 'Self Attention', 'Cross-attention', and 'Feedforward' blocks, which are plausible for a transformer but not explicitly stated in the provided evidence; similarly 'Fully Connected' is an implementation-level choice for the projection g(·) rather than a named module. These are reasonable but slightly stronger than what the text directly supports, preventing a perfect score."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 5,
+              "reason": "The target figure abstracts the LVLM pipeline around the paper’s main contribution: instruction disturbance and contrastive decoding. It shows (i) image encoder → visual features, (ii) Q-Former with learnable queries and instruction-conditioned fusion (including a disturbed vs original instruction branch), (iii) projection/FC into the LLM, and (iv) two parallel token distributions combined via a contrastive criterion that suppresses disturbed-instruction–favored (hallucination-prone) tokens. Compared with the evidence list, it captures the key entities and flow ((XV, QK, Xins)→Q-Former→ZV→projection→LLM; dual logits; ICD penalty), while omitting low-level architectural/training minutiae. The schematic is therefore centered on the methodological novelty rather than trivial details."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "The target figure closely matches the described pipeline and serves as an effective supplement to the text. It clearly depicts: (i) image input processed by an image encoder producing visual features; (ii) a fusion module explicitly labeled Q-former with learnable queries and attention blocks; (iii) two instruction conditions—original instruction vs disturbed instruction with a role-prefix—feeding both Q-former/LLM branches; and (iv) contrastive decoding combining two token distributions to suppress hallucinated tokens (illustrated by logits/probability bars and crossed-out candidates). This directly corresponds to Equations (1)–(7): dual forward passes (Xins vs X'ins), λ-weighted contrastive penalty, and the intuition of filtering hallucinated concepts. Minor omissions include not explicitly naming XV/ZV/HV, the projection g(·), and the adaptive plausibility constraint Vhead/α, but the core mechanism is accurately communicated visually and aligns better than the unrelated reference figures."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 3,
+              "reason": "The figure largely focuses on the core pipeline described in the evidence (image encoder → Q-Former with learnable queries and instruction/disturbance → LLM → two distributions → contrastive decoding), and the right panel’s bar-chart intuition aligns with the ICD idea. However, it contains some redundant/partly decorative elements not strictly necessary for conveying the core contribution: (i) duplicated Q-Former+LLM blocks for disturbed vs. original instructions (could be conveyed with a single shared module and two conditioning paths), (ii) detailed internal transformer sub-block labels (self-attention/cross-attention/feedforward) that add complexity without being essential to the paper’s main message, and (iii) illustrative example tokens (“Person”, “Fork”, “Dog”) and detaching icons that are explanatory but somewhat extra relative to the minimal algorithmic description (λ, α, Vhead constraint) which is not explicitly shown. Overall, moderate redundancy/visual clutter but not severely decorative."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The target figure exhibits a clear left-to-right flow: the input image/text query on the left feeds into the central model blocks (image encoder/Q-former/LLM), which then lead to the contrastive decoding output panel on the right. While there are some internal substructures arranged vertically within the central blocks, the primary diagram narrative and dataflow are predominantly left-to-right. This matches the left-to-right pipeline layouts seen in several reference figures."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "The Target Figure’s connectors are largely well-routed: the main arrows from the input image to the image encoder and into the central module, and the flow indicators to the contrastive decoding panel, do not visibly intersect. Within the central architecture block, the self-/cross-attention and feedforward connections are mostly vertical or layered, reducing opportunities for line crossings. Minor complexity arises from multiple internal arrows between stacked components (e.g., attention blocks and fully connected/LLM paths), but these are arranged in parallel lanes and do not create clear, confusing crossings. Overall, it performs better than more line-dense reference schematics and only slightly below a perfect score due to localized visual congestion rather than actual crossings."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "Functionally coupled components are generally co-located and visually grouped. The left-to-right pipeline keeps the input image and text query adjacent to the image encoder and downstream processing, and the central beige panel groups the paired Q-former/attention/feedforward blocks with their corresponding LLMs directly beneath them, making the processing paths easy to follow. The rightmost 'Contrastive Decoding' module is also clearly separated yet placed immediately next to the model outputs it depends on. Minor proximity issues remain: repeated elements (two Q-former/LLM paths) create some spatial duplication, and certain signals (e.g., probability distributions/text query) are small and slightly distant from the modules they refer to, but overall proximity is strong and comparable to the better reference figures."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall alignment is strong: the three main regions (input/text query on the left, dual-branch model schematic in the center, and contrastive decoding panel on the right) are laid out in clean columns with consistent baselines. Within the central schematic, repeated modules (self-attention/cross-attention/feedforward/LLM blocks) and token boxes largely follow a clear grid, similar to the well-aligned reference figures. Minor deviations reduce perfect grid adherence: some internal elements (e.g., token rows and small labels like 'learned queries', 'text query', probability-distribution callouts) appear slightly offset relative to neighboring boxes, and spacing between subcomponents is not perfectly uniform across the two branches."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 4,
+              "reason": "The Target Figure establishes a clear top-level hierarchy: (1) inputs on the left (image + text query), (2) the central model/pipeline block, and (3) the decoding/output explanation on the right. These macro-components stand out through strong spatial separation, large labeled regions, and consistent use of boxed panels and headings. Within the central block, submodules (Image Encoder, Q-former/attention blocks, LLM) are visually differentiated by color and boxed grouping, helping guide attention. However, compared to the strongest reference examples, the mid-level hierarchy is somewhat busy: multiple similarly sized internal boxes and repeated labels (e.g., attention/feedforward blocks) reduce contrast among secondary elements, and some fine details (probability distribution, small annotations) compete with the main flow. Overall, the main components stand out well, but internal emphasis could be cleaner."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "Overall, the target figure maintains clear margins between major regions (left input/query block, central architecture diagram, right contrastive decoding panel) with consistent whitespace and padding that prevents crowding. Within the central module, nested boxes and labels are mostly well-spaced, though some internal elements (e.g., small token/query blocks and tight label-to-box spacing around attention/cross-attention areas) appear slightly compressed, reducing local breathing room. Compared to the references, it is less airy than the cleanest examples but avoids the cramped feel seen in denser transformer-layer schematics."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 3,
+              "reason": "Partially consistent. In the target figure, major modules are generally encoded by distinct colors/shapes (e.g., blue blocks for the LLM, orange/purple/green sub-blocks for internal operations like self-attention/cross-attention/feedforward, and repeated rounded rectangles for token/query sequences). However, elements with similar roles are not always styled identically across the two parallel pipelines: the query/token boxes and some intermediate representations vary in fill/border styling (e.g., dashed vs solid outlines, mixed color fills) without an explicit legend, and probability-distribution outputs use similar visual forms but are not consistently colored to indicate the same role. Compared with the reference figures, which typically keep a stricter one-to-one mapping between role and visual encoding, the target shows moderate but not fully uniform consistency."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The Target Figure substantially replaces abstract ML concepts with concrete visual metaphors and iconography. Architectural components are rendered as boxed modules (e.g., Image Encoder, Q-former, LLM) with colored blocks standing in for tokens/queries, and the contrastive-decoding outcome is depicted via bar charts plus check/cross marks to concretize selection/rejection of candidates. This aligns with the Evidence/References that use simplified blocks, token tiles, and small pictorial cues to communicate model behavior. However, the Target still retains considerable formal notation (e.g., probability expressions pθ(·) and text labels like self-attention/cross-attention), so the abstraction is not fully “replaced” by icons/symbols; rather, it is a mixed symbolic + diagrammatic presentation."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure follows a very common VLM/LLM paper-diagram template: a left-to-right pipeline (input image + text query → image encoder/Q-former/LLM blocks), pastel-colored module boxes, and a right-side panel with a simple contrastive-decoding bar/score illustration. This visual language closely matches the evidence references (especially the VLM schematic and contrastive/patching-style figures), offering limited distinctive styling beyond minor color and layout choices. While the split ‘disturbance instruction’ vs ‘instruction’ lanes add a small twist, the overall composition and iconography remain standard for ML system diagrams rather than uniquely styled."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 3,
+              "reason": "The target figure departs somewhat from a rigid, uniform template by adopting a paper-specific, three-part narrative layout: (1) input/query, (2) a detailed model/instruction pathway with two parallel branches (disturbance vs. instruction), and (3) an explicit contrastive decoding outcome panel. This tailoring matches the paper’s story about instruction perturbation and decoding to reduce hallucinations. However, the overall design still follows common ML-figure conventions seen in the references (boxed modules, left-to-right pipeline, repeated transformer/Q-former blocks, and standard iconography). It shows moderate adaptability rather than a strongly bespoke layout that clearly breaks away from established uniform styles."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.867,
+      "used_anchor_paths": {
+        "q1.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q1.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q1.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q2.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q2.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q2.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q3.1": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q3.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q3.3": [
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q4.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q4.2": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q4.3": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q4.4": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q4.5": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q4.6": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q4.7": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q5.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q5.2": [
+          {
+            "score": "1.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ],
+        "q5.3": [
+          {
+            "score": "1.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.7573
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.749
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p3__score1.00.png",
+            "similarity": 0.7482
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7444
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.7416
+          }
+        ]
+      }
+    }
+  ]
+}

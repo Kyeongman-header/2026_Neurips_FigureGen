@@ -1,0 +1,1945 @@
+{
+  "paper_name": "Retrieval-Augmented_Black-Box_Language_Models",
+  "mode": "full",
+  "evaluated_at": "2026-01-29T21:33:08.500418",
+  "figure_evaluations": [
+    {
+      "figure_file": "Retrieval-Augmented_Black-Box_Language_Models__p4__score1.00.png",
+      "caption": "Figure 3: REPLUG LSR training process (§4). The retriever is trained using the output of a frozen language model as supervision signals.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Input context x', 'Ground-truth continuation y', 'Corpus/datastore D (documents)', 'Dense retriever (retrieval model with trainable parameters)', 'Document embeddings (for corpus documents)', 'Efficient search index over document embeddings', \"Top-k retrieval: retrieve k documents D' ⊂ D using similarity s(d, x)\", 'Similarity scoring module s(d, x)', 'Retrieval likelihood computation PR(d | x) via softmax over retrieved docs with temperature γ', 'Language model (LM) used as a scorer (parameters fixed / black-box)', 'LM scoring step: compute PLM(y | d, x) for each retrieved document', 'LM likelihood computation Q(d | x, y) via softmax over retrieved docs with temperature β', 'Loss module: KL divergence KL(QLM(d | x, y) || PR(d | x))', 'Training/update step: update only retriever parameters by minimizing KL loss', 'Asynchronous datastore refresh: recompute document embeddings and rebuild search index every T steps', 'Overall 4-step training flow: (1) retrieve + compute PR, (2) LM-score + compute Q, (3) KL loss + retriever update, (4) async index/embedding update and repeat']\nContext: We additionally adopt an ensemble method to incorporate more documents and a training scheme to further adapt the retriever to large LMs.\n\n4 REPLUG LSR: Training the Dense Retriever\nInstead of relying only on existing neural dense retrieval models (Karpukhin et al., 2020; Izacard et al., 2022a; Su et al., 2023), we further propose REPLUG LSR (REPLUG with LM-Supervised Retrieval), which adapts the retriever in REPLUG by using the LM itself to provide supervision about which documents should be retrieved. Inspired by Sachan et al. (2023), our approach can be seen as adjusting the probabilities of the re- trieved documents to match the probabilities of the output sequence perplexities of the language model. In other words, we would like the retriever to find documents that result in lower perplexity scores. As shown in Figure 3, our training algorithm con- sists of the four steps: (1) retrieving documents and computing the retrieval likelihood (§4.1), (2) scor- ing the retrieved documents by the language model (§4.2), (3) updating the retrieval model parameters by minimizing the KL divergence between the re- trieval likelihood and the LM’s score distribution (§4.3), and (4) asynchronous update of the datas- tore index (§4.4).\n\n4.1 Computing Retrieval Likelihood\nWe retrieve k documents D′ ⊂D with the highest similarity scores from a corpus D given an input context x, as described in §3.1. We then compute the retrieval likelihood of each retrieved document d: PR(d | x) = es(d,x)/γ / \\sum_{d∈D′} es(d,x)/γ where γ is a hyperparameter that controls the temer- ature of the softmax. Ideally, the retrieval likeli- hood is computed by marginalizing over all the documents in the corpus D, which is intractable in practice. Therefore, we approximate the retrieval likelihood by only marginalizing over the retrieved documents D′.\n\n4.2 Computing LM likelihood\nWe use the LM as a scoring function to mea- sure how much each document could improve the LM perplexity. Specifically, we first compute PLM(y | d, x), the LM probability of the ground truth output y given the input context x and a docu- ment d. The higher the probability, the better the document di is at improving the LM’s perplexity. We then compute the LM likelihood of each docu- ment d as follows: Q(d | x, y) = ePLM(y|d,x)/β / \\sum_{d∈D′} ePLM(y|d,x)/β where β is another hyperparameter.\n\n4.3 Loss Function\nGiven the input context x and the corresponding ground truth continuation y, we compute the re- trieval likelihood and the language model likeli- hood. The dense retriever is trained by minimizing the KL divergence between these two distributions: L = (1/|B|) \\sum_{x∈B} KL(Q_{LM}(d | x, y) ∥ PR(d | x)), where B is a set of input contexts. When minimiz- ing the loss, we can only update the retrieval model parameters. The LM parameters are fixed due to our black-box assumption.\n\n4.4 Asynchronous Update of the Datastore Index\nBecause the parameters in the retriever are updated during the training process, the previously com- puted document embeddings are no longer up to date. Therefore, following Guu et al. (2020), we recompute the document embeddings and rebuild the efficient search index using the new embed- dings every T training steps. Then we use the new document embeddings and index for retrieval, and repeat the training procedure.",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': 'Retriever', 'status': 'Supported', 'evidence': 'The paper repeatedly describes a retriever module: “REPLUG first retrieves relevant documents from an external corpus using an off-the-shelf retrieval model.”'}, {'element': 'Test Context x', 'status': 'Supported', 'evidence': 'Matches the paper’s definition of the input context: “Given an input context x, the retriever aims to retrieve...”'}, {'element': 'Jobs is the CEO of _', 'status': 'Supported', 'evidence': 'This is a concrete example of an input context/prompt for next-token prediction (a cloze-style continuation). The paper discusses language modeling with “input context x” and “next token y” without committing to a specific example.'}, {'element': 'd_i', 'status': 'Supported', 'evidence': 'The paper defines a corpus D = {d1...dm} and retrieves documents d ∈ D; the figure’s d_i matches this notation.'}, {'element': 'Jobs was raised by adopted…', 'status': 'Supported', 'evidence': 'These are example retrieved documents/snippets, consistent with “retrieves a small set of documents from an external corpus”. The exact Jobs content is illustrative.'}, {'element': 'Steve Jobs passed away…', 'status': 'Supported', 'evidence': 'Same as above: plausible retrieved document text; the method retrieves textual documents relevant to the query.'}, {'element': 'Jobs cofounded Apple…', 'status': 'Supported', 'evidence': 'Same as above; also aligns with the cloze target likely being “apple”, consistent with the paper’s LM scoring of ground-truth continuation y.'}, {'element': '1. Computing Retriever Likelihood P_R(d_i|x)', 'status': 'Supported', 'evidence': 'Directly corresponds to §4.1: “We then compute the retrieval likelihood of each retrieved document d: P_R(d | x) = ...”'}, {'element': '2. Computing LM likelihood Q(d_i|x) ∝ P_LM(apple | d_i, x)/β', 'status': 'Supported', 'evidence': 'Matches §4.2’s idea and form: “compute P_LM(y | d, x)... We then compute the LM likelihood... Q(d | x, y) = ... /β”. The figure uses a specific token (‘apple’) as an example of y.'}, {'element': '3. KL Divergence (P||Q)', 'status': 'Supported', 'evidence': 'Matches §4.3: “minimizing the KL divergence between these two distributions”. (Direction in text: KL(Q || P_R); figure’s ‘(P||Q)’ is a minor notation mismatch but still semantically the KL objective between the two.)'}, {'element': 'd1', 'status': 'Supported', 'evidence': 'The corpus is explicitly denoted D = {d1...dm} in §3.1.'}, {'element': 'd2', 'status': 'Supported', 'evidence': 'Same support as d1: documents in D are indexed as d1...dm.'}, {'element': 'd3', 'status': 'Supported', 'evidence': 'Same support as d1: documents in D are indexed as d1...dm.'}, {'element': 'd4', 'status': 'Supported', 'evidence': 'Same support as d1: documents in D are indexed as d1...dm.'}, {'element': '…', 'status': 'Supported', 'evidence': 'Ellipsis indicates additional documents in the corpus D beyond the few shown; paper defines many documents (D = {d1...dm}).'}, {'element': 'Test Context x -> Retriever', 'status': 'Supported', 'evidence': 'The retriever uses the input context as query: “Given an input context x, the retriever aims to retrieve...”'}, {'element': 'Retriever -> d_i', 'status': 'Supported', 'evidence': 'Retriever outputs top-k documents: “The top-k documents ... are retrieved in this step.”'}, {'element': 'd_i -> Jobs was raised by adopted…', 'status': 'Supported', 'evidence': 'Represents that each retrieved d_i is a text document/snippet; consistent with “documents from an external corpus” that are prepended to the input.'}, {'element': 'd_i -> Steve Jobs passed away…', 'status': 'Supported', 'evidence': 'Same as above; d_i denotes a retrieved document containing text.'}, {'element': 'd_i -> Jobs cofounded Apple…', 'status': 'Supported', 'evidence': 'Same as above; a retrieved document can contain this content.'}, {'element': 'Retriever -> 1. Computing Retriever Likelihood P_R(d_i|x)', 'status': 'Supported', 'evidence': 'In training step (1), retrieval and computing retrieval likelihood are tied: “(1) retrieving documents and computing the retrieval likelihood (§4.1)”.'}, {'element': 'Jobs was raised by adopted… -> 2. Computing LM likelihood Q(d_i|x) ∝ P_LM(apple | d_i, x)/β', 'status': 'Supported', 'evidence': 'Paper scores each retrieved document with the LM: “compute P_LM(y | d, x)... compute the LM likelihood of each document”. The figure’s arrow from an example document to the LM-likelihood step matches this.'}, {'element': 'Steve Jobs passed away… -> 2. Computing LM likelihood Q(d_i|x) ∝ P_LM(apple | d_i, x)/β', 'status': 'Supported', 'evidence': 'Same reasoning as above: each retrieved document d is evaluated by the LM to form Q(d|x,y).'}, {'element': 'Jobs cofounded Apple… -> 2. Computing LM likelihood Q(d_i|x) ∝ P_LM(apple | d_i, x)/β', 'status': 'Supported', 'evidence': 'Same reasoning; the document content is used in P_LM(y | d, x).'}, {'element': '1. Computing Retriever Likelihood P_R(d_i|x) -> 3. KL Divergence (P||Q)', 'status': 'Supported', 'evidence': '§4.3: the loss uses both retrieval likelihood and LM likelihood in a KL term: “minimizing the KL divergence between these two distributions”.'}, {'element': '2. Computing LM likelihood Q(d_i|x) ∝ P_LM(apple | d_i, x)/β -> 3. KL Divergence (P||Q)', 'status': 'Supported', 'evidence': 'Same as above: KL divergence is computed between LM-induced distribution Q and retriever distribution P_R.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 4,
+              "reason": "The figure captures the core REPLUG LSR training loop components: input/test context x, dense retriever producing top-k docs d_i, retrieval likelihood P_R(d_i|x) (shown as a distribution), LM scoring over retrieved docs producing an LM-based likelihood Q (depicted as proportional to P_LM(y|d_i,x) with temperature β), and the KL divergence loss used to update the retriever. This matches the paper’s main formulas and the 3-step logic (retrieve → LM-score → KL).\n\nHowever, several major elements from the paper are omitted or only implied: the explicit corpus/datastore D and top-k subset D′ notation, similarity scoring s(d,x) and the retrieval softmax temperature γ, the statement that the LM is fixed/black-box and only retriever parameters are updated, and the asynchronous datastore refresh (recompute document embeddings + rebuild index every T steps) along with the explicit presence of document embeddings and an efficient search index. Thus, it covers most central training computations but misses important infrastructure/refresh details and one temperature/formula term."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure largely conveys the core operating principle without the paper: a retriever takes an input context x, retrieves candidate documents d_i, computes a retriever-induced distribution PR over them (step 1), the LM scores each retrieved document via PLM(y|d,x) to form an LM-induced distribution Q (step 2), and training updates the retriever by minimizing a KL divergence between these distributions (step 3). The directionality (retriever→docs→two distributions→KL) is visually clear and matches the evidence’s 4-step flow except for the asynchronous datastore refresh. However, standalone intelligibility is limited by missing/unclear notation and details: (i) y / ground-truth continuation is not explicitly shown (it appears implicitly as 'apple' and in the PLM term, but the reader may not infer it is the ground truth continuation), (ii) the softmax/temperature normalization (γ, β) is not shown, (iii) the KL is labeled ambiguously as P||Q without clearly mapping P to QLM and Q to PR (and the ordering differs from the text’s KL(Q||PR)), (iv) the corpus/datastore, embedding/indexing, and periodic refresh (step 4) are absent, so the full training loop is not fully understandable. Still, the high-level LM-supervised retriever training concept is understandable from the figure alone."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 4,
+              "reason": "The target figure captures the core REPLUG LSR training loop described in §4.1–§4.3: (i) dense retriever retrieves documents for input context x and forms a retrieval distribution PR(d|x), (ii) an LM (implied as fixed/black-box via the snowflake icon) scores each retrieved document to form an LM-based distribution Q(d|x,y) (shown as proportional to PLM(·|d,x) with temperature), and (iii) a KL-divergence objective aligns PR to Q, updating the retriever. This covers the central elements (x, retrieved docs, PR softmax, LM scoring, Q softmax, KL loss). However, several evidence items are missing or only implicit: the ground-truth continuation y is not explicitly shown; top-k retrieval and similarity module s(d,x) are not depicted; the corpus/datastore D, document embeddings, and efficient ANN index are not represented; and the asynchronous datastore refresh (re-embedding/reindexing every T steps) and the full 4-step flow including index rebuild are absent. Thus it is largely complete for the main training objective but not fully complete for all pipeline components described through §4.4."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 4,
+              "reason": "The target figure largely avoids hallucination: it includes the retriever, corpus documents d_i, computation of retriever likelihood P_R(d_i|x), LM-based likelihood Q(d_i|x) proportional to P_LM(y|d_i,x)/β, and a KL-divergence-based objective—each of which is supported by the provided evidence. The main potential issue is a notation/detail mismatch: the paper’s objective is typically written as KL(Q || P_R) (and Q is commonly defined as Q(d|x,y)), while the figure labels the divergence as KL(P||Q) and writes Q(d_i|x) ∝ P_LM(apple|d_i,x)/β, omitting y in Q’s conditioning. These are minor inconsistencies rather than wholly unsupported components, so the figure is mostly faithful but not perfect."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 4,
+              "reason": "The target figure captures the core relations described in the paper: (i) the retriever takes context x and produces retrieved documents d_i and a retriever distribution P_R(d_i|x); (ii) each retrieved document is scored by the LM via P_LM(y|d_i,x) to induce an LM-based distribution Q (with temperature/normalization β); and (iii) training minimizes a KL divergence between the retriever distribution and the LM-induced distribution. These arrows/components align with the provided evidence statements about §4.1–§4.3.\n\nThe main issue is directional/notation fidelity of the KL term: the paper’s objective is KL(Q || P_R), while the target labels it as KL(P||Q) / KL(P||Q) (suggesting the opposite direction). Since KL is asymmetric, this is a substantive relation-detail mismatch, though the overall idea “KL between the two distributions” is still correctly conveyed. Aside from that, the depicted dependencies (x→retriever→d_i→LM scoring→KL with P_R) are accurate."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 4,
+              "reason": "Major component labels in the target figure align well with the paper’s described REPLUG-style training pipeline: a \"Retriever\"; computing retriever likelihood P_R(d_i|x); computing an LM-based document distribution Q using P_LM(y|d_i,x) with temperature β; and using a KL-divergence objective between the two distributions. Notation for documents (d_i, d1–d4) and context x is also consistent. The main labeling issue is the KL direction: the figure labels \"KL Divergence (P||Q)\", while the paper’s objective is described as KL(Q || P_R); this is a substantive notation mismatch even if the high-level idea (a KL between the two distributions) is correct. Additionally, the label \"LM likelihood\" for Q can be slightly misleading since Q is a normalized distribution over documents induced by LM scores rather than a direct likelihood term, but it is still broadly acceptable."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is largely schematized around the paper’s main contribution (REPLUG LSR retriever training): it explicitly depicts (1) top-k retrieval and computing retriever likelihood PR(d|x), (2) LM scoring to form an LM-based likelihood Q (via PLM(y|d,x) and a temperature), and (3) KL divergence used to update the retriever, matching the described 4-step flow at a high level. It avoids low-level implementation details and focuses on the core conceptual pipeline. However, it is slightly incomplete/less faithful to the full schematic in the text: it does not clearly show the softmax normalization over retrieved docs, the temperatures γ and β (β is hinted but not clearly, γ is missing), the explicit top-k retrieval/index components, and the asynchronous datastore/index refresh step (step 4). These omissions reduce how fully it captures the complete ‘main contribution’ training loop."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "The target figure closely matches the described REPLUG LSR training pipeline and serves as an effective supplementary visual for the text. It depicts (1) retrieval from input context x via a dense retriever producing top-k documents d_i and a retrieval-likelihood distribution P_R(d|x) (softmax-like bar chart), (2) LM scoring of each retrieved document to form an LM-based likelihood Q(d|x, y) (shown as proportional to P_LM(y|d,x) with a temperature term), and (3) optimization via KL divergence between the LM-induced distribution and the retriever distribution with retriever updated (LM implied fixed/black-box via snowflake icon). This aligns with the evidence’s key elements: input x, retrieved docs D′, similarity-based retrieval, PR computation, LM scoring to get PLM(y|d,x), Q computation, and KL loss driving retriever updates. While the figure does not explicitly show the async datastore/index refresh every T steps, it still functions well for understanding the core 3-step supervision-and-update mechanism described in §§4.1–4.3, making it strong supplementary material."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely focused on the core REPLUG LSR training flow (retrieval likelihood PR, LM likelihood Q based on PLM(y|d,x), and KL divergence update), matching the evidence elements and showing the essential components with minimal extraneous content. Most visual items (document snippets, distributions over d1–d4, arrows between steps) support the main idea rather than distract. However, a few elements are mildly decorative or non-essential (e.g., flame icon, question-mark cubes, and the specific “Jobs/Apple” example text beyond illustrating x/y), and the duplicated mini-histograms could be simplified. Overall, redundancy is low but not entirely eliminated."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 4,
+              "reason": "The target figure’s main process is organized left-to-right: the Retriever block on the left feeds documents/likelihood computations in the center, with arrows leading to the KL Divergence block on the right. While there are vertically stacked components (step 1 above step 2) indicating some top-to-bottom structure within the central panel, the overall diagram flow is predominantly left-to-right, consistent with the reference figures that emphasize left-to-right pipelines."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "Most connector lines in the target figure are routed cleanly without intersecting: the dashed paths from retrieved docs to the LM-likelihood block stay separated, and the arrow to the KL Divergence box does not cross other connectors. The only notable crossing/overlap is where dashed guidance lines near the left/middle area visually intersect with other connectors (and pass close to elements), creating minor ambiguity. Overall, crossings are largely avoided, comparable to the clearer reference diagrams, but not perfectly."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "Functionally related components are generally co-located and connected with clear directional flow. The Retriever block is placed adjacent to the retrieved documents (d_i) and the likelihood computations (Retriever likelihood on top; LM likelihood below) are stacked near the corresponding evidence snippets, mirroring proximity patterns in the references where pipeline stages and their inputs/outputs are grouped. The KL Divergence module is positioned to the right with direct arrows from both likelihood computations, reinforcing its role as a downstream aggregation. Minor proximity issues remain: the top/bottom likelihood panels are separated by the document snippet row and some arrows are long/diagonal, which slightly weakens the immediate spatial grouping compared to the strongest reference layouts."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall alignment follows a clear implicit grid: the main blocks (Retriever at left, step 1 top band, step 2 bottom band, step 3 at right) are placed on consistent horizontal lanes with largely uniform spacing. The document nodes (d_i, three snippets) are aligned in a row, and the two likelihood panels are vertically stacked with similar widths. Minor misalignments remain: the right-side '3. KL Divergence' box is not perfectly centered relative to the two bands feeding into it, and some arrows/connectors land slightly off-center on their target boxes, reducing perceived grid precision compared with the cleanest reference figures."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 4,
+              "reason": "The target figure establishes a clear visual hierarchy: the three numbered steps (1–3) are prominent via large, tinted background panels and bold headings, and the central “Retriever” block is visually salient through saturated color and size. Subcomponents (documents d_i, likelihood bar charts, and arrows) are smaller and positioned within/under the major panels, supporting the main flow. Compared with the references, the hierarchy is slightly less decisive because multiple focal elements compete (Retriever block vs. Step panels vs. KL box), and line/arrow weights are relatively uniform, so secondary relationships do not recede as strongly as in the best reference examples."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "Overall margins are sufficient: the main modules (Retriever block, likelihood panels, KL divergence) are separated with clear whitespace and connector lines do not overcrowd adjacent elements. Text boxes have adequate internal padding and spacing between the d1–d4 bars and labels is readable. However, a few localized areas feel tight: the top likelihood panel sits close to the surrounding dashed/arrow connectors, and the small black cube icons above the lower panel crowd the area above the bar chart, slightly reducing breathing room compared with the cleaner spacing in the higher-scored references."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 4,
+              "reason": "The target figure is largely consistent: document passages (d_i) are shown as similarly styled rounded light-blue boxes; the two computation modules are consistently represented as large rounded rectangles with distinct background tints (purple for retriever likelihood, pale yellow for LM likelihood); and the divergence/output is consistently a pale pink box. However, there are a few role-consistency issues: the black cubes with question marks appear multiple times but their role is unclear and not visually aligned with other element types; arrows/dashed arrows encode different relations without a unified legend; and the retriever is a red block while other processing modules are rounded pastel panels, making “module” shapes/colors not fully uniform across the pipeline. Overall, it is mostly consistent with minor inconsistencies."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 3,
+              "reason": "The Target Figure uses several concrete visual metaphors for abstract concepts: a \"Retriever\" block, document-like boxes (d1–d4), bar charts to represent likelihood distributions, and black cubes with question marks to denote unknown/latent items. However, most key ideas are still conveyed through mathematical notation and textual labels (e.g., P_R(d_i|x), Q(d_i|x) ∝ P_LM(...), KL Divergence), rather than being replaced by icons/symbols. Compared with the references, it sits mid-range: more metaphor/icon usage than formula-heavy pipeline diagrams (lower-scoring refs), but less icon-driven storytelling than the highly metaphorical, character/icon-heavy schematic (highest-scoring ref)."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a standard ML/NLP pipeline-diagram template: rounded boxes, numbered stages, arrows, and small histogram-like plots for probabilities, with a “Retriever” module feeding document snippets and a KL-divergence output. This visual structure and iconography closely resemble the evidence/reference figures (RAG/retriever–LM flow, likelihood estimation blocks, and bias/conflict examples). While the color palette (purple/yellow sections) and the explicit two-likelihood + KL comparison layout add some minor differentiation, the overall style is not notably unique relative to common academic system diagrams."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 3,
+              "reason": "The target figure shows some adaptation to its specific concept (retriever vs. LM likelihood with a numbered 3-step flow, distinct color-coding for components, and an explicit KL-divergence endpoint), rather than a purely generic pipeline. However, the overall structure still follows a common, uniform schematic style seen in the references (left-to-right block flow, boxed modules, arrows, step labels). Compared with the more paper-tailored compositions in the evidence (e.g., authority-bias scenario layout, multi-panel self-knowledge framework), it only moderately breaks from standard diagram conventions."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.8,
+      "used_anchor_paths": {
+        "q1.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q1.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q1.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q2.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q2.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q2.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q3.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q3.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q3.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q4.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q4.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q4.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q4.4": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q4.5": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q4.6": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q4.7": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q5.1": [
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q5.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ],
+        "q5.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        ]
+      }
+    },
+    {
+      "figure_file": "Retrieval-Augmented_Black-Box_Language_Models__p2__score1.00.png",
+      "caption": "Figure 2: REPLUG at inference (§3). Given an input context, REPLUG first retrieves a small set of relevant documents from an external corpus using a retriever (§3.1 Document Retrieval). Then it prepends each document separately to the input context and ensembles output probabilities from different passes (§3.2 Input Reformulation).",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Input context x', 'External corpus D = {d1...dm}', 'Retriever module (dense dual-encoder retriever)', 'Document encoder producing document embeddings E(d) (precomputed)', 'Query encoder producing query embedding E(x) (same encoder as document encoder)', 'Similarity scoring function s(d,x) = cos(E(d), E(x))', \"Top-k selection to form D' (retrieved documents)\", 'FAISS index over document embeddings for efficient retrieval', 'k parallel branches: concatenate each retrieved document with input (d ◦ x) / prepend d to x', 'Black-box Language Model (LM) applied separately to each (d ◦ x)', 'Per-branch predicted next-token probability p(y | d ◦ x)', \"Ensembling/aggregation module computing weighted average p(y | x, D')\", \"Ensemble weights λ(d,x) derived from similarity scores via softmax over D' (exp(s)/sum exp(s))\", \"Final output: ensembled next-token probability p(y | x, D') (or predicted token y)\"]\nContext: We introduce REPLUG (Retrieve and Plug), a new retrieval-augmented LM paradigm where the LM is treated as black box and the retrieval component is added as a potentially tuneable module. As shown in Figure 2, given an input context, REPLUG first retrieves a small set of relevant documents from an external corpus using a retriever (§3.1). Then we pass the concatenation of each retrieved document with the input context through the LM in parallel, and ensemble the predicted probabilities (§3.2).\n\n3.1 Document Retrieval Given an input context x, the retriever aims to retrieve a small set of documents from a corpus D = {d1...dm} that are relevant to x. Following prior work (Qu et al., 2021; Izacard and Grave, 2021; Ni et al., 2022), we use a dense retriever based on the dual encoder architecture, where an encoder is used to encode both the input context x and the document d. Specifically, the encoder maps each document d ∈D to an embedding E(d) by taking the mean pooling of the last hidden rep- resentation over the tokens in d. At query time, the same encoder is applied to the input context x to obtain a query embedding E(x). The similarity between the query embedding and the document embedding is computed by their cosine similarity: s(d, x) = cos(E(d), E(x)) (1) The top-k documents that have the highest simi- larity scores when compared with the input x are retrieved in this step. For efficient retrieval, we pre- compute the embedding of each document d ∈D and construct FAISS index (Johnson et al., 2019) over these embeddings.\n\n3.2 Input Reformulation The retrieved top-k documents provide rich infor- mation about the original input context x and can potentially help the LM to make a better prediction. One simple way to incorporate the retrieved docu- ments as part of the input to the LM is to prepend x with all k documents. However, this simple scheme is fundamentally restricted by the number of docu- ments (i.e., k) we can include, given the language model’s context window size. To address this lim- itation, we adopt an ensemble strategy described as follows. Assume D′ ⊂D consists of k most relevant documents to x, according to the scoring function in Eq. (1). We prepend each document d ∈D′ to x, pass this concatenation to the LM separately, and then ensemble output probabilities from all k passes. Formally, given the input context x and its top-k relevant documents D′, the output probability of the next token y is computed as a weighted average ensemble: p(y | x, D′) = X d∈D′ p(y | d ◦x) · λ(d, x), where ◦denotes the concatenation of two se- quences and the weight λ(d, x) is based on the similarity score between the document d and the input context x: λ(d, x) = es(d,x) P d∈D′ es(d,x)",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': 'Test Context x', 'status': 'Supported', 'evidence': 'The paper defines an input context x: “Given an input context x, REPLUG first retrieves…” (Section 3 / Figure 2 description).'}, {'element': 'Test Context x -> Retriever', 'status': 'Supported', 'evidence': 'Matches the described pipeline: “Given an input context, REPLUG first retrieves … using a retriever” (Figure 2 caption; §3.1).'}, {'element': 'Retriever', 'status': 'Supported', 'evidence': 'Central component in §3.1 Document Retrieval: “the retriever aims to retrieve a small set of documents … relevant to x.”'}, {'element': 'Retriever -> Retrieved document d_i', 'status': 'Supported', 'evidence': '§3.1: “The top-k documents … are retrieved in this step.” This corresponds to the retriever outputting retrieved documents (d_i).'}, {'element': 'Document Retrieval', 'status': 'Supported', 'evidence': 'Explicit section title: “3.1 Document Retrieval” describing the retrieval stage.'}, {'element': 'Document Retrieval -> Retriever', 'status': 'Supported', 'evidence': 'Figure element is consistent with §3.1, where document retrieval is performed by the retriever module.'}, {'element': 'Retrieved document d_i', 'status': 'Supported', 'evidence': 'Paper uses documents d and corpus D={d1…dm}; retrieved set D′. A particular retrieved doc can be denoted d_i: “Given … top-k relevant documents D′… prepend each document d ∈ D′ to x…” (§3.2).'}, {'element': 'Retrieved document d_i -> Black-box LM', 'status': 'Supported', 'evidence': '§3.2: “prepend each document … to x, pass this concatenation to the LM separately.” Retrieved docs are fed into the black-box LM.'}, {'element': 'Input Reformulation', 'status': 'Supported', 'evidence': 'Explicit section title: “3.2 Input Reformulation” describing how retrieved docs are prepended and ensembled.'}, {'element': 'Input Reformulation -> Black-box LM', 'status': 'Supported', 'evidence': '§3.2: input reformulation is precisely constructing LM inputs d ◦ x and running the LM: “pass this concatenation to the LM separately.”'}, {'element': 'Black-box LM', 'status': 'Supported', 'evidence': 'Core premise throughout: “treats the language model (LM) as a black box” and “frozen black-box LM” (Abstract/Intro; Figure 1 caption).'}, {'element': 'Black-box LM -> Apple', 'status': 'Supported', 'evidence': 'Semantically matches the idea that the LM produces a prediction/continuation. The paper discusses next-token/output prediction p(y|d◦x); an example output like “Apple” is consistent as an illustration, even if not verbatim in the chunk.'}, {'element': 'Apple', 'status': 'Supported', 'evidence': 'Used as an illustrative predicted token/entity; consistent with the LM producing outputs y (e.g., a next token/answer).'}, {'element': 'Ensemble', 'status': 'Supported', 'evidence': 'Explicitly described: “we also adopt an ensemble scheme… ensembles output probabilities from different passes” (Intro; Figure 2 caption; §3.2).'}, {'element': 'd_ℓ', 'status': 'Supported', 'evidence': 'The paper denotes documents as d and indices (d1…dm) and retrieved documents (top-k). A specific indexed document like d_ℓ is consistent with this notation.'}, {'element': 'd_ℓ -> x', 'status': 'Supported', 'evidence': 'Although direction is simplified, the semantic relation exists: similarity scoring s(d,x)=cos(E(d),E(x)) links document d and context x (§3.1).'}, {'element': 'x', 'status': 'Supported', 'evidence': 'Explicitly used throughout as the input context: “Given an input context x…” (§3.1, §3.2).'}, {'element': 'x -> ?', 'status': 'Supported', 'evidence': 'Corresponds to predicting an unknown next token/answer y from context x: “output probability of the next token y…” (§3.2). A “?” is a reasonable depiction of the prediction target.'}, {'element': '?', 'status': 'Supported', 'evidence': 'Represents the unknown output y to be predicted; consistent with “final prediction” and “next token y” in §3 and §3.2.'}, {'element': '? -> apple', 'status': 'Supported', 'evidence': 'Consistent with the LM output being a distribution over possible tokens/answers y (e.g., ‘apple’) which is then ensembled (§3.2 p(y|x,D′)).'}, {'element': '? -> pear', 'status': 'Supported', 'evidence': 'Same as above: ‘pear’ can be another candidate token under p(y|·); the paper describes probabilistic next-token prediction (§3.2).'}, {'element': '? -> not', 'status': 'Supported', 'evidence': 'Also consistent as a candidate next token in a language-model distribution over y (§3.2).'}, {'element': '? -> ...', 'status': 'Supported', 'evidence': '“…” reasonably depicts many other candidate tokens in the distribution p(y|·), as the paper ensembles output probabilities (§3.2).'}, {'element': 'apple', 'status': 'Supported', 'evidence': 'Candidate output token consistent with next-token prediction y in §3.2; used as an illustrative example.'}, {'element': 'pear', 'status': 'Supported', 'evidence': 'Candidate output token consistent with next-token prediction y in §3.2; used as an illustrative example.'}, {'element': 'not', 'status': 'Supported', 'evidence': 'Candidate output token consistent with next-token prediction y in §3.2; used as an illustrative example.'}, {'element': '...', 'status': 'Supported', 'evidence': 'Depicts additional possible outputs under p(y|·), consistent with probabilistic prediction/ensembling in §3.2.'}, {'element': 'Jobs is the CEO of _', 'status': 'Supported', 'evidence': 'Functions as an example input/query (context x) for retrieval-augmented prediction; aligns with the paper’s general setting (open-domain QA / language modeling) even if this exact sentence isn’t quoted.'}, {'element': \"Jobs cofounde d Apple in his parents' garage\", 'status': 'Supported', 'evidence': 'Represents retrieved supporting evidence documents d that can be prepended to x; matches “retrieves … documents … prepended to the input context” (§3; Figure 2 caption).'}, {'element': 'Jobs was raised by adopted...', 'status': 'Supported', 'evidence': 'Same role as retrieved document content; consistent with retrieved documents providing information to help prediction (§3.2).'}, {'element': 'Steve Jobs passed away...', 'status': 'Supported', 'evidence': 'Same role as retrieved document content; consistent with retrieved documents being external corpus text (§3.1–§3.2).'}, {'element': 'Jobs cofounded Apple...', 'status': 'Supported', 'evidence': 'Same role as retrieved document content; aligns with the retrieval + prepend + ensemble mechanism described in Figure 2 caption and §3.2.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 3,
+              "reason": "The target figure captures the high-level REPLUG workflow: an input context x goes to a retriever, top documents d_i are retrieved, each document is concatenated/prepended with x and passed through a black-box LM in parallel, and the resulting per-branch outputs are ensembled to produce a final prediction. However, several major paper-specified components/formulas are omitted or only implicit: the dense dual-encoder retriever architecture (document/query encoders, shared encoder), explicit embeddings E(d)/E(x), cosine similarity s(d,x)=cos(E(d),E(x)), softmax-derived weights λ(d,x)=exp(s)/Σexp(s), and the FAISS index over precomputed document embeddings. The figure also does not explicitly depict top-k selection D′ or the weighted-average probability formula p(y|x,D′)=Σ p(y|d◦x)·λ(d,x) (it shows an ensemble visually but not the weighting mechanism). Overall it covers the pipeline but misses key retriever/weighting/formal details."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure largely conveys the core operating principle without the paper: a retriever takes an input context x, fetches multiple documents d_i, each document is combined (prepended/concatenated) with the same input, a black-box LM is run separately per branch, and the per-branch token distributions are combined via an ensemble to yield the final prediction. This matches the evidence’s high-level pipeline (retrieve top-k, parallel LM passes on d◦x, aggregate probabilities).\n\nHowever, several key mechanics are not intelligible from the figure alone: it does not explain how retrieval relevance is computed (dual-encoder, cosine similarity), that top-k is selected, that document embeddings are precomputed and indexed (FAISS), nor that ensemble weights are derived by softmax over similarity scores (λ(d,x)). The ensemble appears as an unparameterized combination of bar charts, so the weighting principle is unclear. Notation (x, d_i, D′) is only partially indicated and could be misread as simple concatenation rather than probabilistic averaging.\n\nOverall, the general principle is understandable, but important implementation/algorithmic details required to fully understand REPLUG’s mechanism are missing, so it is not perfectly standalone."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 4,
+              "reason": "The target figure captures the core end-to-end REPLUG pipeline described in §§3.1–3.2: input context x, retrieval of top-k documents from an external corpus, per-document concatenation (d ◦ x), black-box LM run in parallel, and ensembling of per-branch next-token probabilities into a final prediction. This aligns well with the evidence text and the reference figures emphasizing retrieval + parallel LM passes + aggregation. However, several key paper-specified components are not explicitly shown: the dense dual-encoder retriever with shared query/document encoder, precomputed document embeddings E(d), query embedding E(x), cosine similarity scoring s(d,x), softmax-derived weights λ(d,x), and the FAISS index for efficient retrieval. The figure also does not explicitly label the external corpus D={d1…dm} or the exact top-k selection mechanism. Thus it is largely complete at a high level but omits multiple technical details necessary for full coverage of the described method."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 4,
+              "reason": "Most components in the target figure align with the paper’s described REPLUG pipeline (context x → retriever/document retrieval → top‑k documents d_i → input reformulation by prepending d◦x → black-box LM → ensembling output probabilities p(y|d◦x)). The use of generic candidate tokens (apple/pear/not/…) is consistent with the paper’s next-token distribution and ensembling description, even if these exact tokens are illustrative rather than quoted. Potential minor hallucination/over-specification: the explicit depiction of a single predicted token “Apple” as a concrete output example, and an edge shown as d_ℓ → x (directionality not stated; the paper instead defines a similarity score s(d,x)). These are small presentation liberties rather than new unmentioned mechanisms or formulas."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 4,
+              "reason": "The figure’s major relationships match the paper’s described REPLUG pipeline: input context x → retriever/document retrieval → top‑k retrieved documents d_i; each retrieved doc is prepended/combined with x (input reformulation) and passed as separate inputs to a frozen black‑box LM; the resulting output distributions p(y|d◦x) are then ensembled to form the final prediction. These relations are supported by §3.1–§3.2 and align with the reference REPLUG-style diagrams showing retrieval + prompt construction + LM + aggregation.\n\nMinor issues: the arrow labeled “d_ℓ → x” is directionally misleading (the paper defines a similarity score s(d,x) rather than a causal flow from d to x), and the depiction of the final ‘?’ branching into discrete tokens (apple/pear/not/…) is a simplification of a next-token distribution rather than a specific mechanism stated in the paper. Overall, component connectivity is accurate with small presentational/notation simplifications."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "Major components/methodology labels in the Target Figure are consistent with the paper description and the provided evidence: it includes a \"Retriever\" performing \"Document Retrieval\" from input context x, producing retrieved documents d_i; an \"Input Reformulation\" stage that prepends each retrieved document to x; a frozen \"Black-box LM\" run per reformulated input; and an \"Ensemble\" that combines the per-document output distributions. Notation (x, d_i / d_ℓ) aligns with the paper’s use of x for context and indexed documents for the corpus/retrieved set. No major component appears mislabeled relative to the evidence or reference figures."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is largely schematized around the paper’s main contribution (REPLUG): retrieval of top documents, reformulating the input by concatenating each retrieved document with the same input context, running a black-box LM in parallel branches, and ensembling the per-branch next-token distributions into a final prediction. It avoids low-level implementation details (e.g., dual-encoder architecture, cosine similarity formula, softmax weights λ(d,x), FAISS indexing) while still conveying the core pipeline. Compared with the evidence, it omits several explicit elements (query/document encoders, similarity scoring, top-k selection mechanism, FAISS, and explicit weighting), but these omissions are consistent with a high-level schematic focusing on the main idea rather than trivialities. Minor concern: the illustrative ‘Jobs/Apple’ example may slightly overemphasize an anecdotal instance, but it remains in service of explaining the contribution."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "The target figure closely matches the REPLUG description and serves as strong supplementary material. It visually conveys (i) retrieval of top documents d_i from an external corpus given input context x, (ii) reformulation by prepending/concatenating each retrieved document with x into k parallel LM inputs, (iii) separate black-box LM passes producing per-branch next-token distributions, and (iv) an ensemble step combining these distributions into a final prediction. This aligns well with the evidence elements (retriever → top-k docs → (d∘x) branches → LM → weighted/aggregated probabilities → final token). While the explicit cosine similarity/FAISS/softmax weight formula is not shown, the core pipeline in §3.1–§3.2 is captured clearly and is consistent with the reference style for retrieval-augmented prompting and ensembling."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The figure is largely focused on the core REPLUG pipeline (retriever → retrieved docs → per-doc LM runs → ensemble) and avoids most decorative clutter. Elements like the stacked retrieved-doc cards, arrows, and probability bar charts directly support the main ideas of top‑k retrieval and weighted ensembling from per-branch next-token distributions. However, there is some unnecessary or potentially distracting content: the Steve Jobs/Apple illustrative text (and the “?” cube icons) is example-specific rather than method-essential, and the detailed per-token bar plots could be simplified without losing the concept. Overall, low redundancy with minor illustrative extras."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The Target Figure’s primary process is organized left-to-right: a 'Retriever' block on the left feeds retrieved documents and a reformulated input into an ensemble panel on the right, where outputs are shown as bar distributions. While there are some local top-to-bottom elements (e.g., stacked documents and per-row ensemble examples), the dominant diagram flow is clearly left-to-right, consistent with the referenced figures that emphasize horizontal pipeline structure."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "Connection lines are mostly well-routed: the main arrows (Retriever→documents, documents→black-box LM, black-box→Apple, and the downward arrows from each document row to its corresponding black-box) are separated and do not intersect. Minor crossings/near-crossings occur in the ensemble block: the bracket-like grouping and adjacent bar-chart elements create visual overlap/ambiguity around where outputs are grouped, and some arrows run close to neighboring elements, but there are no clear, disruptive line intersections. Overall, line crossing is largely avoided compared with the more strictly separated routing in the references."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "Functionally related components are generally co-located and visually grouped. The retrieval-related elements (Retriever, retrieved documents, and document stack) are placed together on the left with a clear flow into the reformulation/black-box LM block, and the downstream ensemble/inference outputs are grouped together on the right. Within the right panel, each document-conditioned prompt row is adjacent to its corresponding model block and output distributions, supporting proximity. Minor reductions in proximity come from (i) the “Test Context x” bubble being slightly separated from the Retriever and connected via a longer arrow, and (ii) some output charts and labels being spaced rather than tightly aligned, but overall the layout maintains strong functional adjacency."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall alignment is strong: the left pipeline (Retriever → retrieved document stack → black-box LM) follows a clear horizontal flow, and the three retrieved-snippet rows inside the yellow ensemble panel are vertically stacked with consistent left edges and row spacing. However, a few elements appear slightly off-grid: the small label texts (e.g., d_i, x) and the right-side bar-chart/legend blocks don’t share a perfectly consistent vertical alignment across the three rows, and the probability bars on the far right look slightly uneven in their anchoring relative to the row blocks. These minor inconsistencies keep it from being perfectly grid-aligned."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 4,
+              "reason": "The target figure establishes a clear visual hierarchy: the main pipeline components (Retriever → retrieved documents → black-box LM → Ensemble outputs) are prominent through large labeled blocks, strong color fills (dark red, pale yellow), and left-to-right placement. Key stages and labels (e.g., Retriever, Ensemble, Input Reformulation, Document Retrieval) are easy to locate. However, hierarchy is slightly weakened by multiple similarly sized sub-elements (three document boxes and repeated small black cubes) and dense right-side bar charts competing for attention, making the primary focal point less singular than in the clearest reference examples."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "The target figure generally maintains clear spacing between major blocks (Retriever module, retrieved documents stack, black-box LM, and the right-side ensemble panel). Labels and arrows are not tightly packed, and most elements have comfortable padding within their containers (e.g., the ensemble box and the document snippets). However, margins become somewhat tight in a few places: the left-side annotations (e.g., “Document Retrieval”, “Test Context x”) sit close to arrows/boxes, and inside the ensemble panel the small text/mini bar charts are densely arranged with limited whitespace. Overall margin is sufficient but not consistently generous across all sub-elements."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 3,
+              "reason": "The figure shows partial consistency: the retrieved documents are consistently depicted as stacked/light-blue rounded rectangles, and the (unknown) LM/black-box components are consistently shown as black cubes with a question mark. However, similar functional elements are not fully standardized across the pipeline—e.g., the test context is a white rounded box while other text/query-like inputs are blue document boxes; arrows vary in color (gray vs orange) to indicate different steps without a consistently reused visual grammar across all stages. Compared with the reference figures, which more strictly reuse the same shapes/colors for the same module types (retrieval blocks, prompts, LLM/generation blocks), the target mixes styles for inputs and intermediate representations, reducing role-to-visual mapping consistency."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The target figure frequently replaces abstract operations with concrete visual symbols: a black-box cube with a question mark stands in for the language model and/or uncertainty; stacked document sheets depict retrieved documents; arrows and color-coded regions encode process flow and module boundaries; bar charts represent output distributions/ensemble aggregation. This is strongly aligned with the references (which also use icons for users/LLMs/retrievers/warnings) in making intangible processes tangible. However, some key abstractions remain primarily textual rather than iconified (e.g., “Input Reformulation,” “Ensemble,” and variable symbols like d_i, x), and the cube icon is somewhat generic without a distinct legend, preventing a perfect score."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 3,
+              "reason": "The target figure largely follows a common ML-paper schematic template: left-to-right pipeline (Retriever → retrieved documents → black-box LM → prediction), rounded boxes, arrows, and a right-side panel with ensemble outputs and bar charts. These visual conventions closely resemble the reference/evidence figures (retrieval-augmented prompting and diagrammatic flows), so the overall style is not strongly distinctive. However, it shows some mild differentiation via the specific narrative elements (Jobs/Apple example), the split layout with an inset ‘Ensemble’ panel, and the color-contrast choices (maroon retriever block, pale yellow ensemble background), which add a bit of individuality beyond a fully generic template."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 3,
+              "reason": "The target figure largely follows common, uniform RAG/LLM pipeline conventions seen in the references (left-to-right flow, boxed modules, arrows, and a shaded panel for a sub-process). It does introduce some paper-specific tailoring—e.g., the explicit “Input Reformulation” via a black-box LM, the ensemble depiction with per-document outputs and aggregated bar charts—suggesting adaptation to the method being described rather than a purely generic template. However, the overall visual grammar (standard component blocks, consistent arrow-based flow, minimal novel structural layout) remains close to typical designs in the evidence, so it only moderately breaks away from uniform design principles."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.933,
+      "used_anchor_paths": {
+        "q1.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q1.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q1.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q2.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q2.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q2.3": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q3.1": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q3.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q3.3": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q4.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q4.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q4.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q4.4": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q4.5": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q4.6": [
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q4.7": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q5.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q5.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ],
+        "q5.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          }
+        ]
+      }
+    },
+    {
+      "figure_file": "Retrieval-Augmented_Black-Box_Language_Models__p0__score1.00.png",
+      "caption": "Figure 1: Different from previous retrieval-augmented approaches (Borgeaud et al., 2022) that enhance a language model with retrieval by updating the LM’s parameters, REPLUG treats the LM as a black box and augments it with a frozen or tunable retriever. This black-box assumption makes REPLUG applicable to large LMs, which are often served via APIs.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Input context x (query)', 'External document corpus D (documents d1...dm)', 'Retriever module (dense dual-encoder: encoder for x and encoder for d)', 'Precomputed document embeddings + FAISS index for efficient top-k retrieval', 'Similarity scoring s(d,x)=cos(E(d),E(x))', 'Top-k document selection (D′)', 'Document(s) prepended/concatenated to input context (d ◦ x)', 'Frozen black-box language model (LM)', 'Parallel LM passes for each retrieved document (k separate forward passes)', 'Ensemble/weighted averaging of output probabilities p(y|d◦x) across k documents', 'Ensemble weights λ(d,x) derived from similarity scores (softmax over s(d,x))', 'Final next-token prediction/output probability p(y|x,D′)']\nContext: We introduce REPLUG, a retrieval-augmented language modeling framework that treats the language model (LM) as a black box and aug- ments it with a tuneable retrieval model. Un- like prior retrieval-augmented LMs that train language models with special cross attention mechanisms to encode the retrieved text, RE- PLUG simply prepends retrieved documents to the input for the frozen black-box LM. This simple design can be easily applied to any existing language models. ... Given an in- put context, REPLUG first retrieves relevant doc- uments from an external corpus using an off-the- shelf retrieval model. The retrieved documents are prepended to the input context and fed into the black-box LM to make the final prediction. Be- cause the LM context length limits the number of documents that can be prepended, we also adopt an ensemble scheme that encodes the retrieved doc- uments in parallel with the same black-box LM, allowing us to easily trade compute for accuracy.\n\nWe introduce REPLUG (Retrieve and Plug), a new retrieval-augmented LM paradigm where the LM is treated as black box and the retrieval component is added as a potentially tuneable module. As shown in Figure 2, given an input context, REPLUG first retrieves a small set of relevant doc- uments from an external corpus using a retriever (§3.1). Then we pass the concatenation of each retrieved document with the input context through the LM in parallel, and ensemble the predicted probabilities (§3.2).\n\n3.1 Document Retrieval Given an input context x, the retriever aims to retrieve a small set of documents from a corpus D = {d1...dm} that are relevant to x. ... we use a dense retriever based on the dual encoder architecture, where an encoder is used to encode both the input context x and the document d. ... The similarity between the query embedding and the document embedding is computed by their cosine similarity: s(d, x) = cos(E(d), E(x)) (1) ... The top-k documents that have the highest simi- larity scores when compared with the input x are retrieved in this step. For efficient retrieval, we pre- compute the embedding of each document d ∈D and construct FAISS index (Johnson et al., 2019) over these embeddings.\n\n3.2 Input Reformulation ... we adopt an ensemble strategy described as follows. Assume D′ ⊂D consists of k most relevant documents to x, according to the scoring function in Eq. (1). We prepend each document d ∈D′ to x, pass this concatenation to the LM separately, and then ensemble output probabilities from all k passes. Formally, given the input context x and its top-k relevant documents D′, the output probability of the next token y is computed as a weighted average ensemble: p(y | x, D′) = X d∈D′ p(y | d ◦x) · λ(d, x), where ◦denotes the concatenation of two se- quences and the weight λ(d, x) is based on the similarity score between the document d and the input context x: λ(d, x) = es(d,x) P d∈D′ es(d,x)",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': 'RE-PLUG', 'status': 'Supported', 'evidence': 'The chunk introduces “REPLUG (Retrieve and Plug), a new retrieval-augmented LM paradigm where the LM is treated as black box and the retrieval component is added as a potentially tuneable module.”'}, {'element': 'Previous', 'status': 'Supported', 'evidence': 'Figure 1 description contrasts REPLUG with “previous retrieval-augmented approaches (Borgeaud et al., 2022) that enhance a language model with retrieval by updating the LM’s parameters.”'}, {'element': 'Test Context', 'status': 'Supported', 'evidence': 'The paper describes using an “input context x” as the query and then prepending retrieved documents to this context for the LM.'}, {'element': 'Retriever', 'status': 'Supported', 'evidence': 'REPLUG “first retrieves relevant documents from an external corpus using an off-the-shelf retrieval model… We use a dense retriever based on the dual encoder architecture.”'}, {'element': 'White-box LM', 'status': 'Supported', 'evidence': 'The chunk discusses “white-box setting, where language models are fine-tuned to incorporate retrieved documents,” contrasting it with REPLUG’s black-box setting.'}, {'element': 'Black-box LM', 'status': 'Supported', 'evidence': 'The paper’s core framing: “REPLUG treats the LM as a black box… applicable to large LMs, which are often served via APIs.”'}, {'element': 'Frozen', 'status': 'Supported', 'evidence': 'Figure 1 caption: REPLUG “simply prepends retrieved documents to the input for the frozen black-box LM.” Also: “LM parameters are fixed due to our black-box assumption.”'}, {'element': 'Trainable', 'status': 'Supported', 'evidence': 'REPLUG augments with “a frozen or tunable retriever” and REPLUG LSR “updates the retrieval model parameters… The LM parameters are fixed.”'}, {'element': 'Frozen/Trainable', 'status': 'Supported', 'evidence': 'This aligns with the paper’s design: frozen LM + (frozen or tunable) retriever, i.e., one component frozen and another trainable.'}, {'element': '#param. >100B', 'status': 'Supported', 'evidence': 'The chunk repeatedly emphasizes very large LMs: “large LMs (>100B model parameters)” and examples like GPT-3 175B, BLOOM-176B.'}, {'element': '#param. <10B', 'status': 'Supported', 'evidence': 'The paper includes smaller LMs too (e.g., GPT-3 Curie 6.7B; GPT-2 family up to 1.5B), consistent with a “<10B” category.'}, {'element': 'Jobs is the CEO of _', 'status': 'Not Mentioned', 'evidence': 'The chunk does not contain this example prompt; it discusses retrieval-augmented modeling abstractly (input context x, documents d) but not a Steve Jobs cloze prompt.'}, {'element': \"Jobs cofounded Apple in his parents' garage\", 'status': 'Not Mentioned', 'evidence': 'No such example retrieved document appears in the provided text.'}, {'element': 'Relationship: Jobs is the CEO of _ -> Retriever', 'status': 'Supported', 'evidence': 'Semantically matches the pipeline “Given an input context, REPLUG first retrieves relevant documents… using a retriever,” i.e., the input/query goes to the retriever.'}, {'element': \"Relationship: Retriever -> Jobs cofounded Apple in his parents' garage\", 'status': 'Supported', 'evidence': 'This corresponds to retriever outputting retrieved documents: “retrieves relevant documents from an external corpus.” (The specific sentence is an illustrative document, though not in text.)'}, {'element': \"Relationship: Jobs cofounded Apple in his parents' garage -> White-box LM\", 'status': 'Supported', 'evidence': 'General relation is supported: retrieved documents are incorporated by retrieval-augmented LMs; in white-box approaches, LMs are trained/architecturally modified to incorporate retrieved text.'}, {'element': 'Relationship: Jobs is the CEO of _ -> White-box LM', 'status': 'Supported', 'evidence': 'General input-to-LM flow is implied throughout: the “input context x” is fed to the LM (in prior white-box systems as well).'}, {'element': \"Relationship: Jobs cofounded Apple in his parents' garage -> Black-box LM\", 'status': 'Supported', 'evidence': 'Core REPLUG mechanism: “prepends retrieved documents to the input for the frozen black-box LM,” so retrieved text is fed into the black-box LM.'}, {'element': 'Relationship: Jobs is the CEO of _ -> Black-box LM', 'status': 'Supported', 'evidence': 'Matches “Given an input context… [we] fed into the black-box LM to make the final prediction,” i.e., query/context goes into the black-box LM (with/without prepended docs).'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 2,
+              "reason": "The target figure captures only the high-level REPLUG idea (test context → retriever → retrieved text prepended → black-box/frozen LM) and contrasts it with a prior setup. However, it omits most major components described in the paper: the external document corpus D, dense dual-encoder retriever details (separate encoders for x and d), cosine similarity scoring s(d,x)=cos(E(d),E(x)), precomputed document embeddings and FAISS index, explicit top-k selection D′, parallel LM forward passes for each retrieved document (k passes), and the ensemble/weighted averaging of probabilities p(y|d◦x) with weights λ(d,x)=softmax(s(d,x)), culminating in p(y|x,D′). Thus, it does not cover most key modules/formulas beyond the basic retrieval-and-prepend pipeline."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure largely conveys the core operating principle of REPLUG without needing the paper: a test context is fed to a retriever, retrieved text is prepended/combined with the context, and a (frozen) black-box LM produces the output. The contrast with a prior setup (trainable white-box LM) also helps clarify the key idea: REPLUG keeps the LM frozen/black-box and shifts learning/tuning to the retriever. However, compared to the evidence, several defining mechanics are not visible: (i) top-k retrieval (it looks like a single retrieved snippet), (ii) similarity scoring/weights (cosine/softmax), (iii) parallel LM forward passes per retrieved document, and (iv) ensembling/weighted averaging of probabilities across k documents. These omissions slightly reduce standalone completeness, but the high-level pipeline is still understandable."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 3,
+              "reason": "The target figure captures the paper’s core REPLUG idea: a (frozen or trainable) retriever feeding retrieved text into a frozen black-box LM, contrasted against a prior setup with a trainable white-box LM. However, it omits several key end-to-end components described in the paper: the external corpus D, dense dual-encoder query/document embeddings, cosine similarity scoring, FAISS precomputed embeddings/index, explicit top-k selection D′, parallel k LM forward passes, and the weighted ensemble/softmax weighting over similarity scores to combine p(y|d◦x) into p(y|x,D′). Thus it summarizes the high-level architecture but not the full pipeline details across the method description."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 4,
+              "reason": "The target figure largely avoids hallucination relative to the paper: it correctly depicts RE-PLUG as using a frozen black-box LM with retrieved documents prepended, and allows the retriever to be frozen or trainable; it also contrasts with prior “white-box” approaches that update LM parameters. However, it introduces specific illustrative content (“Jobs is the CEO of _” and the retrieved sentence about cofounding Apple in a garage) that is not mentioned in the provided paper chunk/evidence (explicitly marked Not Mentioned), even if it is only an example. The parameter-size labels (>100B, <10B) are supported by the evidence. Overall: mostly faithful, with minor added example content not grounded in the text."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 4,
+              "reason": "The major relationships are represented consistently with the paper’s described REPLUG pipeline: (i) the test context/query is sent to a retriever; (ii) the retriever returns documents; (iii) retrieved documents are prepended/combined with the input and fed to the LM for prediction; and (iv) REPLUG keeps the LM frozen/black-box while allowing the retriever to be frozen or trained. The contrast with “previous” white-box approaches that update LM parameters is also directionally correct. However, the figure’s concrete Jobs example text is not mentioned in the provided paper chunk (it appears illustrative rather than evidenced), and depicting the “previous” setup as a frozen retriever + trainable white-box LM is not fully substantiated by the evidence snippet (the key evidenced distinction is that prior approaches update LM parameters, not that the retriever is necessarily frozen)."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 4,
+              "reason": "Major labels largely match the paper’s framing: REPLUG is correctly named and depicted as using a (frozen or tunable) retriever with a frozen black-box LM. The contrast with “Previous” approaches as white-box/fine-tuned LMs is consistent with the evidence. However, some labels in the figure are not directly supported or are potentially misleading relative to the provided text: (i) the explicit example text about “Jobs…” is not mentioned in the chunk (even if it is illustrative), and (ii) the parameter-size labels (“white-box LM #param <10B” vs “black-box LM #param >100B”) are only loosely supported as categories (the paper discusses both small and very large LMs, but not as a defining property of white-box vs black-box). These issues reduce label-accuracy confidence slightly, but do not undermine the correctness of the main component/methodology names."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is schematized around the paper’s main contribution: treating the LM as a frozen black-box and adding a (frozen/trainable) retriever that supplies retrieved text by simple concatenation/prepending, contrasting it with prior work that uses a trainable white-box LM. This matches the evidence’s emphasis on a plug-in retriever + frozen LM paradigm and avoids low-level implementation details. However, it omits several core operational components described in the evidence—top-k retrieval, similarity scoring (cosine), FAISS/indexing, parallel LM passes over k documents, and the similarity-based weighted ensemble/averaging—so it is more a high-level positioning diagram than a full schematic of REPLUG’s mechanism."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 4,
+              "reason": "The target figure is a good supplementary aid for the described REPLUG paradigm: it contrasts prior retrieval-augmented setups (frozen retriever + trainable LM) with REPLUG (retriever can be frozen/trainable while the LM is a frozen black-box). This aligns with the paper’s core framing that REPLUG treats the LM as a black box and adds a tuneable retrieval module, and that retrieved text is prepended to the input.\n\nHowever, it only partially matches the full mechanism in the evidence: it does not depict top-k retrieval, FAISS/precomputed embeddings, cosine scoring, the parallel k LM forward passes, or the similarity-softmax ensemble weighting and averaging of probabilities. Thus it supports high-level conceptual understanding, but not the detailed workflow readers would need to understand §3.1–§3.2."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely focused on the core REPLUG idea (retriever + prepended retrieved text + frozen black-box LM) and contrasts it with a prior approach. It contains minimal decoration and the elements present (labels like Frozen/Trainable, arrows, and the black-box icon) support the conceptual message. However, it introduces some non-essential embellishments (e.g., the large question-mark black-box graphic, stylized RE-PLUG label, and the illustrative Jobs example text) that are not strictly required to convey the mechanism described in the evidence (top-k retrieval, parallel LM passes, softmax-weighted ensembling), so it is not maximally non-redundant."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The Target Figure’s process flow is predominantly left-to-right: in both the 'Previous' and 'RE-PLUG' rows, arrows move from the left 'Test Context' box to the central 'Retriever' module, then to a retrieved-text box, and finally to the LM module on the right. This matches the left-to-right pipeline layout seen in the reference/evidence figures (retrieval → combine/prompt → generation/prediction), even though the Target is arranged in two horizontal rows."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 5,
+              "reason": "The target figure’s connectors are arranged to avoid intersections: each pipeline (top and bottom) proceeds left-to-right with a single curved arrow feeding into the retriever and then a straight arrow to the LM block. The only long curved connection in each row stays within its lane and does not cross other connectors. Compared with the reference figures, which similarly route arrows cleanly along distinct paths, the target maintains clear, non-crossing linework."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "Functionally linked components are mostly co-located: in both rows the Retriever sits immediately next to the retrieved passage box, which then feeds directly into the LM module placed adjacent on the right, reflecting the left-to-right data flow. The grouping (Frozen/Trainable) also helps indicate relatedness. However, proximity is not maximized because the retrieved text is visually separated by a long curved arrow from the test context, and the two scenarios (Previous vs RE-PLUG) are separated by a divider line with some repeated elements rather than a tightly integrated side-by-side comparison, leaving some related items (same context and same retrieved snippet) not as spatially compact as in the best reference designs."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall alignment is strong: the two pipelines are laid out in clean horizontal rows with consistent left-to-right flow, and major blocks (Test Context → Retriever → evidence text → LM) sit on an implicit grid. The dashed separator cleanly divides the two rows. Minor misalignments reduce perfection: the top row’s curved arrow and the RE-PLUG label/icon slightly disrupt the grid rhythm, and the bottom row’s large black-box LM block and its connector do not align as tightly with the corresponding top-row LM region (size/centering differences). Still, compared to the references, the figure maintains neat horizontal/vertical alignment with only small deviations."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 3,
+              "reason": "The figure establishes a basic hierarchy via spatial layout (two rows separated by a dashed line) and color coding (blue 'Frozen' vs red 'Trainable'), which helps key components stand out. However, the main modules (Retriever and LM blocks) are similar in visual weight to surrounding text boxes, and the smaller labels/icons compete for attention. Compared to the references, which use stronger size contrast, thicker outlines, and more prominent headings to emphasize primary blocks, the target’s emphasis is moderate rather than strong."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "Overall, the target figure provides clear separation between major sections (top vs. bottom) and between functional blocks (Retriever, context box, LM), aided by the dashed horizontal divider and consistent whitespace. Labels and icons are not crowded, and arrows have adequate clearance from boxes. However, margins are not uniformly generous: the left-side “Test Context” bubbles sit relatively close to the adjacent retriever blocks, and the bottom-right black-box LM block with its label appears slightly tight, reducing breathing room compared with the best reference examples. Still, spacing is generally sufficient and readable."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 4,
+              "reason": "The Target Figure is largely consistent in representing similar roles: the retriever is consistently shown as a rounded rectangle with a database-like icon and labeled “Retriever” (blue in the top row; red in the bottom row), while the language model is consistently a rounded rectangle labeled “LM” (pink ‘Trainable’ in the top row; black ‘Frozen’ in the bottom row). The “Frozen” vs “Trainable” considered as component states are also consistently indicated via color-coded headers. Minor inconsistency arises because the retriever changes color across panels (blue vs red) despite the same role, and the LM’s visual treatment shifts more drastically (pink schematic vs black ‘mystery’ box) which may suggest different roles rather than just different sizes/frozen status."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The target figure substantially replaces abstract concepts with concrete visual metaphors and abbreviations: database/retriever icons for retrieval, color-coded state labels (“Frozen”, “Trainable”), and “white-box/black-box LM” blocks (including param-count shorthand like <10B and >100B). These map complex ideas (training regimes, model transparency, modularity) onto recognizable symbols. Compared to the references, it is less icon-saturated and explanatory than the authority-bias diagram (which uses more varied pictograms and warning symbolism), but clearly more metaphor-driven than the more schematic pipeline-style references that rely mainly on boxes/arrows and text."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure follows a very common ML-systems schematic template: rounded boxes, simple icons (retriever/database/LM), blue/red color-coding for frozen vs trainable, and a two-row “Previous vs Proposed (RE-PLUG)” comparison separated by a dashed line. This layout and visual language closely resemble the provided reference/evidence figures (retrieval-augmented prompting, frozen/trainable modules, pipeline arrows). While the specific labels (e.g., RE-PLUG, parameter counts, white-box vs black-box) provide content distinction, the overall style is not visually unique and does not substantially depart from widely used academic diagram conventions."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 3,
+              "reason": "The target figure adapts its layout to the paper’s specific comparison narrative (baseline vs RE-PLUG), using a clear two-row structure, a horizontal pipeline flow, and explicit parameter-scale annotations (white-box <10B vs black-box >100B). This is more tailored than a generic template and supports the intended argument (frozen vs trainable components). However, the overall visual language remains fairly standard for ML system diagrams—boxes, arrows, and color-coding for “Frozen/Trainable”—and does not substantially break away from common, uniform design patterns seen in the reference figures. Adaptability is moderate: purpose-driven composition, but conventional styling."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.629,
+      "used_anchor_paths": {
+        "q1.1": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q1.2": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q1.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q2.1": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q2.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q2.3": [
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q3.1": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q3.2": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q3.3": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q4.1": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q4.2": [
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q4.3": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q4.4": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q4.5": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q4.6": [
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q4.7": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "5.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q5.1": [
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q5.2": [
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ],
+        "q5.3": [
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          {
+            "score": "4.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          {
+            "score": "3.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          {
+            "score": "2.0",
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,499 @@
+{
+  "paper_name": "ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration",
+  "evaluated_at": "2026-01-12T04:16:30.056432",
+  "figure_summary": "## 1. Core Contributions (2–4 bullet points)\n\n- **Vision-level, training-free inference algorithm:** Proposes **Zoom Eye**, a **model-agnostic tree search** method that enables MLLMs to *actively* gather visual evidence by iteratively zooming into image regions rather than reasoning only over a fixed visual input.\n- **Hierarchical image-as-tree formulation:** Introduces a **tree representation of an image** (root = full image; children = finer sub-patches), enabling **lookahead (zoom-in)** and **backtracking (zoom-out)** behaviors analogous to human exploration.\n- **Search control via prompted confidence signals:** Uses **confidence values elicited from the MLLM** (object presence / answer confidence) to **rank candidate patches** and to **stop** when the model can answer confidently.\n- **Empirical claim tied to search depth:** Argues a **vision-level test-time scaling** effect—performance improves with more search steps—supported by benchmark results and qualitative search traces.\n\n---\n\n## 2. Method Components & Relations relevant to figures\n\n- **Key modules**\n  - **Tree construction (T):** Each node \\(n_t\\) corresponds to an image *view* defined by the original image \\(I\\) and a bounding box \\(b_t=(x_{1,t},y_{1,t},x_{2,t},y_{2,t})\\). Nodes split into **4 equal sub-patches** recursively until meeting the vision encoder’s resolution limit.\n  - **Patch rendering / image input function \\(V(n_t)\\):** Two alternative visual-input pipelines:\n    - **Local Input:** only the cropped patch is provided to the MLLM (fits “naive resize” MLLMs).\n    - **Global+Local Input:** both the full image and the local patch are provided; the local patch is visually indicated (red rectangle) and processed with **AnyRes** for the patch (fits newer AnyRes-based MLLMs).\n  - **Tree search container (Q) + ranking (R):** Maintains a frontier of candidate nodes and **sorts/prioritizes** them using a ranking function derived from MLLM-prompted confidence cues.\n  - **Stopping criterion (S):** Terminates search when an **answer-confidence score** (computed from model logits / “logits ratio” in Alg. 2) exceeds a threshold \\(\\tau\\).\n\n- **Key relations / data flows**\n  - **Question → initial global view:** Start from the **root node** (full image) and query the MLLM.\n  - **Model signals → node prioritization:** Prompted confidence values guide **which patch to inspect next** (ranking \\(R\\)), yielding a search order over nodes.\n  - **Iterative zooming/backtracking loop:** Visit node → evaluate confidence → expand children (zoom in) if needed → return to alternative nodes (zoom out via frontier/backtracking behavior) until stopping criterion holds.\n  - **Final answer:** Generated after sufficient evidence is collected from visited patches.\n\n---\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n\n- **Motivate the problem setting:** Visually demonstrate that **fixed-resolution, single-pass perception** in conventional MLLMs captures salient objects but misses **fine-grained details** in high-resolution images.\n- **Communicate the central mechanism (vision-level reasoning):** Depict Zoom Eye as an **interactive exploration process**—zooming into patches, potentially zooming out, and accumulating evidence until confident answering.\n- **Make the “image-as-tree + search” concept tangible:** Illustrate how **patch subdivision**, **patch selection order**, and **search trajectories** correspond to human-like inspection patterns.\n- **Clarify input interfaces to different MLLMs:** Show the two supported **image input modes** (Local vs Global+Local, resize vs AnyRes) to explain how Zoom Eye is applied across architectures.\n- **Provide qualitative evidence of behavior:** Use example traces (e.g., red rectangles over searched regions, resolution annotations, confidence progression) to show *what the algorithm is doing* during inference.\n\n---\n\n## 4. What Figures are NOT intended to show\n\n- **Not a claim of new model training or architecture changes:** Figures illustrate an **inference-time algorithm**, not a newly trained vision encoder/LLM or learned attention module.\n- **Not a proof of optimality or guaranteed search correctness:** Visual search traces are meant as intuition/illustration, not formal guarantees about finding the best region or minimal-step exploration.\n- **Not a complete benchmark justification by themselves:** Qualitative figures are not intended to replace **quantitative evaluation** or fully attribute gains across datasets/models.\n- **Not an exhaustive visualization of all internal scoring details:** Confidence/logits-ratio computations and ranking mechanics are only partially depicted; figures mainly convey *behavioral flow* rather than all mathematical specifics.",
+  "figure_evaluations": [
+    {
+      "figure_file": "ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p3__score0.95.png",
+      "caption": "Figure 3: Two image input methods for MLLMs with distinct image processing.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 3.0,
+              "reason": "The figure covers one major method component from the summary: the two visual-input pipelines V(n_t) (Local vs Global+Local), including the key implementation distinction (Resize vs AnyRes) and the red-rectangle indication of the selected local patch on the global image. However, it omits other major components central to Zoom Eye (tree construction/splitting into 4 sub-patches, frontier Q, ranking R via prompted confidence, stopping criterion S with threshold/logits ratio, and the iterative zoom/backtracking loop), so it is only partially covering the overall method."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 3.0,
+              "reason": "From the visual evidence, one can understand the general idea of providing either (i) only a cropped local patch (Local) or (ii) both the full image plus a highlighted crop (Global+Local), and that these correspond to different image processing strategies (Resize vs AnyRes for the patch). But the figure alone does not explain how these inputs are used within the tree-search inference procedure (how patches are chosen, expanded, or when the process stops), so it is intelligible for the input-interface concept but not for the system’s overall operating principle."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure is focused narrowly on the input interface to different MLLMs, which aligns with the caption and the summary’s 'Patch rendering / image input function' component. It does not summarize the method from start to end (question-to-root query, confidence-based prioritization, iterative search/zooming/backtracking, stopping criterion, final answer, and the test-time scaling claim), so it is not a complete summary of the paper’s contributions."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 5.0,
+              "reason": "The figure strictly depicts two visual input pipelines: providing only a cropped patch via resize (\"Local\"), and providing both the full image plus a highlighted local patch with AnyRes applied to the patch (\"Global + Local\"). These elements (Local Input vs Global+Local Input, red rectangle indication, resize vs AnyRes) are explicitly described in the summary, and no extra modules/formulas (e.g., ranking R, frontier Q, stopping S, logits-ratio) are introduced."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 5.0,
+              "reason": "The relationships match the summary’s description of the two supported input interfaces: the local patch is obtained from the global image (shown by arrows/boxes), then either (a) resized and used alone (Local), or (b) combined with the global image where the local region is indicated and processed with AnyRes (Global+Local). The depicted flow is consistent with \"fits naive resize MLLMs\" vs \"fits AnyRes-based MLLMs.\""
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Major labels align with terminology in the summary: \"Global Image,\" \"Local Patch,\" \"Global + Local,\" \"Local,\" and the processing methods \"Resize\" and \"AnyRes\". The red rectangle indicating the local region is also consistent with the summary’s description for the Global+Local mode."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The figure is tightly schematized around the stated purpose in the summary/caption: it contrasts the two supported visual-input pipelines (Local vs Global+Local) and their associated preprocessing (Resize vs AnyRes for the patch). It avoids delving into unrelated parts of Zoom Eye (tree search, ranking, stopping), keeping focus on the input-interface contribution."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "As a supplement to the caption and method description, the mapping is immediately readable: a global image with a red ROI box leads to a local patch; the bottom row clearly separates the two modes with labeled dashed boxes (“Global + Local” vs “Local”). The inclusion of 'AnyRes' on the patch path aligns with the summary’s note that newer MLLMs can take global+local inputs with AnyRes processing for the patch."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The diagram contains minimal decorative content and mostly uses conventional, helpful cues (arrows, red rectangles, dashed grouping boxes). Minor redundancy/visual clutter comes from showing multiple intermediate patch thumbnails and repeated 'Resize' labels, which slightly increases cognitive load without adding much beyond the core comparison of the two input methods."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.714,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 4.0,
+              "reason": "The figure’s main flow is readable as top-to-bottom: it starts with the two inputs at the top (\"Global Image\" and \"Local Patch\"), then arrows lead downward to processing steps (Resize/AnyRes/Resize) and finally to the two output/input modes at the bottom (\"Global + Local\" and \"Local\"). There is also a left-to-right conceptual contrast (global vs local) that remains clear."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 4.0,
+              "reason": "Most connections are clean vertical arrows with no intersections. The only potential visual clutter is the pair of red connector lines between the global image and the local patch, which visually intersect/overlap slightly in the middle region, but do not create ambiguity about what is being linked."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 4.0,
+              "reason": "Modules that belong together are spatially grouped: the Global+Local pipeline is consolidated in the large green dashed box, and the Local-only pipeline is isolated in the purple dashed box. The AnyRes step is placed near the intermediate multi-crop depiction that it conceptually affects, and Resize labels sit near their respective arrows."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 3.0,
+              "reason": "Top elements (two images) are roughly aligned horizontally, and the bottom boxes are aligned along a baseline. However, intermediate elements (center crops, AnyRes arrow, and the two vertical resize arrows) are not perfectly grid-aligned, giving the middle of the diagram a slightly uneven layout."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "The two main input modes stand out via labeled regions and distinct dashed bounding boxes (green for Global+Local and purple for Local), consistent with the summary’s emphasis on two alternative visual-input pipelines. The top images also serve as prominent anchors; secondary operations (Resize, AnyRes) are visually de-emphasized via smaller text."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 3.0,
+              "reason": "There is adequate whitespace around the top and bottom sections, but the center area (intermediate patch mosaic, AnyRes arrow, and red-rectangle crops) feels tight, with elements close enough that the processing path is slightly crowded."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 4.0,
+              "reason": "Similar roles are consistently encoded: both pipelines use the same type of dashed container boxes; red rectangles consistently indicate the selected local region (as described in the summary for Global+Local); and arrows consistently denote processing flow. Color is used systematically (green vs purple) to distinguish the two input methods."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 2.0,
+              "reason": "The figure largely uses literal visual exemplars (a global image, a zoomed local patch, red rectangles) to depict the two input pipelines. It does use simple symbolic conventions (arrows for processing flow, dashed colored boxes labeling modes, the red bounding box as a selection indicator), but it does not replace abstract concepts with distinctive icons or metaphoric symbols beyond standard diagram notation."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "The layout resembles a common methods schematic: before/after image crops with arrows, and two labeled output pathways (“Global+Local” vs “Local”). This aligns with the summary’s description of two input interfaces (Local resize vs Global+Local with AnyRes + red rectangle) but does not introduce a notably unique visual style or unconventional visual language beyond typical computer-vision paper figures."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The figure is well-tailored to the paper’s specific contribution of supporting two MLLM image-input modes. It explicitly contrasts the global image and local patch, shows the red-rectangle indication required for the Global+Local mode, and distinguishes the processing choices (Resize vs AnyRes) in a way that directly matches the summary. The split, color-coded grouping and the central comparison are more purpose-fit than a generic block diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.743
+      }
+    },
+    {
+      "figure_file": "ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p7__score0.95.png",
+      "caption": "Figure 5: Examples of Zoom Eye. The resolution of the image is displayed. Red rectangles are patches searched by Zoom Eye.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "1_1_content_coverage",
+              "score": 2.0,
+              "reason": "The figure provides qualitative search traces (red rectangles) and shows high-resolution inputs with questions/answers, aligning with the summary’s “iterative zooming” behavior and qualitative evidence purpose. However, it omits most major method components mentioned in the summary: the explicit image-as-tree formulation (root/children, 4-way splits), the frontier container Q, ranking R from prompted confidence cues, and the stopping criterion S with an answer-confidence/logits-ratio threshold τ. It also does not illustrate the Local vs Global+Local input modes or AnyRes interface."
+            },
+            {
+              "question": "1_2_standalone_intelligibility",
+              "score": 3.0,
+              "reason": "From the visuals and caption, one can infer that the method searches/zooms into selected patches in high-resolution images to answer questions, and that red rectangles indicate explored regions. However, the operating principle as a tree search with prioritization/backtracking and confidence-based stopping is not understandable from the figure alone (no depiction of confidence progression, ranking decisions, or how/why specific patches are chosen)."
+            },
+            {
+              "question": "1_3_completeness",
+              "score": 1.0,
+              "reason": "The figure is an examples-only qualitative snapshot and does not summarize the paper from beginning to end. It does not cover the core algorithmic structure (tree construction/splitting rule, search procedure, confidence prompting, stopping criterion), nor the claimed test-time scaling effect with increasing search steps, nor the two supported input interfaces. Thus it is not a complete summary of the paper’s content."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 3.0,
+              "reason": "The figure largely stays within the summary/caption scope by showing high-resolution images with red rectangles indicating searched patches, consistent with Zoom Eye’s iterative zoom-in evidence gathering. However, it introduces extra categorical labels such as “Single type 1 cue,” “Type 2 cue,” “Multiple type 1 cues,” and an “Error examples” section with narrative analyses attributing errors to deficiencies (e.g., ‘orientation data during training,’ ‘understanding positional relationships’). These analyses/categories are not mentioned in the provided summary and go beyond the core mechanism depiction, though they do not redefine the algorithm’s structure."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 4.0,
+              "reason": "The depicted relationships—starting from a global view, then zooming into specific regions (red boxes) and aggregating evidence (shown via multiple crops and a ‘Union’ indication)—match the summary’s image-as-tree exploration behavior and the caption’s intent (searched patches highlighted). The figure does not explicitly show the frontier queue, ranking-by-confidence, or stopping criterion, but it also does not contradict them; it functions as qualitative traces/examples consistent with the described iterative search."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 4.0,
+              "reason": "Labels that are present and central to the caption (image resolutions, searched regions via red rectangles, question/answer/ground-truth) align with the summary’s qualitative-example purpose. Some labels like “Union” and the cue-type taxonomy are not referenced in the summary; they appear as auxiliary presentation/interpretation rather than misnaming core components (e.g., it does not mislabel the method as training-based or introduce incorrect module names)."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is largely schematized around the main contribution described in the summary: qualitative Zoom Eye search traces. It clearly shows high-resolution inputs, the searched regions (red rectangles), and the final QA outcome, aligning with the paper’s goal of illustrating iterative zoom-based evidence gathering. However, the figure also includes several secondary annotations (e.g., 'Type 1 cue/Type 2 cue', 'Union', and extended error analyses) that go beyond the minimal depiction needed to communicate the core zoom-and-search behavior in this captioned 'examples' figure."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As supplementary material, it matches the caption and summary well: resolutions are displayed, and searched patches are highlighted, making the 'image-as-tree + search trajectory' intuition tangible. The multiple examples (successful and error cases) help readers understand when zooming helps and when it can fail. Readability is slightly reduced because several panels contain dense text blocks and small-font labels; some visual cues (e.g., dotted purple circles vs red rectangles, and the meaning of 'Union') are not fully self-explanatory from the caption alone."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The figure avoids purely decorative content, but it includes some arguably redundant or distracting elements relative to the stated purpose ('examples' with resolution and red rectangles): category ribbons ('Single type 1 cue', 'Type 2 cue', 'Multiple type 1 cues', 'Error examples'), extra arrows/zoom connectors, and lengthy textual analyses in the error panels. These additions do not contradict the core method, but they add clutter and reduce scanability, especially given small text and multiple annotation styles."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.857,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 3.0,
+              "reason": "The figure is organized as multiple example panels arranged in a grid, each reading left-to-right within the panel (overview image to zoomed-in crop), which supports the intended ‘search/zoom’ narrative. However, there is no single global left-to-right or top-to-bottom flow across the entire figure; it reads more like a collage of cases than a unified directional diagram."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Within each example, the dashed connectors between the overview and zoomed views are mostly clean and do not noticeably cross. Across the full figure, connectors are confined to their panels, reducing clutter and avoiding inter-panel crossings."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related elements (full image, searched patch indication via red rectangles, zoomed patch view, and the associated question/answer text) are grouped tightly within each panel. This matches the caption’s purpose of showing searched patches and resolution per example."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Panels are laid out on a clear grid with consistent bounding boxes and internal structure (image area above, QA text below). Minor variation in internal crop sizes and annotation placement exists but does not significantly harm readability."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 3.0,
+              "reason": "Main components (the images and red search rectangles) are visually prominent, and panel borders help separation. Still, the figure lacks strong visual emphasis to guide attention to the most important examples or to the key ‘searched patches’ beyond the red rectangles; all panels have similar weight."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between panels and between images and text within panels. Some panels are annotation-dense (multiple rectangles/arrows and ‘Union’ text), which slightly reduces breathing room but remains legible."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Searched regions are consistently indicated with red rectangles, and the resolution text is presented consistently. Panel styling (rounded borders, QA text formatting) is broadly uniform, though some panels introduce extra labels (e.g., 'Union', error-analysis notes) that vary in color and style and are less consistent with the core ‘examples of searched patches’ framing."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 2.0,
+              "reason": "The figure mainly uses conventional visual marks (red rectangles) to concretize the abstract notion of “searched patches,” consistent with the summary/caption. Beyond basic annotation and a simple “Union” label, it does not replace core abstract concepts (tree search, backtracking, confidence-based ranking) with distinctive icons/symbol systems; the depiction remains largely literal (example images + highlighted regions)."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "Compared to a generic qualitative-results grid, the figure adds some stylistic differentiation through grouped panels (e.g., single/multiple cues and error examples), resolution callouts, and linking zoom-ins to searched regions, which aligns with the paper’s emphasis on iterative zooming. However, the visual language is still close to common CV-paper templates (image thumbnails, colored boxes, brief text Q/A), without a notably unique illustrative style."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific claim—test-time exploratory zooming—by showing high-resolution images, multiple sequential searched patches (red rectangles), zoomed-in crops connected to their source regions, and curated cases including error analysis. This is more purpose-fit than a uniform before/after layout and supports the intended qualitative search-trace storytelling described in the summary."
+            }
+          ]
+        },
+        "weighted_total": 3.238
+      }
+    },
+    {
+      "figure_file": "ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p1__score0.95.png",
+      "caption": "Figure 2: Zoom Eye enables MLLMs to (a) answer the question directly when the visual information is adequate, (b) zoom in gradually for a closer examination, and (c) zoom out to the previous view and explore other regions if the desired information is not initially found.",
+      "scores": {
+        "Informativeness": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Fidelity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure depicts an inference-time zoom-in/zoom-out exploration trace over image regions with patch numbering and a backtracking path, which aligns with the summary’s image-as-tree + iterative search/backtracking behavior. It does not introduce new training components or novel architectural modules. However, it includes concrete example answer tokens/labels (e.g., animal name, colors) and a specific trace visualization that are not explicitly described in the summary beyond being ‘qualitative search traces’; these are acceptable illustrative elements and do not alter the core method."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 4.0,
+              "reason": "The relationships shown—starting from a broader view, zooming into finer patches, and zooming out/backtracking to explore alternative regions when evidence is insufficient—match the summarized control flow (visit node → expand children if needed → return to alternatives via frontier/backtracking → stop when confident). The figure does not explicitly show the confidence-based ranking/frontier queue or stopping threshold, so it is incomplete but not contradictory to the described relations."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 3.0,
+              "reason": "Major behaviors are labeled consistently with the summary (‘zoom in’ via node edges; ‘zoom out’ via backtracking). However, the figure uses generic terms like ‘Node Edge’ and ‘Node backtracking’ and does not label key named components from the summary (e.g., Zoom Eye, tree construction T, frontier Q, ranking R, stopping S, Local vs Global+Local inputs). This is not incorrect labeling, but it underspecifies the method-specific nomenclature emphasized in the paper summary."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the main behavioral contribution described in the summary/caption: direct answering when sufficient evidence exists (a), iterative zoom-in inspection (b), and zoom-out/backtracking to explore alternative regions (c). The patch-numbering and arrow legend succinctly encodes the tree-search trajectory without delving into low-level scoring/math details, keeping focus on the core ‘image-as-tree + search’ concept."
+            },
+            {
+              "question": "contextual_match",
+              "score": 4.0,
+              "reason": "Given the caption and the paper summary, the figure functions well as a supplementary illustration of the inference-time exploration loop: it visually shows successive cropped views, step order, and backtracking. The legend clarifies the meaning of patch numbers and different edge types (zoom-in vs zoom-out), which aligns with the described hierarchical tree and search behavior, making it easy to map from text to diagram."
+            },
+            {
+              "question": "redundancy",
+              "score": 3.0,
+              "reason": "Most elements support the core idea, but there is mild redundancy/extra visual detail: multiple thumbnails of similar regions and the inclusion of full Q/A examples (e.g., color/animal questions and final answers like 'Red', 'Dove', 'Orange') add illustrative context but are not strictly necessary to convey the mechanism. These do not contradict the summary, yet they slightly increase visual density relative to the central algorithmic schematic."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.857,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure’s process is primarily conveyed left-to-right via sequential patch panels connected by arrows, matching the intended iterative zooming/backtracking narrative (answer directly vs. zoom in vs. zoom out and explore). The overall reading order is mostly clear, though the multi-row trace in (c) introduces a secondary top-to-bottom component."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 3.0,
+              "reason": "Most arrow connections are clean, but the longer connecting lines in the multi-step trace (c) create visual entanglement and near-crossings between rows (especially where transitions jump between different patch positions). This slightly impairs trace readability, which is central to illustrating zoom-in/zoom-out behavior."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are grouped: (a), (b), and (c) are separated into coherent regions; within each, the patch sequence panels are adjacent and connected. The legend explaining patch number / zoom-in edge / backtracking edge is placed near the trace it explains, supporting interpretation of the exploration behavior."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Patch panels are arranged in neat rows/columns with consistent sizing and spacing, and the step indicators (numbered circles) are placed consistently near corresponding patches. Some transitions involve diagonal jumps, but the underlying grid alignment is largely maintained."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 3.0,
+              "reason": "The main components (a)/(b)/(c) are labeled and separated, but within (c) the most important story element—the active search trajectory with zoom-in/backtracking—does not stand out strongly relative to the many similar-looking patch thumbnails. Greater emphasis (e.g., stronger highlight of the current node/trajectory) would better foreground the core mechanism."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is sufficient whitespace between major blocks and between most patch panels, preventing clutter. However, in (c) some arrows/lines run close to patch borders and the dashed backtracking path, slightly reducing visual breathing room in the densest area."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Similar roles are depicted consistently: image views are rounded rectangles; progression steps use uniform numbered circles; zoom-in uses solid arrows and zoom-out/backtracking uses dashed red arrows, reinforced by a legend. This consistency supports the intended interpretation of iterative zooming and backtracking."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 3.0,
+              "reason": "The figure concretizes the abstract tree-search idea using numbered patches, arrows for zoom-in/out, and dashed backtracking paths, which aligns with the summary’s image-as-tree and search-trajectory concepts. However, it relies mostly on standard flow/trace visual conventions rather than richer symbolic metaphors; the only notable iconography is the small answer tokens (e.g., “Red,” “Dove,” “Orange”) and the red-rectangle region indication."
+            },
+            {
+              "question": "novelty",
+              "score": 3.0,
+              "reason": "Showing gradual zoom-in and explicit zoom-out/backtracking as a visual trace is somewhat distinctive compared to common single-pass MLLM figure templates, and it directly reflects the paper’s core inference-time exploration claim. Still, the overall style (panelized examples, arrows, numbered steps, legend) is fairly standard for method-behavior illustrations and does not exhibit a highly unique visual language."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the method’s behavior: it separates cases (a) direct answer, (b) progressive zoom-in, and (c) backtracking to alternate regions, matching the caption and the summary’s emphasis on iterative zooming and frontier-based exploration. The inclusion of a legend explaining patch numbers and zoom/backtracking edges supports the specific algorithmic narrative rather than a generic pipeline diagram."
+            }
+          ]
+        },
+        "weighted_total": 2.905
+      }
+    },
+    {
+      "figure_file": "ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p0__score1.00.png",
+      "caption": "Figure 1: Top: When dealing with a high-resolution image, MLLMs effectively perceive the dominant objects but often fail to recognize finer details, highlighting the need for vision-level reasoning. Bottom: Applied with Zoom Eye, MLLMs could perform vision-level reasoning, allowed to explore the image details until they can answer the question.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 3.0,
+              "reason": "The figure captures the key high-level motivation and the central mechanism described in the summary: conventional MLLM missing fine details vs Zoom Eye performing iterative zoom-based evidence gathering. It also conveys patch subdivision into a small tree (4-way split) and confidence-guided selection (shown as per-patch confidence values and choosing a patch to zoom). However, several core method components from the summary are not explicitly represented: the formal node/bounding-box definition b_t, the frontier/priority container Q and explicit backtracking behavior, the two input modes (Local vs Global+Local with red-rectangle + AnyRes), and the stopping criterion based on logits-ratio threshold τ. Thus it covers the concept but omits multiple major components/formalities."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "Without reading the paper, a reader can infer the operating principle: start with the full image, ask a question, realize the model cannot answer a fine-detail query, split the image into patches, estimate confidence for each patch, zoom into the most promising region, and repeat until the answer becomes confident. The figure’s dialogue bubbles and confidence list make the iterative exploration loop understandable. What is less clear standalone is the exact search procedure (e.g., how the frontier is maintained, whether/when the method backtracks) and what precisely the confidence computation is (logits ratio/threshold)."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure serves as a motivating overview and qualitative trace rather than a summary of the paper end-to-end. It does not include broader method variants (Local vs Global+Local inputs), formal algorithmic details (ranking function R, container Q, stopping rule S with τ/logits ratio), nor the empirical claim of vision-level test-time scaling with depth/steps and benchmark evidence. Therefore it is not a complete summary of the paper from beginning to end."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1",
+              "score": 4.0,
+              "reason": "The figure mainly illustrates the paper’s stated motivation (conventional MLLM misses fine details) and the Zoom Eye behavior (iterative zooming into patches until confident). It shows patch subdivision into 4 sub-patches and confidence-based patch choice, which are explicitly in the summary. However, it introduces specific per-patch numeric confidence values and a particular selection (e.g., “Choose patch 3”) without tying them to the summarized logits-ratio/threshold mechanism; these look like illustrative instantiations rather than documented formulas, so they are minor potential hallucinated specifics but not core-method-altering."
+            },
+            {
+              "question": "2.2",
+              "score": 5.0,
+              "reason": "Relationships are consistent with the summary: start from the full image, assess ability/confidence, subdivide into 4 equal patches (image-as-tree), compute/elicited confidence to rank/select the next patch to zoom into, and iterate until the model can answer. The depicted loop of zoom-in with repeated confidence checks matches the described search control and stopping-by-confidence idea at a conceptual level."
+            },
+            {
+              "question": "2.3",
+              "score": 4.0,
+              "reason": "Major labels align with the summary and caption: 'Conventional MLLM' vs 'MLLM w/ Zoom Eye', emphasizing vision-level reasoning via exploration/zooming. However, the figure does not explicitly label key named components from the summary (e.g., tree T, frontier Q, ranking R, stopping S, Local vs Global+Local input), and instead uses generic phrases like 'Calculate confidence' and 'Choose patch 3', which are directionally correct but less faithful to the paper’s component naming."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the paper’s main contribution: contrasting fixed single-pass perception (top, conventional MLLM misses fine detail like the boat number) with Zoom Eye’s iterative zoom-and-check process (bottom). It visually conveys the central loop described in the summary—zoom into sub-patches, compute confidence, and stop when confident—without introducing unrelated method components. Readability is slightly reduced by many small callouts and annotations competing for attention."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "It functions well with the caption and summary: the top panel supports the motivation (dominant objects recognized but fine-grained details missed in high-resolution images), and the bottom panel demonstrates the intended behavior of Zoom Eye (active exploration until the model can answer). The visual evidence (patch grid, selection of a patch to zoom, confidence values per patch, and final correct answer) directly matches the described tree/patch exploration and confidence-based stopping."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "While most elements support the core idea (zooming, patch selection, confidence, and eventual answering), the figure includes several decorative/verbose components that add clutter: repeated robot icons, multiple speech/thought bubbles, and numerous arrows/labels. These do not change the claimed method but make the layout busier and can slow scanning, especially in the bottom panel where the search narrative could be conveyed with fewer annotations."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.571,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure is organized in a clear top-to-bottom progression (top: Conventional MLLM; bottom: MLLM w/ Zoom Eye), matching the caption’s contrast. Within each band, the narrative generally flows left-to-right from image/zoom cue to question/answer bubbles, though the bottom trace has some bidirectional cues (e.g., multiple callouts around patch selection) that slightly weakens strict directionality."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 3.0,
+              "reason": "Connection lines mostly avoid heavy crossings, but in the Zoom Eye portion several dashed/orange guidance lines and arrows converge around the patch grid and subsequent patch thumbnails, creating mild visual clutter and some near-overlaps that can be read as crossings in dense areas."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are placed near each other: the patch grid is directly above the candidate patch thumbnails; confidence annotations are adjacent to the patch-choice callout; question/answer bubbles are placed near the relevant image views. Some auxiliary callouts (e.g., confidence calculation text and thought bubbles) are farther from the exact step they reference, but still within the local region of the process."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 3.0,
+              "reason": "The major image panels are neatly stacked and the patch grid is aligned, but many annotations (speech/thought bubbles, small icons, and confidence text) are placed with irregular offsets and do not adhere strongly to an invisible grid, reducing overall geometric neatness."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The two main conditions (Conventional MLLM vs MLLM w/ Zoom Eye) are clearly separated by position and headings, and key outcomes are emphasized with large answer bubbles and green check/red cross markers. However, within the Zoom Eye trace, the main loop steps (zoom/select/answer) compete visually with numerous callouts, slightly diluting emphasis on the central mechanism."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "There is adequate whitespace between the top and bottom sections, but inside the Zoom Eye section elements are tightly packed (patch thumbnails, multiple bubbles, and confidence list), with limited margins that increase perceived clutter and reduce readability."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles use consistent visual language: questions/answers are consistently shown as blue speech bubbles; correctness uses consistent green check/red cross; patch-related cues use consistent orange dashed lines/rectangles. Minor inconsistencies arise from mixed annotation styles (thought bubbles vs speech bubbles vs plain text labels) for conceptually similar 'reasoning/decision' notes."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces several abstract algorithmic ideas with concrete visual metaphors that align with the summary: zoom-in evidence gathering is shown via magnified insets/red ROI-style focus, the image-as-tree is conveyed through a patch grid that branches into sub-patches, and the iterative search/backtracking is suggested by arrows and a stepwise traversal. Confidence-driven control is externalized as explicit ‘confidence’ values next to candidate patches and conversational bubbles like ‘Calculate confidence’ / ‘Could I answer now?’, making an otherwise abstract stopping/ranking mechanism tangible. This is more metaphorical/iconic than a typical flowchart, though it still relies heavily on text callouts rather than purely symbolic encoding."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 3.0,
+              "reason": "The overall look is moderately distinctive: it blends a two-row ‘before/after’ narrative (conventional MLLM vs MLLM with Zoom Eye) with a comic-like dialogue overlay and an illustrative search trace. However, the core visual language (boxed patches, arrows, callouts, check/cross outcome markers) remains close to common ML method-illustration templates. It communicates clearly but does not introduce a particularly unique visual style beyond the speech-bubble presentation."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific message (per summary/caption): it directly contrasts fixed single-pass perception against iterative zoom-based exploration, and the bottom panel is structured around the hierarchical patch subdivision and a search trajectory with confidence-based selection and termination (‘could I answer now?’). This breaks from a uniform ‘pipeline block diagram’ by using a narrative progression (question → explore patches → accumulate evidence → answer), which is well-suited to conveying vision-level test-time scaling and qualitative traces."
+            }
+          ]
+        },
+        "weighted_total": 3.714
+      }
+    }
+  ]
+}

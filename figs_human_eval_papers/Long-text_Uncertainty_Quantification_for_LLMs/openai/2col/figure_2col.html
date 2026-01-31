@@ -1,0 +1,269 @@
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Overview of L for long-form LLM generation</title>
+<style>
+  :root{
+    --w: 1800px;
+    --h: 1200px;
+    --pad: 40px;
+    --caption-h: 130px;
+
+    --ink: #1f2937;
+    --muted: #4b5563;
+    --lite: #6b7280;
+
+    --panel: #ffffff;
+    --panel2: #fbfdff;
+    --stroke: #cbd5e1;
+    --stroke2:#b6c2d1;
+
+    --accent:#2563eb;
+    --accent2:#0ea5e9;
+    --warn:#b45309;
+    --good:#047857;
+    --bad:#b91c1c;
+
+    --bg:#ffffff;
+  }
+
+  html, body { margin:0; padding:0; background: var(--bg); }
+  #figure-root{
+    width: var(--w);
+    height: var(--h);
+    margin: 0 auto;
+    position: relative;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #fff;
+  }
+  .caption{
+    position:absolute;
+    left: 40px;
+    right: 40px;
+    bottom: 24px;
+    height: calc(var(--caption-h) - 24px);
+    padding-top: 10px;
+    border-top: 1px solid #e5e7eb;
+    color: #111827;
+    font-size: 18px;
+    line-height: 1.25;
+  }
+  .caption .label{
+    font-weight: 700;
+    margin-right: 10px;
+  }
+
+  /* SVG text colors MUST use fill (not color) */
+  svg text { font-family: Arial, Helvetica, sans-serif; }
+  .t-title{ font-size: 26px; font-weight: 700; fill: var(--ink); }
+  .t-sub{ font-size: 18px; fill: var(--muted); }
+  .t-h{ font-size: 20px; font-weight: 700; fill: var(--ink); }
+  .t{ font-size: 18px; fill: var(--ink); }
+  .t-small{ font-size: 16px; fill: var(--muted); }
+  .t-mono{ font-size: 16px; fill: var(--ink); font-family: "Arial", Helvetica, sans-serif; }
+  .t-math{ font-size: 17px; fill: var(--ink); }
+  .t-muted{ font-size: 16px; fill: var(--lite); }
+
+  .box{ fill: var(--panel); stroke: var(--stroke); stroke-width: 2; }
+  .box2{ fill: var(--panel2); stroke: var(--stroke2); stroke-width: 2; }
+  .box-accent{ fill: #f0f7ff; stroke: #9dc3ff; stroke-width: 2; }
+  .pill{ fill: #eef2ff; stroke: #c7d2fe; stroke-width: 2; }
+  .pill2{ fill:#ecfeff; stroke:#a5f3fc; stroke-width: 2; }
+  .note{ fill:#fff7ed; stroke:#fed7aa; stroke-width: 2; }
+
+  .arrow{ stroke: #334155; stroke-width: 2.5; fill: none; }
+  .arrowThin{ stroke: #475569; stroke-width: 2; fill: none; }
+  .arrowAccent{ stroke: var(--accent); stroke-width: 3; fill: none; }
+  .arrowDashed{ stroke: #64748b; stroke-width: 2.5; fill: none; stroke-dasharray: 7 7; }
+
+  .divider{ stroke:#e5e7eb; stroke-width:2; }
+
+  .badge{ fill:#0f172a; }
+  .badgeText{ fill:#ffffff; font-size:14px; font-weight:700; }
+  .legendKey{ stroke:#64748b; stroke-width:2; }
+  .legendText{ fill: var(--muted); font-size: 16px; }
+
+  .miniLine{ stroke:#9ca3af; stroke-width:2; }
+  .miniLineBold{ stroke:#2563eb; stroke-width:3; }
+  .miniDot{ fill:#2563eb; }
+  .miniDot2{ fill:#b91c1c; }
+  .miniDot3{ fill:#047857; }
+
+  .calloutText{ fill: var(--muted); font-size: 16px; }
+</style>
+</head>
+<body>
+<div id="figure-root">
+  <svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200" aria-label="Overview of L (Long-text Uncertainty Quantification) diagram">
+    <defs>
+      <marker id="arrowHead" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"></path>
+      </marker>
+      <marker id="arrowHeadAccent" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"></path>
+      </marker>
+    </defs>
+
+    <!-- Header -->
+    <text x="40" y="70" class="t-title">L (Long-text Uncertainty Quantification) for Long-form LLM Generation</text>
+    <text x="40" y="104" class="t-sub">Black-box, sampling-based UQ using sentence-level cross-sample entailment (NLI)</text>
+
+    <!-- Two-column layout guide (not visible, but use a subtle divider) -->
+    <line x1="900" y1="130" x2="900" y2="1050" class="divider"></line>
+
+    <!-- LEFT COLUMN: Sampling & splitting -->
+    <!-- User Query -->
+    <rect x="60" y="150" width="780" height="120" rx="14" class="box2"></rect>
+    <rect x="75" y="165" width="120" height="28" rx="14" class="pill"></rect>
+    <text x="135" y="185" text-anchor="middle" class="badgeText" fill="#ffffff">INPUT</text>
+
+    <text x="220" y="190" class="t-h">User query x</text>
+    <text x="220" y="220" class="t">Prompt the LLM (API/black-box access)</text>
+    <text x="220" y="246" class="t-small">Goal: estimate uncertainty without logits; long-form answers (≥100 words)</text>
+
+    <!-- Stochastic sampling -->
+    <rect x="60" y="305" width="780" height="210" rx="14" class="box"></rect>
+    <rect x="75" y="320" width="190" height="28" rx="14" class="pill2"></rect>
+    <text x="170" y="340" text-anchor="middle" class="badgeText" fill="#ffffff">SAMPLING</text>
+
+    <text x="290" y="345" class="t-h">Generate n+1 stochastic responses</text>
+    <text x="290" y="375" class="t-math">R = {r<tspan baseline-shift="sub" font-size="13">0</tspan>, r<tspan baseline-shift="sub" font-size="13">1</tspan>, ..., r<tspan baseline-shift="sub" font-size="13">n</tspan>}</text>
+
+    <!-- Mini response stack -->
+    <rect x="100" y="400" width="250" height="36" rx="8" class="box2"></rect>
+    <text x="120" y="424" class="t-small">r0 (candidate response)</text>
+    <rect x="115" y="445" width="250" height="36" rx="8" class="box2"></rect>
+    <text x="135" y="469" class="t-small">r1 (sample)</text>
+    <rect x="130" y="490" width="250" height="36" rx="8" class="box2"></rect>
+    <text x="150" y="514" class="t-small">r2 (sample)</text>
+    <text x="390" y="462" class="t-muted">…</text>
+    <rect x="165" y="540" width="250" height="36" rx="8" class="box2"></rect>
+    <text x="185" y="564" class="t-small">rn (sample)</text>
+
+    <text x="420" y="420" class="t-small">Sampling diversity reflects epistemic uncertainty:</text>
+    <text x="420" y="444" class="t-small">more disagreement across samples → higher uncertainty</text>
+
+    <!-- Split into sentences -->
+    <rect x="60" y="545" width="780" height="250" rx="14" class="box"></rect>
+    <rect x="75" y="560" width="240" height="28" rx="14" class="pill"></rect>
+    <text x="195" y="580" text-anchor="middle" class="badgeText" fill="#ffffff">SENTENCE SPLIT</text>
+
+    <text x="340" y="585" class="t-h">Split each response into sentences</text>
+    <text x="340" y="615" class="t-small">For each response r: r → {s1, s2, …, sK}</text>
+
+    <!-- Sentence fragments -->
+    <rect x="110" y="645" width="650" height="42" rx="10" class="box2"></rect>
+    <text x="130" y="672" class="t-small">r0: s1: “Claim A …”   |   s2: “Claim B …”   |   s3: “Claim C …”</text>
+    <rect x="130" y="700" width="650" height="42" rx="10" class="box2"></rect>
+    <text x="150" y="727" class="t-small">r1: s1: “Claim A …”   |   s2: “Claim B′ …”  |   s3: “Claim D …”</text>
+    <rect x="150" y="755" width="650" height="42" rx="10" class="box2"></rect>
+    <text x="170" y="782" class="t-small">r2: s1: “Claim A …”   |   s2: “Claim B …”   |   s3: “Claim E …”</text>
+
+    <!-- Optional variations -->
+    <rect x="60" y="820" width="780" height="195" rx="14" class="note"></rect>
+    <text x="90" y="855" class="t-h">Optional variations</text>
+
+    <rect x="90" y="875" width="330" height="110" rx="12" class="box2"></rect>
+    <text x="110" y="905" class="t-h">L-A (atomic facts)</text>
+    <text x="110" y="932" class="t-small">Break r into atomic fact pieces</text>
+    <text x="110" y="956" class="t-small">{a1, a2, …} then apply entailment checks</text>
+
+    <rect x="450" y="875" width="360" height="110" rx="12" class="box2"></rect>
+    <text x="470" y="905" class="t-h">L-P (premise length mitigation)</text>
+    <text x="470" y="932" class="t-small">For each sentence, take maximum entailment</text>
+    <text x="470" y="956" class="t-small">against shorter premises (sentence-to-sentence)</text>
+
+    <!-- Arrows in left column -->
+    <path d="M 450 270 L 450 305" class="arrow" marker-end="url(#arrowHead)"></path>
+    <path d="M 450 515 L 450 545" class="arrow" marker-end="url(#arrowHead)"></path>
+    <path d="M 450 795 L 450 820" class="arrowThin" marker-end="url(#arrowHead)"></path>
+
+    <!-- RIGHT COLUMN: NLI comparisons, confidence and uncertainty -->
+    <rect x="960" y="150" width="780" height="250" rx="14" class="box"></rect>
+    <rect x="975" y="165" width="210" height="28" rx="14" class="pill2"></rect>
+    <text x="1080" y="185" text-anchor="middle" class="badgeText" fill="#ffffff">NLI SCORING</text>
+
+    <text x="1210" y="190" class="t-h">Cross-sample entailment comparison</text>
+    <text x="1210" y="220" class="t-small">For each sentence s in response r, compare against each other sample r′ ∈ R \ {r}</text>
+
+    <!-- NLI block -->
+    <rect x="990" y="245" width="740" height="135" rx="12" class="box2"></rect>
+    <text x="1015" y="275" class="t">NLI model (entailment vs contradiction logits)</text>
+    <text x="1015" y="304" class="t-math">P(entail | s, r′) = exp(l<tspan baseline-shift="sub" font-size="13">ent</tspan>) / (exp(l<tspan baseline-shift="sub" font-size="13">ent</tspan>) + exp(l<tspan baseline-shift="sub" font-size="13">con</tspan>))</text>
+    <text x="1015" y="332" class="t-small">Neutral is ignored; focus on support/inconsistency</text>
+
+    <!-- Visualization: sentence compared to other samples -->
+    <rect x="990" y="415" width="740" height="265" rx="14" class="box"></rect>
+    <rect x="1005" y="430" width="265" height="28" rx="14" class="pill"></rect>
+    <text x="1137" y="450" text-anchor="middle" class="badgeText" fill="#ffffff">PAIRWISE SUPPORT</text>
+
+    <text x="1290" y="455" class="t-h">Compute similarity per response pair</text>
+    <text x="1290" y="484" class="t-math">S(r, r′) = (1/K) ∑<tspan baseline-shift="sub" font-size="13">s∈r</tspan> P(entail | s, r′)</text>
+
+    <!-- mini diagram -->
+    <rect x="1020" y="505" width="280" height="150" rx="12" class="box2"></rect>
+    <text x="1040" y="534" class="t-small">Hypothesis sentences (from r):</text>
+    <rect x="1040" y="548" width="240" height="26" rx="7" class="box"></rect>
+    <text x="1054" y="566" class="t-small">s1</text>
+    <rect x="1040" y="580" width="240" height="26" rx="7" class="box"></rect>
+    <text x="1054" y="598" class="t-small">s2</text>
+    <rect x="1040" y="612" width="240" height="26" rx="7" class="box"></rect>
+    <text x="1054" y="630" class="t-small">s3</text>
+
+    <rect x="1400" y="505" width="300" height="150" rx="12" class="box2"></rect>
+    <text x="1420" y="534" class="t-small">Premise (reference) response r′:</text>
+    <rect x="1420" y="552" width="260" height="78" rx="10" class="box"></rect>
+    <text x="1436" y="578" class="t-small">r′ (long text)</text>
+    <text x="1436" y="604" class="t-muted">“... supports or contradicts ...”</text>
+
+    <path d="M 1305 578 L 1395 578" class="arrowAccent" marker-end="url(#arrowHeadAccent)"></path>
+    <text x="1318" y="560" class="calloutText">NLI</text>
+
+    <!-- Confidence and uncertainty -->
+    <rect x="960" y="705" width="780" height="310" rx="14" class="box-accent"></rect>
+    <rect x="975" y="720" width="265" height="28" rx="14" class="pill"></rect>
+    <text x="1108" y="740" text-anchor="middle" class="badgeText" fill="#ffffff">AGGREGATION</text>
+
+    <text x="1260" y="740" class="t-h">Response confidence &amp; query-level uncertainty</text>
+
+    <rect x="990" y="770" width="740" height="110" rx="12" class="box2"></rect>
+    <text x="1015" y="802" class="t">Confidence for a specific response r</text>
+    <text x="1015" y="832" class="t-math">C(x, r) = (1/n) ∑<tspan baseline-shift="sub" font-size="13">r′∈R\{r}</tspan> S(r, r′)</text>
+    <text x="1015" y="858" class="t-small">Higher C → more supported by other samples (more consistent)</text>
+
+    <rect x="990" y="895" width="740" height="110" rx="12" class="box2"></rect>
+    <text x="1015" y="927" class="t">Uncertainty for the query x (across all responses)</text>
+    <text x="1015" y="957" class="t-math">U(x) = (1/(n+1)) ∑<tspan baseline-shift="sub" font-size="13">r∈R</tspan> (1 − C(x, r))</text>
+    <text x="1015" y="983" class="t-small">Higher U → greater cross-sample inconsistency</text>
+
+    <!-- Interpretation -->
+    <rect x="960" y="1030" width="780" height="110" rx="14" class="box"></rect>
+    <text x="990" y="1062" class="t-h">Interpretation for long-form factuality</text>
+
+    <!-- small legend -->
+    <line x1="995" y1="1082" x2="1045" y2="1082" class="miniLineBold"></line>
+    <circle cx="1065" cy="1082" r="6" class="miniDot3"></circle>
+    <text x="1090" y="1087" class="legendText">High entailment/support across samples → high confidence, lower uncertainty</text>
+
+    <line x1="995" y1="1112" x2="1045" y2="1112" class="miniLine"></line>
+    <circle cx="1065" cy="1112" r="6" class="miniDot2"></circle>
+    <text x="1090" y="1117" class="legendText">Contradictions / weak support → inconsistency → higher uncertainty and lower factuality</text>
+
+    <!-- Connecting arrows from left column to right column -->
+    <path d="M 840 410 C 900 410, 900 240, 960 240" class="arrow" marker-end="url(#arrowHead)"></path>
+    <text x="860" y="330" class="t-muted">responses R</text>
+
+    <path d="M 840 675 C 910 675, 910 470, 960 470" class="arrow" marker-end="url(#arrowHead)"></path>
+    <text x="860" y="605" class="t-muted">sentences s</text>
+
+    <path d="M 1740 660 L 1740 705" class="arrowDashed" marker-end="url(#arrowHead)"></path>
+    <text x="1480" y="692" class="t-muted">aggregate across pairs and samples</text>
+  </svg>
+
+  <div class="caption">
+    <span class="label">Figure:</span>
+    Overview of L (Long-text Uncertainty Quantification) for long-form LLM generation: multiple stochastic responses are split into sentences and compared via NLI entailment against other samples to compute response confidence and query-level uncertainty, where higher cross-sample inconsistency indicates greater uncertainty and lower factuality.
+  </div>
+</div>
+</body>
+</html>

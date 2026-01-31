@@ -1,0 +1,261 @@
+{
+  "paper_name": "WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model",
+  "evaluated_at": "2026-01-12T04:08:02.809117",
+  "figure_summary": "## 1. Core Contributions\n- Proposes **WebEvolver**, a self-improving web-agent framework that **co-trains an Agent LLM and a World Model LLM** rather than relying solely on real-environment rollouts.\n- Introduces a **co-evolving World Model** that predicts **next-step web observations** from the current observation and action, leveraging pretrained web knowledge and being refined with collected trajectories.\n- Uses the World Model in **two complementary roles**: (i) a **synthetic web server** to generate diverse training trajectories for continued policy improvement, and (ii) an **inference-time look-ahead simulator** to choose actions without expensive real interactions.\n- Claims empirical gains (≈10% over a self-evolving baseline) across multiple **real-world web benchmarks**, without distillation from stronger proprietary models.\n\n## 2. Method Components & Relations relevant to figures\n- **Real-world web environment (POMDP framing)**  \n  - Hidden state \\(s_t\\), observation \\(o_t=\\Omega(s_t)\\) (visible web content, represented via accessibility tree), action \\(a_t\\) (click/type/goback/scroll/stop), deterministic transition \\(s_{t+1}=T(s_t,a_t)\\).\n- **Agent policy model (LLM Agent)**  \n  - Generates reasoning \\(h_t\\) and actions \\(a_t\\) conditioned on instructions \\(I\\), query \\(q\\), and interaction history \\((o_{1:t}, h_{1:t-1}, a_{1:t-1})\\):  \n    \\((h_t,a_t)\\sim \\pi_\\theta(\\cdot \\mid I,q,o_{1:t},h_{1:t-1},a_{1:t-1})\\).\n  - Produces trajectories \\(\\tau=(o_1,h_1,a_1,\\dots,o_T,h_T,a_T)\\) and is improved via iterative self-training (described as SFT with trajectory selection rather than end-to-end RL).\n- **World Model (LLM world simulator)**\n  - Trained to **predict next observation** \\(\\hat{o}_{t+1}\\) given current observation \\(o_t\\) and action \\(a_t\\) (and implicitly the task/query context in the framework depiction).\n  - **Co-evolves** with the agent by being fine-tuned on trajectories collected from agent–environment interactions.\n- **Synthetic trajectory generation (training-time use)**\n  - World Model acts as a **virtual web engine** to roll out multi-step synthetic interactions, producing synthetic \\((\\hat{o}_{t}, a_t)\\) sequences used to augment/self-instruct agent training data (with tolerance for hallucinated states, per text).\n- **World-Model Look-Ahead (WMLA) (inference-time use)**\n  - For a candidate action set \\(\\{a_1,\\dots,a_k\\}\\), the agent/world model simulate futures (depth repeated \\(d\\) times in Figure 1), then a **scoring function/LLM scorer** assigns scores \\(\\{s_1,\\dots,s_k\\}\\) and selects \\(a^*\\) to execute in the real environment.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To visualize the **closed-loop co-training setup**: how **real trajectories** from the web environment and **synthetic trajectories** from the World Model jointly support continued agent self-improvement.\n- To clarify the **dual operational modes** of the World Model—**data generation for training** and **look-ahead planning for inference**—and how each interfaces with the agent policy.\n- To depict the **dataflow and decision flow**: observation/action → world-model prediction → (training augmentation or inference-time scoring) → updated/selected action, emphasizing reduced reliance on costly real web interactions.\n\n## 4. What Figures are NOT intended to show\n- Not meant to provide a **full algorithmic specification** (e.g., exact losses, optimization schedules, rejection/selection criteria, or detailed training pipeline beyond “co-train” and “trajectory selection”).\n- Not meant to prove **factual realism** of simulated pages or guarantee that world-model rollouts match true environment transitions; the paper explicitly tolerates hallucinations during training.\n- Not meant to establish benchmark results, statistical significance, or ablation evidence; performance claims are stated in text, not demonstrated by these overview illustrations.\n- Not meant to detail the **scoring function** implementation (e.g., whether it is the agent itself, a separate LLM, or how prompts/rewards are constructed), only that candidate actions are scored and the best is chosen.",
+  "figure_evaluations": [
+    {
+      "figure_file": "WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p0__score1.00.png",
+      "caption": "Figure 1: Overview of WebEvolver – A Self-Improving Framework with World-Model Look-Ahead. Our framework co-trains a world model with the agent to predict next-step observations based on current states and actions. The world model serves as a virtual web engine, which generates synthetic trajectories for policy training and enables look-ahead planning to select optimal actions during inference.",
+      "scores": {
+        "Informativeness": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure captures the main components and dataflows described in the summary: an LLM Agent interacting with a real-world web environment to collect training trajectories; a co-trained World Model that predicts next-step observations and generates synthetic trajectories for training; and an inference-time World-Model Look-Ahead (WMLA) loop that simulates futures for candidate actions {a1…ak} repeated depth d times, then applies a scoring function producing scores {s1…sk} to select a*. However, it omits most of the paper’s more formal framing and notation mentioned in the summary (POMDP variables s_t, o_t=Ω(s_t), deterministic transition, trajectory tuple with h_t reasoning, and the explicit next-observation prediction dependency \\hat{o}_{t+1} from (o_t,a_t)). Those omissions reduce coverage of the formalism but do not break the high-level method depiction."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 5.0,
+              "reason": "Even without the paper, the figure conveys the operating principle clearly: (top) a self-improving training loop where real-environment trajectories and world-model-generated synthetic trajectories support continued agent training; (bottom) an inference-time look-ahead procedure where the agent proposes multiple candidate actions, the world model simulates resulting observations (possibly multi-step via repeating d times), and a scoring function selects the best action a*. The dual roles of the world model (synthetic web engine for training and look-ahead simulator for inference) are visually explicit."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 3.0,
+              "reason": "As an overview figure, it summarizes the core contributions in the summary (co-training agent + world model; synthetic trajectory generation; inference-time look-ahead with scoring). But it does not attempt to cover other end-to-end paper content: it does not include the stated empirical gains (~10% over baseline) or benchmark context, and it omits procedural details that the summary notes are not meant to be fully specified in figures (e.g., trajectory selection criteria, exact training schedule). Thus it is complete for the conceptual framework, but not for ‘beginning-to-end’ paper content such as results and experimental scope."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 4.0,
+              "reason": "The figure sticks to the high-level components described in the summary: LLM Agent, Real-world Environment, World Model, Training Trajectories, Synthetic Trajectories, and inference-time look-ahead with candidate actions and scoring. It does not introduce extra losses/algorithms or benchmark results. Minor potential additions (e.g., showing a generic server/database iconography and naming the real-environment outputs as \"Training Trajectories\") are consistent with the summary’s notion of collected trajectories and do not change the core method."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 4.0,
+              "reason": "Relationships largely match the summary: real environment produces trajectories used to improve models; world model generates synthetic trajectories for training; and at inference, candidate actions (a1…ak) are simulated forward by repeating depth d times, producing synthetic observations that are scored to select a*. One ambiguity is that the top panel’s arrows do not explicitly show the co-training update paths (fine-tuning agent and world model on collected trajectories) as clearly as the summary states, but the depicted dataflow is not contradictory."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Key labels align with the summary and caption: \"WebEvolver\", \"LLM Agent\", \"World Model\", \"Synthetic Trajectories\", and \"World-Model Look-Ahead (WMLA)\". The inference-time elements (candidate actions a1…ak, scoring function producing s1…sk, selection of a*) are labeled consistently with the described look-ahead procedure."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the main contributions described in the summary: co-training an LLM Agent with a World Model, using real-world trajectories plus world-model–generated synthetic trajectories for self-improvement, and using world-model look-ahead at inference with action scoring. It avoids low-level training specifics (losses, filtering rules), consistent with the paper’s stated intent. Minor readability loss comes from some ambiguous/underspecified arrows (e.g., how real trajectories update the world model vs. agent) and small, icon-heavy depiction that may not clearly convey the exact dataflow without the caption."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption/text, it aligns well with the summary’s intended purpose: it shows the closed-loop between real environment interaction and synthetic trajectory generation, and separately depicts inference-time WMLA with candidate actions {a1..ak}, repeated depth d, and a scoring function producing a*. The labeling ('Real-world Environment', 'Training Trajectories', 'World Model', 'Synthetic Trajectories', 'Repeat d times', 'Scoring Function') matches the described roles. However, the world model’s core prediction target (next-step observation o_{t+1} from o_t and a_t) is only implicit; the figure uses generic 'Synthetic Observation/Trajectories' text, which may require readers to infer the next-step prediction mechanism."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The figure mostly avoids irrelevant details and sticks to the two-mode story (training-time synthetic data + inference-time look-ahead). Still, there is some decorative/icon redundancy (multiple clip-art style icons and repeated motifs) that does not add method clarity and can slightly distract from the core dataflow. The visual styling (many icons, mixed fonts, light/gray text for world model) also reduces clarity without contributing additional information."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 4.0,
+              "reason": "Both panels largely read left-to-right: LLM Agent on the left, then environment/world model in the middle, then trajectories/scoring outputs on the right. However, the top panel’s loop/back-arrow (and the diagonal 'Training Trajectories' label) introduces a mild ambiguity in primary flow compared to a strictly linear pipeline."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 4.0,
+              "reason": "Connection lines mostly avoid crossings; arrows are separated by vertical spacing between the 'real environment' and 'world model' rows. There is some visual congestion in the top panel where multiple arrows converge toward the environment and toward trajectory generation, but no severe line intersections that block interpretation."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 5.0,
+              "reason": "Functionally related modules are placed close together in accordance with the summary: the Real-world Environment is adjacent to 'Training Trajectories' in the training panel, and the World Model is directly adjacent to 'Synthetic Trajectories'/'Synthetic Observation' in both panels, reinforcing the dual roles (training-time synthetic data and inference-time look-ahead)."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 3.0,
+              "reason": "The figure uses a loose grid with left-anchored agents and right-anchored outputs, but several elements are not neatly aligned: labels and icons drift off a strict horizontal baseline (e.g., diagonal 'Training Trajectories', uneven vertical placement of world model/synthetic blocks), giving a slightly informal layout."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "Main components (LLM Agent, Real-world Environment, World Model, and the two boxed sections: training vs WMLA) are visually separated and titled, making the two operational modes stand out. The hierarchy could be stronger if the World Model and Agent were emphasized more consistently (e.g., comparable size/weight to the environment block) since co-training is central per summary."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace within each rounded rectangle panel and between major blocks. Some local crowding exists around arrows and small labels (particularly 'Training Trajectories' and the clustered icons), but it does not severely reduce readability."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 4.0,
+              "reason": "Similar roles are mostly represented consistently (agent icon reused in both panels; world model consistently shown as a node/graph icon; synthetic outputs shown as page/stack icons). Minor inconsistency arises from mixed icon styles (e.g., database/server icons vs page icons) and varied text styling (gray/italic for world model/synthetic labels) which can imply unintended emphasis differences."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces several abstract components from the summary with concrete icons: a globe labeled “www” for the real-world web environment, server/database symbols for trajectory storage, a browser-window icon for observations, and stylized network/AI icons for the LLM agent and world model. These visual metaphors map cleanly onto the summary’s agent–environment loop and world-model next-observation prediction, though the mapping remains fairly conventional rather than highly inventive."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "Visually, the diagram follows a common two-panel pipeline/flowchart style (boxes, arrows, labeled modules) widely used for ML framework overviews. While the iconography is polished and consistent, it does not present a notably unique visual style or unconventional encoding beyond standard schematic conventions described in the summary (co-training loop + inference-time look-ahead with scoring)."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific dual-use claim for the world model: the top panel separates real-trajectory collection and synthetic-trajectory generation for training, and the bottom panel explicitly depicts WMLA with candidate actions (a1…ak), “Repeat d times,” and scoring outputs (s1…sk) leading to a*. This structure directly reflects the summary’s emphasis on co-training plus inference-time look-ahead, rather than forcing everything into a generic single-stream training diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.867
+      }
+    },
+    {
+      "figure_file": "WebEvolver_Enhancing_Web_Agent_Self-Improvement_with_Co-evolving_World_Model__p2__score1.00.png",
+      "caption": "Figure 2: An illustration of the World Model trajectory synthesizing process and World Model Look-ahead for inference-time action selection.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_Content_Coverage",
+              "score": 4.0,
+              "reason": "The figure clearly covers the key components described in the summary for this captioned scope: (i) the World Model used as a synthetic web server to generate multi-step synthetic observations given actions, and (ii) inference-time World-Model Look-Ahead (WMLA) where candidate actions are simulated and then scored by an LLM scorer to select an action for the real environment. It also visually distinguishes actual observation o_t from synthetic observations o-hat. However, it omits several paper-level formal elements mentioned in the summary (e.g., explicit POMDP variables s_t, Omega, T, the policy conditioning on I/q/history, and the depth-d repeated look-ahead notation), and does not show the co-training/finetuning loop that updates the World Model using collected trajectories."
+            },
+            {
+              "question": "1.2_Standalone_Intelligibility",
+              "score": 5.0,
+              "reason": "Without reading the paper, a viewer can infer the operating principle: (top) the agent policy takes a synthetic observation and produces an action, and the World Model predicts the next synthetic observation, enabling synthetic trajectory rollout; (bottom) the agent considers multiple candidate actions, the World Model simulates outcomes for each, an LLM scorer assigns scores (illustrated as 1.0 vs 0.2), and the best action is selected. The separation between training-time synthesis and inference-time look-ahead is explicit and easy to follow from arrows, labels, and examples."
+            },
+            {
+              "question": "1.3_Completeness",
+              "score": 2.0,
+              "reason": "The figure is informative for the specific process in the caption (trajectory synthesis + look-ahead action selection) but does not summarize the paper from beginning to end. It does not depict the overall closed-loop co-training setup (real-environment data collection feeding world-model refinement and agent self-training via trajectory selection), nor any claim-level context like reduced reliance on real interactions or empirical gains across benchmarks. As such, it is not a complete end-to-end summary of the work."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1",
+              "score": 4.0,
+              "reason": "The figure largely stays within the summary’s described components: World Model generating synthetic next observations from (observation, action) and inference-time look-ahead with candidate actions and scoring. It adds concrete UI examples (Coursera page snippets, specific actions like click/type/restart) which are not explicitly mentioned in the summary but are illustrative and do not change the core method. The presence of an explicit 'LLM Scorer' box aligns with the summary’s mention of a scoring function/LLM scorer. Minor potential over-specificity: showing numeric scores (e.g., 1.0, 0.2) and a 'restart' action is not stated in the summary’s action set, but these appear as auxiliary depiction details rather than new core components."
+            },
+            {
+              "question": "2.2",
+              "score": 5.0,
+              "reason": "Relationships match the summary: (top) the World Model acts as a synthetic web server, taking prior synthetic observation and the policy’s action to produce the next synthetic observation, enabling multi-step rollout; (bottom) for inference-time look-ahead, the policy proposes candidate actions from the current actual observation, the World Model simulates future observations for each action, and an LLM-based scorer selects the best action to execute. This corresponds to the described dual roles (training-time synthetic trajectories and inference-time WMLA) and the action→prediction→scoring→selection flow."
+            },
+            {
+              "question": "2.3",
+              "score": 5.0,
+              "reason": "Major labels align with the summary’s terminology and roles: 'World Model as Synthetic Web Server: Generating Synthetic Trajectories', 'World Model Look-Ahead for Inference-time Action Selection', 'Policy', 'World Model', and 'LLM Scorer' are consistent with the described framework. The observation/action notation (o_t, \u00005hat{o}_t, a_t) is consistent with the summary’s world-model prediction setup."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is largely schematized around the main contribution described in the summary: using the World Model in two roles—(i) synthetic trajectory generation (top panel: policy action -> world model -> next synthetic observation) and (ii) inference-time look-ahead with action scoring/selection (bottom panel: candidate clicks -> simulated outcomes -> LLM scorer picks best). It focuses on core dataflow (o_t, a_t, \\hat{o}_{t+1}) rather than training-loss details. Minor clutter comes from repeated UI snippets and icons that slightly distract from the abstraction."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "Given the caption and the summary, the figure functions well as supplementary explanation: it clearly distinguishes synthetic observations (\\hat{o}) versus actual observation (o_t), shows multi-step rollout generation for training, and depicts the look-ahead process with candidate actions, simulated futures, and an LLM scorer producing scores and selecting an action. This aligns closely with the described World Model trajectory synthesis and WMLA inference-time planning."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "It mostly avoids decorative content, but there is some redundancy and minor visual clutter: repeated accessibility-tree text blocks, multiple small agent/world-model icons, and the use of check/cross markers and numeric scores that add detail without adding much conceptual structure beyond 'scoring/selecting'. These do not contradict the summary, but they reduce cleanliness and increase cognitive load."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.286,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "Both subpanels exhibit a clear left-to-right pipeline consistent with the summary’s dataflow: observation/instruction on the left, policy proposes actions, world model predicts next observation to the right (top: synthetic rollouts; bottom: look-ahead simulation and scoring leading to action choice)."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Connection lines largely avoid crossings: in the synthetic-trajectory panel, arrows form a mostly linear chain; in the look-ahead panel, multiple candidate branches are shown in parallel with minimal overlaps. There is some visual density where branching arrows and returned context meet near the policy/scorer region, but it does not create major ambiguous crossings."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related modules are clustered: policy blocks sit adjacent to their corresponding actions; world model icons are placed near the predicted next observations they generate; the LLM scorer is grouped with the look-ahead candidates it evaluates. This matches the summary’s separation between training-time synthesis and inference-time look-ahead."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major elements are aligned to an implicit grid: the two main panels are horizontally structured and vertically stacked; within each panel, observation boxes, action boxes, and model icons generally follow consistent horizontal lanes. Minor misalignments exist among small action boxes and icons in the look-ahead branches."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The two primary modes of the world model (synthetic web server vs. look-ahead inference) are clearly distinguished by large enclosing boxes and section titles, helping main components stand out. However, within the lower panel, the prominence of the key decision output (selected action) is not as visually dominant as the main section framing."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient spacing between the top and bottom sections and around the large observation boxes. The look-ahead panel is somewhat crowded due to parallel candidates, which tightens spacing between arrows, action boxes, and predicted observation boxes, but readability remains acceptable."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles use consistent visual encodings: observation boxes share a common style (dashed orange for synthetic/predicted vs. solid blue for actual), actions are shown as rounded boxes, and policy/world-model are represented repeatedly with consistent icons. Some mixed iconography (e.g., small human/score markers) introduces slight inconsistency in representing evaluation/scoring elements, though it does not alter the method structure described in the summary."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces several abstract components from the summary (agent policy, world model, scoring-based action selection) with concrete icons and compact visual tokens: small ‘AI’/agent symbols for the policy, a network-node icon for the World Model, and check/cross marks with numeric scores (e.g., 1.0 vs 0.2) to concretize the scorer’s preference during World-Model Look-Ahead. It also uses boxed snippets of accessibility-tree-like observations and action chips (‘Click [4]’, ‘type [4]’) to make the POMDP interaction tangible."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 3.0,
+              "reason": "The visual style is largely a conventional method schematic (rectangular modules, arrows, dashed boxes) typical for ML systems diagrams. However, it adds some distinctive touches aligned with the paper’s setup—explicitly showing synthetic observation boxes vs actual observation, and pairing them with repeated World Model icons to suggest rollout—giving moderate differentiation but not a highly unique aesthetic."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the specific dual-use claim in the summary by splitting into two clear panels: (top) World Model as a synthetic web server generating multi-step synthetic trajectories, and (bottom) inference-time World-Model Look-Ahead with multiple candidate actions scored and selected. This breaks from a single uniform pipeline by explicitly contrasting training-time augmentation vs inference-time planning, matching the described framework roles and data/decision flow."
+            }
+          ]
+        },
+        "weighted_total": 4.057
+      }
+    }
+  ]
+}

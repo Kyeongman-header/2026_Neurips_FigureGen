@@ -1,0 +1,554 @@
+{
+  "paper_name": "Mitigating_Hallucinations_in_Vision-Language_Models_through_Image-Guided_Head_Suppression",
+  "mode": "full",
+  "evaluated_at": "2026-01-29T05:36:12.634604",
+  "figure_evaluations": [
+    {
+      "figure_file": "Mitigating_Hallucinations_in_Vision-Language_Models_through_Image-Guided_Head_Suppression__p0__score0.95.png",
+      "caption": "Figure 1: Caption generation using LLaVA-1.5 and SPIN. LLaVA-1.5’s generated text description mentions a “chair” in the background, which is clearly a hallucinated object. SPIN mitigates hallucination while successfully identifying the objects present in the image.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Text tokenizer (language input -> text tokens/embeddings)', 'Image encoder (image -> patch visual embeddings)', 'Projector / vision-language projector (visual embeddings -> vision tokens in text embedding space)', 'Concatenation of vision tokens + text tokens', 'Language decoder (stack of transformer blocks)', 'Transformer block internal structure: Multi-Head Attention (MHA) followed by Feed-Forward Network (FFN)', 'SPIN inference-time intervention within MHA: per-query-text-token attention-head suppression', 'Flow for SPIN head scoring: current text query token q_i attends to key matrix K to form total attention A_tot = q_i K^T', 'Extraction of vision-token attention A_v from A_tot using vision-token start/end indices (I_start, I_end)', 'Head selection mechanism: compute cumulative attention to vision tokens per head (sum over A_v), keep top-k heads', 'Dynamic head mask m_i with values {1 (keep), α (suppress)} applied to heads', 'Suppression hyperparameters that must be represented: top-k (or suppressed ratio r=1-k/H), suppression factor α, and selected layers for suppression', 'Modified MHA output computation combining masked heads and output projection W_o (i.e., sum/concat of m_i·h_i then W_o)']\nContext: Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing, pages 12493–12512 November 4-9, 2025 ©2025 Association for Computational Linguistics Mitigating Hallucinations in Vision-Language Models through Image-Guided Head Suppression Sreetama Sarkar1,* Yue Che1,∗ Alex Gavin3 Peter A. Beerel1 Souvik Kundu2 1University of Southern California, Los Angeles, USA 2Intel Labs, USA 3Harvard-Westlake School, Los Angeles, USA {sreetama,yueche,pabeerel}@usc.edu souvikk.kundu@intel.com Abstract Despite their remarkable progress in multi- modal understanding tasks, large vision lan- guage models (LVLMs) often suffer from “hal- lucination”, generating texts misaligned with the visual context. Existing methods aimed at reducing hallucinations through inference time intervention incur a significant increase in latency. To mitigate this, we present SPIN, a task-agnostic attention-guided head suppres- sion strategy that can be seamlessly integrated during inference without incurring any signif- icant compute or latency overhead. We in- vestigate whether hallucination in LVLMs can be linked to specific model components. Our analysis suggests that hallucinations can be at- tributed to a dynamic subset of attention heads in each layer. Leveraging this insight, for each text query token, we selectively suppress atten- tion heads that exhibit low attention to image tokens, keeping the top-k attention heads in- tact.\n\n2.1 LVLM Preliminaries LVLMs typically comprise four key components: a text tokenizer, an image encoder, a projector, and a language decoder. The text tokenizer processes the language input by segmenting it into discrete tokens and converting them into text embeddings, henceforth referred to as text tokens. Similarly, the image encoder partitions the input image into patches and transforms them into corresponding visual embeddings. These visual embeddings are then mapped into the text embedding space through the projector, producing vision tokens. Finally, the vision and text tokens are concatenated and fed into the language decoder. The language decoder consists of a series of transformer encoder blocks, each consisting of a multi-head attention (MHA) layer followed by a feed-forward network (FFN).\n\n3 Methodology Motivational Study: LVLMs struggle with ineffi- cient image attention (Chen et al., 2024a; Liu et al., 2024d). In Figure 2, we illustrate how the current token distributes attention across preceding vision and text tokens (constituting system prompt, in- struction prompt, and generated output) averaged over all output tokens in the image caption. Our analysis reveals that in deeper layers, generated text tokens allocate <10% of their attention to vision tokens, despite vision tokens comprising ∼76-92% of the input. This imbalance causes the model to ig- nore the context provided by the visual input (taken as the “fact”), potentially leading to hallucinations. To mitigate this, for each query text token, we iden- tify a fraction of heads that allocates the least cu- mulated attention to vision tokens. We then present a training-free strategy to dynamically suppress at- tention heads, reducing the imbalance in attention and thereby enhancing model performance.\n\nSPIN Multi-Head Attention: We propose to miti- gate problematic attention heads across layers us- ing a dynamic mask mi for each attention head i. mi is obtained based on the attention of the current text query token qi ∈R1×dk to key vision tokens, having length Nv given by: Av = Atot[Istart : Iend], Atot = qiKiT (3) Here, Atot ∈R1×N denotes the attention of qi to N input tokens, Ki ∈RN×dk represents the key matrix for N tokens, and Av ∈R1×Nv denotes the attention score for qi to the vision tokens only. Istart and Iend denotes the start and end indices of vision tokens. The mask mi is defined as: mi = ( 1 if i ∈top-k(PNv j=1 Av[j]) α otherwise Thus, mi is set to 1, identifying that we should keep the head intact if the ith attention head belongs to the top k highest values across n heads. Otherwise, mi is set to α, which is the suppression factor used to reduce the influence of the ith head. If α = 0, the head is completely suppressed or effectively pruned. We denote the ratio of suppressed heads as r where r = (1 −k/H). The choice of layers for suppressed heads, suppressed head ratio r and suppression factor α are the key hyperparameters in our approach. The final multi-head attention in SPIN is computed as: MHAQ,K,V,m = H M i=1 (mi · hi) ! Wo. (4)",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': 'Please help me describe the image in detail.', 'status': 'Supported', 'evidence': 'The paper text (Figure 1 example) explicitly includes the prompt: “Please help me describe the image in detail.”'}, {'element': 'LLaVa-1.5', 'status': 'Supported', 'evidence': 'Figure 1 and surrounding text explicitly reference “LLaVA-1.5” (e.g., “Caption generation using LLaVA-1.5 and SPIN.”).'}, {'element': 'SPIN', 'status': 'Supported', 'evidence': 'The paper introduces SPIN and Figure 1 labels “SPIN” as the proposed method compared against LLaVA-1.5.'}, {'element': 'Multi-Head Attention (top)', 'status': 'Supported', 'evidence': 'Figure 1 depicts a multi-head attention schematic, and the paper describes the language decoder having “a multi-head attention (MHA) layer” and presents equations for head outputs h_i.'}, {'element': 'Multi-Head Attention (bottom)', 'status': 'Supported', 'evidence': 'Figure 1 shows two MHA blocks (corresponding to LLaVA-1.5 vs SPIN). The text discusses MHA and SPIN’s modified MHA computation (Eq. 4), consistent with a second (modified) MHA block.'}, {'element': 'h1', 'status': 'Supported', 'evidence': 'In Figure 1, the MHA block shows heads labeled “h1 … hn”, and the paper defines per-head attention output as h_i (Eq. 1) and concatenation over heads (Eq. 2).'}, {'element': 'h2 (highlighted/orange)', 'status': 'Not Mentioned', 'evidence': 'While the figure shows heads (h1, h2, hn) and the text defines h_i, the paper text provided does not mention h2 being highlighted/orange.'}, {'element': 'hn', 'status': 'Supported', 'evidence': 'Figure 1 includes “hn”, and the paper describes multiple heads H and per-head outputs h_i, consistent with an nth head.'}, {'element': 'The image features two dogs lying on a bed, one on the left side and the other on the right side... In addition to the dogs, a chair located in the background...', 'status': 'Supported', 'evidence': 'The provided text reproduces the baseline LLaVA-1.5 caption including the chair, and explicitly marks it as hallucinated: “LLaVA-1.5’s generated text description mentions a ‘chair’ in the background ... a hallucinated object.”'}, {'element': 'The image features two dogs lying on a bed, one of which is wearing a red shirt... (SPIN caption)', 'status': 'Supported', 'evidence': 'Figure 1 includes the SPIN-generated caption text: “The image features two dogs lying on a bed, one of which is wearing a red shirt...”'}, {'element': 'photo/image of a dog on a bed', 'status': 'Supported', 'evidence': 'Figure 1’s example captions and ground-truth/detected objects indicate dogs on a bed (and couch). This supports that the image is of (at least) a dog on a bed.'}, {'element': 'Ground truth objects: couch, dog, bed', 'status': 'Supported', 'evidence': 'The figure text explicitly lists: “Ground truth objects: ‘couch’, ‘dog’, ‘bed’.”'}, {'element': 'Detected objects: dog, bed', 'status': 'Supported', 'evidence': 'The figure text explicitly lists: “Detected objects ‘dog’, ‘bed’.”'}, {'element': 'Hallucinated objects: chair', 'status': 'Supported', 'evidence': 'Figure 1 explicitly marks “❌ Hallucinated objects ‘chair’” and the caption explains the chair is hallucinated.'}], [{'element': 'Please help me describe the image in detail.', 'status': 'Not Mentioned', 'evidence': 'The chunk discusses evaluation methodology and benchmark results; it does not contain this prompt text.'}, {'element': 'LLaVa-1.5', 'status': 'Supported', 'evidence': 'The chunk explicitly references “LLaVA-1.5 (7B)” and “LLaVA-1.5 (13B)” in the MMMU evaluation discussion.'}, {'element': 'SPIN', 'status': 'Supported', 'evidence': 'The chunk repeatedly discusses SPIN results and improvements (e.g., “SPIN improves Accuracy up to ∼7%...”, “SPIN outperforms the baseline...” ).'}, {'element': 'Multi-Head Attention (top)', 'status': 'Not Mentioned', 'evidence': 'The chunk does not mention multi-head attention diagrams or a “top” multi-head attention block.'}, {'element': 'Multi-Head Attention (bottom)', 'status': 'Not Mentioned', 'evidence': 'The chunk does not mention multi-head attention diagrams or a “bottom” multi-head attention block.'}, {'element': 'h1', 'status': 'Not Mentioned', 'evidence': 'No attention head labels (h1/h2/hn) appear in the chunk.'}, {'element': 'h2 (highlighted/orange)', 'status': 'Not Mentioned', 'evidence': 'No mention of an h2 head or highlighting/orange color in the chunk.'}, {'element': 'hn', 'status': 'Not Mentioned', 'evidence': 'No attention head labels (hn) appear in the chunk.'}, {'element': 'The image features two dogs lying on a bed... In addition to the dogs, a chair located in the background...', 'status': 'Not Mentioned', 'evidence': 'The chunk discusses hallucination evaluation in general (count/position/colors) but does not describe this specific image or these objects.'}, {'element': 'The image features two dogs lying on a bed, one of which is wearing a red shirt... blue sheet...', 'status': 'Not Mentioned', 'evidence': 'No such image-specific description (dogs/red shirt/blue sheet) is present in the chunk.'}, {'element': 'photo/image of a dog on a bed', 'status': 'Not Mentioned', 'evidence': 'The chunk contains no specific example image description.'}, {'element': 'Ground truth objects: couch, dog, bed', 'status': 'Not Mentioned', 'evidence': 'The chunk mentions CHAIR evaluation parameters but does not list any ground-truth objects for an example image.'}, {'element': 'Detected objects: dog, bed', 'status': 'Not Mentioned', 'evidence': 'No detected-object list for an example image appears in the chunk.'}, {'element': 'Hallucinated objects: chair', 'status': 'Not Mentioned', 'evidence': 'While the chunk discusses hallucinations in general, it does not mention a specific hallucinated object “chair” for an example image.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 2,
+              "reason": "The target figure conveys the high-level idea of SPIN (suppressing some attention heads within MHA to reduce hallucinated objects) and contrasts baseline vs SPIN outputs, but it omits most of the major architectural and methodological elements enumerated in the evidence. It does not depict the LVLM pipeline components (text tokenizer, image encoder, projector into text-embedding space), nor the concatenation of vision+text tokens into the language decoder. Internally, it shows MHA blocks but not the transformer block structure (MHA followed by FFN), and it lacks the SPIN scoring/selection flow: no per-query-token computation of A_tot = q_i K^T, no extraction of vision-token attention A_v via (I_start, I_end), and no cumulative per-head attention aggregation and top-k selection. The hyperparameters (top-k or suppressed ratio r, suppression factor α, and selected layers) are not represented. Finally, it does not show the modified MHA output equation/combination with the head mask and output projection W_o (e.g., Σ/concat of m_i·h_i then W_o). Compared with the reference-style figures, it is more of an outcome illustration than a component/formula coverage figure."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 3,
+              "reason": "The figure conveys the high-level idea that SPIN intervenes in Multi-Head Attention by suppressing some heads (a selected head is crossed out) to reduce hallucinated words (example: removing “chair” while keeping “dog/bed”), and it contrasts baseline vs SPIN outputs. However, it is not fully standalone for understanding the operating principle as specified in the paper: it does not show how heads are scored via attention to vision tokens (q·K^T, extracting A_v using vision-token indices), the top-k selection based on cumulative vision attention, the per-token dynamic mask m_i∈{1,α}, or the key hyperparameters (k/r, α, and which layers are modified). It also omits the standard LVLM pipeline elements (image encoder → projector → vision tokens, concatenation with text tokens, decoder stack). Compared to the evidence, the figure communicates the goal and the notion of ‘head suppression’ but not the mechanism; compared to the reference figures (which include explicit module flow and annotations), this one is more illustrative than explanatory."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 2,
+              "reason": "The target figure captures only a narrow slice of the paper: the SPIN intervention inside multi-head attention (suppressing certain heads) and an illustrative example of reduced hallucination (“chair”). However, it omits most of the end-to-end LVLM pipeline described in the paper’s preliminaries (text tokenizer, image encoder, projector, explicit vision-token/text-token concatenation, language decoder stack with MHA+FFN). It also does not include key methodological specifics required by the evidence: the per-query head scoring flow (A_tot = q_i K^T), extraction of A_v via (I_start, I_end), the top-k cumulative attention criterion (sum over A_v), the dynamic mask values {1, α}, and the hyperparameters (k or ratio r, α, and which layers are suppressed), nor the final masked MHA computation with W_o. Relative to the reference figures, it functions as a conceptual cartoon rather than a beginning-to-end summary of the paper."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 4,
+              "reason": "The target figure largely avoids introducing unsupported components/formulas: it contains only high-level blocks (LLaVA-1.5 vs. SPIN, Multi-Head Attention, heads h1…hn) and the example prompt/captions plus object lists. These elements are supported by the evidence (SPIN vs. LLaVA-1.5 comparison, MHA with per-head outputs h_i / multiple heads, and the dogs/bed example with hallucinated “chair”). The main potential hallucination is purely visual/annotation-level: one head (h2) is highlighted in orange, but the provided paper text does not mention a specific head being highlighted. This is a minor embellishment rather than a new method component or formula, so the figure mostly avoids hallucinated technical content."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 4,
+              "reason": "The target figure accurately captures the main relational structure described in the paper’s example: (i) a baseline (LLaVA-1.5) multi-head attention module vs a modified one (SPIN), (ii) both producing captions for the same input prompt/image, and (iii) an explicit linkage from caption content to object-level evaluation (ground-truth objects vs detected objects vs hallucinated objects, with “chair” marked as hallucinated while “dog/bed” are detected and “couch/dog/bed” are ground truth). These relationships are consistent with the provided evidence excerpts (the captions, the object lists, and the claim that “chair” is hallucinated). \n\nMinor mismatch/underspecification: the figure visually highlights a specific head (h2, in orange) to imply SPIN changes or emphasizes one head relative to others, but the provided evidence does not explicitly support the particular relationship “h2 is highlighted/orange” (or that a specific head is singled out in this way). This does not invalidate the overall component relationships, but it is an extra visual assertion not directly grounded in the cited text."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "The major components/methodologies are accurately labeled in the target figure and align with the paper evidence and references. The figure explicitly labels the baseline as “LLaVA-1.5” and the proposed method as “SPIN,” matching the paper’s description of comparing LLaVA-1.5 captioning against SPIN. The schematic blocks are labeled “Multi-Head Attention,” consistent with the paper’s discussion of MHA layers and per-head outputs (h_i) and the visual depiction of multiple heads (h1…hn). The object lists (“Ground truth objects: couch, dog, bed,” “Detected objects: dog, bed,” and “Hallucinated objects: chair”) are also explicitly present and consistent with the narrative that the baseline hallucinated a chair. A minor stylistic detail (h2 highlighted in orange) is not mentioned in the provided text, but it does not constitute a mislabeling of a major component/methodology."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is clearly schematized around the paper’s main contribution—SPIN as an inference-time, per-token attention-head suppression mechanism to reduce hallucinations in LVLM outputs—rather than incidental architectural minutiae. It contrasts baseline LLaVA-1.5 vs SPIN at the level of multi-head attention (showing one head suppressed) and ties this directly to the behavioral outcome (removing a hallucinated object while preserving detected/ground-truth objects). Compared to the evidence, it omits many pipeline components (tokenizer, image encoder/projector, explicit vision-text token concatenation, formal head scoring using A_tot/ A_v with I_start/I_end, top-k selection, α, layer selection, and the masked MHA equation), but this omission supports summarization rather than clutter. Minor issue: it is more of an illustrative example than a schematic of the full SPIN computation/flow, so it slightly under-represents the method’s core selection mechanism details while still focusing on the contribution."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 4,
+              "reason": "The target figure aligns closely with the paper’s described LVLM pipeline and SPIN’s inference-time intervention, and it works well as supplementary material to the surrounding text/caption. It visually conveys: (i) a standard LVLM with MHA in the decoder, (ii) SPIN as a modification inside MHA via head suppression (highlighting certain heads), (iii) the intended effect—reducing hallucinated objects by increasing reliance on visual evidence—using an intuitive example with detected vs hallucinated objects. This matches the methodology narrative (dynamic subset of heads, suppression of low image-attending heads).\n\nHowever, as a supplement for understanding the *mechanism*, it is less complete than the textual evidence: it does not depict key implementation details such as per-query-token scoring via A_tot = qK^T, extraction of vision-token attention via (I_start, I_end), top-k head selection by cumulative vision attention, or hyperparameters (k/r, α, layer selection), nor the masked MHA aggregation with W_o. Those omissions make it more of a high-level conceptual illustration (hallucination reduction via suppressing some heads) than a faithful schematic of the full SPIN computation described in the paper."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely focused on the core idea—SPIN as an inference-time intervention on multi-head attention—and its effect on hallucination reduction, aligning with the evidence’s components (MHA head suppression, per-head masking, and outcome differences). The comparison panels (LLaVa-1.5 vs SPIN) and the ground-truth/detected/hallucinated object checklist are directly relevant and not merely decorative. However, it includes some non-essential visual embellishments (e.g., the small dog photo and the “dialogue” text blocks with highlighted words) that are not strictly required to communicate the mechanism; a simpler schematic plus a compact quantitative/attention depiction could convey the same point with less clutter. Overall, redundancy is low-to-moderate but not minimal."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.714,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 4,
+              "reason": "The target figure’s main process layout is organized horizontally: components and labels progress from left to right (model/attention blocks on the left, text outputs and image/object panels to the right). While there are stacked elements within the left module (e.g., LLaVA-1.5 over SPIN), the overall diagram flow is predominantly left-to-right, consistent with the left-to-right pipelines shown in the visual reference figures."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "The target figure is mostly clean: the few connector lines/arrows (e.g., from SPIN/attention blocks to the text regions and from the check/cross legend to the object lists) are routed so they do not intersect each other. The overall layout uses vertical/horizontal alignment to keep connections separated. Minor near-overlaps occur where multiple arrows converge around the highlighted text and the right-side legend area, but these are close passes rather than clear crossings, so the criterion is largely satisfied."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "The target figure places functionally related modules in close physical proximity. The left-side model components (LLaVA-1.5, attention blocks, SPIN) are grouped together, and the corresponding qualitative outputs are positioned immediately to their right, visually linking mechanism to result. On the right, the image patch, ground-truth checklist, detected objects, and hallucinated objects are co-located as a compact evaluation cluster, reinforcing their shared function. Minor separation remains between the left mechanism group and the far-right evaluation/legend elements, but overall the layout reflects strong proximity for related modules."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 3,
+              "reason": "Overall alignment is moderately consistent: the main blocks (left text/diagram column, central examples, and right-side ground-truth/legend panel) generally follow a two-column structure with clear margins. However, several elements break a strict invisible grid: the top-right image/ground-truth area is not cleanly aligned with the left-column text baseline, the green check/red X markers and legend items are slightly offset relative to adjacent boxes, and the bottom-right panel (ground truth/detected/hallucinated) and the bottom-left SPIN diagram do not share consistent horizontal baselines. Spacing between subcomponents varies, giving a somewhat uneven vertical rhythm. Thus, alignment is acceptable but not neatly grid-perfect."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 4,
+              "reason": "The figure establishes a clear hierarchy: the bold header (“TARGET FIGURE TO EVALUATE”) and the three main blocks (left module diagram, central highlighted text boxes, right image/object-evaluation panel) are prominent by size and placement. Within blocks, key labels (e.g., “LLaVa-1.5”, “SPIN”, and the checkbox legend for ground truth/detected/hallucinated) are visually emphasized via bold text and iconography, helping the viewer quickly identify the main components. This is consistent with the reference/evidence style where primary panels and pipelines are emphasized using larger regions, strong titles, and clear grouping.\n\nMinor hierarchy issues remain: the central text region is visually dense and the green highlight competes with the main structural elements, slightly reducing immediate salience of the core comparison (LLaVa-1.5 vs SPIN vs object outcomes). Some small text (e.g., attention labels h1/h2/h3) is near the limit of legibility, weakening secondary-level hierarchy."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "The target figure shows generally adequate whitespace between major groups (left-side model diagram, central text annotations, and right-side image/legend), preventing severe crowding. However, several local areas feel tight: the central highlighted text blocks are dense and close to surrounding elements, and the right-side legend (ground-truth/detected/hallucinated objects) sits near the image with limited padding. Compared with the reference figures, which use more consistent gutters and padding around callouts/boxes, the target’s margins are slightly less uniform but still sufficient for readability."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 3,
+              "reason": "The figure shows partial consistency: the left-side model blocks use similar rounded rectangles and repeated labels (e.g., multi-head attention), and the right-side legend uses consistent iconography (green check for detected, red X for hallucinated). However, several components that play similar roles are not encoded with a uniform visual system. Text-highlight spans in the captions use multiple colors without a clearly consistent mapping to the legend categories, and the three legend categories use different marker types (checkbox, check mark, X) rather than a single shape family. Additionally, the overall layout mixes different styles (diagram blocks vs. screenshot-like panels), so comparable elements are not always represented with the same shape/color across the full figure."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 2,
+              "reason": "The target figure is predominantly literal and schematic: it uses standard boxes, arrows, and small UI-like marks (check/cross) to indicate detected vs. hallucinated objects. Compared with the references, it contains only minimal abstraction via conventional icons/symbols (e.g., ✓/✗, small attention blocks), and it does not strongly replace abstract concepts with richer or more concrete metaphoric imagery. In contrast, several evidence figures (e.g., pipeline/guarantee diagrams with gauges, distributions, and stylized modules) use more symbolic/abbreviated representations to convey abstract ideas. Hence, metaphor usage is present but limited."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a common paper-figure template: a schematic block diagram on the left (attention modules with arrows) and qualitative result panels on the right (generated caption text with highlighted tokens plus a small image and a detected-vs-ground-truth checklist). This layout, typography, and annotation style closely resembles the provided evidence figures that also combine model schematics with qualitative examples and error/hallucination callouts (e.g., Ref 1 and Ref 5), and does not introduce a distinctive visual language, unconventional composition, or novel graphical motif. While the specific combination of SPIN/LLaVA-1.5 and the hallucination checklist is customized content, the overall style is not notably unique relative to standard VLM evaluation figures."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure largely follows a uniform, template-like layout: two-column structure (mechanism diagram on top, example panel below) with consistent boxed regions and simple arrows. It does not noticeably adapt the layout to the paper’s specific narrative beyond standard separation of method vs. qualitative example. In contrast, the references show stronger layout adaptability—e.g., multi-panel taxonomies with varied panel sizes, color-coded groupings, zoom-ins, and callouts tailored to different cue types/error categories (Ref 1), pipeline-style modular blocks (Ref 2), and staged evaluation breakdowns (Ref 3). The target breaks from strict uniformity only minimally (stacking a small example under the schematic), so adaptability is limited."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.276,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+            "similarity": 0.6553
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1__p0__score0.95.png",
+            "similarity": 0.6911
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.6254
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective__p0__score0.60.png",
+            "similarity": 0.6855
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p7__score0.95.png",
+            "similarity": 0.6617
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6602
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective__p0__score0.60.png",
+            "similarity": 0.6855
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.6699
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p7__score0.95.png",
+            "similarity": 0.6617
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1__p0__score0.95.png",
+            "similarity": 0.6911
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective__p0__score0.60.png",
+            "similarity": 0.6855
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6971
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.6692
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p7__score0.95.png",
+            "similarity": 0.6617
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6282
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6971
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.5548
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.6692
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1__p0__score0.95.png",
+            "similarity": 0.6911
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6971
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.5944
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.6692
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6602
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6971
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6183
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.6692
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1__p0__score0.95.png",
+            "similarity": 0.6911
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6971
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6282
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+            "similarity": 0.6553
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p7__score0.95.png",
+            "similarity": 0.6617
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6971
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6282
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p7__score0.95.png",
+            "similarity": 0.6617
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6602
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p0__score1.00.png",
+            "similarity": 0.6822
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5266
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.6724
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6971
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective__p0__score0.60.png",
+            "similarity": 0.6855
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6044
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+            "similarity": 0.6553
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6971
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1__p0__score0.95.png",
+            "similarity": 0.6911
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5266
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6602
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6971
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1__p0__score0.95.png",
+            "similarity": 0.6911
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.5918
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6971
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1__p0__score0.95.png",
+            "similarity": 0.6911
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6167
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p3__score0.95.png",
+            "similarity": 0.6196
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1__p0__score0.95.png",
+            "similarity": 0.6911
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective__p0__score0.60.png",
+            "similarity": 0.6855
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.5849
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.6699
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6971
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective__p0__score0.60.png",
+            "similarity": 0.6855
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p7__score1.00.png",
+            "similarity": 0.5339
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.5864
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6146
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1__p0__score0.95.png",
+            "similarity": 0.6911
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p7__score0.95.png",
+            "similarity": 0.6617
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1/Fooling_the_LVLM_Judges_Visual_Biases_in_LVLM-Based_Evaluation_3.5_4.1__p0__score0.95.png",
+            "similarity": 0.6911
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.6299
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.6724
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p7__score0.95.png",
+            "similarity": 0.6617
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective__p0__score0.60.png",
+            "similarity": 0.6855
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.629
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval/VISTA_Visualized_Text_Embedding_For_Universal_Multi-Modal_Retrieval__p3__score1.00.png",
+            "similarity": 0.6025
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p7__score0.95.png",
+            "similarity": 0.6617
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.6971
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p3__score1.00.png",
+            "similarity": 0.6767
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p4__score0.90.png",
+            "similarity": 0.6984
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6017
+          }
+        }
+      }
+    }
+  ]
+}

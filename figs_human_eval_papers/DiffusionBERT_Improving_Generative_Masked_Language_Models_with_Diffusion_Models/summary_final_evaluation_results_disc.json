@@ -1,0 +1,342 @@
+{
+  "paper_name": "DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models_first8",
+  "evaluated_at": "2026-01-12T01:13:28.549182",
+  "figure_summary": "## 1. Core Contributions\n- **DiffusionBERT:** a **generative masked language model** that trains a **pre-trained denoising PLM (BERT)** to serve as the **reverse model** in a **discrete diffusion** process for text.\n- **Spindle noise schedule:** a **token-dependent forward noising scheme** that aims to **uniformly distribute “corrupted information” across diffusion steps** and encourages an **easy-first** reverse generation behavior.\n- **Time-step handling in PLMs:** explores how to incorporate diffusion time into BERT and reports that **time-agnostic decoding (dropping time conditioning)** can work best, differing from canonical diffusion conditioning.\n\n## 2. Method Components & Relations relevant to figures\n- **Forward diffusion (discrete, with absorbing state):**\n  - Uses a transition matrix \\(Q_t\\) where tokens either **stay unchanged** or transition to an **absorbing [MASK] state** with probability \\(\\beta_t\\).\n  - Leads to a terminal distribution \\(x_T\\) that is **all [MASK]**.\n- **Reverse process (learned by BERT):**\n  - Learns \\(p_\\theta(x_{t-1}\\mid x_t, t)\\) in the generic diffusion formulation, but DiffusionBERT emphasizes **decoding without explicit time** (TAD) as a design choice.\n- **Non-Markovian forward process induced by spindle schedule:**\n  - Standard discrete diffusion uses \\(q(x_t\\mid x_{t-1})\\) (Markov).\n  - Spindle schedule defines tokenwise retention probabilities \\(\\alpha_t^i\\) based on token “information” (estimated from corpus frequency), making the effective noising depend on \\(x_0\\) (i.e., **\\(q(x_t\\mid x_{t-1}, x_0)\\)**), while keeping training aligned with the diffusion objective using closed forms for terms like \\(q(x_{t-1}\\mid x_t, x_0)\\).\n- **Token information control / easy-first mechanism:**\n  - More “informative” (rarer) tokens are encouraged to be **masked earlier** in the forward process so they are **recovered later** in the reverse process, matching an “easy-first” progression.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **visually contrast** DiffusionBERT against **canonical discrete diffusion** for text, emphasizing *what changes* when BERT is the denoiser (e.g., time conditioning behavior, structure of forward process).\n- To **illustrate the forward corruption / reverse denoising trajectory** in text form (clean sentence → increasing masks → reconstruction) and connect it to the model’s probabilistic components.\n- To **convey the rationale and effect of the spindle schedule**: different tokens follow **different masking/noise trajectories** based on token-level information, producing a structured corruption pattern rather than uniform corruption.\n- To provide intuitive grounding for two central design messages: **(i) non-Markovian noising due to the schedule** and **(ii) time-agnostic decoding** as a deliberate divergence from standard diffusion conditioning.\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide a complete derivation of the training objective (e.g., full VLB/KL decomposition) or prove correctness; equations carry that burden.\n- Not intended to establish final empirical superiority (perplexity/BLEU/diversity) or compare exhaustively to baselines; those require tables/experiments beyond the conceptual diagrams.\n- Not intended to depict architectural internals of BERT (layers/attention patterns) or implementation-level training details; figures focus on **process-level** differences (diffusion trajectory, conditioning, scheduling).\n- Not intended to claim that **all** diffusion text models should be time-agnostic or non-Markovian; the figures communicate the **paper’s proposed design choices**, not universal necessity.",
+  "figure_evaluations": [
+    {
+      "figure_file": "DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__1.png",
+      "caption": "Figure 1: In contrast to conventional discrete diffusion models, DiffusionBERT uses BERT as its backbone to perform text generation. The main differences are highlighted in color: (1) DiffusionBERT performs decoding without knowing the current time step while canonical diffusion models are conditioned on time step. (2) The diffusion process of DiffusionBERT is non-Markovian in that it generates noise samples xt conditioning not only on xt−1 but also on x0. Such a non-Markov process is due to our proposed noise schedule.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_Content_Coverage",
+              "score": 4.0,
+              "reason": "The figure covers the key conceptual differences emphasized in the summary: (i) canonical discrete diffusion uses a Markov forward process q(x_t|x_{t-1}) and a time-conditioned reverse model p_θ(x_{t-1}|x_t,t), while (ii) DiffusionBERT uses a non-Markovian forward process q(x_t|x_{t-1},x_0) induced by the spindle schedule and (per caption/visual highlight) performs decoding without knowing the time step. It also visually depicts the trajectory x_0 → … → x_T with x_T as all [MASK], matching the absorbing-state description. However, it omits several summary-mentioned specifics such as the transition-matrix view Q_t with explicit β_t, the token-dependent retention probabilities α_t^i (and their link to token “information”/frequency), and any depiction of easy-first tokenwise masking behavior—so it is not fully comprehensive for the method’s detailed mechanics."
+            },
+            {
+              "question": "1.2_Standalone_Intelligibility",
+              "score": 4.0,
+              "reason": "From the visual alone, one can infer the overall operating principle: text generation is framed as a reverse denoising process from a fully masked x_T to a clean x_0, contrasted against a conventional discrete diffusion baseline, with labels showing p_θ(x_{t-1}|x_t,t) and q(x_t|x_{t-1}) vs q(x_t|x_{t-1},x_0). The example token strings (“Hello world!” and progressive [MASK]s) help convey the corruption/denoising intuition. That said, without the paper, the rationale for non-Markovian conditioning on x_0 (how x_0 is used during training, and how this aligns with diffusion objectives) and what exactly “decoding without time” entails operationally (i.e., time-agnostic decoding) are not fully self-explained."
+            },
+            {
+              "question": "1.3_Completeness",
+              "score": 2.0,
+              "reason": "The figure is focused on a narrow slice of the paper: contrasting canonical discrete diffusion with DiffusionBERT along two design axes (time conditioning and Markov vs non-Markov forward noising). It does not summarize other major paper content mentioned in the summary, such as the spindle schedule’s token-information mechanism (rarity/frequency-based α_t^i), the easy-first behavior rationale/effect, or the explored time-step handling variants and findings beyond the highlighted TAD message. Thus, it is not a beginning-to-end summary of the paper’s contributions—rather a targeted conceptual comparison diagram."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure stays focused on elements described in the summary: discrete diffusion over tokens with an absorbing [MASK] endpoint, a learned reverse model (shown as pθ(x_{t−1}|x_t, t) in the canonical case), and a non-Markovian forward process for DiffusionBERT (shown as q(x_t|x_{t−1}, x_0)). It does not introduce unrelated architectural internals or extra objectives. One minor issue is that the top panel depicts the forward kernel as q(x_t|x_{t−1}) without explicitly showing the absorbing-state transition matrix Qt or βt, but this is an omission rather than a hallucinated addition."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 4.0,
+              "reason": "Major relationships match the summary: (i) canonical discrete diffusion is Markov in the forward direction (q(x_t|x_{t−1})) with a reverse model conditioned on time (pθ(x_{t−1}|x_t, t)); (ii) DiffusionBERT is depicted as non-Markovian in the forward process by conditioning x_t on both x_{t−1} and x_0 (q(x_t|x_{t−1}, x_0)), attributed to the spindle schedule. The figure also reflects the time-handling contrast by dropping t in DiffusionBERT’s reverse model (pθ(x_{t−1}|x_t)). A small ambiguity is that the summary says training uses diffusion-form terms like q(x_{t−1}|x_t, x_0); the figure instead emphasizes q(x_t|x_{t−1}, x_0), which is consistent with describing non-Markovian noising but doesn’t show the closed-form posterior term."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Labels align with the summary and caption: panel (a) is 'Diffusion models for discrete data' with pθ(x_{t−1}|x_t, t) and q(x_t|x_{t−1}); panel (b) is 'Non-Markovian DiffusionBERT' with time-agnostic reverse pθ(x_{t−1}|x_t) and non-Markov forward q(x_t|x_{t−1}, x_0). The text examples using [MASK] and the endpoints x_T and x_0 are consistent with an absorbing [MASK] terminal state described in the summary."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "summary",
+              "score": 4.0,
+              "reason": "The figure cleanly schematizes the two claimed differences: (i) canonical discrete diffusion vs DiffusionBERT decoding without explicit time conditioning, and (ii) Markov forward noising q(xt|xt-1) vs non-Markovian q(xt|xt-1,x0) induced by the spindle schedule. It focuses on process-level structure (xt chain, forward/reverse arrows, conditioning terms) rather than architectural or objective derivation details. Minor readability loss comes from small equation text and somewhat implicit depiction of “time-agnostic decoding” (it is inferred from the absence of t in pθ in (b) rather than explicitly labeled as time-agnostic decoding)."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 2.0,
+              "reason": "The figure relies on standard diffusion-process notation (x_T … x_0, arrows, conditional distributions) with minimal use of concrete icons or symbolic metaphors beyond conventional circles for states and color highlighting. Abstract concepts (time-conditioning vs time-agnostic decoding; Markovian vs non-Markovian forward process) are communicated primarily through equations and dashed dependency arrows rather than metaphorical visuals."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "Visually, it follows a common template for diffusion diagrams: a linear chain of latent states with bidirectional arrows and labels for q and p. The main distinguishing stylistic element is the colored/dashed annotations emphasizing x0-dependence in the forward process and the removal of time conditioning in decoding, but the overall style is typical of standard method schematics rather than uniquely styled."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is well-tailored to the paper’s specific claims by presenting a direct side-by-side contrast: (a) canonical discrete diffusion (Markov q(x_t|x_{t-1}) and time-conditioned p_theta(x_{t-1}|x_t,t)) versus (b) DiffusionBERT’s non-Markovian forward noising q(x_t|x_{t-1},x_0) and time-agnostic decoding p_theta(x_{t-1}|x_t). The added dashed arrows explicitly encode x0-dependence, matching the summary’s emphasis on the spindle-induced non-Markovian structure and the design divergence on time handling."
+            }
+          ]
+        },
+        "weighted_total": 2.867
+      }
+    },
+    {
+      "figure_file": "DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00.png",
+      "caption": "Figure 1: In contrast to conventional discrete diffusion models, DiffusionBERT uses BERT as its backbone to perform text generation. The main differences are highlighted in color: (1) DiffusionBERT performs decoding without knowing the current time step while canonical diffusion models are conditioned on time step. (2) The diffusion process of DiffusionBERT is non-Markovian in that it generates noise samples xt conditioning not only on xt−1 but also on x0. Such a non-Markov process is due to our proposed noise schedule.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure captures the paper’s two highlighted differences: (i) reverse model depiction with and without time conditioning (top shows pθ(x_{t-1}|x_t,t) vs bottom pθ(x_{t-1}|x_t) consistent with time-agnostic decoding), and (ii) the non-Markovian forward process via q(x_t|x_{t-1},x_0) (bottom) contrasted with canonical Markov q(x_t|x_{t-1}) (top). It also visually conveys the absorbing [MASK] endpoint x_T and a corruption/reconstruction trajectory. However, key components from the summary are not explicitly represented: the transition-matrix view Q_t, β_t stay-vs-mask probabilities, the spindle schedule mechanism (token-dependent α_t^i / information-from-frequency) and the ‘uniformly distributed corrupted information’ motivation are not shown beyond the generic non-Markov dependency on x_0."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the diagram alone, one can understand the operating principle: a discrete diffusion chain from x0 to an all-[MASK] xT, and a learned reverse denoising process, plus the core contrast that DiffusionBERT drops explicit time conditioning and uses a forward noising distribution depending on x0 (non-Markovian). Still, without the paper, the rationale/implementation of the non-Markovian dependency (spindle schedule based on token information) is not interpretable, and the notation may not be fully self-explanatory to readers unfamiliar with diffusion (e.g., what x_t represents and how x0 influences q)."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure is a conceptual contrast diagram and does not aim to summarize the paper end-to-end. It omits substantive elements emphasized in the summary as contributions/details: the spindle noise schedule specifics (tokenwise α_t^i, information estimation from frequency, easy-first masking/recovery behavior), and any depiction of how training remains aligned with the diffusion objective via closed forms (e.g., q(x_{t-1}|x_t,x0)). It also does not cover broader exploration/empirical findings beyond the two process-level messages."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 4.0,
+              "reason": "The figure stays within the summary’s described components: forward diffusion q(x_t|x_{t-1}) with absorbing [MASK], reverse model p_θ(x_{t-1}|x_t,t), and DiffusionBERT’s non-Markovian noising q(x_t|x_{t-1},x_0). It does not introduce unrelated architectures or objectives. Minor omission/ambiguity: the summary highlights that DiffusionBERT often uses time-agnostic decoding (dropping time), while the figure depicts the canonical p_θ(x_{t-1}|x_t,t) in panel (a) and a time-free p_θ(x_{t-1}|x_t) in panel (b), without explicitly mentioning 'BERT' or 'TAD'—but this is not an extra hallucinated element."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 5.0,
+              "reason": "Relationships match the summary: panel (a) shows standard discrete diffusion with Markov forward transition q(x_t|x_{t-1}) and time-conditioned reverse p_θ(x_{t-1}|x_t,t). Panel (b) correctly contrasts DiffusionBERT as using a non-Markovian forward process q(x_t|x_{t-1},x_0) (pink dependence on x0) induced by the noise schedule, and a reverse model drawn without explicit time conditioning p_θ(x_{t-1}|x_t), consistent with the stated time-agnostic decoding design choice."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 4.0,
+              "reason": "Major labels align: 'Diffusion models for discrete data' vs 'Non-Markovian DiffusionBERT' and the conditional forms q(x_t|x_{t-1}) vs q(x_t|x_{t-1},x_0) and p_θ with/without t match the summary. However, the figure caption/diagram does not explicitly label the reverse model as 'BERT' or name 'time-agnostic decoding (TAD)' or 'spindle schedule'; these are key named contributions in the summary, so labeling is directionally correct but not fully specific."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The figure is tightly schematized around the two stated core differences: (i) time-conditioned reverse model in canonical discrete diffusion vs. time-agnostic decoding in DiffusionBERT, and (ii) Markovian forward noising q(x_t|x_{t-1}) vs. non-Markovian noising that depends on x_0. It avoids drifting into objective derivations, BERT internals, or empirical results, matching the summary’s intended purpose for figures."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption/text, the two-panel comparison clearly supports the paper’s messages: panel (a) shows p_theta(x_{t-1}|x_t,t) and q(x_t|x_{t-1}); panel (b) visually contrasts this with dropping t in decoding and introducing q(x_t|x_{t-1},x_0), consistent with the spindle-schedule-induced non-Markovianity described in the summary. Minor readability friction comes from small typography and the non-Markovian dependence being conveyed mainly by dashed arrows, which may require the caption to interpret."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure contains little to no decorative content; nearly all elements (x_T…x_0 chain, forward/backward arrows, p_theta and q terms, example token strings, and colored highlights) directly serve the two core conceptual contrasts. The only mildly redundant aspect is the repeated example text (e.g., multiple [MASK] sequences and 'Hello world!') which adds intuition but is not strictly necessary for conveying the probabilistic structure."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The process is laid out horizontally with x_T on the left progressing through intermediate x_t and x_{t-1} to x_0 on the right in both (a) and (b), clearly matching the forward corruption / reverse denoising trajectory described in the summary."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Most arrows/links are parallel and do not cross. In (b), the added pink dashed conditioning lines (non-Markovian dependence on x0) introduce multiple long-range links, but they are routed below the main chain and largely avoid intersections with the central arrows; minor visual congestion exists but not severe crossing."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related components are close: the main state chain (x_T ... x_t ... x_{t-1} ... x_0) is contiguous, and the reverse model label p_theta(x_{t-1}|x_t,t) / p_theta(x_{t-1}|x_t) is placed directly above the corresponding transition. The non-Markovian q(x_t|x_{t-1},x0) is also placed near the relevant segment, though the pink dashed links to x0 span a long distance by necessity."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 5.0,
+              "reason": "Nodes are neatly aligned along a single horizontal axis with consistent spacing, and the two panels (a) and (b) are vertically stacked with similar layouts, reflecting a clean grid-like alignment."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The two key differences from the summary/caption are visually highlighted in color (pink): time-agnostic decoding in (b) (dropping t in p_theta) and non-Markovian conditioning q(x_t|x_{t-1},x0) with dashed links. However, the main components (states vs. annotations) are similar in size/weight, so hierarchy relies mostly on color rather than size/thickness."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally adequate whitespace around the chain and between panels. The pink dashed conditioning lines in (b) occupy the lower area and come relatively close to the panel label and baseline, creating slight crowding but still readable."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Equivalent elements are depicted consistently across panels: state nodes are circles with the same styling, forward/reverse arrows use the same conventions, and the highlighted differences use the same pink color and dashed style in (b). This supports the intended contrast against canonical discrete diffusion described in the summary."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 2.0,
+              "reason": "The figure relies on standard diffusion-diagram conventions (nodes for x_T…x_0, arrows, and conditional probability labels) rather than replacing abstractions with concrete icons or symbolic metaphors. The only semi-concrete elements are textual token snippets like \"[MASK]\" and \"Hello world!\", which illustrate the masking trajectory but do not constitute a richer metaphorical/iconographic encoding."
+            },
+            {
+              "question": "novelty",
+              "score": 3.0,
+              "reason": "While the overall style is a common schematic template for diffusion processes, it adds a distinctive visual emphasis aligned with the paper’s contributions: contrasting time-conditioned reverse terms in (a) with time-agnostic decoding in (b), and using colored/dashed dependency lines to highlight the non-Markovian conditioning on x0 induced by the spindle schedule. This is a modest but clear stylistic differentiation rather than a highly unique aesthetic."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the specific claims in the summary/caption by presenting a direct side-by-side comparison: (a) canonical discrete diffusion with Markov forward transition q(x_t|x_{t-1}) and time-conditioned reverse p_θ(x_{t-1}|x_t,t), versus (b) DiffusionBERT emphasizing time-agnostic decoding p_θ(x_{t-1}|x_t) and the non-Markovian forward dependence q(x_t|x_{t-1},x_0). The additional dashed arrows indicating x0’s influence make the structure paper-specific rather than a generic diffusion pipeline diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.886
+      }
+    },
+    {
+      "figure_file": "DiffusionBERT_Improving_Generative_Masked_Language_Models_with_Diffusion_Models__p0__score1.00__2.png",
+      "caption": "Figure 1: In contrast to conventional discrete diffusion models, DiffusionBERT uses BERT as its backbone to perform text generation. The main differences are highlighted in color: (1) DiffusionBERT performs decoding without knowing the current time step while canonical diffusion models are conditioned on time step. (2) The diffusion process of DiffusionBERT is non-Markovian in that it generates noise samples xt conditioning not only on xt−1 but also on x0. Such a non-Markov process is due to our proposed noise schedule.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure captures the core paper-level distinctions described in the summary: (i) reverse model shown as pθ(x_{t−1}|x_t, t) for canonical diffusion vs pθ(x_{t−1}|x_t) for DiffusionBERT (time-agnostic decoding), and (ii) Markov forward noising q(x_t|x_{t−1}) vs non-Markovian q(x_t|x_{t−1}, x0) attributed to the proposed schedule. It also visually indicates the absorbing [MASK] terminal state x_T and a text corruption trajectory (Hello world! → masks). However, it omits specific forward-process details mentioned in the summary such as the transition matrix Q_t, the stay-vs-mask probability β_t, and spindle schedule specifics (token-dependent α_t^i / corpus-frequency-based ‘information’), so not all major formulas/components are present."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "Without reading the paper, a reader can infer the high-level operating principle: a sequence of states from x0 to xT (all [MASK]) with a learned reverse process, and the two highlighted differences (time conditioning removed in decoding; forward sampling depends on x0 making it non-Markovian). The example text snippets above the chain make the corruption/denoising idea intuitive. Still, the exact meaning/motivation of the non-Markov dependence (how x0 influences q) and what the proposed schedule concretely does are not understandable from the figure alone."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure is a conceptual contrast diagram focused on two central design messages (time-agnostic decoding and non-Markovian forward process), which aligns with the summary’s stated intended purpose of figures. But it does not summarize the paper from beginning to end: it does not convey the spindle schedule’s easy-first/token-information mechanism in a concrete way (e.g., tokenwise α_t^i based on frequency/rarity), does not show any closed-form training terms referenced in the summary, and includes no broader methodological or experimental coverage (which the summary also notes figures are generally not intended to provide)."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1",
+              "score": 5.0,
+              "reason": "The figure sticks to elements explicitly described in the summary/caption: a discrete diffusion chain from x0 to xT with an absorbing [MASK] endpoint, and the reverse model pθ(x_{t-1}|x_t, t). The DiffusionBERT panel adds the non-Markovian forward dependency q(x_t|x_{t-1}, x0), which is directly mentioned. It does not introduce extra objectives (e.g., VLB/KL terms) or BERT architectural internals that are not part of the figure’s intended scope."
+            },
+            {
+              "question": "2.2",
+              "score": 5.0,
+              "reason": "Relationships match the summary: (a) canonical discrete diffusion uses a Markov forward process q(x_t|x_{t-1}) and a time-conditioned reverse pθ(x_{t-1}|x_t, t). (b) DiffusionBERT is depicted as non-Markovian in the forward direction via dependence on x0 (q(x_t|x_{t-1}, x0)), consistent with the spindle schedule inducing effective dependence on x0. The visual also contrasts time conditioning (present in (a), absent in (b) via pθ(x_{t-1}|x_t)), aligning with the reported time-agnostic decoding design choice."
+            },
+            {
+              "question": "2.3",
+              "score": 5.0,
+              "reason": "Major labels align with the summary and caption: \"Diffusion models for discrete data\" vs \"Non-Markovian DiffusionBERT\"; forward distributions q(x_t|x_{t-1}) vs q(x_t|x_{t-1}, x0); reverse distributions pθ(x_{t-1}|x_t, t) vs pθ(x_{t-1}|x_t). The use of x0, x_t, x_{t-1}, xT and [MASK] tokens is consistent with the described absorbing-state discrete diffusion setup."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the two core contributions emphasized in the summary/caption: (i) time-step conditioning in canonical discrete diffusion vs DiffusionBERT’s time-agnostic decoding, and (ii) Markovian forward noising q(x_t|x_{t-1}) vs the non-Markovian dependence on x_0 induced by the spindle schedule. It avoids drifting into training-objective derivations or BERT architectural internals. Minor readability loss comes from compact notation (pθ and q terms) without a legend or explicit callout explaining the absence of t in the DiffusionBERT reverse model."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption/text, it functions well: panel (a) depicts a conventional discrete diffusion chain over masked text with pθ(x_{t-1}|x_t,t) and q(x_t|x_{t-1}); panel (b) contrasts DiffusionBERT by removing t from pθ(x_{t-1}|x_t) and adding x_0 to the forward corruption dependence q(x_t|x_{t-1},x_0), visually reinforced by the dashed arrows from x_0. The clean-to-all-[MASK] trajectory (x_0 → x_T) is understandable. Context would still be needed for readers unfamiliar with diffusion notation (e.g., what x_t denotes), but that is acceptable for a research figure intended to accompany the paper."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 5.0,
+              "reason": "The figure contains minimal, purpose-driven elements: two panels, the diffusion timeline, and only the key probability terms and arrows required to communicate the claimed differences. There are no decorative graphics, extraneous annotations, or unrelated metrics/baselines that would distract from the core ideas."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.571,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The process is laid out clearly from left (x_T, fully masked) to right (x_0, clean text), matching the summary’s forward-corruption/terminal-all-[MASK] and reverse-denoising trajectory. The two panels (a) and (b) are stacked top-to-bottom but each panel’s internal flow is unambiguously left-to-right."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Most connections (bidirectional arrows between x_t, x_{t-1}, x_0) do not cross. In panel (b), the added dashed magenta dependencies from x_0 to earlier steps are routed along the bottom and rise with vertical arrows; they largely avoid crossings but create some visual crowding with nearby arrows/labels."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related elements are close: each time state node (x_T, x_t, x_{t-1}, x_0) sits adjacent to its transition arrows and the associated probability terms p_theta(...) and q(...). The contrast between canonical Markov q(x_t|x_{t-1}) and non-Markov q(x_t|x_{t-1}, x_0) is localized to the same region in each panel, aiding comparison."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 5.0,
+              "reason": "Nodes are neatly aligned on a horizontal axis within each panel (x_T → ... → x_0), with consistent spacing. The two panels are also aligned similarly, supporting the intended visual contrast between conventional diffusion and DiffusionBERT."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The main components (state nodes and core transitions) are prominent and centered. The key differences highlighted in the summary/caption (time conditioning vs time-agnostic decoding; non-Markovian dependence on x_0) are emphasized via color (magenta) and placement. However, panel (a) does not visibly highlight the time-conditioning aspect strongly beyond the presence of 't' in p_theta(..., t), so the hierarchy of that message is slightly weaker than the non-Markovian highlight."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between nodes and arrows, but in panel (b) the dashed magenta guide lines and multiple vertical magenta arrows add density near the bottom, reducing margin/air around the dependencies compared to panel (a)."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Equivalent roles use consistent visual encoding across panels: circular nodes for x_t states, similar arrow styles for transitions, and consistent typography for p_theta and q terms. The magenta color consistently marks the DiffusionBERT-specific modifications (non-Markovian dependence and altered conditioning), matching the caption’s ‘highlighted in color’ intent."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 2.0,
+              "reason": "The figure relies on standard probabilistic-graphical notation (circles for x_t states, arrows for transitions, and equation labels like pθ and q). It uses minimal concrete icons/symbols beyond the conventional [MASK] token text and dashed arrows to indicate extra conditioning on x0, so abstract concepts are not substantially replaced with more concrete metaphors."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "Visually, it follows a common two-row comparison template: (a) canonical diffusion chain vs (b) proposed method. The main differentiator is light color highlighting (pink dashed dependencies) to emphasize time-agnostic decoding and non-Markovian forward process, but the overall style remains typical for diffusion-process schematics rather than uniquely styled."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific conceptual contrasts described in the summary: it explicitly juxtaposes time-conditioned pθ(x_{t-1}|x_t,t) vs time-agnostic pθ(x_{t-1}|x_t), and Markov q(x_t|x_{t-1}) vs non-Markov q(x_t|x_{t-1},x0) with dashed links to x0. This directly encodes the core design messages (time-agnostic decoding and non-Markovian noising induced by the spindle schedule) rather than using a generic, unannotated diffusion diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.981
+      }
+    }
+  ]
+}

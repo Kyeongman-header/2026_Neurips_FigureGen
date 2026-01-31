@@ -1,0 +1,134 @@
+{
+  "paper_name": "Long-text_Uncertainty_Quantification_for_LLMs",
+  "evaluated_at": "2026-01-12T02:41:21.018091",
+  "figure_summary": "## 1. Core Contributions\n- Identifies that prior uncertainty quantification (UQ) methods (largely built for short generations and often using response-level similarity) can fail on **long-form answers** because long texts appear artificially similar at the whole-response level.\n- Proposes **LUQ (Long-text Uncertainty Quantification)**: a **sampling-based, black-box-friendly** UQ method for long generations that estimates uncertainty via **sentence-level support/entailment consistency** across multiple sampled responses.\n- Introduces two LUQ variants aimed at finer or more robust consistency checking under length constraints: **LUQ-ATOMIC** (atomic fact pieces) and **LUQ-PAIR** (max entailment over sentence pairs).\n- Uses LUQ uncertainty scores to improve output factuality via **LUQ-ENSEMBLE**, selecting among multiple LLMs the response from the model with **lowest estimated uncertainty**, and also proposes selective answering based on uncertainty.\n\n## 2. Method Components & Relations relevant to figures\n- **Inputs/outputs depicted**: a user query \\(x\\); one main response \\(r_a\\); and \\(n\\) additional **stochastic sampled responses** \\(R=\\{r_1,\\dots,r_n\\}\\), yielding \\(R'=\\{r_a\\}\\cup R\\).\n- **Key module: sentence (or fact) decomposition**\n  - LUQ splits each response into sentences \\(s_j\\) (LUQ-ATOMIC instead decomposes into atomic facts \\(a_j\\) via ChatGPT).\n- **Key module: NLI-based support scoring**\n  - For each sentence/fact in a candidate response \\(r_i\\), an NLI classifier scores whether it is **entailed** by each other sampled response \\(r'\\in R'\\setminus\\{r_i\\}\\).\n  - Similarity/support score: \\(S(r_i, r')\\) is computed by averaging entailment probabilities over the sentences in \\(r_i\\), using only entailment vs contradiction logits (neutral is ignored).\n  - LUQ-PAIR modifies this by scoring each sentence \\(s_j\\) against sentences in \\(r'\\) and taking a **maximum** entailment match to mitigate length/premise issues.\n- **Key relations/aggregations**\n  - **Response-level confidence**: \\(C(x,r_i)\\) is the mean of \\(S(r_i,r')\\) across other samples \\(r'\\) (support from the sample set).\n  - **Question-level uncertainty**: \\(U(x)\\) averages \\(1-C(x,r_i)\\) over all \\(r_i\\in R'\\). Higher disagreement/lower mutual entailment ⇒ higher uncertainty.\n- **Ensembling data flow (LUQ-ENSEMBLE)**\n  - Multiple LLMs each generate \\(n\\) samples; compute LUQ uncertainty per model; **select the model response with lowest uncertainty** as final output.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- Visually motivate and operationalize the paper’s central assumption: **higher uncertainty manifests as higher diversity/inconsistency** across multiple long-form generations to the same query.\n- Demonstrate how LUQ shifts from **whole-response similarity** (problematic for long text) to **localized consistency checks** (sentence-/fact-level support), making disagreements (hallucination-prone regions) visually identifiable.\n- Clarify the **end-to-end pipeline**: sampling → sentence/fact support estimation via NLI → aggregation into confidence/uncertainty → optional downstream use (model selection/ensembling).\n- Provide an intuitive link between highlighted inconsistencies and the intended downstream target metric (factuality), i.e., LUQ uncertainty is meant to correlate negatively with factuality.\n\n## 4. What Figures are NOT intended to show\n- Not evidence of **ground-truth factual correctness** of any particular sentence (the figure illustrates *cross-sample consistency*, not verified truth via external sources).\n- Not a demonstration of **model calibration** in the probabilistic sense (the paper explicitly focuses on relative ranking/association with factuality, not calibrated probabilities).\n- Not an analysis of internal model states (e.g., logits from the LLM being evaluated); LUQ is designed to work in **API-only/closed-model** settings.\n- Not a comprehensive comparison across all baselines/datasets/LLMs (the illustrative figure is conceptual and exemplar-driven, not a full experimental result plot).",
+  "figure_evaluations": [
+    {
+      "figure_file": "Long-text_Uncertainty_Quantification_for_LLMs__p1__score1.00.png",
+      "caption": "Figure 1: The illustration of the LUQ and LUQ-ENSEMBLE framework. Given a question, various LLMs exhibit differing levels of uncertainty. We generate n sample responses from each LLM and then assess the uncertainty based on the diversity of these samples (the LUQ metric). Green highlights indicate consistency across responses (low uncertainty) and red highlights discrepancies (high uncertainty). The LUQ-ENSEMBLE method selects the response from the LLM with the lowest uncertainty score as the final answer.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 3.0,
+              "reason": "The figure captures the main pipeline elements from the summary: a question, multiple sampled responses per LLM, a sentence-level consistency check (green=consistent, red=discrepant), and aggregation into an uncertainty score that enables LUQ-ENSEMBLE model selection. However, it omits key method specifics and formulas explicitly described in the summary (e.g., S(r_i,r') definition via averaging entailment probabilities over sentences using entailment-vs-contradiction logits, C(x,r_i) and U(x) aggregation definitions, and the distinction of LUQ-PAIR max-over-sentence-pairs). LUQ-ATOMIC is not shown either, despite being a named variant in the summary."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the visual flow alone, a reader can infer the operating principle: sample multiple long-form answers, compare claims across samples using an entailment/support test (illustrated as Yes/No with probabilities), convert agreement/disagreement into an uncertainty score, and pick the LLM with the lowest uncertainty for the final response. The lack of explicit mathematical definitions and variant details reduces precision but does not block understanding of the overall mechanism."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure provides a conceptual overview of LUQ and LUQ-ENSEMBLE but does not summarize the paper end-to-end as described in the summary. In particular, it does not include the LUQ-ATOMIC and LUQ-PAIR variant mechanisms, nor the selective answering use case, and it does not convey the full aggregation steps (R', S, C, U) beyond an illustrative uncertainty output."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 3.0,
+              "reason": "The figure largely follows the summary-level pipeline (query → multiple sampled long responses → sentence-level consistency highlighting → aggregate uncertainty → ensemble selection). However, the right panel depicts uncertainty computation via explicit yes/no support queries per highlighted claim (e.g., “Is ‘third pharaoh…’ supported by [SAMPLE 1]?”) and specific numeric per-claim scores, which are not explicitly described in the summary’s formalism (which instead defines NLI-based entailment probabilities/logit handling and averaging). This adds an unmentioned procedural detail (binary support questioning) that could be interpreted as a different mechanism than NLI entailment scoring."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 4.0,
+              "reason": "Major relationships are consistent with the summary: multiple stochastic samples are used; consistency/discrepancy across samples drives uncertainty; green indicates agreement and red indicates disagreement; an aggregated uncertainty score is produced; LUQ-ENSEMBLE selects the lowest-uncertainty model’s response. The only potential mismatch is that the depicted support checking looks like direct yes/no verification rather than the summary’s NLI entailment-probability averaging (and LUQ-PAIR max-over-sentence-pairs), but at a conceptual level it still represents cross-sample entailment/support aggregation."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Labels align with the summary and caption: LUQ/LUQ-ENSEMBLE framing is correct; it shows generating n sampled responses per LLM, computing an uncertainty score from sample diversity/consistency, and choosing the response from the LLM with the lowest uncertainty. No major method names are mislabeled."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The schematic foregrounds the main LUQ idea described in the summary/caption: multiple LLMs generate n samples, sentence-level consistency is assessed (green = consistent, red = discrepant), and an uncertainty score is produced per model. The left-to-right flow (question → different LLMs → sampled responses → uncertainty calculation) is easy to follow. Some space is spent on concrete biography text and repeated example sentences, which is illustrative but slightly more detailed than necessary for conveying the core pipeline."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption, the figure supports understanding of LUQ/LUQ-ENSEMBLE: it visually links “diversity/inconsistency across samples” to an uncertainty score and implies selecting the lowest-uncertainty model. The color-coding makes the intended interpretation straightforward. However, the figure’s ‘Uncertainty Calculation’ panel shows per-claim Yes/No outputs without explicitly labeling the NLI/entailment module or the aggregation (C and U) mentioned in the summary, so a reader may not fully connect the shown numbers to the described entailment-based averaging without additional text."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "Most elements directly serve the core ideas (multiple LLMs, sampling, consistency highlights, uncertainty scoring, and selecting the lowest-uncertainty output). The example biography content is repetitive across samples and occupies substantial area; while not decorative, it adds verbosity and could be shortened (e.g., placeholder sentences) without losing the conceptual message. No major irrelevant decorative elements are present."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.286,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The pipeline is clearly left-to-right: user question on the far left, then multiple LLMs and their uncertainty badges, then sampled responses in the center, then uncertainty calculation on the right, ending with a final uncertainty output at the bottom-right."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Connection lines from the multiple LLM outputs to the sample-response block are mostly clean, curved, and do not noticeably cross in a confusing way. Minor visual busyness from multiple parallel connectors is present but does not create clear line-crossing ambiguity."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related items are grouped: all LLM answers/uncertainties are together, all sampled responses are together, and the NLI-style uncertainty calculation is in a single box. However, the final selection/ensemble decision (choose lowest-uncertainty model response) is implied rather than shown as a distinct nearby module, slightly weakening proximity for the ensembling step described in the summary/caption."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major blocks align well in columns (left: inputs/LLMs; center: samples; right: calculation). Within blocks, elements are mostly aligned, though the LLM cards and connectors have slight vertical irregularities due to differing card heights and curved brackets."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Key stages stand out via large labeled panels (Answers from Different LLMs, Sample Responses, Uncertainty Calculation) and the final uncertainty badge. The uncertainty values are salient with colored tags. The most important conceptual end product in the caption (LUQ-ENSEMBLE selecting the lowest-uncertainty model response) is not visually emphasized as a final 'selected answer' node, so the hierarchy for the ensemble decision is somewhat under-expressed."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is adequate whitespace between the three main columns and within the central and right panels. Some elements on the left (LLM cards plus uncertainty tags plus bracket connectors) are slightly tight, but not to the point of harming readability."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Similar roles use consistent visual encodings: all LLM answer cards share the same style; uncertainty is always shown as a rounded tag; sampled responses share the same response-box style; green/red highlights consistently denote agreement/disagreement as stated in the caption; the calculation area uses a consistent question–answer (Yes/No) format across samples."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 4.0,
+              "reason": "Abstract components in the summary (multiple LLMs, sampling, and uncertainty) are rendered with concrete icons and visual cues: a user avatar, distinct robot/LLM icons, chat bubbles, calculator-like uncertainty box, and explicit uncertainty badges. The green/red highlighting metaphor directly maps to sentence-level consistency vs discrepancy as described for LUQ."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 3.0,
+              "reason": "The figure goes beyond a plain block diagram by combining an example-driven visualization (highlighted long-form responses) with a pipeline/selection story (uncertainty numbers and model choice), which aligns with the paper’s aim to make inconsistencies visually identifiable. However, the overall style still resembles common ML framework schematics (rounded boxes, arrows, callouts) rather than a distinctly unique visual language."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific problem—long-form UQ—by emphasizing localized (sentence-span) agreement/disagreement within sampled responses and connecting it to an ensemble selection decision. This breaks from uniform high-level flowcharts by embedding concrete text samples and color-coded entailment consistency cues that directly operationalize the summary’s central mechanism and downstream LUQ-ENSEMBLE selection."
+            }
+          ]
+        },
+        "weighted_total": 3.79
+      }
+    }
+  ]
+}

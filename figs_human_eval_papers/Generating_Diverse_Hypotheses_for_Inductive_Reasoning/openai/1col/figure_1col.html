@@ -1,0 +1,264 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Overview of LLM-based inductive reasoning (IID vs MoC)</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#111827;
+    --muted:#4b5563;
+    --muted2:#6b7280;
+    --stroke:#1f2937;
+    --line:#374151;
+    --soft:#9ca3af;
+    --panel:#f8fafc;
+    --panel2:#f1f5f9;
+    --accent:#2563eb;
+    --accent2:#0ea5e9;
+    --bad:#dc2626;
+    --good:#16a34a;
+    --lav:#eef2ff;
+    --sand:#fff7ed;
+  }
+  html,body{margin:0;padding:0;background:var(--bg);font-family:Arial, Helvetica, sans-serif;}
+  #figure-root{width:1200px;height:1500px;margin:0 auto;position:relative;background:var(--bg);}
+  .caption{
+    position:absolute;left:70px;right:70px;bottom:24px;
+    font-size:16px;line-height:1.25;color:#111827;
+  }
+  .caption .label{font-weight:600;}
+  svg{position:absolute;left:0;top:0;}
+  /* SVG text styles (use fill, not color) */
+  .t-title{font-size:28px;font-weight:700;fill:var(--ink);}
+  .t-sub{font-size:16px;fill:var(--muted);}
+  .t-h{font-size:18px;font-weight:700;fill:var(--ink);}
+  .t-small{font-size:14px;fill:var(--muted);}
+  .t-xs{font-size:12.5px;fill:var(--muted2);}
+  .t-label{font-size:14px;font-weight:700;fill:var(--ink);}
+  .t-mono{font-family: "Courier New", Courier, monospace; font-size:12.5px; fill:var(--ink);}
+  .t-pill{font-size:12.5px;font-weight:700;fill:var(--ink);}
+  .t-callout{font-size:13px;fill:var(--muted);}
+  .t-bad{font-size:13px;fill:var(--bad);font-weight:700;}
+  .t-good{font-size:13px;fill:var(--good);font-weight:700;}
+  .t-mid{font-size:13px;fill:var(--muted);font-weight:700;}
+  /* Shape styles */
+  .box{fill:#ffffff;stroke:var(--stroke);stroke-width:2;}
+  .panel{fill:var(--panel);stroke:var(--soft);stroke-width:1.5;}
+  .panel2{fill:var(--panel2);stroke:var(--soft);stroke-width:1.5;}
+  .lav{fill:var(--lav);stroke:var(--soft);stroke-width:1.5;}
+  .sand{fill:var(--sand);stroke:var(--soft);stroke-width:1.5;}
+  .dashed{stroke-dasharray:7 6;}
+  .arrow{stroke:var(--line);stroke-width:2.5;fill:none;}
+  .arrowThin{stroke:var(--line);stroke-width:2;fill:none;}
+  .arrowBad{stroke:var(--bad);stroke-width:2.5;fill:none;}
+  .arrowGood{stroke:var(--good);stroke-width:2.5;fill:none;}
+  .brace{stroke:var(--soft);stroke-width:2;fill:none;}
+  .chip{fill:#ffffff;stroke:var(--soft);stroke-width:1.5;}
+  .pillRed{fill:#fee2e2;stroke:#fecaca;stroke-width:1.5;}
+  .pillBlue{fill:#dbeafe;stroke:#bfdbfe;stroke-width:1.5;}
+  .pillGreen{fill:#dcfce7;stroke:#bbf7d0;stroke-width:1.5;}
+  .pillGray{fill:#f3f4f6;stroke:#e5e7eb;stroke-width:1.5;}
+</style>
+</head>
+<body>
+<div id="figure-root">
+  <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-label="Overview of LLM-based inductive reasoning: IID sampling vs Mixture of Concepts (MoC)">
+    <defs>
+      <marker id="arrowhead" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto">
+        <path d="M0,0 L12,5 L0,10 Z" fill="#374151"></path>
+      </marker>
+      <marker id="arrowheadBad" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto">
+        <path d="M0,0 L12,5 L0,10 Z" fill="#dc2626"></path>
+      </marker>
+      <marker id="arrowheadGood" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto">
+        <path d="M0,0 L12,5 L0,10 Z" fill="#16a34a"></path>
+      </marker>
+      <linearGradient id="gradHeader" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ffffff"/>
+        <stop offset="1" stop-color="#f8fafc"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Header -->
+    <rect x="50" y="40" width="1100" height="110" rx="14" class="panel"></rect>
+    <text x="80" y="85" class="t-title">LLM-based inductive reasoning: IID sampling vs Mixture of Concepts (MoC)</text>
+    <text x="80" y="115" class="t-sub">Given observed input–output pairs, generate natural-language hypotheses and Python implementations; select a hypothesis consistent with observations.</text>
+
+    <!-- Shared Input: observed IO pairs -->
+    <rect x="250" y="175" width="700" height="150" rx="16" class="box" fill="url(#gradHeader)"></rect>
+    <text x="600" y="205" text-anchor="middle" class="t-h">Observed input–output pairs (train examples)</text>
+
+    <!-- mini table -->
+    <rect x="300" y="225" width="600" height="80" rx="10" class="panel2"></rect>
+    <text x="320" y="250" class="t-label">Input x</text>
+    <text x="625" y="250" class="t-label">Output y</text>
+    <line x1="600" y1="232" x2="600" y2="298" stroke="#9ca3af" stroke-width="1.5"></line>
+    <line x1="310" y1="258" x2="890" y2="258" stroke="#9ca3af" stroke-width="1.5"></line>
+    <text x="320" y="280" class="t-mono">x₁: […]</text>
+    <text x="320" y="300" class="t-mono">x₂: […]   …</text>
+    <text x="625" y="280" class="t-mono">y₁: […]</text>
+    <text x="625" y="300" class="t-mono">y₂: […]   …</text>
+
+    <!-- Two columns -->
+    <!-- Left: IID sampling -->
+    <rect x="70" y="360" width="520" height="980" rx="18" class="panel"></rect>
+    <rect x="70" y="360" width="520" height="70" rx="18" class="lav"></rect>
+    <text x="330" y="405" text-anchor="middle" class="t-h">Baseline: IID sampling</text>
+
+    <!-- Right: MoC -->
+    <rect x="610" y="360" width="520" height="980" rx="18" class="panel"></rect>
+    <rect x="610" y="360" width="520" height="70" rx="18" class="sand"></rect>
+    <text x="870" y="405" text-anchor="middle" class="t-h">Proposed: Mixture of Concepts (MoC)</text>
+
+    <!-- Branch arrows from observed to each method -->
+    <path d="M600,325 C470,345 410,350 330,360" class="arrow" marker-end="url(#arrowhead)"></path>
+    <path d="M600,325 C730,345 790,350 870,360" class="arrow" marker-end="url(#arrowhead)"></path>
+
+    <!-- LEFT column content -->
+    <!-- Prompt -->
+    <rect x="110" y="460" width="440" height="120" rx="14" class="box"></rect>
+    <text x="130" y="492" class="t-label">Single prompt to LLM</text>
+    <text x="130" y="517" class="t-small">Instruction: propose a rule and implement it in Python</text>
+    <rect x="130" y="534" width="400" height="28" rx="8" class="pillGray"></rect>
+    <text x="330" y="553" text-anchor="middle" class="t-pill">Same prompt used for each sample</text>
+
+    <!-- Sampling node -->
+    <rect x="110" y="610" width="440" height="120" rx="14" class="panel2"></rect>
+    <text x="130" y="642" class="t-label">IID sampling (K responses)</text>
+    <text x="130" y="668" class="t-small">Independent draws → semantically redundant hypotheses</text>
+    <rect x="130" y="682" width="190" height="30" rx="10" class="pillRed"></rect>
+    <text x="225" y="702" text-anchor="middle" class="t-pill">Redundancy risk</text>
+    <rect x="340" y="682" width="190" height="30" rx="10" class="pillBlue"></rect>
+    <text x="435" y="702" text-anchor="middle" class="t-pill">Limited diversity</text>
+
+    <path d="M330,580 L330,610" class="arrow" marker-end="url(#arrowhead)"></path>
+
+    <!-- Hypotheses pool -->
+    <rect x="110" y="760" width="440" height="360" rx="14" class="box"></rect>
+    <text x="130" y="792" class="t-label">Hypotheses + Python implementations</text>
+    <text x="130" y="818" class="t-small">Sampled multiple times from an IID distribution</text>
+
+    <!-- Repeated items -->
+    <rect x="130" y="840" width="400" height="58" rx="10" class="chip"></rect>
+    <text x="150" y="864" class="t-mid">Sample 1</text>
+    <text x="150" y="884" class="t-xs">Natural language hypothesis</text>
+    <text x="410" y="864" class="t-xs" text-anchor="end">Python f̂₁</text>
+
+    <rect x="130" y="908" width="400" height="58" rx="10" class="chip"></rect>
+    <text x="150" y="932" class="t-mid">Sample 2</text>
+    <text x="150" y="952" class="t-xs">Natural language hypothesis</text>
+    <text x="410" y="932" class="t-xs" text-anchor="end">Python f̂₂</text>
+
+    <rect x="130" y="976" width="400" height="58" rx="10" class="chip"></rect>
+    <text x="150" y="1000" class="t-mid">Sample 3</text>
+    <text x="150" y="1020" class="t-xs">Natural language hypothesis</text>
+    <text x="410" y="1000" class="t-xs" text-anchor="end">Python f̂₃</text>
+
+    <text x="330" y="1063" text-anchor="middle" class="t-small">…</text>
+
+    <!-- Redundant highlight arrows -->
+    <path d="M500,866 C545,866 545,934 500,934" class="arrowBad" marker-end="url(#arrowheadBad)"></path>
+    <text x="510" y="906" class="t-bad">Often redundant</text>
+
+    <path d="M330,730 L330,760" class="arrow" marker-end="url(#arrowhead)"></path>
+
+    <!-- Selection/validation -->
+    <rect x="110" y="1150" width="440" height="160" rx="14" class="panel2"></rect>
+    <text x="130" y="1182" class="t-label">Select hypothesis consistent with observations</text>
+    <text x="130" y="1208" class="t-small">Execute Python on train examples; pick one that matches all (if any)</text>
+
+    <rect x="130" y="1226" width="400" height="32" rx="10" class="pillGray"></rect>
+    <text x="330" y="1247" text-anchor="middle" class="t-pill">Validation: yᵢ = f̂(xᵢ) for all i</text>
+
+    <rect x="130" y="1266" width="190" height="30" rx="10" class="pillRed"></rect>
+    <text x="225" y="1286" text-anchor="middle" class="t-pill">Compute wasted</text>
+    <rect x="340" y="1266" width="190" height="30" rx="10" class="pillGray"></rect>
+    <text x="435" y="1286" text-anchor="middle" class="t-pill">Few unique rules</text>
+
+    <path d="M330,1120 L330,1150" class="arrow" marker-end="url(#arrowhead)"></path>
+
+    <!-- RIGHT column content (MoC) -->
+    <!-- Stage 1: concept proposal -->
+    <rect x="650" y="460" width="440" height="210" rx="14" class="box"></rect>
+    <text x="670" y="492" class="t-label">Stage 1: Concept proposal (non-redundant list)</text>
+    <text x="670" y="517" class="t-small">LLM generates a list of K distinct concepts sequentially</text>
+    <rect x="670" y="536" width="400" height="28" rx="8" class="pillBlue"></rect>
+    <text x="870" y="555" text-anchor="middle" class="t-pill">Output: concept list (e.g., JSON)</text>
+
+    <!-- Concept list box -->
+    <rect x="670" y="575" width="400" height="75" rx="10" class="panel2"></rect>
+    <text x="690" y="600" class="t-mono">1. Aggregation / summary</text>
+    <text x="690" y="620" class="t-mono">2. Sorting / ordering</text>
+    <text x="690" y="640" class="t-mono">3. Filtering / selection</text>
+    <text x="980" y="640" class="t-mono" text-anchor="end">… K</text>
+
+    <!-- Arrow from observed to Stage 1 within right -->
+    <path d="M870,430 L870,460" class="arrow" marker-end="url(#arrowhead)"></path>
+
+    <!-- Stage 2: conditioned hypothesis generation -->
+    <rect x="650" y="700" width="440" height="210" rx="14" class="panel2"></rect>
+    <text x="670" y="732" class="t-label">Stage 2: Hypothesis generation conditioned on concept</text>
+    <text x="670" y="758" class="t-small">For each concept cₖ, generate a hypothesis + Python implementation</text>
+
+    <!-- Flow: concept -> hypotheses -->
+    <rect x="670" y="780" width="185" height="100" rx="12" class="chip"></rect>
+    <text x="762.5" y="805" text-anchor="middle" class="t-pill">Concept c₁</text>
+    <text x="690" y="828" class="t-xs">Hint: “Aggregation …”</text>
+    <text x="690" y="850" class="t-xs">→ NL hypothesis</text>
+    <text x="690" y="872" class="t-xs">→ Python f̂(c₁)</text>
+
+    <rect x="885" y="780" width="185" height="100" rx="12" class="chip"></rect>
+    <text x="977.5" y="805" text-anchor="middle" class="t-pill">Concept c₂</text>
+    <text x="905" y="828" class="t-xs">Hint: “Sorting …”</text>
+    <text x="905" y="850" class="t-xs">→ NL hypothesis</text>
+    <text x="905" y="872" class="t-xs">→ Python f̂(c₂)</text>
+
+    <text x="870" y="904" text-anchor="middle" class="t-small">… parallel across concepts …</text>
+
+    <path d="M870,670 L870,700" class="arrow" marker-end="url(#arrowhead)"></path>
+
+    <!-- Hypotheses pool (diverse) -->
+    <rect x="650" y="940" width="440" height="240" rx="14" class="box"></rect>
+    <text x="670" y="972" class="t-label">Semantically diverse hypothesis pool</text>
+    <text x="670" y="998" class="t-small">Reduced redundancy; broader coverage of rule space</text>
+
+    <rect x="670" y="1015" width="400" height="44" rx="10" class="pillGreen"></rect>
+    <text x="870" y="1043" text-anchor="middle" class="t-pill">Increased semantic diversity (non-IID via concepts)</text>
+
+    <rect x="670" y="1070" width="400" height="80" rx="10" class="panel2"></rect>
+    <text x="690" y="1095" class="t-mid">Examples (one per concept)</text>
+    <text x="690" y="1117" class="t-xs">c₁ → hypothesis + Python f̂₁</text>
+    <text x="690" y="1139" class="t-xs">c₂ → hypothesis + Python f̂₂</text>
+    <text x="980" y="1139" class="t-xs" text-anchor="end">…</text>
+
+    <path d="M870,910 L870,940" class="arrow" marker-end="url(#arrowhead)"></path>
+
+    <!-- Selection/validation same -->
+    <rect x="650" y="1210" width="440" height="130" rx="14" class="panel2"></rect>
+    <text x="670" y="1242" class="t-label">Select hypothesis consistent with observations</text>
+    <text x="670" y="1268" class="t-small">Execute Python on train examples; pick one that matches all (if any)</text>
+    <rect x="670" y="1286" width="400" height="32" rx="10" class="pillGray"></rect>
+    <text x="870" y="1307" text-anchor="middle" class="t-pill">Validation: yᵢ = f̂(xᵢ) for all i</text>
+
+    <path d="M870,1180 L870,1210" class="arrow" marker-end="url(#arrowhead)"></path>
+
+    <!-- Cross-column comparison callouts -->
+    <rect x="70" y="1370" width="1060" height="90" rx="16" class="panel"></rect>
+    <text x="90" y="1400" class="t-label">Key contrast</text>
+
+    <rect x="90" y="1415" width="510" height="35" rx="12" class="pillRed"></rect>
+    <text x="345" y="1438" text-anchor="middle" class="t-pill">IID: redundant hypotheses and implementations</text>
+
+    <rect x="610" y="1415" width="500" height="35" rx="12" class="pillGreen"></rect>
+    <text x="860" y="1438" text-anchor="middle" class="t-pill">MoC: concept list → conditioned generation → more diverse hypotheses</text>
+
+    <!-- Bottom separator above caption -->
+    <line x1="50" y1="1470" x2="1150" y2="1470" stroke="#e5e7eb" stroke-width="2"></line>
+  </svg>
+
+  <div class="caption">
+    Overview of LLM-based inductive reasoning: IID sampling generates redundant natural-language hypotheses and Python implementations from observed input–output pairs, while Mixture of Concepts (MoC) first proposes a non-redundant concept list and then conditions hypothesis generation on each concept to increase semantic diversity.
+  </div>
+</div>
+</body>
+</html>

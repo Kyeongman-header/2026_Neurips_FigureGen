@@ -1,0 +1,1102 @@
+{
+  "paper_name": "Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning",
+  "mode": "full",
+  "evaluated_at": "2026-01-30T05:24:29.890342",
+  "note": "Re-scored Q2(Fidelity) and Q4(Design) with lenient strategy.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+      "caption": "Figure 3: Overall workflow of proposed Difficulty-Adaptive Self-Consistency. DSC first ranks problem difficulty using LLM itself (step 1), then partitions problems into easy and hard to save sampling cost for easy ones (step 2), and finally pre-allocates sample sizes to reduce resampling costs for hard problems (step 3).",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Overall DSC workflow with 3 sequential steps', 'Module: Difficulty Ranking (using LLM to rank difficulty of a given problem set)', 'Flow: Randomly divide N problems into batches of size B (B << N)', 'Flow: For each batch, LLM ranks difficulty of problems within the batch', 'Flow: Repeat random batch splitting R times', 'Flow: Compute average difficulty ranking per problem across runs and sort to obtain global difficulty ranking', 'Module: Problem Partition (split into easy vs hard using difficulty rankings)', 'Flow: Sort problems by difficulty', 'Flow: Pre-sample (CoT) from hard to easy for partition decision', 'Data/metric: Entropy of pre-sampling results per problem (Scurrent) stored in a list', 'Decision/stop condition: Stop pre-sampling when latest k entropies are all zero', 'Output: Remaining problems without pre-sampling are assigned to the easy part', 'Flow for easy part: Perform a single CoT sampling per problem', 'Output: Hard part identified for further processing', 'Module: Sample Size Pre-Allocation (for hard part)', 'Flow: Process/samples hard-part questions from easy to difficult', 'Computation: Predict pre-allocation sample size PA using average total sample size of nearest/previous m easier problems', 'Decision: Check stopping criteria C on current sampling distribution', 'Loop: If criteria C not met, re-sample using expansion window e', 'Decision/stop condition: Stop when criteria C met OR sample count reaches max sample size L']\nContext: As illustrated in Figure 3, DSC consists of three steps. Firstly, we propose Difficulty Rank- ing algorithm which utilizes the LLM itself to rank the difficulty of the given problem set. While us- ing LLM for ranking will incur additional costs, later experiments will demonstrate that the prior difficulty information gained from this process can lead to a greater reduction in overall inference costs. Based on this, we propose a Problem Partition strat- egy that divides the problem set into two parts, easy and hard, using the information regarding difficulty rankings. For problems belonging to easy part, a single CoT sampling is performed, which saves cost without sacrificing performance. Lastly, we propose Sample Size Pre-Allocation algorithm to predict the sample size needed for problems be- longing to hard part, which reduce the number of re-samples and save the cost of inputs.\n\nThe core idea behind DSC is to fully utilize the dif- ficulty information of given problems, allocating computational resources based on their respective levels of difficulty. The overall workflow of DSC is presented in Figure 3, including three steps: Diffi- culty Ranking, Problem Partition and Sample Size Pre-Allocation.\n\n2.1 Difficulty Ranking As problems usually do not carry difficulty label themselves, we seek to utilize the powerful com- parative and ranking capabilities of LLM to obtain the difficulty rank of the given problem set. Con- sidering the limited context window size of LLM and its lost in the middle (Liu et al., 2024b) issue in understanding long contexts, we randomly di- vide the problem set of N into batches of size B (B << N) and let LLM rank the difficulty of the problems in each batch. Since a single random split only allows us to obtain the difficulty ranking of each problem within the corresponding batch, we perform R times random batch splitting, and sort the average difficulty rankings of each problem in different batches to obtain the difficulty rank- ing of entire problem set.\n\n2.2 Problem Partition After obtaining the problem set with difficulty rank- ing, we aim to find which part of the problems only require LLM to perform CoT sampling once. A simple and intuitive idea is that when LLM is very confident about a number of continuous problems sorted by difficulty (the results of all pre-samples are the same), it can be inferred that the problems easier than these problems only need one CoT sam- pling. Guided by this, we design the Problem Parti- tion algorithm… Specifically, we pre-sample the problem set sorted by difficulty from hard to easy, and store the entropy of pre-sampling results of each problem (Scurrent) in a list. We stop pre-sampling when the latest k items in the list are all zero. The remaining prob- lems without pre-sampling are then divided into the easy part, and a single CoT sampling is performed for each.\n\n2.3 Sample Size Pre-Allocation After performing CoT sampling on the easy part problems, we seek to predict and allocate the sam- ple size for the problems belonging to hard part, so as to mitigate the substantial cost brought by multiple re-samples. Considering that the required sample size for each problem should be similar to those needed for problems of comparable difficulty, we predict the sample size of the current problem based on the total sample size of the nearest m easier problems… Specifically, we sample questions belonging to the hard part from easy to difficult. For the current question, we pre- dict its pre-allocation sample size PA based on the average total sample size of its previous m ques- tions. Then, we judge the distribution of the current samples based on the stopping criteria C. When the criteria is not met, we re-sample based on the expansion window e, until the sampling distribu- tion meets the criteria for stopping sampling or the number of samples reaches the max sample size L.",
+        "fidelity_based": "Lenient Consistency Report: [[{'element': 'Step 1  Difficulty Ranking', 'status': 'Supported', 'evidence': 'The text explicitly describes DSC Step 1 as a Difficulty Ranking algorithm using the LLM to rank difficulty within random batches and then averaging/sorting across multiple random splits (Section 2.1; Algorithm 1).'}, {'element': 'Batch size = B', 'status': 'Supported', 'evidence': 'Batch size B is explicitly defined and used in Algorithm 1 and implementation details (B=8).'}, {'element': 'Questions (Q × N)', 'status': 'Supported', 'evidence': \"The method assumes a set of N questions Q1:N; the figure’s 'Q × N' is a plausible shorthand for the full question set.\"}, {'element': 'Random batch / Q × B / R times', 'status': 'Supported', 'evidence': \"Algorithm 1 explicitly performs R rounds of random division of Q1:N into batches of size B, i.e., batch objects consistent with 'Q × B', repeated R times.\"}, {'element': 'prompt / Task Definition ... rank from easy to hard ...', 'status': 'Supported', 'evidence': 'Section 2.1 mentions carefully designed ranking prompts and instructing the LLM to rank questions from easy to hard; Appendix A.1 is referenced for prompts.'}, {'element': 'LLM → Batch ranking', 'status': 'Supported', 'evidence': \"Algorithm 1 calls M(P, batch) to obtain rankings for each batch; 'Batch ranking' is a direct restatement.\"}, {'element': 'Average & Sort / Easy → Hard / Questions (Q₁ ... Qₙ)', 'status': 'Supported', 'evidence': 'Algorithm 1 ends with Sort(Average(Dall)) to produce questions sorted by difficulty; the figure’s Easy→Hard ordering matches this.'}, {'element': 'Step 2  Problem Partition', 'status': 'Supported', 'evidence': 'Section 2.2 and Algorithm 2 define Step 2 as Problem Partition into easy and hard parts based on pre-sampling entropies.'}, {'element': 'Execution from hard to easy (in Step 2)', 'status': 'Supported', 'evidence': 'Algorithm 2 explicitly pre-samples the sorted question list from hard to easy until the stopping condition is met.'}, {'element': 'Pre-sample once for partition / Sample once / Demonstrations (D)', 'status': 'Supported', 'evidence': 'Algorithm 2 performs pre-sampling with size p for partitioning and uses demonstrations D; easy-part questions then receive a single CoT sample as described in Section 2.2.'}, {'element': 'All answers are the same / Not all answers are the same', 'status': 'Supported', 'evidence': \"ESC-style notion of 'all answers in a window are the same' is discussed, and Algorithm 2 uses entropy=0 over a judge window as the operational equivalent of unanimous answers; this figure phrasing is a plausible visualization.\"}, {'element': 'Stopping pre-sample / Saving', 'status': 'Supported', 'evidence': 'Algorithm 2 stops pre-sampling when the last k entropies are zero and then assigns remaining problems to the easy part for single sampling, which is precisely a cost-saving mechanism.'}, {'element': 'Questions divided to easy part / Questions divided to hard part', 'status': 'Supported', 'evidence': 'Algorithm 2 explicitly outputs QEasy and QHard split at anchor point A.'}, {'element': 'k (judge window)', 'status': 'Supported', 'evidence': 'Algorithm 2 defines judge window k and the text analyzes its effect (Figure 4), with default k=32.'}, {'element': 'Step 3  Sample Size Pre-Allocation', 'status': 'Supported', 'evidence': 'Section 2.3 and Algorithm 3 define Step 3 as predicting/pre-allocating sample sizes for hard questions to reduce re-sampling overhead.'}, {'element': 'Execution from easy to hard (in Step 3)', 'status': 'Supported', 'evidence': 'Algorithm 3 states hard-part questions are processed from easy to hard.'}, {'element': 'Pre-allocate sample size / Total sample size / predict', 'status': 'Supported', 'evidence': 'Algorithm 3 computes a predicted pre-allocation PA based on averages of prior total sample sizes (Nall) and tracks total samples per question (Ncurrent), matching these labels.'}, {'element': 'Re-sample window size = 4', 'status': 'Supported', 'evidence': \"Implementation details set extend window size e=4; the figure’s 're-sample window size = 4' is a reasonable naming variant for the same parameter.\"}, {'element': 'DSC re-sample times / ESC re-sample times / Saving re-sample times', 'status': 'Supported', 'evidence': 'The paper contrasts DSC with ESC/ASC and motivates reducing re-sampling (especially input-cost-heavy re-samples). Depicting comparative re-sample counts is a plausible visualization consistent with the described goal and mechanisms.'}, {'element': 'm (prediction window size)', 'status': 'Supported', 'evidence': 'Algorithm 3 uses prediction window size m; the text analyzes m’s tradeoffs (Figure 5) and sets default m=16.'}, {'element': 'Relationship: Questions (Q × N) → Q × B (Random batch)', 'status': 'Supported', 'evidence': 'Algorithm 1 explicitly random-divides the N questions into batches of size B.'}, {'element': 'Relationship: Q × B → prompt (input to prompt)', 'status': 'Supported', 'evidence': 'Algorithm 1 calls M(P, batch), i.e., each batch is inserted into a ranking prompt P.'}, {'element': 'Relationship: prompt → LLM (sent to)', 'status': 'Supported', 'evidence': 'Algorithm 1 uses LLM M to execute the prompt; sending the prompt to the LLM is inherent and explicitly described.'}, {'element': 'Relationship: LLM → Batch ranking (produces)', 'status': 'Supported', 'evidence': 'Algorithm 1 obtains difficulty rankings from the LLM for each batch.'}, {'element': 'Relationship: Batch ranking → Questions (Q₁ ... Qₙ) via Average & Sort (Easy → Hard)', 'status': 'Supported', 'evidence': 'Algorithm 1 aggregates rankings across splits and sorts by average difficulty to produce a global ordering.'}, {'element': 'Relationship: Questions (Q₁ ... Qₙ) → Step 2  Problem Partition', 'status': 'Supported', 'evidence': 'Section 2.2 takes the questions sorted by difficulty as input to partitioning.'}, {'element': 'Relationship: Step 2  Problem Partition → easy/hard split', 'status': 'Supported', 'evidence': 'Algorithm 2 outputs QEasy and QHard.'}, {'element': 'Relationship: hard part → Pre-sample once for partition', 'status': 'Supported', 'evidence': 'Algorithm 2 pre-samples starting from the hard end of the sorted list to determine the anchor; depicting this as applied to the hard side is consistent.'}, {'element': 'Relationship: All answers are the same → Saving', 'status': 'Supported', 'evidence': 'When samples are unanimous/entropy is zero over a window, the algorithm stops pre-sampling and assigns easier questions to single-sample CoT, saving cost.'}, {'element': 'Relationship: Not all answers are the same → Stopping pre-sample (triggers)', 'status': 'Supported', 'evidence': 'If answers are not unanimous (entropy nonzero), the procedure continues pre-sampling; the figure’s branching is a plausible depiction of the stop/continue logic.'}, {'element': 'Relationship: Step 2 → Step 3 (feeds)', 'status': 'Supported', 'evidence': 'Step 3 operates on the hard-part questions produced by Step 2 and is described as the next stage in the workflow (Figure 3 caption; Section 2).'}, {'element': 'Relationship: Step 3 → Pre-allocate sample size (computes) → Total sample size (accumulates into)', 'status': 'Supported', 'evidence': 'Algorithm 3 computes PA and tracks Ncurrent/Nall as total sample sizes, matching the depicted computation and accumulation.'}, {'element': 'Relationship: Re-sample window size = 4 → DSC/ESC/Saving re-sample times (parameter for)', 'status': 'Supported', 'evidence': 'The paper sets extend window size e=4 for DSC and describes ESC as window-based; using the same window-size concept to parameterize re-sampling comparisons is consistent and scientifically plausible.'}], [{'element': 'Step 1  Difficulty Ranking', 'status': 'Supported', 'evidence': 'The excerpt discusses complex reasoning tasks and adaptive self-consistency, where multiple reasoning paths exist; a difficulty-ranking pre-step is a plausible and common pipeline component for organizing tasks before adaptive sampling/aggregation.'}, {'element': 'Random batch / Batch size = B / R times', 'status': 'Supported', 'evidence': 'Batching and repeated runs are standard for LLM-based ranking/estimation to reduce variance; nothing in the text contradicts this, and it plausibly supports adaptive weighting/aggregation.'}, {'element': 'Task Definition ... rank from easy to hard ... (prompt → LLM → Batch ranking → Average & Sort)', 'status': 'Supported', 'evidence': 'Using an LLM with prompts to produce rankings and then aggregating (averaging) aligns conceptually with the excerpt’s theme of answer aggregation and adaptivity; the text does not specify the exact ranking procedure but it is scientifically plausible.'}, {'element': 'Easy → Hard / Questions (Q₁ ... Qₙ)', 'status': 'Supported', 'evidence': 'Ordering questions by estimated difficulty is consistent with a workflow designed to manage complex reasoning tasks; no conflicting statement is present.'}, {'element': 'Step 2  Problem Partition (easy part vs hard part)', 'status': 'Supported', 'evidence': 'Partitioning problems based on difficulty is a plausible strategy for adaptive self-consistency/aggregation when tasks differ in uncertainty; the excerpt does not contradict such partitioning.'}, {'element': 'Pre-sample once for partition / Sample once', 'status': 'Supported', 'evidence': 'A small initial sample to estimate uncertainty or detect ambiguity is a standard adaptive technique in self-consistency-style methods, fitting the excerpt’s point that multiple reasoning paths may exist.'}, {'element': 'All answers are the same → Saving; Not all answers are the same → Stopping pre-sample', 'status': 'Supported', 'evidence': 'If initial samples agree, it is reasonable to save additional sampling; if they disagree, it is reasonable to continue/adjust sampling. This is consistent with adaptive aggregation strategies and not contradicted by the text.'}, {'element': 'Step 3  Sample Size Pre-Allocation / Pre-allocate sample size / Total sample size', 'status': 'Supported', 'evidence': 'The excerpt references assigning appropriate weights for answer aggregation to achieve adaptivity; pre-allocating/adjusting sample sizes is a plausible implementation detail of adaptive self-consistency.'}, {'element': 'Re-sample window size = 4; DSC re-sample times; ESC re-sample times; Saving re-sample times; predict', 'status': 'Supported', 'evidence': 'Windowed resampling and tracking resample counts are plausible operational details for adaptive self-consistency on complex reasoning tasks. The excerpt does not mention these exact parameters, but they do not introduce a conflicting scientific claim.'}, {'element': 'Relationships: Questions (Q × N) → (Random batch) → Q × B → prompt → LLM → Batch ranking → Average & Sort → Questions (Q₁...Qₙ) → Partition → Pre-allocation', 'status': 'Supported', 'evidence': 'This end-to-end flow is a coherent and standard decomposition of an adaptive self-consistency/aggregation method: select items, query an LLM, aggregate outputs, then adapt sampling. The text supports the underlying premise (multiple reasoning paths; adaptive aggregation) and does not contradict the depicted directionality.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 5,
+              "reason": "The target figure covers essentially all major components and key flows described in the evidence. It explicitly presents the 3-step DSC workflow (Difficulty Ranking → Problem Partition → Sample Size Pre-Allocation). Step 1 includes random division of N questions into batches of size B (B<<N), LLM ranking within each batch, repeating R times, and averaging/sorting to obtain a global easy→hard ordering. Step 2 shows sorting by difficulty, pre-sampling from hard to easy for partitioning, tracking whether answers are all the same (a proxy for zero entropy), and a stopping condition based on the latest k being consistent, with remaining un-pre-sampled questions assigned to the easy part and sampled once; it also outputs the hard subset for further processing. Step 3 shows processing hard questions from easy to hard, predicting pre-allocation sample size from previous m easier questions, and re-sampling with an expansion/re-sample window e until a stopping criterion is met or a max sample limit L (implied via capped sample sizes) is reached. Compared to the visual references, it matches the intended difficulty-based compute allocation schematic and adds the specific batching/averaging and pre-allocation mechanics; no major modules or flows from the provided evidence are omitted."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure largely communicates the system’s operating principle without the paper: it is clearly segmented into three sequential steps (Difficulty Ranking → Problem Partition → Sample Size Pre-Allocation), with directional arrows showing data flow and execution order (ranking via repeated random batching; partition executed hard→easy; pre-allocation executed easy→hard). Key mechanisms from the evidence are visually present: random split into batches of size B repeated R times; within-batch LLM ranking; averaging/sorting to get a global difficulty order; a pre-sampling-based partition with a stopping rule tied to k consecutive zero-entropy/identical outputs (conveyed via the green/red legend ‘all answers same’ vs ‘not all answers same’ and the ‘stopping pre-sample’ annotation); and pre-allocation based on previous m easier problems plus re-sampling with a window size e until criteria or max L (partially conveyed by ‘re-sample window size=4’ and the table of sample sizes/re-sample times).\n\nHowever, it is not fully standalone: several critical definitions are implicit rather than explicit in the graphic (what “entropy” is, what exact stopping criteria C is, what L is, what “demonstrations (D)” represent, and how ‘all answers same’ corresponds to ‘entropy=0’). The Step 3 logic (predict PA from previous m, then check C, then expand by e) is suggested but not diagrammed as a clear decision loop, so a reader can grasp the intuition (adaptive sampling for harder questions) but may not reconstruct the precise algorithm from the figure alone."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 4,
+              "reason": "The target figure captures the paper’s end-to-end DSC workflow with three sequential steps and includes the key mechanisms described in the evidence: (1) Difficulty Ranking via random batching (size B), repeated R times, LLM intra-batch ranking, and average/sort to form a global easy→hard ordering; (2) Problem Partition executed from hard→easy with pre-sampling, an explicit stop condition based on the last k being consistent (shown as “all answers the same”/green), and assignment of remaining un-pre-sampled items to the easy part with single sampling; and (3) Sample Size Pre-Allocation for the hard part executed from easy→hard, predicting PA from previous m easier problems and re-sampling with an expansion window until stopping/limits (implicitly shown via “re-sample window size” and re-sample counts). However, some textual details are only implicit rather than explicitly depicted—e.g., entropy storage (Scurrent list) as the partition metric, and the explicit stop condition ‘criteria C met OR reach max sample size L’ (L is not clearly indicated). Thus, it is largely complete for the described method section content but not fully explicit on all stated variables/metrics."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "All depicted components and parameters (difficulty ranking via LLM batch ranking with random splits, average/sort; hard-to-easy pre-sampling partition with judge window k and entropy/unanimity stopping; sample-size pre-allocation with prediction window m and extend/resample window e=4) are supported by the paper’s described Algorithms 1–3 and implementation details. Any figure-specific phrasing (e.g., ‘all answers are the same’ as a visualization of entropy=0, and comparative ‘DSC/ESC re-sample times’) is a reasonable visual aid consistent with the paper’s mechanisms and goals, and the evidence contains no explicit contradictions."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "All major component relationships in the target figure match the paper-described pipeline: Step 1 random-batches the full question set (Q×N → Q×B) repeatedly, sends batches via a ranking prompt to the LLM, and aggregates rankings by averaging/sorting into a global easy→hard order. Step 2 correctly consumes the sorted list, pre-samples from hard→easy to find an anchor using a judge window k (entropy/unanimity condition), then partitions into easy vs hard and saves cost by stopping when outputs become unanimous. Step 3 correctly takes the hard partition and processes easy→hard to pre-allocate/predict sample sizes using a prediction window m and extend/re-sample window e (shown as 4), with the intended effect of reducing re-sampling compared to ESC. No explicit contradictions are indicated in the provided evidence; any label variations are consistent visual aids rather than relational errors."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "All major component/method labels in the target figure align with the paper’s described pipeline and algorithm naming: Step 1 is Difficulty Ranking with batch size B, repeated R random splits, LLM batch ranking, and Average & Sort to obtain an easy→hard ordering (Algorithm 1). Step 2 is Problem Partition using pre-sampling/entropy with judge window k, executed from hard to easy, producing easy vs hard parts and enabling cost saving via early stopping (Algorithm 2). Step 3 is Sample Size Pre-Allocation over the hard part, executed from easy to hard, using prediction window m and extend/re-sample window e=4 to reduce re-sampling (Algorithm 3; implementation details). No evidence indicates any contradicted or critically incorrect label."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is a high-level schematic centered on the paper’s main DSC contribution: a 3-step workflow (Difficulty Ranking → Problem Partition → Sample Size Pre-Allocation). It captures the key algorithmic flows described in the evidence (random batching of N into size B, repeated R times; within-batch LLM ranking; averaging to global ranking; partitioning via pre-sampling from hard→easy with a stop rule based on k consecutive zero-entropy/consistent outcomes; then pre-allocating samples for hard questions using nearest m easier problems plus re-sampling with expansion window e until stopping criteria C or max L). It avoids low-level implementation details and instead emphasizes resource allocation logic and decision points, which aligns with “main contribution” summarization. Minor limitation: it introduces/foregrounds some illustrative bookkeeping (example numbers like 4/8/24/32, re-sample times, ESC vs DSC comparison rows) that are not strictly necessary for conveying the core method, slightly reducing abstraction, but overall it remains contribution-focused."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "Yes. The target figure is a strong supplementary aid for the caption/text because it visually instantiates all three DSC modules and their key flows exactly as described. Step 1 matches the evidence: N questions are randomly split into batches of size B, ranked within each batch by an LLM, repeated R times, then averaged and sorted to yield a global easy→hard ordering. Step 2 matches the partition procedure: problems are sorted by difficulty; pre-sampling is performed from hard→easy for partition decision; the notion of repeated samples yielding identical answers (green) vs disagreement (red) supports the entropy/uncertainty idea and the stop condition based on the latest k zero-entropy items, after which remaining unsampled items are assigned to the easy part (single sample). Step 3 matches pre-allocation: processing hard-part questions from easy→hard, predicting PA from previous m easier problems, and re-sampling with an expansion window e until stopping criteria or max L, with the table illustrating resample counts/savings. Compared to the reference figures, it is closer in intent/structure to pipeline schematics (e.g., selection/uncertainty flows) and is not confusingly similar to unrelated distillation/MCTS diagrams. Minor limitation: the figure encodes entropy/criteria C/L implicitly (via “all answers same” and resample counts) rather than explicitly labeling entropy and stopping criterion C, but it still functions well for comprehension."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 3,
+              "reason": "The figure largely focuses on the core DSC workflow (three sequential steps: difficulty ranking, problem partition, and sample-size pre-allocation) and visually encodes the key flows described in the evidence (random batching repeated R times; average-and-sort; hard→easy pre-sampling with entropy/zero-entropy stop; easy-part single sample; hard-part pre-allocation using previous m easier; re-sampling with window e and max L). However, it includes some arguably non-essential or cluttering details for conveying the core ideas: extensive per-question annotations (e.g., Q_{i-k+1}, Q_{i-k+m}, Q_{n-1}, Q_n), a small table-like block listing “total sample size / DSC re-sample times / ESC re-sample times / saving” that reads like results rather than mechanism, and multiple decorative layout elements (dashed bounding boxes, repeated “D” demonstration markers, many circles). These additions increase visual density and may be unnecessary for explaining the algorithms, though they remain related to the method rather than purely decorative."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.857,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The flow direction is immediately clear: inputs start on the left (Questions batch), proceed through Step 1 → Step 2 → Step 3 arranged top-to-bottom, with arrows guiding left-to-right within each step and a clear overall progression. Layout is clean, arrows are consistent, and the reading order is easy to follow within a 3-second glance."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 5,
+              "reason": "Connection lines are largely well-routed with clear directional flow between stages. Crossings are minimal and mostly avoided; where multiple arrows run in parallel or converge, spacing and dashed boundaries keep paths distinguishable. Overall it looks clean and publication-ready within a quick 3-second glance."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Closely related modules are grouped and placed adjacent in a clear top-to-bottom workflow: Step 1 (Difficulty Ranking), Step 2 (Problem Partition), Step 3 (Sample Size Pre-Allocation). Within each step, inputs/outputs and subcomponents (e.g., Questions → batches → prompt/LLM → ranking) are kept near each other with short connecting arrows, and the left-side legend aligns with the elements it explains (color blocks and D markers). The spatial organization supports quick tracing without long cross-figure jumps."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 5,
+              "reason": "Overall layout follows a clear grid: the three main steps are stacked in evenly sized horizontal bands, with consistent margins, dashed borders, and well-aligned titles. Within each step, boxes (questions, prompts, batch ranking, partitions, sample allocations) line up cleanly along rows/columns, and arrows/flow lines connect without clutter. Minor micro-misalignment exists in a few small labels/icons and some elements are not perfectly centered, but it still reads like a polished, publishable figure."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 4,
+              "reason": "Main components are clearly separated into three large step-wise panels with bold titles and dashed borders, so the overall hierarchy reads quickly (top-to-bottom workflow). However, within panels there are many similarly sized boxes and labels, making the true focal elements (e.g., key outputs/decisions) compete visually. Some dense text and small annotations reduce immediate salience in a 3-second glance, but everything remains readable and structured."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 5,
+              "reason": "Margins are sufficient throughout: panels are clearly separated by dashed borders, internal components have consistent padding, and labels/titles don’t collide with shapes or lines. Even in denser regions (Step 2/3), whitespace prevents crowding and keeps everything readable at a glance."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 5,
+              "reason": "Overall, components with similar roles are consistently encoded: the same box styles repeat for each step section, and the easy/hard partitions use stable color cues (blue/orange) throughout. Repeated elements like question batches and demonstrations use the same shapes and labeling, and the dashed grouping frames are applied uniformly. While there are a few different highlight colors (green/red status blocks, blue/orange partitions, yellow prompt highlight), they map to different semantics rather than causing inconsistency, so the figure still reads as coherent and publication-quality."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 3,
+              "reason": "The Target Figure uses some concrete visual metaphors to stand in for abstract concepts—e.g., stacked “batch” pages to represent repeated sampling, an LLM block/icon, arrows for execution flow, and color blocks to denote partitions/conditions (easy vs. hard; all-same vs not-all-same). However, much of the abstraction is still carried by textual labels, equations/variables (Q, N, B, k, m), and tabular-style annotations rather than iconic symbolism. Compared with the evidence, it is less metaphor-heavy than Ref 4/5 (which strongly rely on icons like clocks, character/difficulty cues, and check/cross marks), but more metaphorical than Ref 1/3 which are mostly schematic boxes and text. Overall, it achieves a moderate level of replacing abstract ideas with concrete symbols."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a very common academic pipeline/flowchart template: dashed bounding boxes, step-wise headers (Step 1/2/3), left-to-right process arrows, colored legend blocks, and schematic mini-panels. This visual language closely resembles the evidence references (especially Ref 2–4) that use similar multi-stage boxed layouts and instructional/pipeline diagrams. While the specific content (difficulty ranking → partition → sample pre-allocation) is distinct, the styling itself is conventional and not notably unique or differentiating from standard ML paper figures."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure largely follows a standardized, template-like flowchart layout: three horizontally separated steps within a dashed outer border, consistent typography, repeated box-and-arrow motifs, and a conventional legend/color key. This aligns with common uniform design principles seen in the references (pipeline schematics with modular panels and repeated visual grammar) rather than strongly adapting the layout to a distinctive paper-specific narrative. While it does introduce some paper-specific structuring (explicit Step 1–3 partitioning, execution-direction arrows, and embedded tabular-like allocations), these are incremental variations within the same generic schematic style, not a clear break toward a more specialized, bespoke layout."
+            }
+          ]
+        }
+      },
+      "weighted_total": 4.105,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6481
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.6711
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+            "similarity": 0.7213
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6966
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6481
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.6874
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+            "similarity": 0.7213
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7198
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mind_the_Value-Action_Gap_Do_LLMs_Act_in_Alignment_with_Their_Values/Mind_the_Value-Action_Gap_Do_LLMs_Act_in_Alignment_with_Their_Values__p3__score1.00.png",
+            "similarity": 0.6634
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.6711
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7198
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6966
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p0__score1.00.png",
+            "similarity": 0.5553
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.681
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6408
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+            "similarity": 0.7213
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.5906
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6666
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.6552
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+            "similarity": 0.7213
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6149
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.6826
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.681
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+            "similarity": 0.7213
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mind_the_Value-Action_Gap_Do_LLMs_Act_in_Alignment_with_Their_Values/Mind_the_Value-Action_Gap_Do_LLMs_Act_in_Alignment_with_Their_Values__p3__score1.00.png",
+            "similarity": 0.6634
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6735
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.6838
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6966
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.6711
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7198
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.6838
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6966
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6408
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+            "similarity": 0.7213
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.6874
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6966
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5177
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6966
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p3__score0.95.png",
+            "similarity": 0.6801
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+            "similarity": 0.7213
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p0__score0.95.png",
+            "similarity": 0.5886
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.6472
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6966
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.6711
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5177
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6041
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.6826
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+            "similarity": 0.7213
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.6662
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6966
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+            "similarity": 0.7213
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6481
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6666
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6966
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+            "similarity": 0.7213
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6735
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6666
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6966
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+            "similarity": 0.7213
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.6659
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6735
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.6826
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+            "similarity": 0.7213
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps/Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps__p3__score1.00.png",
+            "similarity": 0.6433
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p1__score1.00.png",
+            "similarity": 0.6948
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+            "similarity": 0.7213
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7198
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.6806
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.7198
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.6874
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p3__score1.00.png",
+            "similarity": 0.6486
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.6806
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.7277
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+            "similarity": 0.7213
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models/Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+            "similarity": 0.684
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p3__score1.00.png",
+            "similarity": 0.6486
+          }
+        }
+      }
+    },
+    {
+      "figure_file": "Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p1__score1.00.png",
+      "caption": "Figure 2: Leveraging their prior knowledge, humans assess the difficulty level of a problem before solving it, and allocate appropriate time for its resolution based on the difficulty.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Difficulty-Adaptive Self-Consistency (DSC) overall workflow', 'Input problem set (N problems)', 'Difficulty Ranking module (LLM-based)', 'Random batch splitting into batches of size B (B << N)', 'LLM ranks difficulty within each batch', 'Repeat random batch splitting R times', 'Aggregate/average ranks across splits and sort to obtain global difficulty ranking', 'Problem Partition module (uses difficulty ranking)', 'Split into Easy part and Hard part', 'Easy-part path: single Chain-of-Thought (CoT) sampling (one sample)', 'Hard-part path: Sample Size Pre-Allocation module', 'Sample size prediction for each hard problem based on nearest m easier problems’ total sample size', 'Allocate predicted sample size and perform CoT sampling with that many samples for hard problems (reducing re-samples/cost)', 'Adaptive compute/resource allocation based on assessed difficulty (flow principle)']\nContext: To alleviate these issues, we take inspiration from the strategies humans employ when solving reasoning problems within a limited total time. As illustrated in Figure 2, humans pre-assess the diffi- culty of the problems before reasoning, and adap- tively allocating problem-solving time based on the accessed difficulty.\n\nIn light of this, we pro- pose Difficulty-Adaptive Self-Consistency (DSC), a novel method which leverages the difficulty infor- mation from both prior and posterior perspectives to further reduce the inference computational cost of SC. As illustrated in Figure 3, DSC consists of three steps. Firstly, we propose Difficulty Rank- ing algorithm which utilizes the LLM itself to rank the difficulty of the given problem set. ... Based on this, we propose a Problem Partition strat- egy that divides the problem set into two parts, easy and hard, using the information regarding difficulty rankings. For problems belonging to easy part, a single CoT sampling is performed, which saves cost without sacrificing performance. Lastly, we propose Sample Size Pre-Allocation algorithm to predict the sample size needed for problems be- longing to hard part, which reduce the number of re-samples and save the cost of inputs.\n\n2 Methodology The core idea behind DSC is to fully utilize the dif- ficulty information of given problems, allocating computational resources based on their respective levels of difficulty. The overall workflow of DSC is presented in Figure 3, including three steps: Diffi- culty Ranking, Problem Partition and Sample Size Pre-Allocation.\n\n2.1 Difficulty Ranking As problems usually do not carry difficulty label themselves, we seek to utilize the powerful com- parative and ranking capabilities of LLM to obtain the difficulty rank of the given problem set. ... we randomly di- vide the problem set of N into batches of size B (B << N) and let LLM rank the difficulty of the problems in each batch. Since a single random split only allows us to obtain the difficulty ranking of each problem within the corresponding batch, we perform R times random batch splitting, and sort the average difficulty rankings of each problem in different batches to obtain the difficulty rank- ing of entire problem set.\n\n2.2 Problem Partition After obtaining the problem set with difficulty rank- ing, we aim to find which part of the problems only require LLM to perform CoT sampling once. A simple and intuitive idea is that when LLM is very confident about a number of continuous problems sorted by difficulty (the results of all pre-samples are the same), it can be inferred that the problems easier than these problems only need one CoT sam- pling. Guided by this, we design the Problem Parti- tion algorithm...\n\n2.3 Sample Size Pre-Allocation After performing CoT sampling on the easy part problems, we seek to predict and allocate the sam- ple size for the problems belonging to hard part, so as to mitigate the substantial cost brought by multiple re-samples. Considering that the required sample size for each problem should be similar to those needed for problems of comparable difficulty, we predict the sample size of the current problem based on the total sample size of the nearest m easier problems.",
+        "fidelity_based": "Lenient Consistency Report: [[{'element': 'Questions', 'status': 'Supported', 'evidence': 'Figure 2 depicts humans starting from a set of problems/questions. The text explicitly references “humans pre-assess the difficulty of the problems before reasoning” and Figure 2 is introduced as illustrating this process.'}, {'element': 'Difficulty Judge', 'status': 'Supported', 'evidence': 'The paper states humans “pre-assess the difficulty” (Section 1, around Figure 2). ‘Difficulty Judge’ is a plausible label for this assessment step and matches the described human strategy.'}, {'element': 'Easy', 'status': 'Supported', 'evidence': 'The text frames difficulty as varying levels and uses ‘easy’ vs ‘hard’ partitioning later (Step 2 Problem Partition). Figure 2’s ‘Easy’ is a reasonable coarse category consistent with the paper’s narrative.'}, {'element': 'Medium', 'status': 'Supported', 'evidence': 'While later algorithms often use an easy/hard split, introducing ‘Medium’ as an intermediate difficulty level in the human analogy is scientifically plausible and does not conflict with the text’s notion of graded difficulty.'}, {'element': 'Hard', 'status': 'Supported', 'evidence': 'The paper repeatedly discusses ‘hard’ questions and explicitly partitions into ‘easy’ and ‘hard’ in DSC (Figure 3, Step 2). Including ‘Hard’ in Figure 2 is directly aligned.'}, {'element': 'Do once without check', 'status': 'Supported', 'evidence': 'The text explicitly motivates that easy questions “could be accurately answered with just one attempt” and DSC’s Step 2 performs “a single CoT sampling” for the easy part. ‘Do once without check’ is a plausible human-analogy phrasing of that single-attempt behavior.'}, {'element': 'Do couple times and check', 'status': 'Supported', 'evidence': 'Self-consistency methods sample multiple reasoning paths and use majority vote/consistency as a check. The paper’s framing that harder questions merit more samples supports the idea that medium questions might be solved with a few tries plus checking—this is a plausible intermediate policy in the human analogy.'}, {'element': 'Try multiple times', 'status': 'Supported', 'evidence': 'The paper’s core premise is that challenging problems benefit from multiple reasoning paths (SC) and that humans allocate more effort to harder questions (Figure 2 description). ‘Try multiple times’ is consistent with that premise.'}, {'element': 'Inference time allocation', 'status': 'Supported', 'evidence': 'The text explicitly says humans “adaptively allocat[e] problem-solving time based on the accessed difficulty” (around Figure 2). ‘Inference time allocation’ is a loose but appropriate mapping to time/compute allocation during solving.'}, {'element': 'Questions -> Difficulty Judge', 'status': 'Supported', 'evidence': 'Scientifically plausible and consistent with the text: one must consider a question before assessing its difficulty; the paper explicitly describes pre-assessing difficulty of problems.'}, {'element': 'Difficulty Judge -> Easy', 'status': 'Supported', 'evidence': 'A difficulty assessment leading to an ‘easy’ classification is implicit in the notion of difficulty levels; the paper relies on such categorization (especially easy vs hard) in DSC.'}, {'element': 'Difficulty Judge -> Medium', 'status': 'Supported', 'evidence': 'Although the method later uses a binary split, a graded outcome (including ‘medium’) from a difficulty judgment is a plausible visualization of the same underlying concept and not contradicted.'}, {'element': 'Difficulty Judge -> Hard', 'status': 'Supported', 'evidence': 'Directly consistent with the paper’s repeated reference to ‘hard’ questions and the strategy of allocating more sampling/effort to them.'}, {'element': 'Easy -> Do once without check', 'status': 'Supported', 'evidence': 'Explicitly supported by the motivation that easy questions can be answered “with just one attempt” and DSC’s design to do single CoT sampling for easy questions.'}, {'element': 'Medium -> Do couple times and check', 'status': 'Supported', 'evidence': 'Not explicitly spelled out, but consistent with the paper’s general principle: allocate more compute as difficulty increases. ‘Medium’ receiving a few attempts plus checking is a reasonable intermediate instantiation.'}, {'element': 'Hard -> Try multiple times', 'status': 'Supported', 'evidence': 'Supported by the text’s premise that challenging tasks benefit from more reasoning paths/samples and that humans allocate more time to harder problems (Figure 2 description).'}, {'element': 'Do once without check -> Inference time allocation', 'status': 'Supported', 'evidence': 'Choosing to do a task once implies minimal time/compute allocation; this is a straightforward, scientifically plausible linkage consistent with the ‘allocate appropriate time’ statement.'}, {'element': 'Do couple times and check -> Inference time allocation', 'status': 'Supported', 'evidence': 'A policy of a few attempts plus checking implies moderate time/compute allocation; aligns with the paper’s general adaptive allocation idea.'}, {'element': 'Try multiple times -> Inference time allocation', 'status': 'Supported', 'evidence': 'Multiple attempts inherently require more time/compute allocation, matching the paper’s central motivation of allocating more resources to harder questions.'}], [{'element': 'Questions', 'status': 'Supported', 'evidence': \"The excerpt discusses complex reasoning tasks and answer aggregation; it is plausible that the system operates over a set of questions/tasks even if 'Questions' is not explicitly named.\"}, {'element': 'Difficulty Judge', 'status': 'Supported', 'evidence': 'Adaptive self-consistency and weighting for aggregation plausibly require assessing task/question difficulty to decide how much computation/aggregation to apply, even if not explicitly stated.'}, {'element': 'Easy', 'status': 'Supported', 'evidence': 'A difficulty categorization into levels (e.g., easy/medium/hard) is a common and scientifically plausible discretization when allocating different reasoning/verification effort.'}, {'element': 'Medium', 'status': 'Supported', 'evidence': 'Intermediate difficulty levels are a standard, plausible extension of difficulty-based adaptive strategies mentioned in the excerpt.'}, {'element': 'Hard', 'status': 'Supported', 'evidence': \"The excerpt emphasizes complex reasoning tasks; mapping to a 'Hard' category is consistent with the need for more robust aggregation/checking.\"}, {'element': 'Do once without check', 'status': 'Supported', 'evidence': 'If some tasks are easy, a single-pass response without additional verification is a plausible policy in adaptive compute/allocation frameworks.'}, {'element': 'Do couple times and check', 'status': 'Supported', 'evidence': 'The text mentions multiple reasoning paths and adaptive self-consistency/aggregation; doing multiple attempts with checking is a plausible operationalization.'}, {'element': 'Try multiple times', 'status': 'Supported', 'evidence': 'Adaptive self-consistency directly aligns with generating multiple samples/paths for harder items, making repeated attempts plausible.'}, {'element': 'Inference time allocation', 'status': 'Supported', 'evidence': 'Assigning appropriate weights for aggregation to achieve adaptive self-consistency plausibly implies allocating more inference time/compute to harder questions and less to easier ones.'}, {'element': 'Questions -> Difficulty Judge', 'status': 'Supported', 'evidence': 'A pipeline where questions are assessed for difficulty is a common and plausible prerequisite for adaptive strategies; not contradicted by the excerpt.'}, {'element': 'Difficulty Judge -> Easy', 'status': 'Supported', 'evidence': \"Classifying questions into an 'Easy' bin is a plausible outcome of a difficulty judging module.\"}, {'element': 'Difficulty Judge -> Medium', 'status': 'Supported', 'evidence': \"Classifying questions into a 'Medium' bin is a plausible outcome of a difficulty judging module.\"}, {'element': 'Difficulty Judge -> Hard', 'status': 'Supported', 'evidence': \"Classifying questions into a 'Hard' bin is a plausible outcome of a difficulty judging module, consistent with the excerpt's focus on complex reasoning.\"}, {'element': 'Easy -> Do once without check', 'status': 'Supported', 'evidence': 'A policy of minimal retries/verification for easy items is a plausible adaptive decision rule consistent with compute/time allocation ideas.'}, {'element': 'Medium -> Do couple times and check', 'status': 'Supported', 'evidence': 'Moderate difficulty reasonably maps to a moderate number of attempts with checking under adaptive self-consistency concepts.'}, {'element': 'Hard -> Try multiple times', 'status': 'Supported', 'evidence': 'Hard/complex tasks benefiting from multiple reasoning paths is explicitly aligned with the excerpt’s statement that complex reasoning allows more than one correct reasoning path.'}, {'element': 'Do once without check -> Inference time allocation', 'status': 'Supported', 'evidence': 'Different numbers of attempts/checking directly influence inference time; this relationship is scientifically plausible and consistent with adaptive strategies.'}, {'element': 'Do couple times and check -> Inference time allocation', 'status': 'Supported', 'evidence': 'Repeating and checking increases compute/time, a standard and plausible linkage in adaptive inference procedures.'}, {'element': 'Try multiple times -> Inference time allocation', 'status': 'Supported', 'evidence': 'Multiple attempts necessarily entail higher inference time allocation; consistent with the idea of adaptive self-consistency requiring more sampling on harder tasks.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 2,
+              "reason": "The target figure captures only the high-level motivation/flow principle (pre-assess difficulty and allocate more inference time/samples to harder problems: easy/medium/hard → increasing clocks). However, it omits most major DSC components described in the paper: the LLM-based Difficulty Ranking module with random batch splitting (N problems into batches of size B, repeated R times), aggregation/averaging of ranks to form a global difficulty ranking, the Problem Partition module (easy vs hard based on consistency of pre-samples), and the Sample Size Pre-Allocation procedure (predict sample size for hard problems using nearest m easier problems’ total sample size). It also does not depict the easy-path single CoT sample vs hard-path multi-sample CoT with pre-allocated sample sizes. Compared to the detailed reference workflow diagram, this target is a simplified conceptual illustration rather than covering most method components."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 2,
+              "reason": "The figure conveys only a high-level intuition—judge problem difficulty (easy/medium/hard) and allocate more inference time/attempts to harder items—so a viewer can grasp the general adaptive-compute idea. However, it omits the core operating principle of DSC as described in the evidence: LLM-based difficulty ranking via repeated random batch splits (B << N) and rank aggregation, the easy/hard partition criterion, and the sample-size pre-allocation for hard problems based on nearest m easier problems’ total sample size (to reduce re-sampling cost). It also does not indicate self-consistency/CoT sampling or how ‘time’ maps to number of samples. Compared to the reference workflow figure (which shows the three-step pipeline and key parameters N/B/R/m), this target is a conceptual cartoon and is not standalone-intelligible for the actual method beyond the generic adaptive allocation principle."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 2,
+              "reason": "The target figure captures only the high-level motivation/flow principle of DSC (pre-assess difficulty and allocate more inference time/samples to harder problems). However, it omits most of the paper’s end-to-end methodology: the LLM-based Difficulty Ranking procedure (random batch splitting into size B, repeated R times, averaging/aggregating ranks to form a global ranking), the explicit Problem Partition module (easy vs hard based on ranking/consistency behavior), and the Sample Size Pre-Allocation algorithm (predicting per-hard-problem sample counts from nearest m easier problems to reduce re-samples/cost). Compared with the reference workflow figure, it lacks the concrete algorithmic steps, parameters (N, B, R, m), and the two-path execution details (single CoT for easy; allocated multi-sample CoT for hard). Therefore it is not a complete summary from beginning to end of the method."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "No fatal hallucinations are present. All depicted components (questions, difficulty judgment, easy/medium/hard bins, varying numbers of attempts/checking, and inference-time allocation) are supported by or are reasonable visual instantiations of the paper’s stated ideas: humans pre-assess difficulty, allocate more effort to harder questions, and self-consistency uses more samples/verification for harder items. The inclusion of a 'Medium' tier and phrasing like 'do couple times and check' are not explicitly named but are consistent and not contradicted by the paper."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "The depicted relations (Questions → Difficulty Judge → {Easy/Medium/Hard} → differing numbers of attempts/checking → inference-time allocation) are consistent with the paper’s stated premise that humans pre-assess difficulty and allocate more effort/samples to harder questions, and with the method’s easy-vs-hard partitioning and multi-sample self-consistency for harder items. The added ‘Medium’ branch and ‘do a couple times and check’ are a plausible intermediate visualization and not contradicted."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "All major component labels in the target figure are consistent with the paper’s described process and terminology: the flow from questions to a difficulty assessment (“Difficulty Judge”), categorization into easy/medium/hard, and corresponding effort policies (single attempt vs multiple attempts with checking) aligns with the paper’s discussion of pre-assessing difficulty and allocating more inference-time/compute to harder questions. “Medium” and the phrasing variants (e.g., “Do once without check”) are reasonable, non-contradictory human-analogy labels rather than misnamings of a specific method. No evidence indicates any contradicted or critically incorrect labeling."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 2,
+              "reason": "The target figure captures the high-level intuition of DSC (pre-assess difficulty → allocate more inference time/samples for harder problems), which aligns with the paper’s motivating description. However, it is too generic and omits most of the paper’s main contributed mechanisms: the LLM-based difficulty ranking via repeated random batch splitting (B<<N) and rank aggregation (R repeats), the explicit easy/hard partition procedure, and the hard-part sample-size pre-allocation based on nearest m easier problems’ total sample size. Compared to the evidence, it reads more like a general human-analogy schematic than a schematic of DSC’s core algorithmic workflow, so it under-represents the ‘main contribution’ details."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 3,
+              "reason": "The target figure conveys the high-level motivation aligned with the text: pre-assess problem difficulty (easy/medium/hard) and allocate more inference time/compute to harder problems. As supplementary material, it can help readers grasp the general idea of difficulty-adaptive resource allocation.\n\nHowever, it only loosely matches the paper’s DSC methodology details in the evidence. It does not depict the actual DSC workflow components (LLM-based difficulty ranking via repeated random batch splits and rank aggregation; explicit easy/hard partition; hard-part sample-size pre-allocation based on nearest m easier problems). It also introduces a “medium” tier not reflected in the described easy/hard partition, and uses generic “time” icons rather than sample size / number of CoT samples, which is central to DSC/SC cost reduction.\n\nOverall: good conceptual illustration, but insufficiently specific to the DSC algorithm to strongly support understanding of the method as described."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely non-redundant and stays focused on the core idea from the paper: pre-assessing difficulty (easy/medium/hard) and allocating more inference-time/compute to harder problems. Most elements (question list → difficulty judge → difficulty levels → time bars with clocks) directly support this flow principle. However, it is more conceptual than the evidence workflow: it omits key DSC-specific modules (random batch splitting, repeated ranking/aggregation, easy vs hard partition, and sample-size pre-allocation), and includes some light decorative/illustrative elements (cartoon person, thought cloud, multiple clock icons) that are not strictly necessary to convey the method. These decorations are minor and do not significantly distract, but they are somewhat redundant relative to a more schematic depiction like Ref 4."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.857,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The diagram’s flow is immediately clear left-to-right: questions → difficulty judge → easy/medium/hard buckets → corresponding inference-time allocation on the right. Arrows consistently guide the eye, the three rows reinforce a top-to-bottom structure within the right side, and spacing/alignment make the progression easy to parse at a glance."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 5,
+              "reason": "Connection lines are cleanly routed left-to-right with clear separation between stages. No line crossings are visible; arrows are spaced to avoid overlaps, and the layout remains readable at a glance."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Functionally related elements are grouped and placed adjacently in a clear left-to-right workflow: input questions → difficulty judge → difficulty bins (easy/medium/hard) → corresponding inference-time allocation bars. The mapping between each difficulty level and its time allocation is visually tight (rows aligned, consistent spacing, arrows connect nearby modules), making relationships immediately apparent and the figure look polished and publication-ready."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall the figure follows a clear left-to-right layout with major elements (questions → judge → difficulty tiers → time allocation bars) aligned in a consistent horizontal flow. The three difficulty rows are mostly aligned, but there are small inconsistencies: the arrows and labels between tiers and bars don’t sit perfectly on a shared grid, and spacing/margins vary slightly across the Easy/Medium/Hard rows. Still fully readable and looks close to publication quality."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 5,
+              "reason": "The main flow is immediately clear within a quick glance: inputs on the left, central ‘Difficulty Judge’ character as the focal decision point, and the outcome (inference time allocation) on the right. The Easy/Medium/Hard blocks use strong color coding and are positioned in a clean vertical hierarchy that naturally guides the eye top-to-bottom, while arrows and spacing reinforce the left-to-right pipeline. Key elements (difficulty tiers and time bars) stand out in size and placement, with minimal clutter and good balance."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 5,
+              "reason": "Yes—there is clear, consistent whitespace between the main groups (question list, thinker/difficulty judge, and the three difficulty rows on the right). The arrows and labels don’t crowd the icons or boxes, and each row has enough breathing room vertically and horizontally, making the layout look clean and publication-ready."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 5,
+              "reason": "Components with the same role are consistently encoded: the three difficulty levels use the same rounded-rectangle shape with distinct but systematic colors (green/orange/red), and the corresponding inference-time allocations reuse identical bar shapes with repeated clock icons to indicate increasing effort. Arrows are uniform in style and direction, and the grayscale illustration is separated from the colored category blocks without introducing conflicting styles. Overall it reads cleanly and consistently at a glance."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The Target Figure replaces several abstract ideas with concrete metaphors: difficulty judgment is shown via a thought cloud over a person, difficulty levels are encoded as colored labels (Easy/Medium/Hard), and inference-time allocation is represented with clock icons and repeated clocks indicating more time/tries. Compared with the references, it is similarly metaphor-heavy to figures that use icons to depict reasoning/verification/time allocation (e.g., clock/agent metaphors), though it still retains some text to explain actions (“Do once…”, “Try multiple times”) rather than fully relying on symbols—so not maximal abstraction-to-icon replacement."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure uses a familiar, common research-diagram template: a left-to-right pipeline with icons, labeled difficulty tiers (easy/medium/hard), and repeated clock symbols to indicate increasing inference-time allocation. This visual language closely matches the evidence references that depict standardized ML workflow schematics (e.g., stepwise partitioning/allocation diagrams and difficulty-based sampling). While the grayscale cartoon character adds a minor illustrative touch, the overall composition, iconography, and layout are conventional and not a distinctive or uniquely stylized design compared to common templates."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure uses a clean, generic left-to-right pipeline (questions → difficulty judge → easy/medium/hard → time allocation) with consistent iconography and repeated row structure. This largely follows uniform design principles rather than a layout tailored to a specific paper’s unique narrative or method complexity. Compared with the references, it does not show the paper-specific structural adaptations seen in more elaborate, modular layouts (e.g., multi-stage panels, conditional routing/distillation blocks, or detailed stepwise partitioning). While the difficulty-tier rows provide some task-driven structuring, the overall composition remains template-like and not strongly adapted."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.505,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7006
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6662
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7238
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7213
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7006
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7213
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7238
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6927
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7006
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6927
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7238
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7213
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p0__score1.00.png",
+            "similarity": 0.5681
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7238
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.629
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6927
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.57
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.671
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.6874
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7238
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.671
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6662
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6927
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7238
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6964
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6711
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7238
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Con_dence_Improves_Self-Consistency_in_LLMs/Con_dence_Improves_Self-Consistency_in_LLMs__p1__score0.90.png",
+            "similarity": 0.6877
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.6753
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.671
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6927
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7238
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.629
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6927
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7213
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7238
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7213
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6927
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6727
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.6874
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.5936
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.6581
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6727
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7006
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5132
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6484
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p2__score1.00.png",
+            "similarity": 0.6309
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6927
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.6454
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6727
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7238
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6662
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7006
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7238
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7213
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6711
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6587
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6727
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7213
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.617
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6711
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6662
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7238
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6964
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7213
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7238
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.6753
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7238
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.6753
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7213
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6482
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.7402
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7006
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7238
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.7213
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6482
+          }
+        }
+      }
+    }
+  ]
+}

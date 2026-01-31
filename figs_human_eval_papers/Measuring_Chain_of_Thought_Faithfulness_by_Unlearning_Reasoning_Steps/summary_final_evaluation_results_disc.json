@@ -1,0 +1,372 @@
+{
+  "paper_name": "Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps",
+  "evaluated_at": "2026-01-12T02:56:17.766876",
+  "figure_summary": "## 1. Core Contributions\n- **Parametric Faithfulness Framework (PFF):** A two-stage framework to measure *parametric* faithfulness of generated reasoning by (i) intervening on model parameters using information from a CoT and (ii) measuring downstream effects on predictions and/or reasoning.\n- **FUR (Faithfulness by Unlearning Reasoning steps):** A concrete instantiation of PFF that **unlearns** information from individual CoT steps in the model parameters (rather than perturbing context) to test whether those steps causally support the model’s original prediction.\n- **Faithfulness metrics for chains and steps:** **FF-HARD** for assessing whether a *CoT overall* is faithful (via prediction change after successful unlearning) and **FF-SOFT** for ranking/identifying *salient steps* via the magnitude of probability change for the original answer.\n- **Control-based validation of interventions:** Emphasis that stage-2 “faithfulness” claims are only meaningful if stage-1 unlearning is shown to be *effective, specific,* and not broadly damaging to general capabilities.\n\n## 2. Method Components & Relations relevant to figures\n- **Key modules**\n  - **CoT generation module:** Prompt base model \\(M\\) to produce an answer plus a chain-of-thought; then **segment** the CoT into discrete reasoning steps (granularity chosen by the method).\n  - **Parameter intervention (unlearning) module:** For each step, create a modified model \\(M^*\\) by **unlearning content tokens from that step** using **NPO+KL** (Negative Preference Optimization on “forget” data + KL regularization on “retain” data).\n  - **Controls / validity checks module:** Verify the intervention is (1) **efficacious** (the target step’s information is removed), (2) **specific** (non-target information is not removed), and (3) **capability-preserving** (general performance retained).\n  - **Evaluation module:** Compare \\(M\\) vs. \\(M^*\\) primarily via **direct answering (no-CoT)** to reduce confounding from changed post-intervention reasoning context; optionally compare CoTs to study reasoning shifts.\n\n- **Key relations / data flows / signals**\n  - **Flow:** Prompt \\(\\rightarrow\\) CoT \\(\\rightarrow\\) step segmentation \\(\\rightarrow\\) per-step unlearning to obtain \\(M^*\\) \\(\\rightarrow\\) re-query for prediction (typically no-CoT) \\(\\rightarrow\\) compute faithfulness signals.\n  - **Faithfulness signals:**\n    - **FF-SOFT:** \\(\\Delta p\\), the *change in probability of the original answer* after unlearning a given step (used as a step-level salience/faithfulness indicator).\n    - **FF-HARD:** A more discrete/aggregate indicator of whether unlearning (when valid) **changes the model’s predicted answer**, interpreted as evidence the removed step was supporting the original decision.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- **Make the causal-testing idea concrete:** Show that the paper’s faithfulness test is a *parameter-level intervention* driven by CoT content, not a contextual perturbation of the prompt.\n- **Clarify the two-stage structure:** Visually separate (i) *how* the model is intervened on (unlearning guided by steps + controls) from (ii) *how* faithfulness is evaluated (prediction and/or reasoning differences).\n- **Demonstrate step-level localization:** Provide evidence that unlearning **individual** reasoning steps produces *differential* effects on the model’s confidence/answer—supporting the claim that some steps are more causally implicated than others.\n- **Communicate metric interpretation:** Visually encode what it means for \\(\\Delta p\\) (FF-SOFT) to be positive/negative and how that maps to “probability removed from the initial prediction” vs. “probability added,” tying figure patterns to the faithfulness claims.\n\n## 4. What Figures are NOT intended to show\n- **Not a proof of “true internal reasoning” transparency:** Changes in prediction after unlearning are used as *evidence of parametric dependence*, not a definitive revelation of the model’s full internal reasoning process.\n- **Not a contextual-faithfulness/self-consistency test:** The figures are not designed to show robustness to CoT token perturbations or to measure whether the answer follows from the *displayed* CoT in-context.\n- **Not primarily a performance-improvement result:** Visuals are aimed at diagnosing faithfulness via interventions and controls, not at showing higher QA accuracy from CoT prompting or from unlearning.\n- **Not a claim that faithful steps are human-plausible:** The figure-driven signals (e.g., FF-SOFT heatmaps) indicate parametric influence, not that the highlighted steps are necessarily coherent, correct, or judged plausible by humans.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps__p0__score0.95.png",
+      "caption": "Figure 1: An illustration of PFF and FUR. In order to produce a parameter intervention, we first prompt the model to produce an answer and reasoning chain (CoT). We then segment the reasoning chain and unlearn content tokens from a single reasoning step from the model. The unlearned model is then prompted to produce an answer. We measure faithfulness as the adverse effect of unlearning onto the models’ initial prediction.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 3.0,
+              "reason": "The figure covers the main PFF/FUR flow described in the summary: prompt → CoT → step segmentation (implicitly via highlighting a single step) → unlearn a step’s content tokens → re-query with no-CoT → measure a faithfulness signal as a change in the original prediction (shown as answer/probability shift and Δp). However, it omits several major components explicitly emphasized in the summary, including the NPO+KL unlearning method details and the stage-1 control/validity checks (efficacious/specific/capability-preserving), as well as the distinction between FF-SOFT vs. FF-HARD as named metrics."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the visual alone, a reader can infer the operating principle: generate a CoT, select a reasoning step, “unlearn” that step in parameters, then compare the model’s no-CoT answer/probability before vs. after; a larger adverse change (Δp) implies the removed step supported the initial prediction and thus indicates faithfulness. The only missing standalone clarity is methodological specificity (how unlearning is implemented and what checks ensure it is valid), which the summary treats as important for interpreting the causal claim."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure provides a partial summary centered on the core intervention-and-effect idea, but it does not include key end-to-end elements stressed in the summary such as the two-stage framing with explicit control-based validation, the full set of faithfulness metrics (FF-SOFT step ranking vs. FF-HARD discrete answer change), and optional reasoning-shift evaluation. Thus it is not a complete visual summary of the paper’s overall methodological story from setup through validated intervention to multiple evaluation outputs."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure largely sticks to the summary’s core elements: prompting a base model to produce a CoT, segmenting into a step, performing parameter-level unlearning on that step, then re-querying with no-CoT and measuring a probability change (Δp) and answer change. It does include extra illustrative specifics not mentioned in the summary (a concrete multiple-choice question, exact probabilities p=1.0 and p=0.55, and the phrasing 'The CoT is faithful'), but these are conventional example instantiations and do not introduce new methodological components or formulas beyond Δp."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 5.0,
+              "reason": "The depicted relationships match the summary and caption: prompt → generate CoT → (choose a step) → unlearn that step’s content in parameters to obtain an intervened model → re-query for an answer without CoT → measure adverse effect via change in probability and/or prediction change. The figure also aligns with the summary’s emphasis on using no-CoT at evaluation to reduce confounding from changed reasoning context."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 4.0,
+              "reason": "Major components are labeled in a way consistent with the summary: 'CoT', 'no-CoT', and 'unlearn' clearly indicate the chain-of-thought generation, no-CoT evaluation, and parameter intervention. However, the figure does not explicitly name key paper-specific terms such as PFF, FUR, FF-SOFT/FF-HARD, or NPO+KL (mentioned in the summary as the concrete unlearning method), and it uses the phrase 'The CoT is faithful' rather than explicitly labeling FF-HARD/FF-SOFT."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The schematic foregrounds the core PFF/FUR pipeline described in the summary: prompt → CoT → per-step intervention (“unlearn”) → re-query with no-CoT → compare prediction/probability change. It avoids diving into implementation details (e.g., NPO+KL, control checks), which keeps the main contribution legible. However, it only depicts a single-step example and does not visually separate the two-stage structure (intervention validity vs faithfulness evaluation), so the full framework is slightly under-summarized."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "Given the caption, the figure works well as a companion: it clearly shows the original model output with CoT, the parameter-level unlearning, and the downstream change in the no-CoT answer and probability, aligning with the summary’s emphasis on evaluating via direct answering to reduce confounds. The inclusion of Δp and a statement that the CoT is ‘faithful’ matches the intended interpretation of FF-SOFT/faithfulness-as-adverse-effect, though FF-HARD vs FF-SOFT terminology is not explicitly labeled, which could leave readers needing the text to map the displayed signals to the named metrics."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "Most elements support the core idea (baseline vs unlearned model, CoT box, ‘unlearn’ arrow, no-CoT querying, probability outputs, and Δp). There are minor decorative/extra items (emoji/icons, colored highlights on specific words in the CoT) that are not required by the summary and don’t add much technical clarity, but they do not materially obscure the method or introduce conflicting structure."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The flow is largely top-to-bottom: prompt at the top, then branching to the base model and unlearned model, then down to no-CoT answers and a bottom conclusion about faithfulness (Δp). Minor ambiguity arises because the diagram also uses left/right symmetry (base vs. unlearned) rather than a strictly linear left-to-right pipeline."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Most connectors are clean and non-overlapping: separate vertical no-CoT arrows and a single CoT arrow into the step box. The curved branching from the prompt to both models and the dashed unlearn arrow come close to other elements but do not create heavy, confusing crossings."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally paired components are placed near each other: the two model states are at the same level, their corresponding no-CoT outputs are directly below them, and the CoT/segmented-step box sits centrally between model creation and evaluation. The faithfulness summary (Δp) is placed at the bottom between the two outputs, matching its comparative role."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 5.0,
+              "reason": "Key nodes are aligned on an implicit grid: top prompt centered; two model boxes horizontally aligned; two answer boxes horizontally aligned beneath them; and the bottom faithfulness box centered. The vertical arrows reinforce this neat alignment."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The main components stand out via position and size: the prompt is largest and topmost; the two model states are prominent and symmetric; outputs are emphasized with colored boxes (green/red). The central CoT step box is visually salient, though the overall importance of the two-stage structure (intervention vs. evaluation) could be distinguished more explicitly (e.g., grouping or headings), which slightly weakens hierarchy."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is adequate whitespace between modules, and arrows generally have room to curve without clutter. The central area (CoT box and dashed unlearn arrow) is somewhat tight, but still readable and not crowded enough to obscure relationships."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles use consistent encodings: both model states share the same rounded blue container; both no-CoT outputs share the same box style with different semantic color (green vs. red) to indicate changed prediction. The CoT step box is consistently distinct as a different module. Some stylistic mixing (icons/emoji-like markers and varied text emphasis) introduces mild inconsistency but does not break the method depiction."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces abstract components from the summary (model M vs. M*, parameter intervention, and prediction shift) with concrete visual metaphors: two stylized neural-network boxes, a red dashed \"unlearn\" arrow, and color-coded answer boxes showing prediction changes. It also abbreviates the core signals into a compact label (\"Δp\") consistent with FF-SOFT/faithfulness signals described in the summary. It does not, however, visually encode the NPO+KL details or the control/validity checks module, so the metaphorization is focused on the high-level PFF/FUR flow rather than all method internals."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "The style largely follows a common schematic template for ML method figures: left-to-right pipeline, boxed modules, arrows, and before/after comparison of predictions. While the inclusion of a toy multiple-choice example and the explicit \"unlearn\" intervention arrow adds some personality, these are still standard explanatory devices rather than a distinctive or unusual visual language."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s two-stage causal-testing idea in the summary: it shows CoT generation, step-based intervention (unlearning one step), then re-querying with no-CoT and measuring adverse effect on the original prediction via Δp. The mirrored pre/post model panels and the explicit separation between CoT path and no-CoT evaluation path are well adapted to the paper’s emphasis on parameter-level intervention and downstream prediction change. It is less adapted to the broader framework because it omits the control-based validation elements that the summary highlights as crucial for interpreting stage-2 faithfulness."
+            }
+          ]
+        },
+        "weighted_total": 3.762
+      }
+    },
+    {
+      "figure_file": "Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps__p7__score0.80.png",
+      "caption": "Figure 4: Heatmap produced by unlearning reasoning steps. ∆p denotes FF-SOFT: the change in initial answer probability. Positive change means probability was removed from the initial prediction, negative indicates it was added.",
+      "scores": {
+        "Informativeness": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 4.0,
+              "reason": "The figure sticks to elements described in the summary/caption: a question, segmented CoT steps, and per-step FF-SOFT values shown as \\u0394p with a sign interpretation. It does not introduce new modules (e.g., extra architectures) or new metrics beyond \\u0394p/FF-SOFT. Minor concern: the heatmap-like coloring/step annotations are not explicitly described in the summary beyond being a heatmap encoding sign/magnitude, but this is a conventional visualization choice and does not change the core method."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 4.0,
+              "reason": "The depicted relation (individual reasoning steps \\u2192 associated \\u0394p values representing FF-SOFT change in initial answer probability after unlearning that step) matches the summary's definition of FF-SOFT as step-level salience via probability change for the original answer. The caption's mapping of positive vs. negative \\u0394p is internally consistent within the figure. However, the figure alone does not show the key causal operation (parameter unlearning via NPO+KL) or the explicit before/after comparison M vs. M*, so the causal linkage is implied rather than demonstrated in the visual."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Key labels align with the summary/caption: \\u0394p is explicitly identified as FF-SOFT and described as the change in initial answer probability. The figure presents per-step \\u0394p annotations consistent with 'unlearning reasoning steps' and does not misname methods or introduce incorrect terminology."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is tightly centered on the core contribution described in the summary: step-level effects of per-step unlearning measured as FF-SOFT (Δp). It shows a single example question, the model’s initial answer choice, and multiple segmented CoT steps each paired with a Δp value, which directly matches the intended “step-level localization” and “metric interpretation” purposes. Minor readability loss comes from relying on sentence-level text blocks rather than a more abstract schematic, but it still foregrounds the main idea."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "With the caption, the figure functions well as supplementary material: it concretely illustrates how unlearning individual reasoning steps produces different Δp magnitudes and signs, aligning with the summary’s description of FF-SOFT and per-step salience. The mapping from sign to interpretation (probability removed vs. added) is supported by the caption. However, the visualization depends on readers inferring the color semantics (e.g., green/pink highlighting) and the exact unlearning operation is not depicted here (only outcomes), so it is clearer as an example than as a standalone explanation of the full two-stage PFF/FUR pipeline."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 5.0,
+              "reason": "There are no decorative elements; all components (question, initial answer, segmented steps, arrows, and Δp annotations) directly serve the stated goal of showing FF-SOFT changes per step after unlearning. The amount of text is necessary to make the step-level intervention interpretable, and nothing appears unrelated to the core idea of step-wise parametric faithfulness measurement."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 4.0,
+              "reason": "The figure has a clear top-to-bottom reading order: question at the top, answer options below, then sequential reasoning steps. The ∆p annotations are consistently placed to the right with arrows pointing back to each step, reinforcing a left-to-right association between a step and its ∆p value."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 5.0,
+              "reason": "Connection lines (the arrows from the right-side ∆p labels to each reasoning step) do not cross; each arrow targets a distinct box cleanly."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 4.0,
+              "reason": "Each ∆p value is placed immediately adjacent to (and directly linked by an arrow to) its corresponding reasoning step, which supports the intended step-level FF-SOFT interpretation. The answer choice region is also placed close to the question. However, there is no additional grouping/structure to separate 'steps' from other elements beyond vertical stacking."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "The text boxes for the steps are neatly aligned in a single vertical column, and the ∆p labels are aligned along the right edge. Minor irregularity appears in arrow lengths/placement and slight variations in box heights due to text length, but overall it follows a clean grid-like layout."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 3.0,
+              "reason": "The question is visually distinguished by placement at the top, but the main message (per-step unlearning effects via ∆p/FF-SOFT) does not strongly stand out beyond the right-side annotations. The step boxes are visually similar, so salience relies mostly on reading the ∆p numbers rather than a stronger visual emphasis (e.g., stronger color scale or magnitude encoding)."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is adequate spacing between stacked boxes, and the right margin accommodates ∆p labels and arrows without clutter. Some arrows and labels sit relatively close to the step borders, but they remain legible and non-overlapping."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 4.0,
+              "reason": "All reasoning steps use consistent rectangular boxes, and all ∆p annotations use the same format with arrows. Color use is mostly consistent, but the meaning of green vs. pink shading for steps is not made explicit in the caption, so the consistency is good stylistically but semantically under-specified within this figure."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 2.0,
+              "reason": "The figure uses standard abbreviations and symbols (e.g., Δp, arrows) to denote FF-SOFT effects, but it does not replace abstract concepts with concrete icons or metaphors. The visualization is largely literal: text boxes for CoT steps with numeric Δp annotations, which aligns with the summary’s heatmap-by-step idea but is not especially metaphorical."
+            },
+            {
+              "question": "novelty",
+              "score": 3.0,
+              "reason": "Mapping per-step unlearning effects (Δp) onto a step-wise heatmap-like layout is a moderately distinctive presentation for conveying parametric faithfulness signals, consistent with the summary’s emphasis on step-level localization. However, the style itself (colored rectangles with arrows and numbers) is close to common explanatory/annotation templates rather than a uniquely stylized graphic."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific goal: it directly juxtaposes the original QA prompt/answer with segmented reasoning steps and annotates each step with its Δp impact, making the FF-SOFT interpretation (probability removed vs. added) easy to read. This breaks from more uniform, generic plots by structuring the visualization around the CoT segmentation and per-step intervention outcome described in the summary."
+            }
+          ]
+        },
+        "weighted_total": 3.133
+      }
+    },
+    {
+      "figure_file": "Measuring_Chain_of_Thought_Faithfulness_by_Unlearning_Reasoning_Steps__p3__score1.00.png",
+      "caption": "Figure 2: A high level overview of the two stages of PFF: (1) parameter intervention and (2) evaluation. We instantiate PFF with FUR by using NPO+KL, controls to assure precision of unlearning and faithfulness metrics.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1_1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure covers the major modules and relations described in the summary: the two-stage PFF structure (Intervention → Evaluation), FUR instantiated via per-step unlearning with NPO+KL, and the control-based validity checks (efficacy, specificity, general capabilities). It also references the faithfulness metrics (ff_hard, ff_soft) and the evaluation via prediction difference, plus an optional CoT-difference view. However, it omits key details from the summary needed for full coverage, such as explicit step segmentation, the emphasis that evaluation is primarily via direct answering (no-CoT), and the definition of FF-SOFT as Δp (probability change of the original answer)."
+            },
+            {
+              "question": "1_2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the visual alone, one can understand the operating principle: first intervene on parameters by unlearning information from individual CoT steps (with NPO+KL) while running controls to ensure precision, then evaluate by comparing M vs. M* through prediction differences (and optionally CoT differences) and summarizing via ff_hard/ff_soft. The main remaining ambiguity is how the CoT steps are obtained/segmented and what exactly ff_soft measures (probability change vs. some other notion), which reduces full standalone clarity."
+            },
+            {
+              "question": "1_3_completeness",
+              "score": 3.0,
+              "reason": "As a high-level overview, it captures the central pipeline elements emphasized in the summary (two-stage causal test, per-step unlearning, controls, and faithfulness metrics). But it is not complete end-to-end relative to the summary: it does not show the initial CoT generation/segmentation flow, does not convey the paper’s recommended evaluation choice (no-CoT direct answering to avoid confounds), and does not visually encode the metric interpretation (e.g., Δp meaning and sign). Thus it summarizes core contributions but not the full methodological story from beginning to end."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 5.0,
+              "reason": "All depicted components align with the summary: Stage 1 includes per-step unlearning using NPO+KL and a controls block checking efficacy, specificity, and general capabilities; Stage 2 includes evaluation via prediction difference (FF-HARD/FF-SOFT) and optional CoT/reasoning difference. The figure’s equation/section references (e.g., NPO+KL, efficacy/specificity, ff_hard/ff_soft, Δprediction/Δreasoning) do not introduce new methods or formulas beyond what the summary states."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 5.0,
+              "reason": "The two-stage flow is faithful to the summary: parameter intervention (unlearning guided by segmented CoT steps plus validity controls) precedes evaluation comparing M vs. M*. The evaluation is split into prediction differences (used for FF-HARD and FF-SOFT via probability/prediction change) and reasoning/CoT differences as an additional analysis, matching the summary’s description of primary no-CoT prediction comparison with optional CoT comparison."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Labels match the summary’s terminology and roles: 'Unlearning' corresponds to FUR’s per-step parameter intervention; 'NPO+KL' matches the stated optimization method; 'Controls' enumerate efficacy, specificity, and capability preservation; and 'Prediction difference' plus 'ff_hard and ff_soft' correctly name the faithfulness metrics, while 'CoT Difference' correctly denotes optional reasoning-shift analysis between M and M*."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The figure is highly schematized around the paper’s main contribution: the two-stage PFF structure (Stage 1: parameter intervention via unlearning; Stage 2: evaluation via prediction/reasoning differences). It includes only the essential components named in the summary/caption (NPO+KL unlearning on individual CoT steps, control checks—efficacy/specificity/general capabilities—and faithfulness metrics via prediction difference), without drifting into task-specific or experimental minutiae."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption/text, it matches the summary’s intended purpose of clarifying the two-stage pipeline and separating intervention from evaluation. The labels (e.g., NPO+KL, controls, Δprediction/Δreasoning, ff_hard/ff_soft) align with the described modules and signals. Minor readability friction remains because the figure relies on shorthand (section/equation references, symbols M and M*) that likely require the surrounding paper context to be immediately interpretable."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 5.0,
+              "reason": "The diagram avoids decorative or irrelevant elements: it consists of a clean left-to-right flow with only the core boxes required by the method (unlearning, controls, evaluation). No extraneous annotations, embellishments, or unrelated performance claims appear, and the included subcomponents correspond directly to the summary’s method structure."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The diagram has a clear left-to-right flow: Stage 1 (Intervention) on the left leads via a prominent right-pointing arrow to Stage 2 (Evaluation) on the right, matching the summary’s two-stage structure."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "Connections are minimal and do not cross. The only connector is the single arrow between the two stage boxes, so there is no visual edge-crossing clutter."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related modules are grouped within each stage: unlearning and controls are co-located in Stage 1, and evaluation outputs (Δprediction and Δreasoning) are co-located in Stage 2. However, within Stage 2, the link between the two evaluation submodules is only implicit (no internal connector), so their functional relationship is slightly less visually reinforced."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major blocks are aligned on a horizontal axis and internal sub-boxes appear neatly placed side-by-side within each stage. Minor alignment inconsistencies exist (e.g., differing box sizes/heights and padding between submodules), but the overall grid-like layout is clean."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Hierarchy is conveyed by large enclosing containers for Stage 1 vs Stage 2, with labeled submodules inside and a thick arrow indicating progression. The main components stand out, though the visual emphasis between submodules (e.g., Δprediction vs Δreasoning) is relatively uniform and may not reflect their differing prominence in the summary (prediction/no-CoT primary vs optional reasoning comparison)."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is adequate whitespace separating the two stages and sufficient internal padding to keep text readable. Margins are a bit tight vertically within some sub-boxes due to dense text (equation references and lists), but not to the point of harming legibility."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Similar roles use consistent visual encodings: stage containers share the same style, submodules use similar rounded boxes and fill colors, and headers (e.g., Unlearning/Controls, Δprediction/Δreasoning) are consistently styled, supporting easy parsing of parallel structure."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 2.0,
+              "reason": "The figure mostly uses text boxes, section labels, and mathematical notation (M, M*) to represent the two-stage PFF flow described in the summary (intervention via NPO+KL with controls, then evaluation via prediction/reasoning differences). It does not replace abstractions with concrete icons or symbolic metaphors beyond standard abbreviations like NPO+KL, Δprediction, and Δreasoning."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "Visually, the diagram follows a common pipeline template: two large stages with rounded boxes and a connecting arrow. This matches the summary’s intended purpose of clarifying a two-stage structure, but it does not exhibit a distinctive aesthetic or unconventional visual language that would differentiate it from typical method-overview schematics."
+            },
+            {
+              "question": "adaptability",
+              "score": 3.0,
+              "reason": "The layout is tailored to the paper’s core structure by explicitly separating Stage 1 (parameter intervention) into 'Unlearning' and 'Controls'—reflecting the summary’s emphasis on efficacy/specificity/capability-preservation—and Stage 2 (evaluation) into prediction vs. reasoning differences, aligning with the described evaluation pathways and faithfulness metrics. While still conventional, this subdivision is meaningfully aligned with the method’s claims rather than a generic single-block flow."
+            }
+          ]
+        },
+        "weighted_total": 4.019
+      }
+    }
+  ]
+}

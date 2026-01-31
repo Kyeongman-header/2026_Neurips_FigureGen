@@ -1,0 +1,118 @@
+{
+  "paper_name": "Mitigating_Hallucinations_in_Vision-Language_Models_through_Image-Guided_Head_Suppression",
+  "evaluated_at": "2026-01-12T03:10:32.421652",
+  "figure_summary": "## 1. Core Contributions\n- **Diagnose hallucination source at the component level:** The paper argues hallucinations in LVLMs are linked to a *dynamic subset of attention heads* that, for a given generated text token, allocate **insufficient attention to image (vision) tokens**.\n- **Quantify “visual neglect” across layers/tokens:** It characterizes how attention mass shifts away from vision tokens—especially in deeper layers—despite vision tokens being the majority of the input sequence.\n- **Introduce SPIN (SuPpressing Image INattentive heads):** An **inference-time, task-agnostic** method that **selectively suppresses** heads that attend least to image tokens per query text token, preserving top‑k “more image-attentive” heads.\n- **Claim efficiency + effectiveness tradeoff:** SPIN is positioned as reducing hallucination scores substantially **without retraining and without added inference latency/compute**, outperforming other inference-time methods that require extra passes or slower decoding.\n\n## 2. Method Components & Relations relevant to figures\n- **LVLM pipeline components (context for what figures measure):**\n  - Image encoder → produces **visual embeddings** (patch-level).\n  - Projector → maps visual embeddings into the LLM embedding space as **vision tokens**.\n  - Tokenizer → converts prompts/generated text into **text tokens**.\n  - Language decoder (transformer blocks): **Multi-Head Attention (MHA)** + FFN over the concatenated sequence *(vision tokens + text tokens)*.\n\n- **Key relation the figures revolve around: attention allocation**\n  - For each generated (current) **text query token**, each attention head induces an attention distribution over **preceding tokens**, partitioned into:\n    - **Vision tokens** (image-derived)\n    - **Text tokens** (system/instruction + previously generated)\n  - The paper’s central diagnostic quantity is effectively: **how much attention mass is assigned to vision tokens vs. text tokens**, by layer and averaged over output positions.\n\n- **SPIN mechanism (as intended to be depicted/validated by figures):**\n  - For each query text token and layer, compute each head’s **cumulative attention to vision tokens**.\n  - **Identify “image-inattentive” heads** (lowest vision-attention) and suppress them via a **dynamic head mask**; retain the **top‑k** heads (most vision-attentive).\n  - Resulting MHA output uses masked/attenuated heads but otherwise preserves the same forward computation structure (claimed no meaningful extra overhead).\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- **Make the failure mode visually legible:** Show concrete examples where baseline LVLM outputs mention **non-existent objects/attributes** (hallucinations) and how SPIN changes the output toward image-grounded content.\n- **Support the attention-based diagnosis:** Provide empirical visual evidence that, in baseline models, generated text tokens devote **disproportionately low attention to image tokens** (especially in deeper layers), motivating head-level intervention.\n- **Illustrate the intervention target:** Convey that hallucination is not treated as a global decoding issue but as something tied to **specific attention heads per layer/token**, justifying head suppression rather than slower multi-pass decoding.\n- **Connect mechanism to outcomes:** Visually link (a) altered attention behavior / head usage with (b) reduced hallucinated entities while maintaining task performance, aligning with the paper’s efficiency claims.\n\n## 4. What Figures are NOT intended to show\n- **Not a claim of perfect grounding or factual correctness:** Figures illustrate reduced hallucination tendencies, not a guarantee of complete faithfulness across all objects/relations.\n- **Not evidence of universal, fixed “bad heads”:** The paper frames problematic heads as a **dynamic subset depending on the current token/layer**, so figures are not meant to imply a single static set of heads causes hallucinations in all cases.\n- **Not a training-based improvement story:** Figures are not intended to demonstrate gains from retraining, new supervision, RLHF-style objectives, or added model parameters; the method is inference-time and masking-based.\n- **Not a benchmark-complete performance proof:** Example outputs/attention plots are meant to motivate and explain; they are not, by themselves, comprehensive evaluations of accuracy, robustness, or latency across all tasks and decoding strategies.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Mitigating_Hallucinations_in_Vision-Language_Models_through_Image-Guided_Head_Suppression__p0__score0.95.png",
+      "caption": "Figure 1: Caption generation using LLaVA-1.5 and SPIN. LLaVA-1.5’s generated text description mentions a “chair” in the background, which is clearly a hallucinated object. SPIN mitigates hallucination while successfully identifying the objects present in the image.",
+      "scores": {
+        "Informativeness": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 5.0,
+              "reason": "The figure only depicts elements consistent with the summary/caption: LLaVA-1.5 captioning, SPIN as an inference-time suppression of image-inattentive attention heads, and an example where the baseline hallucinates an object (“chair”) that SPIN removes. It does not introduce extra formulas, training objectives, retraining components, or additional compute mechanisms (e.g., multi-pass decoding) not mentioned in the summary."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 4.0,
+              "reason": "The relations shown are broadly aligned with the summary: Multi-Head Attention has multiple heads, SPIN suppresses some heads (illustrated by masking/marking one head) while keeping others, and this leads to reduced hallucinated content in the generated caption. However, the figure is simplified and does not explicitly convey the key nuance from the summary that suppression is dynamic per query token and based on lowest cumulative attention to vision tokens; it visually risks implying a more static or single-head suppression behavior."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Major labels match the summary/caption: “LLaVA-1.5” is the baseline LVLM, “SPIN” is the proposed method, and “Multi-Head Attention” is the targeted component. The example labels (ground truth/detected/hallucinated objects) are consistent with the caption’s claim about hallucinating a “chair” and SPIN mitigating it."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3_1_summarization",
+              "score": 5.0,
+              "reason": "The figure is schematized around the main contribution described in the summary: it contrasts baseline LLaVA-1.5 vs. SPIN and highlights the key effect (removing a hallucinated object) rather than including unrelated diagnostics (e.g., layerwise attention heatmaps or benchmark plots). The left panel’s simple head-suppression iconography supports the paper’s head-level intervention framing without excessive implementation detail."
+            },
+            {
+              "question": "3_2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption and paper narrative, it clearly demonstrates the claimed outcome: baseline mentions a hallucinated “chair,” while SPIN removes it and retains image-grounded objects (dog/bed/couch). The mapping between the method cartoon (suppressing some attention heads) and the textual output change is intuitive. However, it does not directly visualize the paper’s diagnostic quantity (reduced attention to vision tokens), so readers must accept the mechanism–effect link without seeing the attention-allocation evidence in this figure."
+            },
+            {
+              "question": "3_3_redundancy",
+              "score": 4.0,
+              "reason": "It avoids decorative elements and keeps annotations focused on core ideas (hallucinated vs. detected objects). Some redundancy exists because the hallucination is marked both in the generated text (highlighted word) and again in the checklist box; this repetition is minor and does not distract from the central message. All shown elements (baseline vs. SPIN, head masking cartoon, image, object lists) are aligned with the summary’s intended illustrative purpose."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 5.0,
+              "reason": "The figure has a clear left-to-right flow: the prompt and model blocks (LLaVA-1.5 vs. SPIN) on the left lead to generated captions in the middle, and the image plus grounding/hallucination summary on the right. This matches the caption’s intent of comparing baseline vs. SPIN outputs on the same image."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 5.0,
+              "reason": "There are no visible connector lines that cross. The comparison is communicated via side-by-side blocks and stacked text boxes rather than complex wiring, keeping the layout visually clean."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 4.0,
+              "reason": "Functionally paired elements are placed close: each method label (LLaVA-1.5, SPIN) is adjacent to its attention-head schematic and its corresponding caption box. The image and the legend about detected vs. hallucinated objects are grouped together. Minor drawback: the attention-head schematics are somewhat separated from the exact caption regions they explain (they are left of both captions rather than directly attached to each caption box)."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "Major components are aligned in columns (left: method schematics; middle: text outputs; right: image + legend) and rows (top baseline, bottom SPIN). Some internal elements (e.g., the prompt bubble and the baseline text box) are not perfectly grid-aligned, but overall the structure is neat and readable."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "The two main conditions (LLaVA-1.5 vs. SPIN) are clearly distinguished by position (top vs. bottom) and labeling, and the hallucinated word (\"chair\") is emphasized in red, supporting the caption’s core message. The attention-head diagrams are small and may not stand out as a key explanatory element relative to the large text blocks and image."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient spacing between the three main regions (methods, captions, image/legend). A few areas feel dense (the long caption text blocks and the compact legend list), but they do not visually collide or create ambiguity."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 5.0,
+              "reason": "Similar roles are encoded consistently: both methods use the same multi-head-attention schematic style; outputs are shown as similar text boxes; and the right-side legend uses consistent color semantics (green for grounded/detected, red for hallucinated) aligned with the caption’s hallucination example."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 3.0,
+              "reason": "The figure replaces abstract transformer behavior with concrete, easily parsed icons/abbreviations: stacked head boxes (h1…hn), a scissors symbol indicating suppression (masking), and checklist-style panels marking ground-truth, detected, and hallucinated objects. These are conventional but effective symbolic stand-ins for the paper’s head-level intervention narrative (SPIN suppressing image-inattentive heads)."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "Visually, the composition follows a common explanatory template for LVLM papers: model block diagram on the left, example image and generated captions in the middle, and a simple outcome summary on the right (with red/green indicators). While aligned with the summary’s goal of making hallucination legible and showing SPIN’s effect, it does not introduce a distinctive visual style beyond standard color-coding and annotation."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to this paper’s specific claim by directly juxtaposing (a) the component-level mechanism (multi-head attention with selective head suppression) with (b) a concrete hallucination example (“chair”) and (c) an object-level accounting of ground truth vs detected vs hallucinated entities. This breaks from a purely generic pipeline diagram by tightly coupling mechanism-to-outcome in one panel, matching the summary’s emphasis on head-targeted inference-time mitigation."
+            }
+          ]
+        },
+        "weighted_total": 3.286
+      }
+    }
+  ]
+}

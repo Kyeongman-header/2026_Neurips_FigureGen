@@ -1,0 +1,388 @@
+{
+  "paper_name": "Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration",
+  "evaluated_at": "2026-01-12T02:34:59.749008",
+  "figure_summary": "## 1. Core Contributions\n- Proposes **QR-Distill**, a multi-path knowledge distillation framework designed for **path-aware, task-aware, and student-aware** transfer from a black-box teacher to smaller students.\n- Introduces a **two-stage quality filtering** pipeline that removes (i) paths with wrong final answers and (ii) “spurious” reasoning steps via an **LLM-as-judge**.\n- Adds **conditional routing** that **dynamically assigns** filtered reasoning paths to different students using a trainable router with **discrete (Gumbel-Softmax) assignments** plus **entropy regularization** for balanced routing.\n- Incorporates **cooperative (mutual) student distillation**: multiple students train concurrently and share knowledge via an **ensemble-of-students representation** aligned with each student through a **feature-level MSE loss**.\n\n## 2. Method Components & Relations relevant to figures\n- **Reasoning-path pool creation (teacher prompting)**\n  - Teacher \\(T\\) generates multiple reasoning paths \\(R^{(i)}_j\\) per question using diverse prompt templates (styles).\n- **Quality filtering (data curation before routing)**\n  - Step 1: keep only paths whose extracted final answer \\(\\hat A^{(i)}_j\\) matches the label \\(A^{(i)}\\).\n  - Step 2: apply LLM judge \\(J\\) to remove logically invalid/spurious intermediate reasoning; outputs cleaned set \\(\\tilde R^{(i)}\\).\n- **Conditional routing (path-to-student assignment)**\n  - Encode each filtered path: \\(h^{(i)}_j = Enc(\\tilde R^{(i)}_j)\\).\n  - Router computes student assignment vector via MLP + Gumbel-Softmax:\n    \\(\\alpha^{(i)}_j \\in \\{0,1\\}^S\\), indicating which student(s) receive that path.\n  - **Entropy regularization** \\(L_{\\text{entropy}}\\) discourages degenerate routing (all/none; overly imbalanced assignments).\n- **Per-student distillation (teacher-driven pass)**\n  - Each student \\(S_s\\) is fine-tuned with an SFT-style distillation loss \\(L^{(s)}_{\\text{distill}}\\) on the routed paths.\n- **Mutual-student distillation (peer-teaching pass, feature-level)**\n  - For co-routed paths, each student produces hidden states \\(z^{(i,j)}_s\\), projects to shared space \\(\\tilde z^{(i,j)}_s\\).\n  - Compute competence weights \\(\\gamma^{(i,j)}_s\\) (softmax over students of a regressor on mean token representations).\n  - Form ensemble representation \\(z^{(i,j)}_{\\text{ens}}=\\sum_s \\gamma^{(i,j)}_s \\tilde z^{(i,j)}_s\\).\n  - Align each student to the ensemble with \\(L_{\\text{mutual}}=\\sum_s \\|\\tilde z_s - z_{\\text{ens}}\\|^2\\).\n- **Total objective**\n  - \\(L=\\sum_s L^{(s)}_{\\text{distill}} + \\lambda_1 L_{\\text{entropy}} + \\lambda_2 L_{\\text{mutual}}\\).\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **motivate** why naïvely distilling from multiple reasoning paths is insufficient by emphasizing that path usefulness varies across **tasks and student models**, necessitating **selection and assignment** rather than uniform use.\n- To **concretize the sources of “diversity”** in the reasoning path pool (i.e., distinct prompt templates intended to elicit different reasoning styles/skills).\n- To **visualize the end-to-end QR-Distill pipeline** and clarify how the three main mechanisms—**quality filtering**, **conditional routing**, and **mutual student distillation**—compose into a single training workflow (teacher-driven supervision plus peer-teaching/ensemble alignment).\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide **quantitative benchmark results**, hyperparameter sensitivity, or training dynamics (those are not the focus of the shown figures/captions).\n- Not intended to prove the **correctness** or calibration quality of the LLM judge \\(J\\), nor to validate routing optimality beyond illustrating its role/mechanism.\n- Not intended to detail **model internals** of the teacher/students (architectural specifics, logits-based KD, etc.); the emphasis is on **data/path handling and collaboration structure**.\n- Not intended to enumerate all prompt variants or dataset/task-specific configurations; figures illustrate representative templates and the conceptual workflow rather than exhaustive coverage.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+      "caption": "Figure 1: Distillation effectiveness of teacher-generated reasoning paths are path-, task-, and student-dependent.",
+      "scores": {
+        "Informativeness": {
+          "score": 1.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 1.0,
+              "reason": "The summary’s core method (QR-Distill) includes multi-path generation, two-stage quality filtering (answer match + LLM-as-judge), conditional routing via MLP + Gumbel-Softmax with entropy regularization, per-student distillation loss, and mutual student distillation with ensemble representation and feature-level MSE, plus the total objective. This figure instead only illustrates that different prompt templates/paths from black-box LLMs (e.g., Gemini/ChatGPT) have varying usefulness for different students and tasks (shown via check/cross outcomes). It omits the key pipeline components and formulas (filtering stages, judge, routing mechanism, entropy regularization, mutual distillation/ensemble weighting, and objective), so coverage of major components is very limited."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 3.0,
+              "reason": "From the visual alone, one can grasp the high-level motivation stated in the caption/summary: teacher-generated reasoning paths are not uniformly effective; effectiveness depends on the path, the task/question type, and the student model (Student 1 vs Student 2). However, the operating principle of QR-Distill as a system (how paths are filtered, routed, and used for cooperative training) is not inferable from this figure because those mechanisms are not depicted."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 1.0,
+              "reason": "The figure is a motivation/illustration for path-/task-/student-dependence, aligning with the summary’s stated purpose of motivating why naive multi-path distillation is insufficient. It does not summarize the end-to-end workflow (generation → two-stage filtering → conditional routing → per-student distillation → mutual student distillation) nor include the training objective components. Thus it is not a beginning-to-end summary of the paper’s content."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "2.1",
+              "score": 3.0,
+              "reason": "The figure stays mostly at a conceptual level consistent with the summary’s motivation: multiple prompt templates produce multiple reasoning paths whose usefulness varies by task and by student. However, it introduces concrete named teachers (“Gemini”, “Chatgpt”) and depicts exactly two students with success/failure icons; these specifics are not mentioned in the summary/caption and could be considered extraneous. No unmentioned core-method formulas (e.g., routing Gumbel-Softmax, entropy regularization, mutual distillation MSE) are added."
+            },
+            {
+              "question": "2.2",
+              "score": 4.0,
+              "reason": "Relationships shown are consistent with the intended message in the caption/summary: a black-box LLM generates multiple reasoning paths from different prompts, and distillation effectiveness differs across tasks and student models (one path helps one student but not another, and the pattern changes by task). The figure does not depict the later pipeline steps (quality filtering, conditional routing, mutual distillation), but that omission does not contradict the stated purpose of Figure 1 (motivation)."
+            },
+            {
+              "question": "2.3",
+              "score": 4.0,
+              "reason": "Major labels used in the figure—“Black-box LLM,” “Reasoning Path 1/2,” and “Student 1/Student 2”—match the summary’s terminology at a high level (black-box teacher producing multiple reasoning paths distilled into students). The use of specific teacher names (“Gemini”, “Chatgpt”) is not supported by the provided summary/caption, but it does not mislabel the core concept of a black-box teacher."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The schematic communicates the central claim in the caption/summary—teacher-generated reasoning paths vary in usefulness depending on the path, the task/question, and the student—by showing two tasks, two prompt styles, two resulting reasoning paths, and different success/failure outcomes per student. It stays high-level and does not dive into algorithmic specifics (e.g., filtering, routing, mutual distillation), which is appropriate for Figure 1’s stated purpose. Minor distraction comes from including concrete example questions and brand/model names, which add surface detail but do not fundamentally obscure the main message."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption, the visual evidence clearly supports “path-, task-, and student-dependent” effectiveness: checkmarks/crosses across two students and multiple paths make the dependence immediately legible. The layout (task → prompt template → black-box LLM → multiple paths → student outcomes) is easy to follow and matches the summary’s motivation that naive uniform distillation is insufficient. However, the figure introduces specific teacher names (e.g., Gemini/Chatgpt) that are not mentioned in the provided summary, which could create slight confusion about whether the method assumes multiple teachers rather than a generic black-box teacher."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The figure mostly avoids decorative clutter, but it includes several non-essential stylistic elements (emoji icons, large green scribble highlights, brand/model logos/names) that do not add conceptual content beyond ‘teacher’ and ‘students’. These elements increase visual noise and can distract from the core readability of the dependency pattern (path/task/student). Still, they do not alter the claimed structure or main motivational point."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.571,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 3.0,
+              "reason": "The figure shows a mostly top-to-bottom flow (questions/prompts → black-box LLM → reasoning paths → students), but the layout is split into left and right examples, which weakens a single unambiguous global reading direction."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Connection lines are simple vertical arrows with no visible crossings; the left/right separation keeps links from tangling."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related items are grouped: prompt templates sit near the corresponding question, the teacher (black-box LLM) is centrally placed above the produced reasoning paths, and the student outcome panels are directly beneath each path."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 3.0,
+              "reason": "There is partial grid-like alignment (two columns; stacked boxes), but several elements (hand-drawn frames, uneven box sizes, varied spacing) reduce neat horizontal/vertical alignment."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Higher-level stages are visually emphasized by size and position: large question boxes at the top and a prominent central 'Black-box LLM' bar. Lower-level artifacts (paths, students) are smaller and placed below, creating a clear hierarchy consistent with the caption’s conceptual point."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "Spacing is generally adequate between major rows, but the bottom student panels are dense with icons/checks/X marks inside dashed boxes, making margins within that region feel tight."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles use consistent visual encodings: prompt templates are similar boxes, reasoning paths are similar boxes, student panels share the same dashed-box style, and success/failure are consistently shown with green checks and red X marks. Minor inconsistencies come from mixed hand-drawn styling and varying box proportions."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces several abstract dependencies (path-/task-/student-dependent effectiveness) with concrete icons and visual cues: teacher/LLM sources as labeled blocks, reasoning paths as separate boxes, students as robot heads, and success/failure as green checkmarks/red crosses. This concretizes the core motivational claim in the summary (naïve multi-path distillation is insufficient because usefulness varies). The metaphors are clear but still fairly conventional (checks/crosses, robots)."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "The overall style is a familiar schematic/infographic common in ML papers (boxes, arrows, ticks/crosses). The inclusion of playful student icons and hand-drawn-like strokes adds some distinctiveness, but the visual language does not substantially depart from standard conceptual pipeline illustrations. Also, brand-like labels for teachers are not essential to the summarized contribution and do not add a novel visual encoding of the method."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s motivation: it juxtaposes two different tasks/questions and multiple prompt templates feeding into multiple reasoning paths, then shows that different students benefit differently (via per-student success/failure markers). This specifically supports the summary’s emphasis on path-, task-, and student-aware selection/assignment rather than a generic one-size-fits-all distillation diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.248
+      }
+    },
+    {
+      "figure_file": "Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p2__score0.95.png",
+      "caption": "Figure 2: Prompt templates of different reasoning paths.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "1_1_content_coverage",
+              "score": 2.0,
+              "reason": "The summary indicates figures may concretize sources of diversity in the reasoning-path pool via distinct prompt templates. This figure does show multiple prompt templates (vanilla, chain-of-thought, tree-of-thought, program-based, fact-retrieval, backward reasoning), which covers that specific component. However, it omits other major method components/formulas from the summary (two-stage quality filtering with answer match + LLM-as-judge, conditional routing with Gumbel-Softmax and entropy regularization, mutual student distillation with ensemble/feature MSE, and the total objective). Thus it does not cover the paper’s major components overall—only the prompting/template part."
+            },
+            {
+              "question": "1_2_standalone_intelligibility",
+              "score": 3.0,
+              "reason": "The figure is largely self-explanatory for its narrow purpose: it clearly lists template wordings and labels corresponding to different reasoning styles used to elicit diverse teacher paths (consistent with the summary’s 'diverse prompt templates'). But it does not convey how these prompts feed into QR-Distill’s subsequent stages (filtering, routing, multi-student training), so one cannot understand the general operating principle of the full system from this figure alone."
+            },
+            {
+              "question": "1_3_completeness",
+              "score": 1.0,
+              "reason": "Per the summary, the end-to-end paper includes: path pool creation, two-stage filtering, conditional routing, per-student distillation, mutual student distillation, and a combined loss. This figure only presents example prompt templates for generating reasoning paths and does not summarize the workflow from beginning to end, so it is not complete as a paper-level summary figure."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 5.0,
+              "reason": "The figure only presents representative prompt templates that elicit different reasoning styles (vanilla, chain-of-thought, tree-of-thought, program-based, fact retrieval, backward reasoning). The summary explicitly states the path pool is created via diverse prompt templates (styles) and that figures illustrate representative templates rather than exhaustive coverage; no extra method components, formulas, or pipeline claims are introduced here."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 5.0,
+              "reason": "The visual correctly depicts the intended relation that different prompt templates are used to generate diverse reasoning paths from the teacher (i.e., styles as sources of diversity in the reasoning-path pool). Since this figure is not a pipeline diagram, it does not assert any incorrect relationships among filtering, routing, or mutual distillation components."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Labels such as \"Vanilla reasoning\", \"Chain-of-Thought\", \"Tree-of-Thought\", \"Program-based Reasoning\", \"Fact Retrieval Reasoning\", and \"Backward Reasoning\" accurately name the prompt-template types and align with the summary’s description of distinct prompt templates intended to elicit different reasoning styles/skills."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The figure cleanly schematizes the key idea relevant to the caption and summary: multiple prompt templates are used to elicit diverse teacher reasoning paths (e.g., Vanilla, Chain-of-Thought, Tree-of-Thought, Program-based, Fact Retrieval, Backward). It focuses on representative template forms rather than implementation details of QR-Distill (filtering/routing/mutual distillation), which matches the stated purpose of showing sources of diversity."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "Given the caption ('Prompt templates of different reasoning paths') and the paper summary’s emphasis that the path pool is created via diverse prompt templates/styles, the figure functions well as supportive context. The mapping between each template text block and its label is explicit, making it easy to understand how different reasoning styles are elicited from the teacher."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The content is mostly non-redundant and directly tied to the core idea of prompt-driven path diversity. Minor redundancy/decorative overhead comes from heavy styling (multiple colored/shaded boxes and dashed border) and some templates being wordier than necessary, but these do not obscure the main message or introduce irrelevant method structure."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.286,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure is a set of prompt-template panels arranged primarily in stacked rows (top-to-bottom reading). While there is no pipeline/arrow flow (consistent with the caption focusing on templates), the layout supports a clear vertical scan of different reasoning-path prompts."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "There are no connection lines or arrows between elements, so there is no line-crossing issue."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Each prompt template (main text box) is placed directly adjacent to its corresponding label box on the right (e.g., Chain-of-Thought, Tree-of-Thought), which keeps functionally linked content close. The full set of templates is also grouped within one bordered container, reinforcing their shared role as sources of diversity."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 5.0,
+              "reason": "Boxes are neatly aligned in a consistent two-column structure (template text on the left, label on the right) with uniform widths and consistent row boundaries, indicating strong grid alignment."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 3.0,
+              "reason": "All templates appear visually similar in size and emphasis, which fits the caption’s goal of presenting multiple prompt templates rather than highlighting a single key component. However, the lack of a stronger visual distinction for headings vs. body text (beyond color accents) makes hierarchy only moderate."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is clear spacing between rows and a visible outer boundary margin. Some inner padding in the text-heavy boxes is adequate but slightly tight given the amount of text, which mildly reduces breathing room."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "All prompt templates use the same shape style (rounded rectangles) and a consistent paired representation (left prompt box + right label box). Color/texture variations are systematic across templates, supporting consistent encoding of different reasoning-path types."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 2.0,
+              "reason": "The figure mostly presents abstract prompt templates as literal text blocks (e.g., \"Let's reason step by step\", \"Use code\") with category labels (Vanilla, Chain-of-Thought, Tree-of-Thought, etc.). It uses mild visual cues (colored boxes, dashed borders) but does not meaningfully replace concepts with concrete icons/symbols beyond standard labeling."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 2.0,
+              "reason": "The design resembles a common paper template collection: stacked colored rectangles with headings on the right. While clean and readable, it does not exhibit a distinctive illustration style or unconventional visual language; it looks like a standard schematic for showing prompt variants mentioned in the summary (diverse prompt templates/styles)."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 3.0,
+              "reason": "The layout is reasonably tailored to the figure’s purpose (showing multiple representative prompt templates to illustrate sources of reasoning-path diversity), by pairing each template with a concise style label and using color to separate types. However, it largely follows a uniform, list-like panel structure rather than introducing a more customized layout that deeply reflects the paper’s broader QR-Distill pipeline."
+            }
+          ]
+        },
+        "weighted_total": 3.657
+      }
+    },
+    {
+      "figure_file": "Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+      "caption": "Figure 3: Overview of our framework, including (1) Quality Filtering that drops flawed chains-of-thought; (2) Conditional Routing that sends each reasoning path to the most suitable students for fine-tuning; (3) MutualStudent Distillation that shares and refines learned insights of different students.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_Content_Coverage",
+              "score": 3.0,
+              "reason": "The figure covers the three major modules highlighted in the summary and caption—Quality Filtering, Conditional Routing, and Mutual-Student Distillation—and shows the overall dataflow from a question to multiple reasoning paths to students and an ensemble. However, key methodological specifics from the summary are omitted: the two-stage filtering is not explicit (it visually drops a wrong-final-answer path but does not show the LLM-as-judge step for spurious intermediate steps); routing is shown as a generic “Reasoning Path Router” with checkmarks/Xs but does not include the discrete Gumbel-Softmax assignment, entropy regularization, or the path encoding/MLP. Mutual distillation is depicted with “Weight Learner” and “Ensemble,” but does not convey the competence weights γ, feature projection, or the MSE alignment loss, nor the full total objective."
+            },
+            {
+              "question": "1.2_Standalone_Intelligibility",
+              "score": 4.0,
+              "reason": "From the visual alone, one can infer the operating principle: generate multiple reasoning paths, filter low-quality paths, route remaining paths to different students, and then have students mutually distill knowledge via an ensemble with learned weights. The modular layout and arrows make the end-to-end workflow understandable without the paper. What is not standalone-clear are the precise criteria/mechanisms (e.g., what “quality” means beyond wrong answers, how routing decisions are made/regularized, and what loss is used in mutual distillation)."
+            },
+            {
+              "question": "1.3_Completeness",
+              "score": 2.0,
+              "reason": "As an overview figure, it summarizes the core pipeline stages, but it is not complete with respect to the method details described in the summary from start to end: it does not show the reasoning-path pool creation via diverse prompt templates/styles, it collapses the two-stage filtering into a single visual step (missing the explicit judge-based spurious-step removal), it omits the training objective components (per-student distillation loss, entropy regularization term, mutual MSE, and λ weights), and it does not depict the teacher/student-aware/task-aware aspects beyond the high-level routing intuition."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure’s main modules—Quality Filtering, Conditional Routing (router), and Mutual-Student Distillation with an ensemble—match the summary. However, it introduces a visually explicit 'Weight Learner' block (twice) without naming it as the competence-weight regressor/softmax mechanism (\u0003b3) described in the summary, and it does not depict the stated two-stage filtering with an explicit LLM-as-judge step; these are mild deviations but do not fundamentally change the claimed pipeline."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 4.0,
+              "reason": "Relationships largely align with the summary: reasoning paths are filtered, routed to different students, and then mutual distillation occurs via an ensemble representation. The routing-to-students and subsequent ensemble/peer-sharing is consistent with the described cooperative distillation. Missing/unclear aspects relative to the summary include (i) the explicit two-stage filtering (answer-match then judge-based spurious-step removal) and (ii) the discrete Gumbel-Softmax assignment and entropy regularization, which are not shown; nevertheless, the depicted high-level flow is correct."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled consistently with the summary and caption: 'Quality Filtering,' 'Conditional Routing,' and 'Mutual-Student Distillation' (caption: 'MutualStudent Distillation') are accurate names for the main mechanisms. Student/ensemble terminology is also consistent with the described cooperative/ensemble alignment concept."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the three main mechanisms named in the summary/caption—Quality Filtering, Conditional Routing, and Mutual-Student Distillation—and shows the end-to-end flow from a teacher-produced reasoning-path pool to routed student fine-tuning and ensemble-based mutual alignment. It avoids diving into architectural internals. However, it stays at a fairly high level and does not visually expose some key specifics emphasized in the summary (e.g., the explicit two-stage filtering with an LLM-as-judge step, and the discrete Gumbel-Softmax/entropy-regularized routing), which slightly weakens how fully it summarizes the contribution."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption/text, the left-to-right partitioning into three labeled blocks makes the pipeline easy to follow: paths are accepted/rejected, then assigned to particular students, then students exchange information through an ensemble/\"mutual distillation\" mechanism. The checkmarks/crosses clearly communicate filtering decisions and the arrows clarify data flow. Context is somewhat reduced by ambiguous labeling: the vertical \"Reasoning Path Router\" and the right-side \"Weight Learner\" components are not explained in the caption, and the figure does not visually indicate the two filtering stages (answer-match vs judge-based spurious-step removal) described in the summary."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The figure is mostly functional, but it includes several stylistic/decorative elements that do not add conceptual clarity (heavy dashed borders, hatched backgrounds, and robot icons for students). These do not contradict the summary, but they add visual clutter and reduce signal-to-noise. Additionally, repeated check/cross icons on both the filtering and routing sides can feel redundant without explicit legend/notation tying them to distinct decisions."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 5.0,
+              "reason": "The pipeline has a clear left-to-right flow consistent with the summary: reasoning-path pool/paths on the left, then Quality Filtering, then Conditional Routing via the (vertical) router module, and finally Mutual-Student Distillation with students/ensemble on the right. Arrows predominantly point rightward, making the process order unambiguous."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 3.0,
+              "reason": "Several arrows converge and partially overlap around the routing-to-students area and again near the ensemble/weight-learner connections. While not severely tangled, the routing outputs and the mutual/ensemble arrows create mild visual crossings/overlaps that reduce immediate traceability of which path feeds which student, relative to an ideal no-crossing layout."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 5.0,
+              "reason": "Modules that are functionally linked are placed close together in the same stage boxes: the reasoning paths and their keep/drop markers are within Quality Filtering; the router and its assignment markers are within Conditional Routing; the students, weight learners, and ensemble are grouped in Mutual-Student Distillation. This matches the summarized decomposition (filtering → routing → mutual distillation)."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "Major components align well to an implicit grid: stage regions are vertically aligned, students are stacked with consistent spacing, and the ensemble sits on the right edge. Minor misalignments appear in arrow routing bends and the placement of check/cross icons relative to paths and router outputs, but overall structure is neat."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "The three main mechanisms (Quality Filtering, Conditional Routing, Mutual-Student Distillation) are emphasized by large dashed containers and bold titles, matching the summary’s core components. However, within stages, some secondary items (large check/cross icons) are visually salient and can compete slightly with the primary modules (router/students/ensemble) for attention."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient spacing between the three stage boxes and between students/ensemble, preventing crowding. The tightest area is around the router-to-student arrow fan-out and the right-side ensemble connections, where arrows and boxes sit close and reduce breathing room."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 4.0,
+              "reason": "Similar roles use consistent visual encodings: stage boxes share a dashed-border style; reasoning paths are consistently drawn as rounded rectangles; students use consistent robot icons; weight learners are consistently styled rectangles. Some inconsistency remains in color semantics (multiple arrow colors and check/cross markers) without an explicit legend, which slightly weakens uniform interpretation."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces several abstract components from the summary with concrete icons/symbols: green checkmarks/red X’s for the two-stage quality filtering outcome (keep vs drop flawed paths), robot-like avatars to represent multiple students, and an “Ensemble” icon to depict the ensemble-of-students representation used in mutual distillation. These metaphors align with the summary’s emphasis on filtering, routing to different students, and ensemble alignment, though some abstractions (e.g., Gumbel-Softmax routing, entropy regularization, feature-level MSE) remain largely text-level rather than iconographically encoded."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "The overall visual style is a relatively standard ML pipeline schematic (boxed stages with arrows), but it adds mild distinctive flair via emoji/robot icons, large check/X markers, and dashed colored stage boundaries. This differentiates it somewhat from purely minimalist academic block diagrams, yet it still reads as a common workflow overview rather than a strongly unique visual language."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific three-mechanism workflow in the summary: it explicitly segments Quality Filtering → Conditional Routing → Mutual-Student Distillation, and visually shows per-path decisions (multiple reasoning paths with answers) and downstream branching to different students, matching the paper’s path-aware/student-aware assignment story. The explicit depiction of multiple paths and multiple students (with an ensemble aggregation) is more adapted to QR-Distill’s multi-path/multi-student setting than a generic single-teacher/single-student KD template."
+            }
+          ]
+        },
+        "weighted_total": 3.762
+      }
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "paper_name": "Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models",
+  "evaluated_at": "2026-01-12T03:55:43.616248",
+  "figure_summary": "## 1. Core Contributions\n- **CONFLVLM**: a post-hoc, conformal-prediction-based framework to **filter hallucinated claims** from LVLM free-form outputs while providing a **finite-sample, distribution-free factuality guarantee**.\n- **Claim-as-hypothesis view**: decomposes an LVLM response into **individual testable claims**, scores each claim’s factuality using a chosen **conformity/uncertainty score**, and removes low-confidence claims.\n- **User-controlled reliability target**: supports **user-specified error rate** \\( \\alpha \\) (risk level) and **error tolerance** \\( \\lambda \\) (how much error is acceptable), aiming for \\( \\Pr(L(Y^*, I)\\le \\lambda)\\ge 1-\\alpha \\).\n- **Black-box compatibility and task breadth**: designed to work with **any LVLM + any heuristic uncertainty measure**, demonstrated across **scene understanding, medical report generation, and document understanding**.\n\n## 2. Method Components & Relations relevant to figures\n- **Inputs/controls**: prompt \\(X\\), image \\(I\\), **calibration dataset**, and user parameters \\( \\alpha \\) (target error rate) and \\( \\lambda \\) (tolerance).\n- **LVLM generation (base)**: LVLM produces an **initial response** \\(Y\\) from \\(p_\\theta(Y\\mid X,V)\\) where \\(V=g\\circ h(I)\\) are visual tokens.\n- **Pipeline modules (as depicted in the overview)**:\n  - **Sampling**: obtain (possibly multiple) generated outputs to expose variability/uncertainty in produced details.\n  - **Decomposing (D)**: split \\(Y\\) into a set/list of **atomic claims** (each treated as a hypothesis to be tested).\n  - **Scoring model / conformity scores (C)**: compute a **claim-level conformity score** \\(S(\\cdot)\\) intended to reflect factual support of a claim given \\((X,I)\\) (and possibly auxiliary LVLM judgments).\n  - **Conformal calibration (E)**: using calibration quadruplets (prompt–image–claim–error), compute a **threshold** \\( \\hat{\\tau} \\) (approx. \\(1-\\alpha\\) quantile) so that retaining claims above threshold yields the desired coverage-style guarantee.\n  - **Filtering (F)**: **accept/reject** each claim by comparing its score to \\( \\hat{\\tau} \\) (and incorporating tolerance \\( \\lambda \\) via the loss definition \\(L\\)).\n  - **Merging (M)**: recombine accepted claims into the **final response** \\(Y^*\\); abstention is allowed (they define \\(L(\\emptyset,\\cdot)=0\\)).\n- **Guarantee target (relation to outputs)**: the figure-relevant relationship is that calibration + thresholding supports the claimed guarantee  \n  \\[\n  \\Pr(L(Y^*, I)\\le \\lambda)\\ge 1-\\alpha,\n  \\]\n  where \\(L\\) is a monotone misalignment loss over the final (filtered) response.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- **Communicate the end-to-end workflow**: how an LVLM’s raw free-text output is transformed into a **filtered, higher-factuality response** through claim decomposition, scoring, conformal calibration, and recomposition.\n- **Make the statistical control knobs concrete**: visually link **user parameters** \\( \\alpha \\) and \\( \\lambda \\) plus **calibration data** to an **operational accept/reject mechanism** (via a calibrated threshold).\n- **Illustrate claim-level confidence behavior**: show that the method is meant to **retain high-confidence claims** and **remove low-confidence/hallucinated claims**, rather than “fixing” them.\n- **Demonstrate domain/model agnosticism**: convey that the same pipeline applies across **multiple application domains** and **different LVLM backbones** (as black boxes).\n\n## 4. What Figures are NOT intended to show\n- **Not full-task quality optimization**: figures are not meant to claim improvements in completeness, helpfulness, fluency, or recall; the framework explicitly allows **abstention/omission** and focuses on factuality risk control.\n- **Not a new LVLM architecture or training method**: they do not depict modifications to the LVLM internals, retraining, or white-box decoding; the method is **post-hoc** and **model-agnostic**.\n- **Not exact identification of “ground-truth” semantics**: the visuals are not meant to prove perfect claim decomposition or perfect scoring—only that **calibrated thresholding** can control risk under exchangeability assumptions.\n- **Not a benchmark- or metric-definition figure**: the emphasis is not on proposing new hallucination metrics/benchmarks, but on **wrapping existing LVLMs with a calibrated filtering procedure** to guarantee a target error bound.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Towards_Statistical_Factuality_Guarantee_for_Large_Vision-Language_Models__p1__score1.00.png",
+      "caption": "Figure 1: Overview: given user-specified error tolerance λ, error rate α, and a calibration dataset, CONFLVLM returns a more reliable response for any new image and prompt at inference time through sampling, decomposing D, filtering F , and merging M , to ensure that the risk of the final response Y ∗ is controlled with high probability. Illustrative examples, one for each application domain, are provided for outcome demonstration, where claims are highlighted to indicate CONFLVLM’s confidence using specific conformity score and error tolerance level. Unhighlighted claims correspond to low confidence in factuality check.",
+      "scores": {
+        "Informativeness": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "1_1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure covers the major pipeline components described in the summary/caption: user controls (α, λ), calibration dataset, conformal calibration producing conformity scores/thresholding, inference-time LVLM generation, claim decomposition (D), scoring/filtering (F) with accept/reject decisions, and merging (M) into final response Y*. It also shows the coverage-style guarantee statement in the top-right. A minor omission relative to the summary is that the threshold \\(\\hat{\\tau}\\) (e.g., the \\(1-\\alpha\\) quantile) is not explicitly labeled as \\(\\hat{\\tau}\\), and the loss notation in the guarantee is shown as L(Y*,I) rather than the summary’s L(Y*,I) with emphasis on monotonicity/abstention definition details."
+            },
+            {
+              "question": "1_2_standalone_intelligibility",
+              "score": 5.0,
+              "reason": "From the figure alone, the operating principle is clear: given α, λ and a calibration set, the method calibrates a scoring model to obtain conformity scores, then at inference decomposes an LVLM response into individual claims, scores each claim, filters (accept/reject) them, and merges the accepted claims into a final response. The accept/reject visualization plus highlighted vs unhighlighted claims in examples directly communicates that low-confidence (potentially hallucinated) claims are removed rather than corrected, and that the process targets a probabilistic risk/coverage guarantee."
+            },
+            {
+              "question": "1_3_completeness",
+              "score": 3.0,
+              "reason": "As an overview figure, it summarizes the end-to-end workflow and the key guarantee/control knobs, but it does not cover many paper-level details beyond this (e.g., alternative choices of conformity/uncertainty scores, the precise calibration quadruplet construction and exchangeability assumptions, or broader experimental/analysis content). It includes representative domain examples (scene/medical/document) consistent with the summary’s task breadth, but it is not a complete beginning-to-end summary of the entire paper."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 4.0,
+              "reason": "The figure largely sticks to components described in the summary: user controls (α, λ), calibration dataset, scoring/conformity scores, threshold-based accept/reject filtering, and the coverage-style guarantee. It also shows the pipeline modules (sampling, decomposing D, filtering F, merging M) and claim highlighting to indicate confidence, consistent with the caption/summary. A mild potential addition is the explicit depiction of “Prompt-Image-Claim-Error quadruplets” and a distinct “Scoring Model” block in the calibration flow; these are compatible with the summary’s calibration quadruplets and conformity scoring, and do not change the core method, so only a small penalty."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 5.0,
+              "reason": "Relationships match the summary: user parameters (α, λ) and calibration data feed conformal calibration to produce a decision rule/threshold over claim-level conformity scores; at inference, an LVLM produces an initial response Y, which is decomposed into claims (D), scored, filtered (F) into accept/reject, then merged (M) into the final response Y*. The displayed guarantee form P(L(Y*, I) ≤ λ) ≥ 1 − α aligns with the stated target."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled consistently with the summary/caption: CONFLVLM, calibration dataset/conformal calibration, conformity scores, LVLM initial response Y, decomposition (D), filtering (F), merging (M), final response Y*, and the coverage/risk guarantee with α and λ. Application-domain examples and highlighting semantics also match the described purpose (high-confidence vs low-confidence claims)."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the main CONFLVLM pipeline described in the summary/caption: user specs (α, λ) + calibration dataset → conformal calibration/scoring → inference-time steps (LVLM output, Decompose D into claims, score/filter F, Merge M) → final response Y* with a coverage-style guarantee. The workflow and key modules (D/F/M) are visually prioritized. However, the figure is somewhat busy due to multiple example panels and highlight legends, which slightly dilutes focus compared to a minimal overview."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "As a supplement to the caption/text, it clearly connects the user-controlled knobs (α, λ) and calibration data to an operational thresholding mechanism (conformity scores → accept/reject) and the stated risk/coverage guarantee. The inference-time diagram shows the claimed claim-as-hypothesis decomposition and post-hoc filtering without implying LVLM retraining, matching the summary’s intended understanding aid."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The bottom row includes three domain examples (scene/medical/document) with extensive highlighted text blocks. While these support the ‘task breadth/model agnosticism’ claim from the summary, they add substantial textual density and repeated structure, which can feel redundant and makes the figure harder to scan. Decorative elements are limited, but the amount of example text is more than necessary for conveying the core method schematic."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.286,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The main overview pipeline clearly flows left-to-right: user specification and calibration inputs on the left feed into conformal calibration across the top, and inference-time inputs (image/prompt) flow through LVLM → initial response → decomposition D → scoring/filtering F → merging M → final response Y* on the right. This matches the summarized end-to-end workflow."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Connection lines are mostly non-crossing and readable. The only mild complexity is the top-row link from conformity scores toward the coverage guarantee and the downward arrow into the inference row, which introduces close-by bends/vertical transitions, but it does not create confusing crossings that obscure the method structure."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related modules are grouped: calibration components are contained together in the top band; inference-time processing (LVLM, D, F, M) is contiguous in the middle band; and application examples are grouped in the bottom band. This spatial grouping aligns well with the summary’s separation of calibration vs inference steps."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Most elements align to an implicit grid within each band (top calibration row, middle pipeline row, three example panels). Minor misalignments occur where arrows drop between bands and where the scoring/filtering visualization sits relative to F/M, but overall the layout remains neat and structured."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Primary components (calibration band, inference band, and the D/F/M steps) are visually prominent via section headers, larger boxes, and central placement. However, visual emphasis is somewhat diluted by the dense illustrative examples and legend occupying substantial area, which competes with the core pipeline."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient spacing between modules, with clear padding inside section containers. Some areas—especially the scoring/filtering area (bar visualization + accept/reject icons) and the dense text in example panels—feel tight, but not to the point of impairing comprehension of the pipeline."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles use consistent visual encoding: section headers have consistent styling; pipeline modules are boxed and labeled; claim highlighting uses consistent color semantics (highlighted vs unhighlighted) across examples. Minor inconsistency arises because some components are icons (LVLM, database) while others are text boxes/plots, though this does not materially confuse roles."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces several abstract components in the summary/caption with concrete icons and abbreviations: user controls (λ, α) as dial-like symbols, the calibration dataset as a database cylinder, the scoring/calibration flow as a gauge/distribution graphic, and accept/reject decisions as check/cross markers. The pipeline stages are also compressed into clear lettered modules (D/F/M) consistent with the claim-decompose/filter/merge framing. These metaphoric/iconic substitutions make the conformal workflow more tangible than pure equations/blocks."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "While polished and visually consistent, the overall style largely follows a common modern ML-paper template (rounded boxes, pastel section headers, simple icons, block arrows, and highlighted text overlays). The inclusion of claim-highlighting to indicate confidence (as described in the caption) adds some distinctive presentation, but the design language itself is not especially unique relative to standard framework-overview figures."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific contributions rather than a generic encoder-decoder diagram: it explicitly threads user parameters (α, λ) and calibration data into conformal calibration, then shows claim-level decomposition and accept/reject filtering before merging into Y*. It also adapts the figure to the stated breadth by embedding three domain-specific illustrative examples with claim highlighting, reinforcing the ‘post-hoc filtering across tasks’ message without implying changes to LVLM internals."
+            }
+          ]
+        },
+        "weighted_total": 4.124
+      }
+    }
+  ]
+}

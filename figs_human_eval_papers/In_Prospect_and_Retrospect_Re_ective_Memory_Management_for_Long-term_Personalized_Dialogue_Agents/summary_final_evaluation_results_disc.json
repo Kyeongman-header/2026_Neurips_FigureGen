@@ -1,0 +1,316 @@
+{
+  "paper_name": "In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents",
+  "evaluated_at": "2026-01-12T02:16:43.803611",
+  "figure_summary": "## 1. Core Contributions\n- Introduces **Reflective Memory Management (RMM)** for long-term personalized dialogue, combining **Prospective Reflection** (topic-based, multi-granularity summarization/organization) and **Retrospective Reflection** (online adaptation of retrieval via LLM-provided attribution/citation signals).\n- Proposes a **topic-structured memory bank** where each memory entry is *(topic summary, raw dialogue)*, designed to reduce fragmentation caused by fixed turn/session boundaries and to improve future retrieval.\n- Uses **unsupervised, in-generation feedback** (binary usefulness citations over retrieved memories) to **reinforce-learning update a reranker** online, avoiding labeled retriever training data while adapting to user/domain-specific retrieval needs.\n- Empirically validates that these mechanisms improve retrieval and response quality on multi-session personalization benchmarks (e.g., MSC, LongMemEval).\n\n## 2. Method Components & Relations relevant to figures\n- **Memory bank (B)**: Stores a set of entries, each as **(topic summary, raw dialogue segment)**; the summary acts as the primary retrieval key, while raw dialogue supplies detail at generation time.\n- **Retriever \\(f_\\theta\\)**: Given query \\(q\\) and bank \\(B\\), returns **Top-K candidate memories** \\(M_K\\).\n- **Reranker \\(g_\\phi\\)** (learnable): Takes \\(q\\) and \\(M_K\\), outputs **Top-M selected memories** \\(M_M=\\{m_i\\}_{i=1}^M\\) used for generation; this is the component updated online.\n- **LLM generator**: Consumes **(query \\(q\\), current-session context \\(S\\), selected memories \\(M_M\\))** to produce response \\(a\\), and also outputs **attribution/citation signals** \\(R_M=\\{r_i\\}_{i=1}^M\\) indicating whether each memory helped.\n- **Retrospective Reflection (online RL loop)**: Treats citation scores \\(r_i\\in\\{+1,-1\\}\\) as **rewards** to update the reranker \\(g_\\phi \\leftarrow RL\\_Update(g_\\phi, R_M)\\), improving future selection from retrieved candidates.\n- **Prospective Reflection (session-end memory writing)**: When a session ends, the agent **extracts salient memories**, **decomposes by topics**, and then **updates the bank** by either **merging** with existing topic-related entries or **adding** new entries.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **motivate the need** for long-term personalized memory by illustrating that correct responses depend on retrieving **relevant facts from prior sessions** beyond the current context window.\n- To depict **how RMM organizes and updates memory** so that stored information aligns with **semantic topics rather than fixed dialogue boundaries**, reducing fragmentation and improving retrievability.\n- To visualize the **end-to-end retrieval-and-generation workflow**, emphasizing the separation between **retriever candidate fetch** and **reranker final selection**, and how **LLM-generated usefulness signals** drive **online adaptation** (retrospective reflection) of the selection mechanism.\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide a full model-architecture deep dive of the underlying LLM (weights, internal attention changes, or white-box modifications); RMM is presented as an external memory framework.\n- Not intended to demonstrate dataset-specific quirks, prompt templates, hyperparameters, or implementation details of the RL update beyond the conceptual “citation-as-reward” mechanism.\n- Not intended to claim perfect factual correctness or comprehensive memory coverage; the emphasis is on **memory structuring and adaptive retrieval**, not guaranteeing zero hallucination or exhaustive long-history encoding.\n- Not intended to argue that the base retriever \\(f_\\theta\\) is trained or improved online; the described online learning primarily targets the **reranker \\(g_\\phi\\)**.",
+  "figure_evaluations": [
+    {
+      "figure_file": "In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents__p4__score1.00.png",
+      "caption": "Figure 3: Illustration of Retrospective Reflection. The Retriever fetches Top-K memory entries from the memory bank, which are refined by the learnable Reranker to select the Top-M most relevant entries. These entries are passed to the LLM along with the query to generate the final response. The LLM assigns binary citation scores (+1 for useful and −1 for not useful) to the retrieved memory entries based on their utility in the response. These scores are used as reward signals to update the reranker via an RL update, adapting the selection of relevant memory over time.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "content_coverage",
+              "score": 4.0,
+              "reason": "The figure captures the key retrospective-reflection pipeline described in the summary: Memory Bank \u0002192 Retriever (Top-K candidates) \u0002192 learnable Reranker (Top-M selection) \u0002192 LLM generation, with binary citation/reward signals (+1/-1) feeding an RL update to the reranker. This aligns well with the caption and summary emphasis that only g_\u0003c6 is updated online while the retriever is frozen. However, it omits elements mentioned in the summary such as current-session context S as an explicit LLM input, and it does not show the memory entry structure (topic summary + raw dialogue) even though that is a major paper component (more central to prospective reflection than retrospective)."
+            },
+            {
+              "question": "standalone_intelligibility",
+              "score": 5.0,
+              "reason": "From the diagram alone, the operational principle is clear: retrieve candidates, rerank/select, generate response, assign usefulness/citation scores per selected memory, and use those as rewards to update the reranker over time. The frozen vs learnable legend reinforces which component adapts. The arrows and labels (Top-K, Top-M, RL Update, citation scores) make the feedback loop understandable without reading the paper."
+            },
+            {
+              "question": "completeness",
+              "score": 2.0,
+              "reason": "The figure is focused on Retrospective Reflection only (as stated by the caption) and does not summarize the broader end-to-end paper contributions: it does not include Prospective Reflection/session-end memory writing, topic-based decomposition/merging/adding of memories, or the topic-structured memory bank design intended to reduce fragmentation. Therefore it is not a beginning-to-end summary of the paper, but rather a partial (though accurate) depiction of one core mechanism."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 5.0,
+              "reason": "The figure includes only components described in the summary/caption: Memory Bank, Retriever (Top-K fetch), learnable Reranker (Top-M selection), LLM generation, binary citation scores (+1/-1), and an RL update applied to the reranker. The extra legend indicating frozen vs learnable modules is a conventional annotation and does not introduce new method components or unsupported training claims (it aligns with the summary’s statement that online learning primarily targets g_phi, not f_theta). No unmentioned formulas or architectural internals are introduced."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 5.0,
+              "reason": "The depicted dataflow matches the described Retrospective Reflection loop: Memory Bank → Retriever → Top-K candidate memories → Reranker → Top-M selected memories → LLM (with query) → response, with the LLM also outputting per-memory binary usefulness/citation signals that feed an RL update back into the reranker. This preserves the separation between retriever candidate fetching and reranker final selection, and correctly shows the update targeting the reranker rather than the retriever."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Major modules are labeled consistently with the summary/caption: 'Memory Bank', 'Retriever', 'Reranker', 'LLM', 'Top-K Memory Entries', 'Top-M Memory Entries', 'Citation Scores' (+1/-1), and 'RL Update'. The learnable vs frozen indication matches the summary’s emphasis that the reranker is updated online while the base retriever is not."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The schematic cleanly centers on the main claimed mechanism in the summary/caption: Memory Bank  Retriever (Top-K)  learnable Reranker (Top-M)  LLM response, with citation scores feeding an RL update to the reranker. It avoids low-level implementation details (e.g., RL algorithm specifics, LLM internals), matching the intended figure purpose."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "As a supplement to the caption/text, the visual mapping is straightforward and consistent with the described Retrospective Reflection loop: the LLM emits binary (+1/\u001a1) usefulness signals over selected memories, and these serve as reward for updating only the reranker (also reinforced by the 'Frozen module' vs 'Learnable module' legend). The Top-K vs Top-M distinction is explicitly visualized, supporting comprehension of the retriever-vs-reranker separation emphasized in the summary."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure is largely free of decorative clutter and focuses on core blocks/flows. Minor redundancy/visual noise comes from extra iconography (snowflake/flame) and stacked card graphics for memory entries; these are conventional and not misleading, but they add small visual overhead without adding new conceptual content beyond 'frozen vs learnable' and 'multiple entries'."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure uses concrete icons and compact labels to stand in for abstract components described in the summary: a database cylinder for the topic-structured memory bank, stacked documents for Top-K/Top-M memories, and simple badges/legend to encode “frozen” vs “learnable” modules. However, most concepts (retriever, reranker, RL update, citation scores) are still conveyed primarily via standard block-diagram text rather than richer metaphorical symbolism."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Visually it follows a common ML pipeline schematic (boxes + arrows + top-K to top-M funnel + feedback loop). The binary citation scores and RL-update arrow are clear but presented in a conventional style; there is little distinctive aesthetic or unconventional visual language beyond minor iconography."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 3.0,
+              "reason": "The layout is tailored to the paper’s core mechanism in the summary/caption—explicitly separating Retriever (Top-K) from learnable Reranker (Top-M) and adding the LLM-produced citation-score feedback loop that updates only the reranker. This is more purpose-fit than a generic retrieval diagram, but it still adheres largely to uniform block-and-arrow design conventions."
+            }
+          ]
+        },
+        "weighted_total": 3.2
+      }
+    },
+    {
+      "figure_file": "In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents__p3__score0.95.png",
+      "caption": "Figure 2: Illustration of Prospective Reflection. After each session, the agent decomposes and summarizes the session into specific topics. These newly generated memories are compared with existing memories in the",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_Content_Coverage",
+              "score": 3.0,
+              "reason": "The figure clearly covers the Prospective Reflection side described in the summary: session-end \"Decompose & Summarize\" into topic summaries paired with raw dialogue, and bank update via memory merge vs memory addition (topic-structured entries). However, it omits other major system components from the paper summary—retriever f_θ, reranker g_φ, LLM generation with selected memories, citation rewards r_i, and the retrospective RL update loop—so it is not comprehensive for the full method."
+            },
+            {
+              "question": "1.2_Standalone_Intelligibility",
+              "score": 4.0,
+              "reason": "From the visual alone, one can understand the operating principle of Prospective Reflection: a finished dialogue session is summarized into topic-based memory entries and then compared to an existing topic-structured memory bank to either merge with relevant memories or add new ones, producing an updated memory bank. It is less self-sufficient for understanding the overall RMM framework because retrieval, reranking, and online adaptation are not depicted here."
+            },
+            {
+              "question": "1.3_Completeness",
+              "score": 2.0,
+              "reason": "The figure illustrates only the session-end memory writing/update process (Prospective Reflection). It does not summarize the end-to-end workflow emphasized in the paper summary (retriever candidate fetch, reranker selection, LLM response generation, usefulness citations, and RL-based reranker updates), nor any empirical/benchmark aspect. Thus it is incomplete with respect to the paper’s full contribution span."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 4.0,
+              "reason": "The figure focuses on Prospective Reflection: a finished dialogue session is decomposed/summarized into topic summaries with associated raw dialogue, then compared to an existing topic-structured memory bank and either merged or added. These elements match the summary. It also includes a conventional retrieval/update arrow (“Retrieve and update relevant memory (if exists)”) and a concrete example (hiking/running, allergy, age) not stated in the summary, but these are illustrative and do not introduce new method components (e.g., no RL loop, reranker, citation rewards) that would alter core claims."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 5.0,
+              "reason": "Relationships are consistent with the described Prospective Reflection process: session-end writing → decompose by topics → generate new topic memories → compare against existing topic-related entries → update bank by merging with relevant entries or adding new entries. The memory bank entries are shown as (topic summary, raw dialogue), aligning with the summary’s structure and intended anti-fragmentation goal."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Major labels correspond to the paper summary: “Prospective Reflection” (via caption), “Decompose & Summarize,” “Memory Merge,” “Memory Addition,” and the “Memory Bank” organized into “Topic Summary” and “Raw Dialogue.” No mislabeled major components (e.g., retriever/reranker/RL update) are present in this figure."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "summarization",
+              "score": 5.0,
+              "reason": "The schematic cleanly focuses on Prospective Reflection as described: a finished dialogue session is decomposed/summarized into topic summaries (paired with raw dialogue), then compared against the existing topic-structured memory bank to either merge or add entries. It avoids diving into retriever/reranker/RL details (which are not the point of this figure per caption/summary)."
+            },
+            {
+              "question": "contextual_match",
+              "score": 4.0,
+              "reason": "With the caption and paper context, the figure functions well as supplementary material for understanding session-end memory writing: it shows the input (session), the intermediate (new topic-summary entries), and the outcome (updated bank) including the merge/add decision. Minor ambiguity remains because the caption is truncated and the figure does not explicitly label the merge-vs-add criterion beyond the legend colors."
+            },
+            {
+              "question": "redundancy",
+              "score": 4.0,
+              "reason": "The visual elements are mostly core: session → decompose/summarize → memory bank update with merge/add highlighting. Decorative content is minimal. However, placeholder bubbles/ellipsis and repeated table scaffolding add slight visual clutter without adding additional conceptual information."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 3.0,
+              "reason": "The figure uses a few concrete icons (user silhouettes, chat bubble/robot-like dialogue markers) and concise labels (e.g., “Memory Merge,” “Memory Addition,” “Topic Summary,” “Raw Dialogue”) to stand in for abstract processes like session decomposition and bank updating. However, most concepts are still conveyed via standard boxes/arrows and table-like memory entries rather than richer symbolic metaphors."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "Visually it follows a common methodological schematic template: a left-to-right pipeline with boxed stages, arrows, and a before/after memory-bank table. The topic-summary examples help concretize the idea, but the overall graphic style and visual language are conventional for ML systems diagrams and not especially distinctive."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to Prospective Reflection as described in the summary: it explicitly shows the session-end step (“Decompose & Summarize”), then a comparison against a “Current Memory Bank,” followed by an “Updated Memory Bank,” with separate indications for merge vs addition. This before/after bank visualization is well-matched to the paper’s topic-structured memory-writing contribution and goes beyond a generic single-block ‘memory update’ box."
+            }
+          ]
+        },
+        "weighted_total": 3.0
+      }
+    },
+    {
+      "figure_file": "In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents__p0__score0.95.png",
+      "caption": "Figure 1: An illustration of a personalized healthcare dialog agent. Key information about a user’s allergy and previous symptoms mentioned in the past sessions is needed to provide a more informed response in the current session.",
+      "scores": {
+        "Informativeness": {
+          "score": 1.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 1.0,
+              "reason": "The figure only illustrates the motivation/use case (current-session response depends on prior-session facts like penicillin allergy and symptom history). It omits essentially all major method components from the summary: the topic-structured memory bank entries (topic summary + raw dialogue), retriever f_θ Top-K retrieval, learnable reranker g_φ Top-M selection, LLM generator inputs (q, S, M_M), citation signals r_i, the retrospective RL update loop, and the prospective session-end topic-based memory writing/merging."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 2.0,
+              "reason": "From the visual alone, one can understand the high-level principle that the agent should use relevant parts of a user's long dialogue history to answer better in the current session (e.g., incorporate allergy and symptom progression). However, the figure does not convey how the system operationally achieves this (no depiction of structured memory, retrieval/reranking pipeline, or online adaptation via citations), so the operating principle of the proposed RMM framework is not intelligible beyond the general need for memory."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 1.0,
+              "reason": "The figure does not summarize the paper 'from beginning to end' as characterized in the summary; it covers only the motivating scenario and none of the core contributions (prospective/retrospective reflection mechanisms, bank organization/updates, or online RL reranker adaptation) nor any empirical validation aspect."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 5.0,
+              "reason": "The figure is a motivating example (personalized healthcare dialogue) showing that prior-session facts (penicillin allergy; prior cough/fever) are needed for the current response. It does not introduce any unmentioned technical components (e.g., retriever/reranker/RL equations) beyond what the summary says figures are generally meant to motivate."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 5.0,
+              "reason": "The depicted relationship—current-session response depending on retrieving relevant information from earlier sessions (“Relevant History” from yesterday and a week ago) within the user’s full dialogue history—matches the summary’s stated purpose of motivating long-term personalized memory beyond the current context window. No incorrect method-structure relations are asserted."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Labels such as “Current Dialogue Session (Today),” “Relevant History (Yesterday),” “Relevant History (A Week Ago),” and “User’s Full Dialogue History” accurately reflect the figure caption and align with the paper-level motivation described in the summary. The figure does not mislabel any RMM-specific modules (which are not shown here)."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The figure is highly schematized around the core motivating idea in the summary/caption: current-session response quality depends on retrieving relevant facts from prior sessions beyond the immediate context. It shows only three dialogue snippets (today, yesterday, a week ago) and visually highlights the two key remembered facts (symptoms and penicillin allergy) without introducing method-internal details (e.g., retriever/reranker/RL loop) that are not the purpose of this specific illustration."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "Given the caption (personalized healthcare agent needing allergy and symptom history), the layout makes the intended takeaway immediately clear: the agent’s informed reply in the current session is grounded in two relevant past sessions. This aligns with the summary’s stated figure purpose to motivate long-term memory needs, and it functions well as supporting context even without explaining the RMM mechanism."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure largely avoids decorative clutter: it uses simple boxes, minimal icons, and colored arrows to indicate which past snippets are relevant. Minor redundancy comes from repeated UI-like elements (user/agent icons and ellipses) that do not add much conceptual information, but they do not distract significantly from the main point."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure reads primarily top-to-bottom: the current session is shown in the top panel, with arrows pointing down to relevant prior sessions in the bottom history strip. This supports the caption’s intent of using past-session facts to inform the current response, though there is no strong left-to-right process depiction."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Connection lines (colored arrows) are few and mostly unobstructed; they do not noticeably cross each other or other connectors. Minor visual convergence occurs at the top panel’s bottom edge, but it does not create ambiguity about which past box each arrow refers to."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are grouped: user and agent utterances are co-located within the current-session panel, and the two relevant-history snippets are adjacent within the lower ‘User’s Full Dialogue History’ band. This matches the narrative of retrieving relevant prior-session information, although the figure does not explicitly separate retrieval vs. reranking modules (not required by this caption)."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major containers are cleanly aligned: a centered top panel and a horizontally aligned lower strip with two boxed history items. Text baselines and inner padding appear consistent, though the ellipses and some icon placements introduce slight irregularity rather than a strict grid."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The current session is visually dominant (larger, top-positioned, with the key response highlighted), making the main point—current response depends on prior facts—salient. The history items are smaller and subordinate, appropriately indicating supporting evidence."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is sufficient whitespace between the top panel and the lower history band, and between the two history boxes. Some internal margins are tighter near the arrow entry points and around dense text, but readability remains acceptable."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles are rendered consistently: both history items use the same box style and iconography, and the dialogue bubbles/typography are consistent within the current session. Color is used consistently to highlight key medical facts, though the mapping between arrow colors and specific highlighted phrases is only implicit."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure replaces some abstract notions (current vs past sessions and relevance) with concrete UI-like dialogue boxes, speaker icons (user/agent), and colored arrows linking prior-session facts (allergy, symptoms) to the current response. However, it mostly stays literal (chat transcripts and labels) rather than using richer symbolic metaphors for long-term memory or retrieval mechanisms beyond simple arrows and panels."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Visually it resembles a common schematic used in dialogue/personalization papers: stacked chat boxes for multiple sessions, ellipses indicating additional history, and arrows highlighting that prior facts inform the current answer. This matches the summary’s motivation goal but does not introduce a distinctive or unconventional visual style."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 3.0,
+              "reason": "The layout is adapted to the figure’s stated purpose (motivation for long-term personalized memory in healthcare) by explicitly separating 'Today' from 'Yesterday' and 'A Week Ago' and linking the specific needed information (penicillin allergy, cough/fever history) to the current reply. It is somewhat tailored to the use case, though it does not break far from standard multi-session dialogue illustration templates and does not depict the RMM components (topic-structured bank, retriever/reranker, citation-as-reward loop)."
+            }
+          ]
+        },
+        "weighted_total": 3.533
+      }
+    }
+  ]
+}

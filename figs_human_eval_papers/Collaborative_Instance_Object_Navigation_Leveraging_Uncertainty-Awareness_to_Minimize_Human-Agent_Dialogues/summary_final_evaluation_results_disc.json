@@ -1,0 +1,134 @@
+{
+  "paper_name": "Collaborative_Instance_Object_Navigation_Leveraging_Uncertainty-Awareness_to_Minimize_Human-Agent_Dialogues",
+  "evaluated_at": "2026-01-12T00:57:25.035055",
+  "figure_summary": "## 1. Core Contributions\n- **Task setting (CoIN):** Introduces *Collaborative Instance Object Navigation*, where an agent starts from minimal user input (often just an object category) and must resolve instance ambiguity **during navigation** via *template-free, open-ended* dialogue.\n- **Training-free interaction method (AIUTA):** Proposes *Agent-user Interaction with UncerTainty Awareness*, a plug-in interaction layer (independent of the navigation policy) that decides **how to describe detections**, **what to ask**, and **when to ask/stop**.\n- **Uncertainty quantification for VLM answers:** Introduces an **attribute-level Normalized-Entropy** uncertainty measure (with “Yes/No/I don’t know” prompting) to reduce hallucinations/inaccuracies in VLM-derived descriptions.\n- **Evaluation assets:** Introduces **CoIN-Bench** (multi-instance, distractor-heavy episodes; human + simulated-user evaluation) and **IDKVQA** (human-annotated uncertainty / “I don’t know” VQA) to validate uncertainty estimation and interactive performance.\n\n## 2. Method Components & Relations relevant to figures\n- **Navigation backbone (separate from AIUTA):**\n  - A **zero-shot navigation policy** \\( \\pi \\) (example referenced: [53]) selects actions each timestep.\n  - A **frozen object detector** is used to trigger “upon detection” events.\n\n- **AIUTA module (interaction reasoning layer):** invoked when an object instance is detected.\n  - **VLM → initial description:** Given current observation \\(O_t\\), a VLM produces an *initial* (possibly incomplete/incorrect) scene/object description.\n  - **Self-Questioner (LLM-driven self-dialogue):**\n    - **LLM generates attribute-specific questions** for the VLM to elicit more discriminative details (intrinsic/extrinsic attributes).\n    - **Sanity-check questioning:** LLM generates verification questions over extracted attributes; VLM constrained to answer **Yes / No / I don’t know**.\n    - **Normalized-Entropy uncertainty estimation:** converts the VLM’s constrained-answer distribution into **per-attribute uncertainty**, used to filter/weight details and produce a **refined description** \\(S_{\\text{refined}}\\) with reduced hallucination risk.\n  - **Interaction Trigger (LLM-based decision):**\n    - Maintains/uses **target “facts”** accumulated from prior human answers.\n    - Computes an **alignment/consistency judgment** between \\(S_{\\text{refined}}\\) and current target facts.\n    - Outputs one of three control decisions: **ask the user a clarifying question**, **continue navigating**, or **terminate** (if target is believed found).\n    - If asking: produces **template-free natural-language questions**, then **updates target facts** from the human response.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **visualize the CoIN interaction paradigm**: navigation interleaved with episodic, on-demand dialogue rather than upfront full descriptions.\n- To **depict AIUTA’s internal pipeline and information flow**, especially the separation between (i) navigation policy and (ii) interaction reasoning.\n- To **illustrate the self-dialogue mechanism** (LLM↔VLM) that constructs and verifies attribute-level descriptions, and how **uncertainty estimates** gate/refine those attributes.\n- To **show the decision logic** for *when* the agent queries the human versus acts autonomously versus stops, grounded in alignment between refined observations and accumulated target facts.\n\n## 4. What Figures are NOT intended to show\n- Not intended to demonstrate a **new navigation policy** or improvements due to policy learning (AIUTA is explicitly *training-free* and policy-agnostic).\n- Not intended to provide a complete quantitative validation of all claims (e.g., full benchmark results, statistical significance, or ablations) beyond illustrating the workflow.\n- Not intended to prove that VLM/LLM outputs are universally faithful; rather, they motivate the need for **uncertainty-aware verification**, not the elimination of all hallucinations.\n- Not intended to imply dialogues are **templated** or restricted; the figures emphasize *open-ended* questioning, not fixed QA formats or predetermined attribute lists.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Collaborative_Instance_Object_Navigation_Leveraging_Uncertainty-Awareness_to_Minimize_Human-Agent_Dialogues__p3__score1.00.png",
+      "caption": "Figure 2. Graphical depiction of AIUTA: left shows its interaction cycle with the user, and right provides an exploded view of our method. ① The agent receives an initial instruction I: “Find a c =<object category>”. ② At each timestep t, a zero-shot policy π [53], comprising a frozen object detection module [24], selects the optimal action at. ③ Upon detection, the agent performs the proposed AIUTA. Specifically, ④ the agent first obtains an initial scene description of observation Ot from a VLM. Then, a Self-Questioner module leverages an LLM to automatically generate attribute-specific questions to the VLM, acquiring more information and refining the scene description with reduced attribute-level uncertainty, producing Srefined. ⑤ The Interaction Trigger module then evaluates Srefined against the “facts” related to the target, to determine whether to terminate the navigation (if the agent believes it has located the target object ⑥), or to pose template-free, natural-language questions to a human ⑦, updating the “facts” based on the response ⑧.",
+      "scores": {
+        "Informativeness": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure covers the main AIUTA pipeline described in the summary/caption: initial user instruction, zero-shot policy with frozen detector, VLM initial description, Self-Questioner (LLM generating attribute-specific questions to the VLM), refined description S_refined, Interaction Trigger comparing against accumulated target facts F_t, and the three-way decision (ask/continue/stop) with target-fact updates from user responses. However, a core contribution in the summary—attribute-level Normalized-Entropy uncertainty computed from Yes/No/I-don’t-know distributions—is only implied by generic 'checking VLM uncertainty/uncertainty-aware verification' text and is not explicitly shown as a formula or as the constrained-answer distribution/entropy computation. The evaluation assets (CoIN-Bench, IDKVQA) are not included, which is acceptable for a method figure but still reduces total coverage of major paper components."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 5.0,
+              "reason": "From the visual alone, the operating principle is clear: the agent navigates with a separate zero-shot policy; upon detection it runs AIUTA, where VLM+LLM self-questioning refines a description under uncertainty considerations, then an interaction module checks alignment with accumulated target facts and decides to ask the human, continue, or stop, updating facts with the response. The left interaction loop and the right exploded view make the information flow and decision points understandable without reading the paper."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 3.0,
+              "reason": "The figure is complete for the end-to-end interaction workflow of AIUTA within CoIN (instruction → navigate → detect → refine description → decide ask/continue/stop → update facts). But it does not summarize other key paper elements mentioned in the summary, especially the explicit uncertainty quantification method (Normalized-Entropy over constrained VLM answers) and the evaluation contributions (CoIN-Bench, IDKVQA). Thus it is not a beginning-to-end summary of the full paper, but rather a focused method schematic."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 4.0,
+              "reason": "The figure largely matches the summary/caption: instruction I, zero-shot policy π with frozen detector, VLM initial description, LLM-driven Self-Questioner producing S_refined with uncertainty checking, and an Interaction Trigger comparing S_refined to target facts and deciding ask/stop/continue. One extra detail is the explicit “alignment score s” inside Interaction Trigger; the summary mentions an alignment/consistency judgment but not a named scalar score, though this does not change the core method structure."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 5.0,
+              "reason": "Relationships and information flow are consistent with the summary: navigation policy runs each timestep; upon detection AIUTA is invoked; VLM produces an initial description from O_t; LLM Self-Questioner queries VLM to extract/verify attributes and reduce uncertainty to form S_refined; Interaction Trigger evaluates S_refined against accumulated target facts F_t and either asks the human (then updates facts from the response), continues navigation, or terminates."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled in line with the summary/caption: AIUTA (“Agent-user Interaction with UncerTaInty Awareness”), Self-Questioner, Interaction Trigger, VLM, LLM, target object facts F_t, observation O_t, refined description S_refined, and the three-way decision (Ask/Stop/Continue). The inclusion of π and a frozen object detector is also correctly labeled as part of the zero-shot navigation backbone, separate from AIUTA."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is largely schematized around the main contribution (AIUTA) and its key submodules: zero-shot navigation + frozen detector triggering AIUTA, VLM initial description, Self-Questioner (LLM↔VLM) to refine attributes, and Interaction Trigger producing ask/continue/stop. The left-to-right flow and numbered steps (①–⑧) match the caption’s narrative, keeping focus on the interaction pipeline rather than low-level navigation details. Minor readability cost comes from small, dense text inside modules (e.g., the bullet list under Self-Questioner and the two items under Interaction Trigger), which compresses important ideas into tiny font."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "As supplementary material, it aligns very well with the caption and summary: it explicitly shows (i) the separation between navigation policy and interaction reasoning, (ii) the VLM→Self-Questioner→refined description S_refined pathway, (iii) the comparison to accumulated target facts F_t, and (iv) the three-way decision (Ask/Stop/Continue) plus updating facts from human responses. The numbering and arrows make it straightforward to map each caption step to a visual element, supporting comprehension while reading."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "Most visual elements serve the core ideas (dialogue loop, uncertainty-aware refinement, trigger decision). There are a few auxiliary/decorative components that slightly add clutter without adding much explanatory value (e.g., the small background photo-like observation image, some iconography, and multiple dashed arrows that could be simplified). However, these do not materially distort the claimed method structure and remain secondary to the main pipeline."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The figure establishes a clear left-to-right narrative: user instruction and navigation loop on the left, then an exploded AIUTA pipeline on the right where information flows from VLM initial description to Self-Questioner to Interaction Trigger, matching the caption’s step ordering (①→⑧)."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Most connectors are routed cleanly with minimal crossings. A few dashed interaction/facts arrows (e.g., initial facts and user response/update loops) bend around modules and visually overlap near the right boundary, but they do not create major ambiguous crossings that obscure the core AIUTA flow."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related blocks are grouped: navigation policy + detector are contained within the robot-agent inset on the left; AIUTA’s two major submodules (Self-Questioner and Interaction Trigger) are adjacent within the right panel; Target Object Facts is placed above them as a shared context, reflecting the summary’s dependency structure."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major containers are neatly aligned (left interaction inset, right main panel; Self-Questioner and Interaction Trigger side-by-side; Target Facts centered above). Some internal icons/text (e.g., numbered callouts and small arrows near the right edge) appear slightly less grid-aligned, but overall layout follows a clear implicit grid."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 5.0,
+              "reason": "Main components stand out via size and framing: the entire AIUTA area is a large boxed region; Target Object Facts is a prominent top bar; the two main modules are large colored panels; subordinate elements (VLM/LLM icons, bullet list) are smaller, supporting the intended method hierarchy in the summary."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace separating the main panels and within each module. However, the right-edge interaction annotations (Ask/Stop/Continue and the question/response arrows with labels) are relatively tight near the boundary, slightly reducing breathing room in that area."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "Similar roles are mostly consistent: modules are drawn as rounded rectangles with distinct fill colors; subcomponents (VLM/LLM) use consistent icon-like blocks; arrows use solid for internal flow and dashed for human interaction/updates. Consistency is slightly weakened by mixed visual encodings (icons, text badges, and varying arrow styles) that are not all explicitly keyed, though they remain interpretable."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces several abstract processes from the summary with clear icons and abbreviations: a human silhouette for the user, a robot/agent block, module boxes for Self-Questioner and Interaction Trigger, and compact labels like VLM/LLM/π/O_t/S_refined/F_t. The arrowed interaction loop and numbered steps (①–⑧) concretize the temporal logic of detect→describe→verify→decide→ask/update. It is not maximally metaphorical (e.g., no richer symbolic visual language for uncertainty beyond text), but it does translate key abstractions into recognizable visual tokens."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 3.0,
+              "reason": "The visual style is a competent, common systems-diagram aesthetic (colored rounded rectangles, arrows, icons, step numbers). It is somewhat differentiated by the split view (interaction cycle on the left, exploded internal pipeline on the right) and the explicit uncertainty-aware self-dialogue framing, but overall it follows a familiar template used in many ML/robotics method figures rather than introducing a distinctive visual style."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s method structure described in the summary: it explicitly separates navigation (zero-shot policy π with frozen detector) from the plug-in AIUTA layer, and it dedicates the right panel to the internal Self-Questioner (LLM↔VLM) and Interaction Trigger logic with target facts F_t and S_refined. The left panel’s loop emphasizes interleaved navigation and on-demand dialogue (ask/continue/stop) rather than a generic one-shot pipeline, showing good adaptation beyond a uniform end-to-end block diagram."
+            }
+          ]
+        },
+        "weighted_total": 4.219
+      }
+    }
+  ]
+}

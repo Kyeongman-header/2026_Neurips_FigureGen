@@ -1,0 +1,134 @@
+{
+  "paper_name": "OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning",
+  "evaluated_at": "2026-01-12T03:18:58.642114",
+  "figure_summary": "## 1. Core Contributions\n- Reframe *guided decoding* for multi-step math reasoning as a *planning/value estimation* problem, arguing that ranking partial reasoning paths by their likelihood of eventual success is preferable to judging step-local correctness.\n- Provide a theoretical claim/proof that **outcome supervision** (final-answer correctness labels) used during training **implicitly yields a value function** over partial paths: \\(f_\\theta(S^{(1:t)};q)\\approx p(\\hat a\\ \\text{correct}\\mid S^{(1:t)},q)\\).\n- Propose **OVM (Outcome-supervised Value Model)**: train a value model using only outcome labels (no step-level correctness annotation), enabling value-based guided decoding without expensive lookahead simulation at inference.\n\n## 2. Method Components & Relations relevant to figures\n- **Generator \\(\\Phi\\)**: samples \\(K\\) candidate next-step continuations (partial paths) from the LM distribution at each step \\(t\\).\n- **Evaluator / scoring model \\(f(\\cdot)\\)**: assigns a scalar score to each incomplete path \\(S^{(1:t)}\\) conditioned on the question \\(q\\).\n- **Guided decoding loop**: at each step, sample \\(K\\) partial paths → score them with \\(f(S^{(1:t)};q)\\) → keep top \\(b\\) (beam/pruning) → continue generation.\n- **Two evaluator paradigms (mapping to supervision types)**:\n  - *Reward-style (future-agnostic)*: score reflects correctness of *seen* steps/state (step-level correctness; aligns with **process supervision / PRM**).\n  - *Value-style (future-oriented)*: score reflects probability that continuing from current partial path will end in a correct final answer (aligns with **outcome supervision / ORM**, but interpreted as a value estimator).\n- **Training signal and loss (as used in the proof)**:\n  - For each generated full solution \\(S_i=[s_1,\\dots,s_{m_i},a_i]\\) with binary label \\(y_i\\) (final answer correct or not), outcome supervision **replicates \\(y_i\\) across all prefixes** \\(S_i^{(1:t)}\\).\n  - Optimize (illustrated with MSE in the text) \\(\\big(f_\\theta(S_i^{(1:t)};q)-y_i\\big)^2\\) over all prefixes; at optimum, predictions for a given prefix approximate the empirical mean of labels among samples sharing that prefix, yielding an estimate of \\(p(\\hat a\\ \\text{correct}\\mid S^{(1:t)},q)\\).\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- Visually *differentiate what is being evaluated* during guided decoding: **local/step correctness (“reward”) vs future success potential (“value”)** for partial reasoning paths.\n- Illustrate the conceptual link between **supervision granularity** and the **type of learned evaluator**: outcome-supervised training is intended to be seen as learning a *value* over prefixes, whereas process-supervised training is intended to be seen as learning a *reward* (step correctness) signal.\n- Provide intuition for why outcome supervision can guide intermediate decisions despite lacking step labels: by pushing the model to associate early prefixes with eventual correctness, it learns to “foresee” which partial paths are promising.\n\n## 4. What Figures are NOT intended to show\n- Not evidence of empirical performance improvements (accuracy/success rates, compute tradeoffs, node counts, etc.); the figures here are conceptual/mechanistic.\n- Not a detailed architecture diagram of the underlying LLM or an implementation-level depiction of training/inference pipelines (e.g., optimizer specifics, data preprocessing, sampling hyperparameters beyond \\(K,b\\)).\n- Not a proof by itself: the theoretical justification that outcome supervision estimates values is provided in text/math; figures only motivate and interpret it.\n- Not demonstrating that process supervision is universally inferior; rather, they delineate **what each supervision trains the evaluator to represent** (reward vs value) in the context of *partial-path* scoring.",
+  "figure_evaluations": [
+    {
+      "figure_file": "OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+      "caption": "Figure 1: (a): When evaluating partial paths (here for the first two steps), reward focuses on the current states, while value focuses on the unseen future outcomes. (b): Given a question q and a solution path [s1, · · · , sm, a], models are trained to predict path correctness (circled output scalar on the last token). Outcome supervision replicates the final answer’s correctness label across all steps (indicated by shaded labels), causing the model to implicitly learn to foresee the future, predicting values for partial paths. By contrast, process supervision details per-step correctness labels, causing the model to learn to predict step-level correctness, i.e. reward. Correct steps and answers are colored in yellow and incorrect ones in grey.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1",
+              "score": 4.0,
+              "reason": "The figure covers the key conceptual components described in the summary: it contrasts reward (step-local correctness) vs value (future success probability), shows partial paths/prefixes, and depicts outcome supervision as copying the final correctness label across all prefixes versus process supervision using per-step labels. It also visually indicates the scalar correctness prediction at the end of the path and the idea of forecasting unseen futures. However, several major method components/formal details from the summary are not present: the guided decoding loop with sampling K candidates and keeping top b is not shown, the evaluator notation f(S^{(1:t)};q) is only loosely represented, and the training loss/optimality statement (e.g., MSE over prefixes yielding an estimate of p(correct|prefix,q)) is not explicitly included as a formula."
+            },
+            {
+              "question": "1.2",
+              "score": 4.0,
+              "reason": "As a standalone conceptual diagram, it is largely intelligible: panel (a) communicates that reward evaluates the current state/step while value evaluates likelihood of eventual correctness, and panel (b) shows how outcome supervision (label replicated across steps) leads to a 'value-like' signal on prefixes, while process supervision yields step-level correctness ('reward'). A viewer can understand the intended operating principle (what is being evaluated and how supervision shapes it). What is less self-contained is how this plugs into the actual guided decoding mechanism (sampling K, scoring, beam/pruning top b); without the paper, one cannot fully reconstruct the inference procedure beyond the evaluator concept."
+            },
+            {
+              "question": "1.3",
+              "score": 2.0,
+              "reason": "The figure is not a beginning-to-end summary of the paper’s content; it is focused on the paper’s central conceptual reframing (reward vs value) and the supervision-to-evaluator interpretation. It does not summarize the full method pipeline implied in the summary (e.g., the explicit guided decoding loop with K and b, the OVM training setup as a named method, or the theoretical claim in its formal statement). Consistent with the summary’s 'figures are conceptual' note, it omits broader paper coverage and thus is incomplete as an end-to-end summary."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 5.0,
+              "reason": "The figure sticks to elements described in the summary/caption: generator producing partial paths; distinction between reward (step-local correctness) vs value (future success probability); outcome supervision with label copying across prefixes; process supervision with per-step labels; and a scoring model outputting a scalar. The shown probabilities (e.g., p(s1,s2 correct|q) and p(a correct|s1,s2,q)) align with the summary’s reward-vs-value framing and do not introduce new, core method components beyond what is described."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 5.0,
+              "reason": "Relationships are consistent with the summary: (a) contrasts reward as evaluating current/seen steps vs value as estimating likelihood of eventual correct answer conditioned on the current prefix and q; the visualization of “unseen future outcomes” matches the planning/value-estimation interpretation. (b) correctly depicts outcome supervision as using only final-answer correctness y and replicating it across all steps/prefixes (label copying), yielding implicit learning of partial-path value; and process supervision as providing step-level correctness labels (y^t) that train step-local reward prediction. The association of correct/incorrect steps/answers with different colors also matches the caption/summary."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Major labels match the paper summary: 'Reward' vs 'Value' are named and defined in the intended way; 'Outcome Supervision' and 'Process Supervision' are correctly labeled with their respective supervision granularity (final-answer label vs per-step labels); 'Generator' and 'Scoring Model' correspond to the described generator Φ and evaluator f(·). The terms 'partial path value' and 'partial path reward' align with the summary’s evaluator paradigms."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The figure is schematized around the paper’s main conceptual contribution: distinguishing reward (step-local correctness) vs value (probability of eventual correct answer) when scoring partial reasoning paths during guided decoding. Panel (a) directly contrasts these two targets on partial paths (first steps shown), and panel (b) focuses on the key training distinction (outcome supervision label copying across prefixes vs process supervision per-step labels), matching the summary’s core claim that outcome supervision implicitly learns a value over prefixes."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "With the caption/text, the diagram functions well as supplementary explanation: it visually connects supervision granularity to what the evaluator learns (value vs reward), and it highlights the mechanism of label replication across prefixes for outcome supervision. Minor readability friction comes from dense small text/symbols (e.g., multiple y labels, circled scalar, and repeated mini-panels for correct/incorrect answers), which may require careful reading to map to the caption’s narrative."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "Most elements serve the core ideas (partial paths, unseen future, label copying, and contrasting supervision types). However, there is some repetition (two near-mirrored examples for correct vs incorrect answers, and duplicated label-copying motifs) and a few visually heavy auxiliary components (e.g., cloud/greyed ‘unseen’ area and multiple small boxed subdiagrams) that add clutter without adding new conceptual content beyond what one example could convey."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "Panel (a) follows a left-to-right flow (q → Generator → Step s1 → branches), matching the guided-decoding intuition in the summary (generate partial paths then evaluate). Panel (b) is primarily top-to-bottom for the supervision types (Outcome vs Process) and then left-to-right within each mini-diagram (tokens feeding a scoring model to a scalar), so overall directionality is mostly clear but not uniform across the whole figure."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Most connectors are non-crossing: the branching arrows from s1 to s1^2/s2^2 in (a) are clean; in (b) the token-to-model links and label-copying indications are separated into lanes. Minor visual congestion occurs where multiple small arrows converge into the scoring model boxes and around the circled scalar, but it does not create ambiguous crossings that would confuse the reward-vs-value or outcome-vs-process distinctions."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related elements are grouped closely: (a) keeps the partial-path steps and their associated reward/value annotations adjacent to the corresponding states/futures; (b) places Outcome Supervision and Process Supervision blocks as separate, internally coherent groups with their labels directly above the corresponding token sequences/scoring model outputs, reinforcing the summary’s mapping between supervision granularity and evaluator type."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Within (b), the token rows (q, s1, s2, s3, a) and the scoring model boxes are neatly aligned, and the two columns (correct answer vs incorrect answer) are laid out symmetrically. In (a), alignment is less grid-like due to branching and the ‘unseen future’ gray regions, but still visually ordered with consistent baselines for step boxes."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The figure uses clear hierarchical cues: the two panels (a)/(b) are separated; headings ('Reward' vs 'Value', 'Outcome Supervision' vs 'Process Supervision') stand out; the scoring model boxes and the circled scalar output emphasize the evaluator prediction described in the summary. However, the generator in (a) is relatively small compared to later elements, and some emphasis competes with multiple annotations (probability expressions, ‘foresee future’ text)."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "Panel separation and overall whitespace are adequate, but local margins are tight in (b): label-copying bars, repeated y labels, and the circled output sit close to each other above the scoring model, creating slight crowding. In (a), the probability annotations near the branch and the dashed separators are also somewhat tight, though still readable."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Consistent visual encoding matches the caption/summary: correct items in yellow and incorrect in gray are used consistently across steps/answers; step boxes share a common shape style; the scoring model is represented with the same box in both supervision cases; outcome supervision consistently shows replicated y labels across prefixes while process supervision shows per-step labels, supporting the intended reward-vs-value interpretation."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 4.0,
+              "reason": "The figure concretizes the abstract distinction between reward (step-local correctness) and value (future success probability) using clear visual metaphors: colored step boxes for partial paths, a grey ‘unseen future’ cloud, branching to multiple possible answers, and label-copying blocks that replicate outcome labels across prefixes. These icons directly align with the summary’s goal of differentiating what is evaluated (current state vs future outcome) and how outcome supervision becomes an implicit value function over prefixes."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 3.0,
+              "reason": "While the individual components (boxes, arrows, beams/branches, shaded labels) are standard schematic elements, their combination—especially the explicit ‘unseen future’ region contrasted with value estimation, and the side-by-side depiction of outcome-supervised label replication vs process-supervised per-step labels tied to “partial path value/reward”—gives a moderately distinctive conceptual style. However, it still largely resembles common ML method diagrams rather than a highly unique visual language."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific conceptual contribution: panel (a) isolates the reward-vs-value evaluation target on partial paths, and panel (b) maps supervision granularity to the learned evaluator type via the label replication mechanism (outcome) versus per-step labels (process). This goes beyond a uniform pipeline template by structuring the figure around the central theoretical interpretation (outcome supervision → implicit value over prefixes) rather than generic training/inference blocks."
+            }
+          ]
+        },
+        "weighted_total": 4.095
+      }
+    }
+  ]
+}

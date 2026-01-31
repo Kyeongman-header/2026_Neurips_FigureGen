@@ -1,0 +1,261 @@
+{
+  "paper_name": "R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding",
+  "evaluated_at": "2026-01-12T03:31:37.581028",
+  "figure_summary": "## 1. Core Contributions\n- **Region-based grounding for GUIs in VLMs:** Introduces **R-VLM**, which adapts region-proposal ideas from object detection to **improve precise GUI element localization** from screenshots plus language instructions.\n- **Two-stage “zoom-in” refinement:** Uses an initial coarse prediction as a **region proposal**, then re-runs grounding on a **zoomed-in crop** to obtain finer coordinates.\n- **IoU-aware training objective for tokenized coordinates:** Replaces plain cross-entropy over coordinate tokens with an **IoU-weighted cross-entropy** scheme that provides graded learning signals aligned with detection-quality (IoU) rather than exact-token matching.\n- **Efficient implementation of IoU-aware loss:** Computes multiple pseudo-box supervision targets in a **single forward pass** using attention masking and shared positional encoding to control compute overhead.\n\n## 2. Method Components & Relations relevant to figures\n- **Two-stage zoom-in grounding pipeline (inference-time data flow):**\n  - Inputs: **full GUI screenshot + user instruction**\n  - Stage-1 VLM output: **initial bounding box** (coarse localization) → treated as **region proposal**\n  - Crop/zoom operation: **zoom into the region around the stage-1 box**\n  - Stage-2 VLM: takes **zoomed-in image + instruction** → outputs **refined bounding box**\n- **IoU-aware weighted cross-entropy objective (training-time supervision flow):**\n  - From each ground-truth (GT) box, generate **multiple pseudo boxes** around GT.\n  - For each pseudo box, compute its **IoU/GIoU with GT** and use that as a **weight** in the cross-entropy loss over coordinate tokens, emphasizing higher-overlap boxes.\n- **Cost-efficient multi-pseudo-box training (single-pass trick):**\n  - Concatenate **GT label + M pseudo-box labels** so the model produces **M+1 predictions in one forward pass**.\n  - **Attention mask** prevents pseudo-box “instances” from attending to each other (keeps them independent).\n  - **Shared positional embedding** (GT position embedding reused for pseudo boxes) so training uses many weighted targets while **inference remains a single prediction**.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **motivate** why existing vision-only GUI grounding yields *nearby-but-imprecise* boxes (low IoU) and why this matters for action execution.\n- To **visualize the conceptual shift** from “predict coordinates from the full screenshot once” to a **region-proposal + refinement** paradigm tailored to cluttered GUIs and small elements.\n- To **clarify the learning signal**: illustrate that coordinate-token cross-entropy should be **shaped by overlap quality (IoU/GIoU)** rather than treating all wrong coordinate tokens equally.\n- To **show feasibility/efficiency** of the proposed training objective (multi-pseudo targets) by depicting how it can be implemented without prohibitive compute (single forward pass with masking/position handling).\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide a full architectural specification of the underlying VLM (e.g., backbone internals, tokenizer details) beyond the components needed for region refinement and loss design.\n- Not intended to claim the method primarily solves **instruction–icon semantic mismatch** errors; the paper frames its focus on **precision/IoU** failures rather than language ambiguity.\n- Not intended to replace full benchmark tables or end-to-end agent evaluations; the figures mainly **illustrate failure modes, method mechanism, and training computation**, not exhaustive performance accounting.\n- Not intended to argue that pseudo-box generation is a novel detection technique in general; it is presented as an **adaptation** to make token-based VLM grounding align with IoU-style optimization.",
+  "figure_evaluations": [
+    {
+      "figure_file": "R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+      "caption": "Figure 4: Efficient IoU-aware weighted cross-entropy computation. (a) M pseudo boxes are generated from the ground-truth box using a GIoU threshold (here, M=3), and concatenated with the original label, enabling a single forward pass for M+1 predictions. (b) The attention map is masked to prevent pseudo boxes from attending to each other. (c) The positional embedding of the ground-truth box is assigned to all pseudo boxes, ensuring a single prediction at inference. Crossentropy is weighted by GIoU relative to ground-truth.",
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 5.0,
+              "reason": "The figure covers the key elements of the efficient IoU/GIoU-aware weighted cross-entropy computation described in the summary: (a) generating M pseudo boxes around the GT using a GIoU threshold and concatenating them with the original label to get M+1 training targets in one forward pass; (b) an attention mask that blocks pseudo-box instances from attending to each other; and (c) assigning the GT positional embedding to pseudo boxes to keep inference as a single prediction. It also visually indicates that the loss is weighted by overlap quality (GIoU weights)."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "From the panels and annotations, a reader can infer the operating principle: generate multiple pseudo-box labels, feed them together to the VLM in one pass, use masking to isolate instances, reuse positional embeddings, and weight cross-entropy by GIoU. However, the exact mechanics of how the concatenated labels map to M+1 predictions and how the weighted cross-entropy is computed are conveyed more schematically than formally (no explicit loss equation), so fully precise understanding would still benefit from the paper text."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "This figure is informative for the training-time efficiency trick and IoU/GIoU-weighted objective implementation, but it does not summarize the broader method contributions from the paper (e.g., the two-stage zoom-in inference pipeline for refinement) or the motivation/failure-mode context. Thus it is not a beginning-to-end summary of the paper; it is a focused mechanism figure."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure closely follows the summary/caption: it shows (a) generating M pseudo boxes from a GT box (example M=3) and concatenating labels for a single forward pass, (b) an attention map with masking to block pseudo boxes attending to each other, and (c) reusing/assigning the GT positional embedding to pseudo boxes while weighting cross-entropy by (G)IoU. Minor extra implementation-like details (e.g., explicit depiction of rotary positional embedding blocks/token rows) are not explicitly stated in the summary, but they are auxiliary and do not alter the core claimed mechanism."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 5.0,
+              "reason": "Relationships match the summary: pseudo-box labels are concatenated to yield M+1 predictions in one forward pass; attention masking enforces independence among pseudo-box instances; shared positional embedding ties pseudo targets to the same position encoding so inference remains a single prediction; weights shown under pseudo labels correspond to their IoU/GIoU to GT and are used to weight the cross-entropy."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Key components are labeled consistently with the summary/caption: 'Pseudo bounding box generation,' 'Attention masking,' 'Position embedding modification,' depiction of a 'Vision-language Model,' and GIoU-based weights for weighted cross-entropy. The terminology aligns with the paper summary’s naming (pseudo boxes, attention mask, shared positional embedding, IoU/GIoU-weighted CE)."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the key training-time efficiency idea described in the summary/caption: (a) generating M pseudo boxes around the GT and concatenating labels, (b) masking attention so pseudo-box instances do not attend to each other, and (c) reusing the GT positional embedding for all pseudo boxes so inference stays single-prediction. Most visible elements directly support these three steps, with minimal diversion into unrelated model internals."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As a supplement to the caption/text, the three-panel structure maps cleanly onto the described pipeline: pseudo-box generation via GIoU threshold, attention masking visualization, and positional embedding reassignment. The token/sequence diagram clarifies the 'single forward pass for M+1 predictions' implementation trick and shows where the GIoU-based weights enter, which aligns with the stated goal of efficient IoU-aware weighted cross-entropy."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The figure mostly avoids decorative content, but readability is slightly reduced by dense, small-text token/embedding annotations and repeated low-level blocks (many token boxes/labels) that may be more detailed than necessary to convey the core insight (concatenation + masking + shared positional embedding). These details are not contradicting the summary, but they add visual clutter relative to the main contribution."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure reads primarily left-to-right: (a) shows GT box then pseudo boxes; (b) shows an attention matrix before/after masking; (c) shows a token sequence flowing across the top into the VLM block and outputs below. The (a)/(b)/(c) subpanels also support a top-to-bottom progression. Minor ambiguity comes from mixing both left-to-right (within panels) and top-to-bottom (across panels)."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Connection/association markings are mostly non-crossing: the attention masking is conveyed by side-by-side matrices (no tangled arrows), and the positional embedding reuse is shown by aligned token rows rather than intersecting connectors. There is some visual bus-like spanning bracket/line above the token row that could be interpreted as crossing/overlapping with labels, but it does not create confusing line intersections among distinct modules."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related parts are colocated as described in the summary/caption: (a) pseudo-box generation appears together; (b) attention masking is a single focused block; (c) concatenated labels, weighted cross-entropy values, and the shared positional embedding modification are all placed in one integrated pipeline around the VLM, making the single-forward-pass trick easy to associate with the masking and shared position embedding."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Most elements align to an implicit grid: token boxes are evenly spaced, the VLM block spans cleanly, and the embedding row is aligned under the tokens. Slight misalignment/visual clutter appears in the dense top token annotations (many small coordinate tokens and weights), which reduces the perceived neatness even though the underlying boxes are regularly placed."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The main component (Vision-language Model) is emphasized with a large central block, and the figure is clearly partitioned into (a)(b)(c). However, the dense coordinate-token text and multiple small numeric weight labels compete for attention; the key messages (masking, shared positional embedding, weighted CE) are present but not as visually dominant as the central VLM block."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 3.0,
+              "reason": "Margins are adequate between subpanels (a)/(b)/(c), but within (c) the top token row, coordinate annotations, and weight labels are tightly packed, creating crowding. The limited white space around the dense annotations can hinder quick parsing of the concatenation and weighting mechanism described in the caption."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Similar roles use consistent visual encodings: token boxes share uniform shapes; pseudo/GT-related coordinate tokens are color-coded consistently across the concatenated sequence; attention masking uses consistent matrix styling with a clear legend; and the positional embedding row uses repeated, uniform embedding blocks, matching the caption’s claim of shared positional embedding for pseudo boxes."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure replaces several abstract training concepts with concrete visual surrogates consistent with the summary/caption: colored GUI screenshots with overlaid GT/pseudo bounding boxes (pseudo-box generation), a grid-style attention heatmap with masked blocks (attention masking), and token-like coordinate sequences with weights (IoU/GIoU-weighted cross-entropy). These are recognizable icons/diagrams rather than purely textual math. However, it largely uses standard ML diagram conventions (boxes, arrows, heatmaps) rather than more distinctive symbolic metaphors."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Stylistically, it resembles a common paper-template composite: three subpanels (a)(b)(c), bounding-box overlays, and an attention-matrix schematic plus token rows. This matches the summary’s mechanism depiction but does not introduce a particularly unique visual style beyond conventional VLM/transformer explanation graphics."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the specific contribution described in the summary: it stages (a) pseudo-box generation and concatenation for single-pass M+1 predictions, (b) attention masking to keep pseudo targets independent, and (c) shared positional embedding to preserve single-prediction inference. The multi-level composition (from GUI-box examples to attention/position mechanics and weighted losses) reflects paper-specific training efficiency concerns rather than a generic one-size-fits-all pipeline diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.829
+      }
+    },
+    {
+      "figure_file": "R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+      "caption": "Figure 1: Illustration of the Region-Aware Vision Language Model (R-VLM). Our approach consists of two modules for precise GUI grounding: (a) A two-stage zoom-in grounding process that refines predictions via a zoomed-in view of region proposal. After obtaining an initial prediction from the model using GUI screenshot and user instruction, which serves as a region proposal, we zoom-in around this region and pass it through the model again for second-stage grounding. (b) An IoU-aware weighted cross-entropy loss that provides a smooth learning signal based on the IoU value rather than strictly fitting to ground-truth bounding box. This loss assigns weights to pseudo bounding boxes according to their IoU value with ground-truth to emphasize high IoU grounding predictions.",
+      "scores": {
+        "Informativeness": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "1.1",
+              "score": 4.0,
+              "reason": "The figure covers the paper’s major method components described in the summary: (a) the two-stage zoom-in refinement pipeline (full screenshot + instruction → coarse box/region proposal → zoom/crop → refined box), and (b) the IoU-aware weighted cross-entropy concept using pseudo boxes weighted by IoU/GIoU. However, it omits the efficiency/implementation detail highlighted as a core contribution in the summary—i.e., the single-forward-pass multi-pseudo-box trick via concatenated labels, attention masking to isolate instances, and shared positional embeddings. This is a notable missing training-mechanism detail."
+            },
+            {
+              "question": "1.2",
+              "score": 5.0,
+              "reason": "As a standalone illustration, the operating principle is clear: the left panel visually demonstrates the two-step grounding with an explicit “zoom” from an initial prediction to a refined prediction, and the right panel conveys that training uses multiple pseudo boxes with IoU/GIoU-based weighting to provide smoother supervision than strict coordinate-token matching. The arrows, region proposal crop, and the IoU-guided training block make the high-level workflow understandable without the paper."
+            },
+            {
+              "question": "1.3",
+              "score": 3.0,
+              "reason": "The figure summarizes the paper’s central narrative (precision improvement via region refinement and IoU-aware loss) but does not reflect the full end-to-end set of contributions described in the summary, particularly the compute-feasible implementation for training with many pseudo targets in a single pass (attention masks + shared positional encoding). Since the prompt asks whether content from beginning to end is summarized, this omission reduces completeness even though the main ideas are present."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 4.0,
+              "reason": "The figure largely matches the summary: it shows a two-stage zoom-in pipeline (coarse box as region proposal, crop/zoom, second pass for refined box) and an IoU-aware weighted cross-entropy concept using pseudo boxes. However, it introduces a few extra visual elements not explicitly in the summary (e.g., plots for “Generalized IoU (GIoU)” and a bar chart, and an “IoU-guided training” callout). These are consistent with the summary’s mention of IoU/GIoU weighting but are not explicitly described as specific plotted components; they do not materially change the claimed method."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 5.0,
+              "reason": "Relationships are correctly depicted: Stage-1 VLM output provides an initial bounding box that is treated as a region proposal; the image is zoomed/cropped around that region; Stage-2 re-runs the VLM with the same instruction to produce a refined box. The training-side diagram correctly conveys generating multiple pseudo boxes around GT and weighting their contribution by IoU (or GIoU) to shape cross-entropy learning signal toward higher-overlap predictions."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled in alignment with the summary and caption: “Vision-Language Model,” “Region Proposal,” “Zoom,” “Two-stage zoom-in grounding,” and “IoU-aware weighted cross-entropy.” The terminology matches the described R-VLM mechanism and loss concept without misnaming core modules."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the two main contributions described in the summary/caption: (a) a two-stage zoom-in grounding pipeline (full screenshot + instruction → coarse box → zoomed crop → refined box) and (b) an IoU-aware weighted cross-entropy idea using pseudo boxes with IoU-based weights. The left panel clearly communicates the region-proposal/refinement concept with before/after boxes and a zoom operation. The right panel conveys the core loss intuition (pseudo boxes and an IoU→weight relationship). However, readability is slightly reduced by small, dense on-screen GUI details and multiple textual callouts that are not strictly necessary to grasp the mechanism at a glance."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As supplementary material, it aligns well with the caption and the summary’s method flow: it visually matches the two-stage inference-time refinement and the training-time IoU-weighted supervision concept. The “initial prediction” vs “refined prediction” and the explicit zoom-in crop help interpret the caption without needing architectural internals (consistent with the summary’s scope). Minor contextual gaps remain: the efficiency trick (single forward pass with attention masking/shared positional embedding) emphasized in the summary is not clearly depicted here, so a reader may not fully connect the loss illustration to the claimed efficient implementation from the figure alone."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 3.0,
+              "reason": "The figure mostly avoids irrelevant content and stays on the core ideas, but it includes some potentially redundant decorative/auxiliary elements that add visual clutter: large screenshot areas with fine UI details, character/robot icons, and several verbose text snippets. These do not change the claimed method, but they compete for attention and reduce clarity compared to a cleaner schematic focusing on boxes, zoom/crop, and IoU-weighted targets."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 5.0,
+              "reason": "The figure has a clear left-to-right flow in both parts: (a) proceeds from the initial full screenshot + instruction to first response, then via a zoom/crop to the second response; (b) shows pseudo boxes and IoU-derived weighting feeding into an IoU-guided training module. This matches the summary’s two-stage inference pipeline and training-time IoU-aware supervision flow."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 4.0,
+              "reason": "Connection lines mostly avoid crossings: (a) uses a single main zoom connector from the coarse box to the zoomed crop and simple vertical arrows into the VLM blocks; (b) has arrows from the pseudo-box/IoU plots into the training label without notable clutter. Minor visual complexity arises around the zoom wedge and the dashed linkage between stages, but it does not create confusing line intersections."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 5.0,
+              "reason": "Functionally related components are grouped tightly: in (a), each stage’s response, screenshot, and VLM block are colocated, and the zoom/crop sits between stages; in (b), pseudo boxes, IoU curves/bars, and the VLM training module are grouped on the right. This supports the summary’s separation between inference-time zoom-in refinement and training-time IoU-aware loss."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "Major blocks are aligned in a neat two-column structure for (a) and a vertically organized stack in (b) (pseudo boxes/plots above the VLM block). Some local elements (callouts, small icons, and the zoom wedge) break strict grid alignment, but overall alignment remains readable and systematic."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "The main components (two-stage zoom-in grounding and IoU-aware weighted cross-entropy) are clearly separated and labeled as (a) and (b), with prominent VLM blocks and large screenshots. However, within each panel, multiple similarly sized elements (responses, screenshots, VLM block) compete for attention, slightly weakening the emphasis on the key transformation (region proposal → zoom-in → refine; IoU weighting)."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between the two panels and between major blocks, preventing crowding. Still, some sub-elements (especially in (b): pseudo-box labels and plots near the screenshot) are relatively dense, which slightly reduces breathing room but does not impair the core message."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 5.0,
+              "reason": "Similar roles are consistently encoded: both stages use the same green rounded rectangle for the Vision-Language Model and similar arrow styling for inputs/flows; prediction boxes are consistently shown as red rectangles; check/cross icons consistently signal refined vs coarse quality. This matches the summary’s repeated use of the same VLM across stages and the consistent notion of boxes/pseudo-boxes."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces abstract notions with concrete visual metaphors aligned with the summary: a two-stage 'zoom-in' is depicted via an explicit magnified crop of the GUI around the coarse box (region proposal), and training is made concrete with pseudo-box rectangles over a UI plus small plots that visually connect IoU/GIoU values to weighting. Icons (VLM block, user instruction bubble/person, check/cross marks) further concretize correctness and refinement outcomes rather than describing them purely textually."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 3.0,
+              "reason": "While the content (region-proposal-style refinement for VLM grounding and IoU-weighted loss) is specialized to the paper, the visual style largely follows common ML schematic templates: boxed modules, arrows, side-by-side (a)/(b) panels, and standard UI screenshot callouts. The inclusion of GUI screenshots and coordinate-token outputs adds some distinctiveness, but overall it is not a markedly unique artistic or diagrammatic style."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s two core contributions stated in the summary, separating inference-time two-stage zoom-in grounding (left) from training-time IoU-aware weighted cross-entropy with pseudo boxes (right). The sequential 'first response' → 'second response' flow and the explicit zoom/crop depiction are well-matched to the method’s refinement paradigm, breaking from a generic single-block architecture diagram by emphasizing the region proposal and re-grounding cycle plus the weighting-by-IoU concept."
+            }
+          ]
+        },
+        "weighted_total": 4.086
+      }
+    }
+  ]
+}

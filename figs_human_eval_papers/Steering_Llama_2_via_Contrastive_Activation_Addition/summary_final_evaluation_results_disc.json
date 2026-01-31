@@ -1,0 +1,134 @@
+{
+  "paper_name": "Steering_Llama_2_via_Contrastive_Activation_Addition",
+  "evaluated_at": "2026-01-12T03:51:59.887187",
+  "figure_summary": "## 1. Core Contributions\n- Introduces **Contrastive Activation Addition (CAA)**: a steering method that **adds a learned activation-space “steering vector”** into a transformer’s **residual stream during inference** to modulate high-level behaviors (e.g., sycophancy, refusal, hallucination).\n- Defines a **data-averaged contrastive procedure (Mean Difference, MD)** for extracting steering vectors from **many paired multiple-choice prompts**, reducing noise relative to single-pair activation addition.\n- Proposes an **application protocol**: inject the steering vector **at a chosen layer** and **at all token positions after the user prompt**, with a **tunable multiplier** to control behavior strength/direction.\n- Uses **activation-space visualization (PCA projections)** on contrastive datasets to assess whether a behavior is **linearly represented** at particular layers (and thus likely steerable).\n\n## 2. Method Components & Relations relevant to figures\n- **Key modules**\n  - **Contrastive dataset construction**: prompts are **multiple-choice questions**; each contrast pair shares the same question but ends with a different answer letter: one corresponds to the **target behavior** (positive) and the other to its **opposite** (negative).\n  - **Activation extraction point**: from the transformer’s **residual stream** at **layer L**, specifically at the **token position of the answer letter** (“A” or “B”).\n  - **Steering vector estimator (MD / mean difference)**:\n    - For each pair: compute activation difference *(positive − negative)*.\n    - Average across many pairs to produce a single **behavior direction** \\(v_{MD}\\).\n  - **Inference-time intervention**: during generation, **add** \\(v_{MD}\\) (or subtract it) into the residual stream at the chosen layer, **for every token position after the instruction/prompt**, scaled by a **multiplier**.\n\n- **Key relations / data flows**\n  - **Forward passes on paired prompts → residual activations → per-pair difference → dataset average** (steering-vector formation).\n  - **User prompt + generation → residual stream modification**: injected vector influences downstream computation and output distribution.\n  - **Multiplier sign encodes direction**: positive coefficient pushes toward the target behavior; negative pushes toward the opposite.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **make the CAA pipeline concrete and mechanistic**: where activations are read, how the contrastive difference vector is computed, and where/how it is injected during generation.\n- To **justify that steering targets correspond to directions in activation space** by showing that residual-stream activations can exhibit **behavioral clustering / linear separability** at certain layers (supporting the MD approach).\n- To illustrate that **layer choice matters** (representations “emerge” mid-network), motivating why steering vectors are extracted/applied at specific layers rather than uniformly.\n- To provide **qualitative evidence of controllability** (e.g., adding vs. subtracting a “sycophancy” vector yields opposite response tendencies) as an intuitive demonstration of effect directionality.\n\n## 4. What Figures are NOT intended to show\n- Not meant to establish full benchmark-level superiority over finetuning/RLHF/system prompting (figures illustrate mechanism and effects, not a complete head-to-head optimization study).\n- Not meant to prove causal interpretability of internal features beyond the demonstrated linear direction (e.g., not claiming a single “true” neuron/circuit for each behavior).\n- Not meant to claim universality across all models/behaviors/layers; visual separability and steering efficacy are shown as **empirical properties** that can vary by dataset and layer.\n- Not intended to demonstrate training-time changes or parameter updates—CAA is **inference-time activation modification**, not finetuning.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Steering_Llama_2_via_Contrastive_Activation_Addition__p0__score1.00.png",
+      "caption": "Figure 1: We perform forward passes on contrastive examples of answers to multiple-choice questions, extracting residual stream activations at a particular layer at the token position of the answer. We then take the mean activation difference over many contrast pairs. At inference time, this vector is added back into the residual stream with a chosen multiplier at all token positions after the instruction to control the behavior.",
+      "scores": {
+        "Informativeness": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 5.0,
+              "reason": "The figure covers the full CAA pipeline described in the summary/caption: (i) contrastive multiple-choice prompt pairs (positive vs. negative behavior) differing only in the answer letter, (ii) extraction of residual-stream activations at a chosen layer (\"Layer n\") at the token position of the answer letter, (iii) per-pair activation difference (positive − negative) and averaging over many pairs (Mean Difference / MD) to form a steering vector, and (iv) inference-time addition of this vector into the residual stream at the chosen layer for all token positions after the instruction with a tunable multiplier. No core method component from the summary is omitted."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "A viewer can infer the operating principle from the diagrams and numbered steps: build a direction from contrastive activations and add it back during generation with a multiplier at post-instruction tokens. However, some key specifics still rely on textual context: the exact definition of the behavior (what makes an example positive/negative) and the formal sign convention (positive pushes toward target, negative toward opposite) are only implicitly conveyed. Also, the term \"residual stream\"/layer choice may not be fully clear to non-experts from the figure alone."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 3.0,
+              "reason": "The figure is complete with respect to the core method (vector formation + application protocol) but does not summarize other major figure-intended content from the summary, notably the PCA/activation-space visualization used to assess linear separability across layers and the emphasis that steerability/representation can vary by layer (beyond simply showing a chosen layer). It also does not convey qualitative example outcomes (adding vs. subtracting) beyond the generic multiplier notion. Thus it is a strong method schematic but not a beginning-to-end summary of all paper themes mentioned in the summary."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1",
+              "score": 5.0,
+              "reason": "The figure shows only the components described in the summary/caption: contrastive multiple-choice pairs differing by answer letter, extraction of residual-stream activations at a chosen layer and at the answer-token position, per-pair difference, averaging over many pairs (MD), and inference-time addition of the resulting vector with a multiplier at all post-instruction token positions. No extra objectives, loss functions, finetuning, or unrelated modules are introduced."
+            },
+            {
+              "question": "2.2",
+              "score": 5.0,
+              "reason": "Relationships match the summary: (1) forward passes on positive/negative paired prompts → (2) residual-stream activation readout at layer n at the answer letter token → (3) compute positive−negative difference → (4) average over many pairs to form a steering vector → (5) during generation inject (add) this vector scaled by a multiplier into the residual stream for all tokens after the instruction. The directionality (positive vs negative) is represented via contrasting A/B examples and the subtraction/difference operation, consistent with MD."
+            },
+            {
+              "question": "2.3",
+              "score": 5.0,
+              "reason": "Major labels align with the summary: 'Contrast pair', 'Positive/Negative example of behavior', 'Transformer residual stream', 'Layer n', 'difference in residual stream activations at token position of answer letter', 'Average over many pairs', and 'add steering vector ... x multiplier ... at all token positions after the instruction'. The figure also names this as CAA steering vector generation/application, consistent with the paper summary."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The figure is tightly schematized around the main CAA contribution described in the summary/caption: (a) forming a steering vector via mean activation differences from contrastive multiple-choice answer-letter pairs at a chosen layer/residual-stream token position, and (b) applying the resulting vector during inference with a tunable multiplier at all token positions after the instruction. It avoids diving into transformer internals beyond what is necessary (residual stream, layer n, token position), and the numbered steps map directly onto the summary’s core pipeline."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "As supplementary material, it matches the caption and summary well: it visually clarifies where activations are extracted (residual stream at layer n, answer-letter token), how the per-pair difference is computed and then averaged over many pairs (MD), and where/when the vector is injected during generation (after the instruction, across token positions, scaled by a multiplier). The two-panel structure (generation vs application) cleanly supports reading comprehension of the method."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure mostly avoids decorative or irrelevant elements; the minimal transformer blocks, dotted ellipses, and small activation-grid icons serve conventional schematic roles without adding new claims. Minor redundancy comes from including fairly verbose example prompt text (the full multiple-choice phrasing) when a shorter schematic could convey the same idea; however, this does not obscure the core method and may help anchor the contrast-pair concept."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.286,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure has a clear top-to-bottom flow in both subpanels: (a) contrast pair at the top, then transformer layer/residual stream, then difference/average to form the steering vector; (b) input at top, then residual stream at layer n, then vector addition during generation. This matches the summary’s forward-pass → extract → difference → average → inference-time addition pipeline. Minor ambiguity comes from some rightward branching arrows in (a)."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Connection lines mostly avoid crossings. In (a), the branching from the layer activation to the right-side token activation bars and then to the difference operator is cleanly routed; any near-overlaps are minimal and do not create true crossings that would confuse the extraction/difference steps described in the summary."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related elements are grouped: the contrast pair texts are co-located; extraction is shown adjacent to the residual stream and layer n; the difference operator is placed right next to the two activation rows; averaging is shown directly below as the next step. In (b), the multiplier and addition node are placed at the injection point in the residual stream, consistent with the application protocol."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major components are aligned along a vertical spine (inputs → layer n → operations) in both panels, supporting readability. Some smaller elements (activation bars and the difference bracket/operator) are not perfectly grid-aligned, but overall layout remains orderly."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The two main stages (generation vs. application) are separated into labeled subfigures (a) and (b), with key objects (Layer n blocks, plus node, multiplier) visually salient. However, the final steering vector artifact (result of averaging in (a)) is not strongly emphasized as a distinct object that clearly carries into (b), slightly weakening the prominence of the core product of the method."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between modules and between the two subfigures. A few labels (e.g., step annotations and residual stream text) sit fairly close to nearby graphics, but not enough to cause confusion about the pipeline steps described in the caption/summary."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Visual encoding is consistent: transformer layers are repeated as similar gray blocks; the residual stream is represented consistently across panels; red/blue consistently denote positive/negative examples/activations; the addition node and multiplier are standard and used coherently for the inference-time intervention."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure replaces some abstract operations with concrete symbols: color-coded positive/negative examples (red/blue), token-letter markers (A/B), a subtraction/difference depiction, and a plus node for vector addition with an explicit “× multiplier.” However, it largely remains literal and text-driven (prompt snippets, residual stream blocks) rather than using more expressive metaphorical iconography beyond standard math symbols."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "The visual style is a conventional ML method schematic: stacked transformer-layer blocks with arrows, a highlighted token position, and simple algebraic operator glyphs (difference and addition). This matches common templates for depicting representation extraction and intervention, without a distinctive or unusual graphical language beyond straightforward color accents."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific two-stage pipeline described in the summary: (a) contrast-pair activation extraction at the answer-letter token and mean-difference aggregation over many pairs, then (b) inference-time injection at all post-instruction token positions with a tunable multiplier. Splitting into generation vs application panels and visually emphasizing the answer-token position and per-token injection makes the diagram more task-specific than a generic ‘compute vector then add’ block diagram."
+            }
+          ]
+        },
+        "weighted_total": 4.19
+      }
+    }
+  ]
+}

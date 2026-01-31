@@ -1,0 +1,1649 @@
+{
+  "paper_name": "In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents",
+  "mode": "full",
+  "evaluated_at": "2026-01-30T04:28:18.737832",
+  "note": "Re-scored Q2(Fidelity) and Q4(Design) with lenient strategy.",
+  "figure_evaluations": [
+    {
+      "figure_file": "In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents__p4__score1.00.png",
+      "caption": "Figure 3: Illustration of Retrospective Reflection. The Retriever fetches Top-K memory entries from the memory bank, which are refined by the learnable Reranker to select the Top-M most relevant entries. These entries are passed to the LLM along with the query to generate the final response. The LLM assigns binary citation scores (+1 for useful and −1 for not useful) to the retrieved memory entries based on their utility in the response. These scores are used as reward signals to update the reranker via an RL update, adapting the selection of relevant memory over time.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['User query q input', 'Current session/past messages S (dialogue context)', 'Memory bank B containing memory entries (topic summary, raw dialogue)', 'Retriever fθ module', 'Retrieve flow: fθ(q,B) -> Top-K retrieved memories MK', 'Reranker gφ module (learnable)', 'Rerank flow: gφ(q,MK) -> Top-M memories MM', 'LLM/generator module', 'Generation flow: LLM(q,S,MM) -> response a', 'LLM attribution/citation scoring to each retrieved memory entry', 'Reward signals RM/R (+1 useful, −1 not useful) derived from citations', 'RL/REINFORCE update module for reranker (RL_Update)', 'Update flow: rewards RM -> RL_Update -> updated reranker gφ', 'Session update: append (q,a) to S', '(Optional if showing full loop) Memory bank update/maintenance via prospective reflection is mentioned but not specified in Algorithm 1; include only if the figure covers the full framework beyond Figure 3']\nContext: Algorithm 1 Reﬂective Memory Management (RMM) for Dialogue Agents\nInput: query q, past messages in current session S, memory bank B, retriever fθ, reranker gφ, LLM\nOutput: response a, updated S, gφ, B\n1: Retrieve: MK ←fθ(q, B)\n2: Rerank: MM ←gφ(q, MK), where MM = {mi}M i=1\n3: // Retrospective Reflection\n4: Generate: a, RM ←LLM(q, S, MM) where RM = {ri}M i=1\n5: gφ ←RL_Update(gφ, RM)\n6: S.append((q, a))\n...\n\n4 Framework Overview\nTo tackle the challenges, we introduce Reﬂective Memory Management (RMM), a framework that integrates two mechanisms. Prospective Reﬂection proactively decomposes dialogue history into topic-based memory representations, optimized for future retrieval, while Retrospective Reﬂection dynamically reﬁnes the retrieval mechanism through online feedback signals generated during response generation. They improve the quality of the retrieved memories, contributing to personalization.\n\nOur framework comprises four key components. The memory bank stores dialogue history as a collection of memory entries, each represented as a pair (topic summary, raw dialogue), where the “topic summary” serves as the search key for retrieving the conversational segment. The retriever identiﬁes relevant memories based on the current user query. To enable lightweight adaptation of the retrieval process, we incorporate a reranker, which reﬁnes the retriever’s initial output by prioritizing the most pertinent memories. Finally, an LLM synthesizes the relevant memories with the current context to produce a personalized response. Crucially, the LLM also provides feedback signals based on its utilization of retrieved memories, which are used to reﬁne the reranker through Retrospective Reﬂection.\n\n6 Retrospective Reﬂection: Retrieval Reﬁnement via LLM Attribution\n6.1 Reranker Design\n...we introduce a lightweight reranker to reﬁne the retrieved memory list. This reranker allows for efﬁcient adaptation...\nTo be speciﬁc, the reranker processes the Top-K memory embeddings retrieved by the retriever, reﬁning their relevance with respect to the user query and selecting the Top-M candidates.\n\n6.2 LLM Attribution as Rewards\n...we prompt the LLM...to generate both the response and the associated citations to each individual memory...\nRewards. As shown in Figure 3, each retrieved memory entry receives either a positive or negative reward based on its citation in the generated response. Speciﬁcally, we assign a reward of +1 (Useful) if the generator cites the memory in the ﬁnal response, and −1 (Not Useful) otherwise. This reward assignment reﬂects the utility of each memory entry and allows the reranker to learn better retrieval strategies over time...\n\n6.3 Reranker Update\nThe reranker is ﬁne-tuned using the REINFORCE algorithm (Williams, 1992) to optimize its relevance predictions based on these binary rewards with the following formulation:\n∆φ = η·(R−b)·∇φ log P(MM|q, MK; φ)\n...where R is the reward (+1 or −1), b is a baseline value..., and φ denotes the weights of the reranker.\n\nFigure 3: Illustration of Retrospective Reﬂection. The Retriever fetches Top-K memory entries from the memory bank, which are reﬁned by the learnable Reranker to select the Top-M most relevant entries. These entries are passed to the LLM along with the query to generate the ﬁnal response. The LLM assigns binary citation scores (+1 for useful and −1 for not useful) to the retrieved memory entries based on their utility in the response. These scores are used as reward signals to update the reranker via an RL update, adapting the selection of relevant memory over time.",
+        "fidelity_based": "Lenient Consistency Report: [[{'element': 'Memory Bank', 'status': 'Supported', 'evidence': 'The text explicitly describes an external memory bank that stores dialogue history as topic-based memory entries and is queried during retrieval (Framework Overview; Algorithm 1; Prospective Reflection section).'}, {'element': 'Retriever', 'status': 'Supported', 'evidence': 'The framework includes a retriever that fetches Top-K memories from the memory bank (Algorithm 1: MK ← fθ(q, B); Figure 3 description).'}, {'element': 'Top-K Memory Entries', 'status': 'Supported', 'evidence': 'Algorithm 1 and the Retrospective Reflection description explicitly state that the retriever returns Top-K memory entries which are then reranked.'}, {'element': 'Reranker', 'status': 'Supported', 'evidence': 'The text introduces a learnable reranker gφ that refines the Top-K list into Top-M candidates and is updated online via RL (Framework Overview; Section 6; Algorithm 1).'}, {'element': 'Query', 'status': 'Supported', 'evidence': 'The query q is an explicit input in the problem formulation and Algorithm 1; it is used for retrieval/reranking and response generation.'}, {'element': 'Top-M Memory Entries', 'status': 'Supported', 'evidence': 'The reranker selects Top-M memory entries after reranking the Top-K set (Algorithm 1: MM ← gφ(q, MK); Section 6.1; Figure 3 caption).'}, {'element': 'LLM', 'status': 'Supported', 'evidence': 'An LLM is used as the generator to synthesize retrieved memories with current context and also to output citation/attribution signals (Framework Overview; Algorithm 1 step 4; Section 6.2).'}, {'element': 'Response', 'status': 'Supported', 'evidence': 'Algorithm 1 explicitly denotes generating the response a from the LLM given the query/session context and retrieved memories.'}, {'element': 'Citation Scores', 'status': 'Supported', 'evidence': 'The text describes LLM-generated citations/attribution and binary rewards (+1 useful, −1 not useful) for each retrieved memory entry (Section 6.2; Figure 3 caption).'}, {'element': 'RL Update', 'status': 'Supported', 'evidence': 'Retrospective Reflection updates the reranker via an RL (REINFORCE) update using the citation-derived rewards (Algorithm 1 step 5; Section 6.3; Figure 3 caption).'}, {'element': 'Frozen module', 'status': 'Supported', 'evidence': \"The figure’s notion that some components are frozen is consistent with the text: the retriever is kept off-the-shelf and the adaptation is performed via a lightweight reranker rather than retriever fine-tuning (Section 6; ablation mentions updating retriever vs reranker). This is a plausible depiction even if 'frozen' is not always stated as a label.\"}, {'element': 'Learnable module', 'status': 'Supported', 'evidence': 'The reranker gφ is explicitly learnable and updated online using RL (Section 6; Algorithm 1), matching the figure’s ‘Learnable module’ label.'}, {'element': 'Memory Bank -> Retriever', 'status': 'Supported', 'evidence': 'This corresponds directly to retrieval from the memory bank using the retriever fθ(q, B) (Algorithm 1 step 1; Figure 3 description).'}, {'element': 'Retriever -> Top-K Memory Entries', 'status': 'Supported', 'evidence': 'The text explicitly states the retriever returns Top-K memories as its output MK (Algorithm 1; Section 6.1).'}, {'element': 'Top-K Memory Entries -> Reranker', 'status': 'Supported', 'evidence': 'The reranker takes the retrieved Top-K set as input and refines it (Algorithm 1 step 2; Section 6.1).'}, {'element': 'Query -> Reranker', 'status': 'Supported', 'evidence': 'The reranker conditions on the query and the Top-K set (Algorithm 1: gφ(q, MK); Section 6.1 discusses query embedding adaptation).'}, {'element': 'Reranker -> Top-M Memory Entries', 'status': 'Supported', 'evidence': 'The reranker selects Top-M candidates from the Top-K list (Algorithm 1 step 2; Section 6.1; Figure 3 caption).'}, {'element': 'Top-M Memory Entries -> LLM', 'status': 'Supported', 'evidence': 'The LLM takes the selected memories MM along with query/session context to generate the response and citations (Algorithm 1 step 4; Framework Overview).'}, {'element': 'Query -> LLM (⊕)', 'status': 'Supported', 'evidence': 'The LLM is conditioned on the query and retrieved memories jointly; the ⊕ symbol plausibly denotes concatenation/combination of query with memories in the LLM input, consistent with the described generation step (Algorithm 1 step 4).'}, {'element': 'LLM -> Response', 'status': 'Supported', 'evidence': 'Explicit in Algorithm 1: Generate a via LLM(...).'}, {'element': 'LLM -> Citation Scores', 'status': 'Supported', 'evidence': 'The LLM is prompted to output citations/attribution signals to each memory used (Section 6.2; Algorithm 1 step 4; Figure 3 caption).'}, {'element': 'Response -> Reranker (RL Update)', 'status': 'Supported', 'evidence': 'The reranker update is driven by reward signals derived from the LLM’s response-conditioned citations; representing this as an arrow from the response back to the reranker is a plausible schematic for the RL feedback loop (Algorithm 1 steps 4–5; Section 6.2–6.3).'}], [{'element': 'Memory Bank', 'status': 'Supported', 'evidence': \"The excerpt discusses retrieval over a dataset and memory organization (e.g., adaptive granularity, PR integrating conversational segments), which is consistent with a stored memory/source repository conceptually represented as a 'Memory Bank'.\"}, {'element': 'Retriever', 'status': 'Supported', 'evidence': \"Chunk 2 explicitly discusses 'retriever performance' and 'off-the-shelf retriever' with offline pretraining and online refinement, directly supporting the presence of a Retriever module.\"}, {'element': 'Top-K Memory Entries', 'status': 'Supported', 'evidence': 'The text focuses on recall/accuracy and search space effects. Selecting top-K candidates is a standard, scientifically plausible step in retrieval pipelines even if not spelled out in the excerpt.'}, {'element': 'Reranker', 'status': 'Supported', 'evidence': 'While the excerpt does not explicitly mention reranking, reranking retrieved candidates is a common and plausible component of retriever systems aimed at improving recall/accuracy, aligning with the described performance improvements.'}, {'element': 'Query', 'status': 'Supported', 'evidence': \"The setting is question answering and retrieval, which inherently involves a query/question input. The excerpt references QA evaluation and samples, implying queries even if the word 'query' is not used.\"}, {'element': 'Top-M Memory Entries', 'status': 'Supported', 'evidence': 'Reducing from a larger candidate set (Top-K) to a smaller set (Top-M) for downstream use is a standard plausible design choice in retrieval-augmented QA; it fits the described emphasis on retrieval quality and search space.'}, {'element': 'LLM', 'status': 'Supported', 'evidence': 'The excerpt is from a paper context about retrieval for question answering; using an LLM as the answering component in a retrieval-augmented pipeline is scientifically plausible and consistent with modern QA systems, even if not named in this snippet.'}, {'element': 'Response', 'status': 'Supported', 'evidence': \"Question answering systems output answers/responses; the excerpt discusses 'Question Answering' and 'Accuracy (%)', implying produced responses used for evaluation.\"}, {'element': 'Citation Scores', 'status': 'Supported', 'evidence': 'Although not mentioned in the excerpt, scoring retrieved evidence/citations is a plausible evaluation/feedback signal in retrieval-augmented QA, and does not contradict the described retrieval-performance focus.'}, {'element': 'RL Update', 'status': 'Supported', 'evidence': 'The excerpt contrasts offline supervised pretraining with online refinement; an RL-style update is a plausible mechanism for online refinement. Nothing in the text forbids RL, so this is compatible under plausibility.'}, {'element': 'Frozen module', 'status': 'Supported', 'evidence': \"The excerpt mentions 'off-the-shelf retriever' and staged training (offline pretraining before online refinement), which commonly involves freezing some components; this is a plausible architectural/training annotation.\"}, {'element': 'Learnable module', 'status': 'Supported', 'evidence': 'Because the excerpt explicitly describes supervised contrastive learning for the retriever and performance improvements from training, having learnable modules is directly consistent.'}, {'element': 'Memory Bank -> Retriever', 'status': 'Supported', 'evidence': 'A retriever operates over a corpus/memory store; the excerpt discusses retrieval over LongMemEval and changes in recall/accuracy, making this directional relationship scientifically standard and plausible.'}, {'element': 'Retriever -> Top-K Memory Entries', 'status': 'Supported', 'evidence': 'Returning a top-K set is a canonical retriever behavior and aligns with the excerpt’s discussion of recall and search space; no contradiction is present.'}, {'element': 'Top-K Memory Entries -> Reranker', 'status': 'Supported', 'evidence': 'Passing initial retrieved candidates to a reranker is a common way to improve retrieval precision/accuracy, consistent with the excerpt’s focus on performance gains.'}, {'element': 'Query -> Reranker', 'status': 'Supported', 'evidence': 'Rerankers typically score candidates conditioned on the query; given the QA/retrieval setting in the excerpt, this is scientifically plausible.'}, {'element': 'Reranker -> Top-M Memory Entries', 'status': 'Supported', 'evidence': 'Selecting a smaller best set after reranking is a standard pipeline step and matches the excerpt’s broader theme of improving retrieval quality.'}, {'element': 'Top-M Memory Entries -> LLM', 'status': 'Supported', 'evidence': 'Providing selected retrieved evidence to an answer generator is consistent with retrieval-augmented QA, which is the implied task in the excerpt (QA accuracy measurement).'}, {'element': 'Query -> LLM (⊕)', 'status': 'Supported', 'evidence': 'Feeding the original question along with retrieved context to the answer model is standard in QA pipelines; the excerpt’s QA framing makes this plausible.'}, {'element': 'LLM -> Response', 'status': 'Supported', 'evidence': 'An answering model produces a response/answer; the excerpt’s QA accuracy metric presupposes generated/selected responses.'}, {'element': 'LLM -> Citation Scores', 'status': 'Supported', 'evidence': 'Generating auxiliary scoring outputs (e.g., citation/evidence attribution scores) is plausible in retrieval-augmented systems and does not conflict with the excerpt.'}, {'element': 'Response -> Reranker (RL Update)', 'status': 'Supported', 'evidence': \"The excerpt explicitly mentions 'online refinement' after offline supervised pretraining; using the response as feedback to update retrieval/reranking components is a plausible implementation of online refinement and is not contradicted by the text.\"}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 4,
+              "reason": "The target figure captures the core Retrospective Reflection loop described in Algorithm 1 and Figure 3: Memory Bank → Retriever → Top-K memories → learnable Reranker → Top-M memories → LLM → Response, with citation-based (+1/−1) scores feeding an RL update to the reranker. It also distinguishes frozen (retriever/LLM) vs learnable (reranker), aligning with the paper’s lightweight adaptation claim. However, it omits several major elements explicitly mentioned in the paper/algorithmic description: the current-session dialogue context S and the explicit generation signature LLM(q,S,MM) (the figure shows Query but not S); the explicit reward set notation RM/R and the RL/REINFORCE formulation (baseline b, log-prob gradient) are not represented; and the session update step S.append((q,a)) is missing. It also does not depict the memory entry structure (topic summary, raw dialogue) nor any prospective reflection/memory maintenance (which may be acceptable if the figure is only for the retrospective module). Overall, it includes most major pipeline components but leaves out notable inputs/updates and the main formula details."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure is largely standalone-intelligible: it clearly depicts the main pipeline (Memory Bank → Retriever (Top-K) → learnable Reranker (Top-M) → LLM → Response) and the feedback loop where LLM-produced “Citation Scores” drive an “RL Update” to the reranker. It also visually distinguishes frozen vs learnable modules, conveying the system’s operating principle without needing the paper. However, some key semantics are underspecified for full standalone clarity: the figure does not explicitly show the user query q and current-session context S as inputs to the LLM (it shows a generic “Query” but not S), does not define what citation scores mean (+1/−1) or how they map to rewards, and does not clarify Top-K vs Top-M selection criteria or that the retriever operates as fθ(q,B). These omissions prevent a perfect score, but the general mechanism is understandable."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 3,
+              "reason": "The target figure captures the core Retrospective Reflection loop described in Algorithm 1 and Figure 3: Memory Bank → Retriever (Top-K) → learnable Reranker (Top-M) → LLM → Response, with citation-based binary rewards (+1/−1) driving an RL update to gφ. However, it is not fully complete w.r.t. the paper/algorithm end-to-end: it omits the explicit inclusion of current session/past messages S as an input to the LLM, does not show the session update S.append((q,a)), and does not depict the (paper-level) Prospective Reflection / memory bank maintenance that the framework overview mentions (even if not detailed in Algorithm 1). Thus it summarizes the key mechanism but not the full beginning-to-end framework content."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "No hallucinated critical components or formulas are evident. The depicted pipeline (memory bank → retriever → Top-K → learnable reranker → Top-M → LLM → response, with LLM-produced citation/attribution scores driving an RL/REINFORCE-style update to the reranker while the retriever is effectively frozen/off-the-shelf) is supported by the provided evidence (Algorithm 1; Sections 6.1–6.3; Figure 3 references). Any schematic choices (e.g., icons, ⊕ for concatenation, arrow from response back to reranker) are consistent visual aids rather than contradictions."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "The target figure’s relations match the described pipeline: the retriever pulls Top-K memories from the memory bank; a learnable reranker refines Top-K into Top-M conditioned on the query; the LLM consumes the query plus selected memories to generate a response and citation/attribution signals; and an RL feedback/update loop uses citation-derived rewards (from the response/LLM output) to update the reranker. No relationship is explicitly contradicted by the provided evidence; the “frozen vs learnable” depiction is consistent with the paper’s emphasis on keeping the retriever off-the-shelf while adapting a lightweight reranker."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "All major component labels in the target figure (Memory Bank, Retriever, Top-K/Top-M Memory Entries, Reranker, Query, LLM, Response, Citation Scores, RL Update, Frozen/Learnable module) align with the paper’s described architecture and Algorithm 1. The retriever-memory bank interaction, reranking from Top-K to Top-M, LLM generation of responses plus citation/attribution signals, and RL-style online update of the learnable reranker are all supported by the provided evidence. Any minor schematic conventions (e.g., ⊕ for concatenation, depicting feedback as an arrow from Response) are faithful visual aids and not mislabeling."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 5,
+              "reason": "The target figure is a high-level schematic that foregrounds the paper’s main contribution—Retrospective Reflection for retrieval refinement—without clutter. It includes the essential pipeline elements aligned with Algorithm 1 and Sec. 6: memory bank → retriever (frozen) → Top-K → reranker (learnable) → Top-M → LLM → response, plus citation/attribution scores (+1/−1) used as reward signals for an RL update to the reranker. It omits trivial implementation details (e.g., embedding specifics, prompt formats, baseline term b, or prospective reflection/memory maintenance not central to Fig. 3), which matches the paper’s Figure 3 description and keeps attention on the core novelty: LLM-derived binary citation rewards driving online reranker adaptation."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "The target figure is a clear, faithful visual supplement to the described RMM/Retrospective Reflection loop. It explicitly depicts the core pipeline in Algorithm 1 and Sec. 6/Fig. 3 description: Memory Bank → Retriever (frozen) → Top-K memories → learnable Reranker → Top-M memories → LLM → Response, plus LLM-produced citation scores (+1/−1) feeding an RL update to the reranker. The frozen vs learnable legend matches the paper’s emphasis on lightweight adaptation via reranker fine-tuning while retriever stays fixed. Although it omits session append S and optional prospective memory-bank maintenance (which the text notes is not specified in Algorithm 1), this does not hinder its function as supplementary material for the retrospective component; the figure stays focused and aligns with the captioned framework overview."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely non-redundant and focused on the core RMM retrospective-reflection loop evidenced in Algorithm 1 and Figure 3: Memory Bank → Retriever (Top-K) → Reranker (Top-M) → LLM → Response, with citation-based (+1/−1) reward signals driving an RL update to the reranker. It avoids decorative graphics seen in some reference figures and uses minimal visual encodings (frozen vs learnable) that directly support the method description. Minor potentially unnecessary elements include the prominent ⊕ near “Query” (not explicitly required by the evidence, and it may be unclear what is being combined) and some extra visual emphasis (icons, color coding) that is helpful but not strictly necessary. Overall, redundancy is low and the diagram is compact and relevant."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.857,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The figure has a clear left-to-right pipeline: Memory Bank/Retriever → Top-K entries → Reranker → Top-M entries/LLM → Response. Arrow directions and block placement make the flow immediately obvious within a quick glance, with no confusing backtracking aside from a clearly labeled RL update loop."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 5,
+              "reason": "Connection lines are cleanly routed with clear left-to-right flow. The few overlaps are minimal and occur in open whitespace, so they don’t create ambiguity about which module connects where. Overall the diagram reads as neat and publishable within a 3-second glance."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Functionally related modules are placed in tight proximity and follow a clear left-to-right pipeline: Memory Bank/Retriever → Top-K entries → Reranker → Top-M entries/LLM → Response. The Query input sits directly above the components it conditions (reranker and LLM), and the RL update loop is positioned adjacent to the reranker/response relationship. Spacing, grouping, and arrows make relationships immediately scannable within a 3-second glance."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 5,
+              "reason": "Overall layout follows a clear grid: the main pipeline runs left-to-right with modules (Retriever → Top-K → Reranker → Top-M/LLM → Response) aligned neatly in rows. Labels and icons are consistently positioned, spacing between blocks is even, and arrows/curves do not create visual clutter. Any slight vertical offsets (e.g., small legend/icons vs. blocks) are minor and do not affect readability; it looks publication-ready."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 5,
+              "reason": "Strong visual hierarchy: the main pipeline blocks (Memory Bank → Retriever → Reranker → LLM → Response) are large, centered, and clearly separated with distinct colors. Key emphasis elements (Top-K/Top-M stacks, Query/Response, and the learnable vs frozen legend) stand out immediately, and arrow thickness/placement makes the flow obvious within a 3-second glance. Overall looks clean and publication-ready."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "Overall margining is sufficient: modules have clear spacing, labels are readable, and arrows don’t overcrowd the main blocks. Minor tight spots include the right-side stack (Top-M entries / citation scores) and the upper connectors near the Query box, where lines and boxes sit a bit close. Still looks publishable and clean at a glance."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 5,
+              "reason": "Components with similar roles are depicted consistently: modules are shown as rounded rectangles with distinct, repeatable colors (e.g., retriever in blue, reranker in orange), data stores use a consistent stacked-card/database icon style (memory bank, top-k/top-m entries), and arrows/flow lines are uniform. The legend reinforces the encoding (frozen vs learnable), and nothing appears visually inconsistent or confusing in a quick glance."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The target figure frequently replaces abstract concepts with concrete visual metaphors and abbreviations: a database cylinder for the memory bank, stacked cards for Top‑K/Top‑M memory entries, a snowflake/flame legend to symbolize frozen vs learnable modules, and compact labels like “LLM,” “Top‑K,” “Top‑M,” and “RL Update.” This is more metaphor/icon-heavy than Ref 1–3 (which rely more on labeled boxes and arrows with fewer symbolic icons), and broadly comparable to Ref 4–5 where retrieval/memory systems are depicted with database and module icons. It does not reach the maximum because many key notions (Retriever, Reranker, Citation Scores, Response) are still primarily conveyed via text-labeled rectangles rather than being fully replaced by pictorial symbols."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a very common LLM system-diagram template: left-to-right pipeline (memory bank/retriever → top-k entries → reranker → LLM/response), rounded rectangles, simple icons, and arrow-based flow. This visual grammar closely matches several references (especially Ref 4’s retrieval→ranking→response pipeline and Ref 2’s memory/retrieval architecture blocks), and the color-coding of ‘frozen vs learnable modules’ is also a standard convention rather than a distinctive stylistic choice. While the inclusion of RL update and citation-score annotation adds a small twist in content, the overall styling and layout do not meaningfully differentiate it from common academic diagram templates."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure uses a fairly standard modular pipeline layout (memory bank → retriever → top‑k → reranker → top‑m → LLM → response) with uniform rounded boxes, consistent iconography, and left-to-right flow. This aligns closely with the reference designs, which also use repeated block-diagram conventions for retrieval/memory/LLM workflows (e.g., Ref 1/2/4 show similar compartmentalized stages and arrows; Ref 3/5 likewise follow common schematic styling). While the target adds a small paper-specific element (RL update loop to the reranker and explicit citation scores), these are content-level additions rather than a distinctive layout strategy. It does not substantially break away from uniform design principles or introduce a notably tailored composition for a unique narrative, so adaptability is low to modest."
+            }
+          ]
+        }
+      },
+      "weighted_total": 4.172,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6339
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7005
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7314
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7365
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6778
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7005
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7262
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7365
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p4__score1.00.png",
+            "similarity": 0.6698
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7005
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7314
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7365
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.5399
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.671
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6305
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7314
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.507
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6778
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6305
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7314
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6778
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7262
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p4__score1.00.png",
+            "similarity": 0.6698
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7314
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6018
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6584
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7262
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7365
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7005
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.6889
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p3__score1.00.png",
+            "similarity": 0.7174
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7365
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6305
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p4__score1.00.png",
+            "similarity": 0.6698
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning/Step-level_Value_Preference_Optimization_for_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.6889
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p3__score1.00.png",
+            "similarity": 0.7174
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.637
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.6526
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.7201
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7365
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6436
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Machine_Unlearning_of_Pre-trained_Large_Language_Models/Machine_Unlearning_of_Pre-trained_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6803
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6584
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.7005
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.4306
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p3__score0.95.png",
+            "similarity": 0.5894
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7262
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Spiral_of_Silence_How_is_Large_Language_Model_Killing_Information_Retrieval_A_Case_Study_on_Open_Domain_Question_Answering/Spiral_of_Silence_How_is_Large_Language_Model_Killing_Information_Retrieval_A_Case_Study_on_Open_Domain_Question_Answering__p0__score1.00.png",
+            "similarity": 0.7016
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.7201
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7314
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7365
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6339
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7365
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Spiral_of_Silence_How_is_Large_Language_Model_Killing_Information_Retrieval_A_Case_Study_on_Open_Domain_Question_Answering/Spiral_of_Silence_How_is_Large_Language_Model_Killing_Information_Retrieval_A_Case_Study_on_Open_Domain_Question_Answering__p0__score1.00.png",
+            "similarity": 0.7016
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p3__score1.00.png",
+            "similarity": 0.7174
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Machine_Unlearning_of_Pre-trained_Large_Language_Models/Machine_Unlearning_of_Pre-trained_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6803
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6869
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7365
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7314
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.7201
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7262
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7314
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7365
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Language_Models_as_Inductive_Reasoners/Language_Models_as_Inductive_Reasoners__p4__score1.00.png",
+            "similarity": 0.6364
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7262
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p3__score1.00.png",
+            "similarity": 0.7174
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p0__score1.00.png",
+            "similarity": 0.7314
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6778
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7365
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.7201
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6757
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.7201
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7447
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7365
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Spiral_of_Silence_How_is_Large_Language_Model_Killing_Information_Retrieval_A_Case_Study_on_Open_Domain_Question_Answering/Spiral_of_Silence_How_is_Large_Language_Model_Killing_Information_Retrieval_A_Case_Study_on_Open_Domain_Question_Answering__p0__score1.00.png",
+            "similarity": 0.7016
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6757
+          }
+        }
+      }
+    },
+    {
+      "figure_file": "In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents__p3__score0.95.png",
+      "caption": "Figure 2: Illustration of Prospective Reflection. After each session, the agent decomposes and summarizes the session into specific topics. These newly generated memories are compared with existing memories in the",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Memory bank (stores dialogue history as memory entries: (topic summary, raw dialogue); topic summary used as search key)', 'Retriever (uses current user query to retrieve relevant memories from memory bank)', 'Reranker (refines/prioritizes retriever outputs; lightweight adaptation target)', 'LLM response generator (synthesizes retrieved memories with current context to produce personalized response)', 'LLM feedback signals based on utilization of retrieved memories', 'Retrospective Reflection loop (uses LLM feedback to refine/update the reranker)', 'Session boundary trigger (process occurs at end/conclusion of each session)', 'Prospective Reflection process', 'Prospective Reflection step 1: Memory extraction module (LLM extracts dialogue snippets + corresponding topic summaries per distinct topics from the session)', 'Prospective Reflection step 2: Memory update module (integrates extracted topic-based memories into memory bank)', 'Top-K semantic similarity retrieval (for each extracted memory, retrieve Top-K most similar existing memories from memory bank)', 'LLM decision module for add vs merge (decides whether to directly add new memory or merge with an existing memory to form an updated memory)', 'Merge operation (combine extracted memory with relevant existing memory)', 'Add operation (insert extracted memory when it is a new topic)', 'Session reset/clear after processing (S ← [])']\nContext: Our framework comprises four key components. The memory bank stores dialogue history as a collection of memory entries, each represented as a pair (topic summary, raw dialogue), where the “topic summary” serves as the search key for re- trieving the conversational segment. The retriever identifies relevant memories based on the current user query. To enable lightweight adaptation of the retrieval process, we incorporate a reranker, which refines the retriever’s initial output by pri- oritizing the most pertinent memories. Finally, an LLM synthesizes the relevant memories with the current context to produce a personalized response. Crucially, the LLM also provides feedback sig- nals based on its utilization of retrieved memories, which are used to refine the reranker through Ret- rospective Reflection.\n\nAs illustrated in Figure 2, this process occurs at the conclusion of each session and consists of two key steps: memory extraction and memory update. First, memory extraction is achieved by us- ing an LLM to ex- tract dialogue snippets from the session with their corresponding summaries based on the distinct mentioned topics. Second, memory update in- volves integrating the extracted topic-based memo- ries into the memory bank. Specifically, for each extracted memory, we retrieve the Top-K most se- mantically similar memories already present in the memory bank. Subsequently, an LLM determines whether the extracted memory should be directly added into the memory bank (e.g., when the extracted memory discusses a new topic) or merged with an existing memory into an updated one (e.g., when the extracted mem- ory provides updated information to a previously discussed topic).\n\nFigure 2: Illustration of Prospective Reflection. After each session, the agent decomposes and summarizes the session into specific topics. These newly generated memories are compared with existing memories in the memory bank. Relevant memories are merged , while others are directly added . Prospective reflection en- sures efficient organization of personal knowledge for future retrieval.\n\nAlgorithm 1 Reflective Memory Management (RMM) for Dialogue Agents\n... // Prospective Reflection\nif session S ends then\nM ←ExtractMemory(S)\nfor m ∈M do\nB ←UpdateMemory(B, m)\nend for\nS ←[]\nend if",
+        "fidelity_based": "Lenient Consistency Report: [[{'element': 'Finished Dialogue Session -> Decompose & Summarize', 'status': 'Supported', 'evidence': 'The text describing Prospective Reflection states that the process occurs “at the conclusion of each session,” where the agent decomposes and summarizes the session into topic-based memories (Figure 2 caption and Section 5). This matches a finished session flowing into a decompose/summarize step.'}, {'element': 'Decompose & Summarize -> Topic Summary', 'status': 'Supported', 'evidence': 'Section 4 defines each memory entry as a pair (topic summary, raw dialogue), and Section 5 explains that memory extraction uses an LLM to extract dialogue snippets with corresponding summaries based on distinct topics. Thus decomposition/summarization producing topic summaries is explicitly supported.'}, {'element': 'Decompose & Summarize -> Raw Dialogue', 'status': 'Supported', 'evidence': 'Section 5 describes extracting “dialogue snippets” (raw dialogue segments) along with summaries. The memory bank stores (topic summary, raw dialogue) pairs (Section 4). So decompose/summarize yielding raw dialogue segments is consistent with the described extraction.'}, {'element': 'Topic Summary -> Current Memory Bank', 'status': 'Supported', 'evidence': 'The framework defines the memory bank as storing entries where the topic summary serves as the search key paired with raw dialogue (Section 4). After extraction, the topic-based memories are integrated into the memory bank (Section 5). Representing topic summaries as flowing into the memory bank is a plausible depiction of that integration.'}, {'element': 'Raw Dialogue -> Current Memory Bank', 'status': 'Supported', 'evidence': 'The paper explicitly states the memory bank stores each entry as (topic summary, raw dialogue) (Section 4) and that extracted topic-based memories (including dialogue snippets) are integrated into the memory bank (Section 5).'}, {'element': 'Current Memory Bank -> Retrieve and update relevant memory (if exists)', 'status': 'Supported', 'evidence': 'In Prospective Reflection’s memory update step, for each extracted memory the system retrieves Top-K most semantically similar memories already present in the memory bank and then decides whether to add or merge (Section 5). This corresponds to retrieving relevant existing memory and updating it if it exists.'}, {'element': 'Current Memory Bank -> Updated Memory Bank', 'status': 'Supported', 'evidence': 'Section 5 describes integrating extracted memories into the memory bank via either addition or merging, producing an updated memory bank after the update procedure. A direct arrow from current to updated memory bank is a reasonable, visually enriched shorthand of that update process.'}, {'element': 'Retrieve and update relevant memory (if exists) -> Updated Memory Bank', 'status': 'Supported', 'evidence': 'The described workflow performs retrieval of similar existing memories and then uses an LLM to decide add vs. merge, resulting in updated memory entries and thus an updated memory bank (Section 5; Figure 2 caption: “Relevant memories are merged, while others are directly added”).'}, {'element': 'Memory Merge -> Updated Memory Bank', 'status': 'Supported', 'evidence': 'Figure 2 caption and Section 5 explicitly state that when the extracted memory updates a previously discussed topic, it is “merged with an existing memory into an updated one,” which yields an updated memory bank.'}, {'element': 'Memory Addition -> Updated Memory Bank', 'status': 'Supported', 'evidence': 'Figure 2 caption and Section 5 explicitly describe direct addition into the memory bank when the extracted memory discusses a new topic, producing the updated memory bank.'}], [{'element': 'Finished Dialogue Session -> Decompose & Summarize', 'status': 'Supported', 'evidence': 'The provided text chunk discusses retriever performance, offline pretraining, and memory organization for LongMemEval, which plausibly operates over dialogue sessions. A step that triggers memory processing after a dialogue session is a common and scientifically plausible pipeline stage, even if not explicitly described here.'}, {'element': 'Decompose & Summarize -> Topic Summary', 'status': 'Supported', 'evidence': 'The text emphasizes memory organization and integrating fragmented conversational segments into a cohesive memory structure (e.g., PR). Producing summaries (including topic-level summaries) from dialogue is a standard, plausible mechanism to support such organization and retrieval, even if not explicitly named.'}, {'element': 'Decompose & Summarize -> Raw Dialogue', 'status': 'Supported', 'evidence': 'Keeping raw dialogue alongside processed representations is a common design in memory/retrieval systems. The text references conversational segments and memory structure, making it plausible that raw dialogue is retained as part of the memory construction process.'}, {'element': 'Topic Summary -> Current Memory Bank', 'status': 'Supported', 'evidence': 'The text discusses memory organization and retriever performance improvements, which plausibly depend on storing structured representations. Adding a topic summary into a memory bank is consistent with improving retrieval over long-context conversational data.'}, {'element': 'Raw Dialogue -> Current Memory Bank', 'status': 'Supported', 'evidence': 'Because the text mentions integrating fragmented conversational segments into cohesive memory structure, it is plausible that raw dialogue segments are stored in a memory bank before (or alongside) merging/structuring operations.'}, {'element': 'Current Memory Bank -> Retrieve and update relevant memory (if exists)', 'status': 'Supported', 'evidence': 'The text is about retrieval settings and improvements to retriever performance; retrieving from an existing memory bank and updating relevant entries is a standard, implicit operation in retrieval-augmented memory management systems.'}, {'element': 'Current Memory Bank -> Updated Memory Bank', 'status': 'Supported', 'evidence': 'An updated memory bank is a natural consequence of online refinement or memory reorganization. The text explicitly frames a workflow where retriever performance is improved via training/refinement and memory organization changes, which plausibly culminate in an updated memory state.'}, {'element': 'Retrieve and update relevant memory (if exists) -> Updated Memory Bank', 'status': 'Supported', 'evidence': 'This is a direct, scientifically plausible pipeline step: updating retrieved relevant memory implies writing back changes, producing an updated memory bank. The text discusses online refinement and improved performance across settings, consistent with such a mechanism.'}, {'element': 'Memory Merge -> Updated Memory Bank', 'status': 'Supported', 'evidence': \"The text states that PR integrates fragmented conversational segments into a cohesive memory structure, which corresponds closely to a 'memory merge' operation producing an updated memory bank.\"}, {'element': 'Memory Addition -> Updated Memory Bank', 'status': 'Supported', 'evidence': \"Adding new information to memory is implicit in any long-term memory system handling ongoing dialogue. The text’s focus on memory organization and retriever performance across sessions makes 'memory addition' a plausible component leading to an updated memory bank.\"}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 3,
+              "reason": "The target figure captures the core Prospective Reflection pipeline: session-end trigger (“Finished Dialogue Session”), decomposition/summarization into (topic summary, raw dialogue) memories, comparison against an existing memory bank, and the add vs. merge outcomes yielding an updated memory bank. It also reflects the paper’s memory-entry structure (topic summary + raw dialogue) and the merge/add operations. However, several major components described in the paper are omitted: the retriever and reranker (and their retrospective-reflection feedback loop), the LLM response generator, explicit Top-K semantic similarity retrieval, and the LLM decision module for add-vs-merge. It also doesn’t show the session reset (S←[]) explicitly. Thus coverage is partial—strong for prospective memory update, weak for the broader RMM framework."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The target figure is largely intelligible on its own: it shows a finished dialogue session being decomposed/summarized into topic-based memories, then either added to the memory bank (memory addition) or used to update/merge an existing entry (memory merge), resulting in an updated memory bank. This matches the evidence’s Prospective Reflection steps (memory extraction + memory update with add vs merge) and the depicted change from separate topics (e.g., likes hiking; likes running) to a merged topic (likes hiking and running). However, it omits several key mechanisms needed to fully understand the operating principle of the overall system described in the evidence—no retriever/reranker/LLM generation loop, no Top-K similarity retrieval and LLM decision module explicitly, no feedback/retrospective reflection, and no explicit session-boundary/reset signal. Thus it clearly communicates the prospective memory management idea, but not the complete system pipeline."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 2,
+              "reason": "The target figure captures only the Prospective Reflection portion: session-end trigger, decomposition/summarization into topic summaries + raw dialogue, and memory bank update via merge/add (showing an updated memory bank). However, it omits major components described earlier and across the pipeline—retriever, reranker (as lightweight adaptation target), LLM response generation using retrieved memories, LLM feedback signals, and the Retrospective Reflection loop for reranker refinement. It also does not depict Top-K semantic similarity retrieval or an explicit LLM decision module for add vs. merge, nor the session reset (S←[]). Thus it is a partial summary, not complete from beginning to end of the paper."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "No hallucinated components or formulas are evident. The depicted pipeline—finished dialogue session triggering a decompose/summarize step that produces topic summaries and raw dialogue snippets, which are stored in a memory bank and then retrieved/merged or added to yield an updated memory bank—is supported by the provided evidence (Sections 4–5 and Figure 2 caption). Any simplifications (e.g., a direct arrow from current to updated memory bank, high-level block naming) function as visual shorthand rather than introducing contradicted mechanisms."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "All depicted relationships among major components are supported by the provided evidence: a finished dialogue session triggers a decompose/summarize step that yields topic summaries and raw dialogue snippets; these are stored in a memory bank as (topic summary, raw dialogue) pairs; the system retrieves semantically similar existing memories and then updates the bank via either merging or adding entries, producing an updated memory bank. No evidence indicates any contradicted or critically incorrect relation; at most, some arrows are visual shorthand for the described update procedure."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "All major component labels in the target figure align with the paper’s described Prospective Reflection workflow: a finished dialogue session triggers a Decompose & Summarize step that yields topic summaries and raw dialogue snippets stored as (topic summary, raw dialogue) pairs in a memory bank, followed by retrieval of similar existing memories and an add-vs-merge update that produces an updated memory bank. The labels (e.g., Decompose & Summarize, Topic Summary, Raw Dialogue, Current/Updated Memory Bank, Memory Merge/Addition) are consistent with the supported evidence and do not introduce any contradicted or critically incorrect methodology names."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is schematized and largely highlights the paper’s main contribution: session-end processing that decomposes/summarizes a finished dialogue into topic summaries + raw dialogue, then performs memory update via add/merge into a memory bank (showing before/after bank states). This matches the Evidence’s Prospective Reflection description (memory extraction + memory update; add vs merge; session boundary trigger). Compared to the reference figures, it stays high-level and avoids turn-level or architectural clutter.\n\nHowever, it omits several core pipeline elements that are part of the overall framework contribution: the retriever/reranker/LLM response generator loop, Top-K semantic similarity retrieval, and the LLM decision module that chooses add vs merge. Because those key mechanisms are not explicitly depicted, the figure summarizes the high-level idea well but not the full main contribution end-to-end."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 4,
+              "reason": "The target figure aligns well with the paper’s Prospective Reflection description and Algorithm 1: it shows a session-end trigger (“Finished Dialogue Session”), an LLM-like step to “Decompose & Summarize” into topic-based memory entries (topic summary + raw dialogue), and an update step that yields an updated memory bank. It also explicitly depicts the add vs. merge behavior (Memory Addition vs Memory Merge), consistent with the LLM decision module and merge/add operations described in the evidence. As supplementary material, it concretely illustrates the main data structures (memory bank rows keyed by topic summaries) and the outcome of merging (e.g., ‘User enjoys hiking’ + new ‘likes running’ → ‘likes hiking and running’). However, it omits several key textual elements that could matter for full contextual understanding: the Top-K semantic similarity retrieval step, the retriever/reranker pipeline, LLM feedback signals, and Retrospective Reflection/reranker adaptation. Thus it is strong for Prospective Reflection memory update intuition, but not comprehensive for the whole framework."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely free of decorative or off-topic elements: it focuses on the session end trigger, decomposition/summarization, and add vs. merge updates to a memory bank, matching the paper’s Prospective Reflection description (memory extraction + memory update). Visual components (dialogue session box, arrows, before/after memory-bank tables, and color-coded ‘Memory Merge’ vs ‘Memory Addition’) directly support the core mechanism. Minor redundancy/unnecessary detail exists in repeating similar table layouts and including ellipses/placeholder dialogue rows, but these are minimal and do not distract from the central idea."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The diagram’s flow is immediately clear within a quick glance: it progresses left-to-right from the finished dialogue session to summarization, then to the current memory bank and updated memory bank, with arrows consistently indicating direction. The layout is clean and symmetrical, and the arrow routing is straightforward with no confusing backtracking."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 5,
+              "reason": "Connection lines are cleanly routed and largely non-crossing: the main flow uses straight vertical arrows and a single diagonal arrow that doesn’t intersect others. The left-to-right pipeline (Finished Dialogue → Decompose/Summarize → Memory Bank) is visually separated, and arrows enter/exit boxes without tangling. Overall it reads like a polished, publishable figure."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Functionally related modules are placed close together and grouped logically: the left pipeline (Finished Dialogue Session → Decompose & Summarize) sits adjacent to its outputs (Topic Summary/Raw Dialogue), which then flow directly into the central Current/Updated Memory Bank blocks on the right. The two memory-bank states are stacked and aligned, making the update relationship immediately apparent, and color coding (merge/addition) is local to the relevant areas. Overall spacing, alignment, and arrows support quick 3-second comprehension with no clutter."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 5,
+              "reason": "The figure follows a clear grid: main blocks are aligned horizontally/vertically, headers and table rows line up cleanly, and spacing between sections is consistent. Arrows connect elements without disrupting alignment, giving an overall polished, published look."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 5,
+              "reason": "Main components pop immediately: the left-to-right pipeline (Finished Dialogue Session → Decompose & Summarize → Current/Updated Memory Bank) is clear via strong box boundaries, arrow directionality, and prominent section headers. The two blue header bars for the memory banks create strong visual emphasis and hierarchy, while color coding (merge vs. addition) is noticeable but not distracting. Spacing and alignment are clean, text is legible at a glance, and the figure reads like a polished, publishable diagram."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 5,
+              "reason": "The figure has clear padding around the outer border and consistent spacing between the left (dialogue session) block and the right (memory bank) panels. Internal elements (headers, rows, and arrows) are separated enough to avoid crowding, and no text or connectors feel cramped against neighboring components. Overall it reads cleanly at a glance and looks publication-ready."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 5,
+              "reason": "Components with similar roles are consistently encoded: blue header bars denote memory-bank sections, tan/green highlight bands consistently indicate memory merge vs. addition, and the topic-summary/raw-dialogue fields repeat with the same tabular shapes and labels across stages. The left-to-right flow boxes and arrows use uniform styling, making corresponding elements easy to match within a 3-second glance."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 3,
+              "reason": "The target figure mixes abstract workflow concepts (e.g., “Decompose & Summarize,” “Retrieve and update relevant memory,” “Current/Updated Memory Bank”) with some concrete visual metaphors: user and robot avatars to denote speakers/agent roles, table-like “memory bank” panels to represent stored state, and arrows to indicate information flow. However, most semantics are still carried by text labels and structured boxes rather than being replaced by strong symbolic shorthand. Compared to the evidence references, it is more metaphorical than purely text-heavy pipeline diagrams (e.g., formal-logic examples) but less icon-driven/abbreviation-heavy than figures that use prominent symbols (e.g., locks/keys for privacy, or strong UI/tool icons)."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a common academic/ML system-diagram template: boxed modules with headings, a left-to-right pipeline, and table-like memory-bank panels in blue with simple arrows indicating update/merge. This visual language closely matches multiple references (e.g., Ref 4’s retrieval→memory→response pipeline and Ref 5’s dialogue summarization→memory-bank update layout), with similar compartmentalization and color-coding for memory operations. While the specific arrangement (memory merge/addition legend and the dual ‘Current/Updated Memory Bank’ tables) is coherent, it does not introduce a notably distinctive illustration style, iconography, or unconventional composition that would differentiate it from standard paper figures."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 3,
+              "reason": "The target figure uses a pragmatic, paper-specific layout: a left-to-right process (Finished Dialogue Session → Decompose & Summarize → Current/Updated Memory Bank) combined with two stacked table blocks to emphasize before/after memory updates. This departs somewhat from a generic, uniformly styled pipeline by mixing panel types (conversation sketch + summary table + update tables) in a way tailored to explaining memory merge/addition. However, the overall visual grammar remains conventional (rectangular containers, simple arrows, standard tabular headers) and does not introduce a markedly distinctive compositional strategy compared with the evidence figures, many of which similarly combine modular blocks and retrieval/update flows. Hence, it shows moderate adaptability but not a strong break from common design templates."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.933,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.6684
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7066
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7324
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7415
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6743
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.709
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7415
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6995
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.6684
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.709
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7324
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7415
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p0__score1.00.png",
+            "similarity": 0.5633
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7324
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6281
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.709
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.5568
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6743
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.709
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7324
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6743
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.6815
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.709
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7324
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p3__score0.95.png",
+            "similarity": 0.6651
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7086
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7324
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7415
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.6724
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6743
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.709
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7415
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p3__score0.95.png",
+            "similarity": 0.6651
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6995
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7415
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7324
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.6061
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.6669
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.7098
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7415
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6266
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Machine_Unlearning_of_Pre-trained_Large_Language_Models/Machine_Unlearning_of_Pre-trained_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6265
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6624
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7066
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5175
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6365
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.6815
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7415
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7415
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.7098
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7324
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6565
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7415
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7324
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7086
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6624
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7086
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p3__score0.95.png",
+            "similarity": 0.6683
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7324
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.7098
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7415
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7324
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7086
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6455
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7086
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7324
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6884
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6743
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.7066
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.7098
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6884
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.7098
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7415
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7324
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7788
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6884
+          }
+        }
+      }
+    },
+    {
+      "figure_file": "In_Prospect_and_Retrospect_Re_ective_Memory_Management_for_Long-term_Personalized_Dialogue_Agents__p0__score0.95.png",
+      "caption": "Figure 1: An illustration of a personalized healthcare dialog agent. Key information about a user’s allergy and previous symptoms mentioned in the past sessions is needed to provide a more informed response in the current session.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['User', 'Multi-session dialogue (sessions comprised of turns: user query + agent response)', 'Current session conversational context', 'External memory bank (sole repository of information from previous sessions)', 'Memory entries as (topic summary, raw dialogue)', 'Prospective Reflection: decompose dialogue history into topic-based memory representations and store in memory bank', 'Retriever (takes current user query; retrieves relevant memories using topic summaries as search keys)', 'Reranker (refines/prioritizes retriever’s initial output; lightweight adaptation)', 'LLM response generator (synthesizes current context + retrieved memories to produce personalized response)', 'Feedback signals from LLM about utilization of retrieved memories', 'Retrospective Reflection: use online feedback signals during response generation to refine/update the reranker', 'Flow: user query -> retriever -> reranker -> LLM -> personalized response', 'Flow: dialogue history -> Prospective Reflection -> memory bank storage', 'Flow: memory bank -> retriever (retrieval) -> reranker -> LLM (memory integration)', 'Flow: LLM feedback -> Retrospective Reflection -> reranker refinement']\nContext: As illustrated in Figure 1, effective personaliza-\ntion requires not only understanding the immedi-\nate context but also recalling relevant information\nfrom the user’s previous interactions (Williams and Hollan, 1981; Whittaker et al., 2002; Dong et al., 2024). The limitations with current LLMs to natu-\nrally retain and recall information from past inter-\nactions beyond their context windows sparked the\ndevelopment of external memory mechanisms for\nLLMs (Zhang et al., 2024c; Li et al., 2024a; Kim et al., 2024). These memory systems serve as cru-\ncial components in personalized dialogue agents,\nenabling them to maintain consistent personality traits, remember user preferences, and build upon previous interactions.\n\nWe consider the task of building a personalized dialogue agent in a multi-session conversational setting. In this setting, an agent interacts with a user across multiple distinct sessions. A session represents a distinct interaction period, often delim- ited by user inactivity, explicit user conﬁrmation of conversation completion, or the initiation of a new dialogue thread. Within each session, the con- versation unfolds as a sequence of turns, where a turn consists of a user query and the agent’s cor- responding response. The agent is equipped with an external memory, serving as the sole repository for information gathered from previous sessions. The agent’s objective is to generate contextually relevant and personalized responses to user queries, leveraging both the immediate conversational con- text within the current session and the relevant in- formation retrieved from the memory.\n\nTo tackle the challenges, we introduce Reﬂective Memory Management (RMM), a framework that integrates two mechanisms. Prospective Reﬂec- tion proactively decomposes dialogue history into topic-based memory representations, optimized for future retrieval, while Retrospective Reﬂection dy- namically reﬁnes the retrieval mechanism through online feedback signals generated during response generation. They improve the quality of the re- trieved memories, contributing to personalization.\n\nOur framework comprises four key components. The memory bank stores dialogue history as a collection of memory entries, each represented as a pair (topic summary, raw dialogue), where the “topic summary” serves as the search key for re- trieving the conversational segment. The retriever identiﬁes relevant memories based on the current user query. To enable lightweight adaptation of the retrieval process, we incorporate a reranker, which reﬁnes the retriever’s initial output by pri- oritizing the most pertinent memories. Finally, an LLM synthesizes the relevant memories with the current context to produce a personalized response. Crucially, the LLM also provides feedback sig- nals based on its utilization of retrieved memories, which are used to reﬁne the reranker through Ret- rospective Reﬂection. Our complete workﬂow is detailed in Algorithm 1.",
+        "fidelity_based": "Lenient Consistency Report: [[{'element': \"Label: 'Current Dialogue Session (Today)'\", 'status': 'Supported', 'evidence': \"Chunk 1 explicitly includes the phrase 'Current Dialogue Session (Today)' as part of Figure 1’s illustrated healthcare dialogue agent.\"}, {'element': \"Label: 'Relevant History (Yesterday)'\", 'status': 'Supported', 'evidence': \"Chunk 1 explicitly shows 'Relevant History (Yesterday)' in the Figure 1 illustration accompanying the dialogue snippets.\"}, {'element': \"Label: 'Relevant History (A Week Ago)'\", 'status': 'Supported', 'evidence': \"Chunk 1 explicitly includes 'Relevant History (A Week Ago)' in Figure 1 as part of the example of retrieved prior information.\"}, {'element': \"Label: 'User'\", 'status': 'Supported', 'evidence': \"Chunk 1 shows 'Agent' and 'User' labels within the Figure 1 dialogue layout. Even if treated as structural roles, they align with the text’s multi-session user/agent framing.\"}, {'element': \"Label: 'Agent'\", 'status': 'Supported', 'evidence': \"Chunk 1 explicitly shows 'Agent' in Figure 1 and the paper repeatedly discusses an 'agent' interacting with a 'user' across sessions.\"}, {'element': 'Label: \"I now have a headache, and the fever is gone.\"', 'status': 'Supported', 'evidence': 'This exact utterance appears in Chunk 1 as part of Figure 1’s example current-session user message.'}, {'element': 'Label: \"So the fever subsided, the cough persists, and a headache started. Considering your allergy, let\\'s explore ...\"', 'status': 'Supported', 'evidence': 'This agent response text appears in Chunk 1 within the Figure 1 illustrative dialogue, demonstrating use of prior symptom/allergy history.'}, {'element': \"Label: 'I have a persistent cough and a fever.'\", 'status': 'Supported', 'evidence': \"Chunk 1 includes this line under 'Relevant History (Yesterday)' in the Figure 1 illustration.\"}, {'element': \"Label: 'Sorry to hear that ...'\", 'status': 'Supported', 'evidence': \"Chunk 1 shows 'Sorry to hear that …' as part of the prior-day dialogue snippet in Figure 1.\"}, {'element': \"Label: 'I am allergic to penicillin.'\", 'status': 'Supported', 'evidence': \"Chunk 1 includes 'I am allergic to penicillin.' under 'Relevant History (A Week Ago)' in Figure 1, consistent with the caption’s emphasis on allergy recall.\"}, {'element': \"Label: 'Noted: Penicillin allergy.'\", 'status': 'Supported', 'evidence': \"Chunk 1 explicitly shows 'Noted: Penicillin allergy.' in Figure 1 as an agent acknowledgement in the earlier session.\"}, {'element': \"Label: 'User’s Full Dialogue History'\", 'status': 'Supported', 'evidence': \"Chunk 1 contains the phrase 'User’s Full Dialogue History' as part of Figure 1’s schematic showing history feeding into the current session.\"}, {'element': \"Relationship: 'Relevant History (Yesterday)' -> 'Current Dialogue Session (Today)'\", 'status': 'Supported', 'evidence': 'Figure 1’s purpose and caption state that key information from past sessions is needed in the current session, implying retrieval/usage from yesterday’s history into today’s session. This is explicitly the intended information flow of the illustration.'}, {'element': \"Relationship: 'Relevant History (A Week Ago)' -> 'Current Dialogue Session (Today)'\", 'status': 'Supported', 'evidence': 'The caption for Figure 1 explicitly highlights recalling the user’s penicillin allergy from a past session to inform the current response, supporting an information-flow relationship from the week-ago history into today’s session.'}], [{'element': 'Current Dialogue Session (Today)', 'status': 'Supported', 'evidence': \"The surrounding extracted labels and arrows indicate a present-time conversation view that is being augmented by prior dialogue context. This is a plausible and standard framing for dialogue-history retrieval/memory figures, and nothing in the provided text contradicts having a 'current session' panel.\"}, {'element': 'Relevant History (Yesterday)', 'status': 'Supported', 'evidence': \"The figure elements describe prior dialogue snippets grouped by recency ('Yesterday'). This is conceptually consistent with conversational memory organization and retrieval, which is aligned with the paper text discussing memory organization/granularity and integrating conversational segments.\"}, {'element': 'Relevant History (A Week Ago)', 'status': 'Supported', 'evidence': 'A week-old snippet is a plausible example of longer-term user memory being retrieved (e.g., allergy), consistent with the LongMemEval context implied by the text. The paper excerpt does not prohibit such an example; it is a reasonable illustrative instantiation.'}, {'element': 'User / Agent', 'status': 'Supported', 'evidence': \"Role labels like 'User' and 'Agent' are standard visual aids for dialogue diagrams. The provided paper excerpt concerns retrievers for conversational/memory evaluation; these labels add structural context and do not assert any conflicting scientific claim.\"}, {'element': 'User’s Full Dialogue History', 'status': 'Supported', 'evidence': \"A 'full history' container is a common depiction in retrieval/memory systems (the retriever selects relevant pieces). This aligns with the excerpt’s emphasis on memory organization and selecting/combining segments; there is no contradiction.\"}, {'element': 'Relationship: Relevant History (Yesterday) -> Current Dialogue Session (Today)', 'status': 'Supported', 'evidence': 'The arrow expresses that prior-day context informs the current dialogue. This is scientifically plausible and consistent with retrieval-augmented dialogue/memory mechanisms; the text discusses integrating conversational segments and improving performance via better memory organization, which supports this directional influence.'}, {'element': 'Relationship: Relevant History (A Week Ago) -> Current Dialogue Session (Today)', 'status': 'Supported', 'evidence': 'The arrow indicates that older memories (e.g., an allergy) can be retrieved to guide the current response, which is a canonical use case for long-term memory evaluation. The excerpt is about retriever performance on LongMemEval and does not state any opposite direction or exclusion of older context.'}, {'element': 'Dialogue content examples (fever subsided/cough persists/headache started; penicillin allergy noted)', 'status': 'Supported', 'evidence': 'These read as illustrative example utterances demonstrating how retrieved history can affect current clinical-style dialogue. They function as plausible placeholders and do not introduce a claim that conflicts with the paper excerpt (which is about retrieval performance/memory organization rather than asserting medical facts).'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 3,
+              "reason": "The target figure captures the high-level idea of multi-session personalization via recalling relevant prior-session information: it shows a current session turn (user + agent) and retrieval of relevant past snippets (yesterday / a week ago) from the user’s full dialogue history, which aligns with the paper’s multi-session setting and use of past interactions to personalize the response. However, it omits most of the paper’s specific RMM architecture components and flows: there is no explicit external memory bank as the sole repository, no representation of memory entries as (topic summary, raw dialogue), no Prospective Reflection step that decomposes and stores topic-based memories, no retriever/reranker modules (and no lightweight reranker adaptation), and no LLM feedback signals driving Retrospective Reflection to refine the reranker. Compared to the reference figures, it resembles a generic memory-retrieval illustration (like Ref 2) rather than the full RMM pipeline described in the evidence."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 3,
+              "reason": "The figure conveys the core idea of multi-session personalization via recalling relevant past dialogue: a current session query/response at the top, and two prior “Relevant History” snippets below that are implicitly selected from the user’s full dialogue history (arrows from past to present). This makes the high-level operating principle (use prior interactions to inform current response) understandable without reading the paper.\n\nHowever, compared to the evidence description of RMM, the figure omits key system components and flows that define the operating principle of the proposed method: there is no explicit external memory bank construct as the sole repository, no representation of memory entries as (topic summary, raw dialogue), no Prospective Reflection step that creates topic-based memories, and no Retriever→Reranker→LLM pipeline. It also lacks the Retrospective Reflection/online feedback loop from the LLM to update the reranker. Visually, it looks like direct access to full dialogue history rather than a managed memory/retrieval system.\n\nRelative to the reference figures that explicitly show retrieval/generation pipelines or memory vs no-memory contrasts, this target is simpler and more intuitive, but less self-contained for understanding the specific mechanism beyond “retrieve relevant history.”"
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 3,
+              "reason": "The target figure captures the high-level goal and setting: a multi-session personalized dialogue agent that uses the current session context plus relevant information from prior sessions (external memory) to produce a better response (illustrated via two past-session snippets feeding into today’s response). However, it does not summarize the full framework described in the paper end-to-end. Key missing elements include: (1) the external memory bank as the sole repository and the explicit memory-entry structure (topic summary, raw dialogue); (2) Prospective Reflection decomposing dialogue history into topic-based memories and storing them; (3) the retriever using topic summaries as search keys; (4) the reranker and its lightweight adaptation role; (5) LLM feedback signals about memory utilization; and (6) Retrospective Reflection updating/refining the reranker via online feedback. Compared to the evidence and reference figures emphasizing topic shifts and the retriever→reranker→LLM loop plus reflection mechanisms, the target figure is a simplified retrieval-and-use depiction rather than a complete summary of the paper’s workflow."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "No hallucinated components or formulas are evident. All key labels and dialogue snippets in the target figure (current session, relevant history from yesterday and a week ago, user/agent roles, and the specific utterances about fever/cough/headache and penicillin allergy) are explicitly supported by the cited evidence. The depicted relationships (arrows from prior history segments into the current session) are consistent with the described purpose of the illustration—retrieving salient past information to inform the present response—and nothing in the provided evidence indicates any contradicted or fabricated technical element."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "The depicted relationships are consistent with the provided evidence: both 'Relevant History (Yesterday)' and 'Relevant History (A Week Ago)' are shown feeding into/being used by the 'Current Dialogue Session (Today)'. The evidence explicitly supports the presence of these panels and, crucially, supports the information-flow relationships (arrows) indicating that prior dialogue snippets (including the penicillin allergy from a week ago) inform the agent’s current response. No contradictions are indicated; the remaining elements function as illustrative dialogue-role/structure aids."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "All major component labels in the target figure (e.g., 'Current Dialogue Session (Today)', 'Relevant History (Yesterday)', 'Relevant History (A Week Ago)', 'User', 'Agent', and 'User’s Full Dialogue History') are explicitly supported by the provided evidence, which references the same phrases appearing in the source chunk/figure context. The directional relationships depicted (past relevant history informing the current session) are also consistent with the described purpose of the figure (retrieving prior dialogue to guide current responses). No label is marked contradicted or appears to misname a methodology/component."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is schematized around the core personalization-with-memory idea: it contrasts the current session context with relevant past-session snippets and shows that retrieved history informs the agent’s response (arrows from past to current). This aligns with the paper’s main contribution at a high level (multi-session setting + use of external memory for personalization) and avoids turn-level/trivial details.\n\nHowever, relative to the evidence, it omits several central RMM-specific components that distinguish the contribution beyond generic memory recall—e.g., the explicit external memory bank as the sole repository, the memory-entry structure (topic summary, raw dialogue), and the retriever→reranker→LLM pipeline with prospective/retrospective reflection and feedback-driven reranker updates. Because it summarizes the concept but not the full RMM mechanism, it is strong but not maximally focused on the paper’s “main contribution” as defined in the text."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 4,
+              "reason": "The target figure is a clear supplementary illustration of multi-session personalization: it separates a current dialogue session (today) from prior sessions (yesterday / a week ago) and shows how relevant past information (symptoms, penicillin allergy) is brought forward to inform the agent’s current response. This matches the paper’s core motivation (needing both current context and recalled prior interactions via an external memory). It is also consistent with the kind of before/after memory usage shown in the visual references (e.g., recalling prior user facts to personalize). However, it does not depict key RMM-specific components from the evidence—prospective reflection with topic summaries, an external memory bank as the sole repository, retriever→reranker→LLM flow, and retrospective reflection via LLM feedback signals—so it functions better as a high-level intuition figure than as a direct explanation of the proposed framework pipeline."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The figure is largely non-redundant: it focuses on core personalization concepts aligned with the evidence—current session context plus retrieval of relevant prior-session information (e.g., penicillin allergy, prior symptoms). It avoids most decorative elements and keeps text minimal. However, it includes some conversational filler (e.g., “Sorry to hear that…”, “Noted: Penicillin allergy.”) and ellipses that do not add much to the core mechanism; these are minor compared to the otherwise clean, idea-focused layout."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.857,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The layout reads clearly top-to-bottom: current session at the top, arrows pointing down to relevant history boxes, then to the overall dialogue history label at the bottom. The arrows and box placement make the intended flow immediately obvious within a quick glance, with clean alignment and no clutter."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 5,
+              "reason": "Connection lines are clean and well-routed. The blue and orange lines clearly link the current session to two distinct history boxes without crossing; they diverge from the same source but remain separated and end at their respective targets, keeping the diagram neat and easy to parse at a glance."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Functionally related elements are grouped closely: the current dialogue is centered at the top, with the two relevant-history cards placed directly below and visually linked via short, clear arrows. The container label (“User’s Full Dialogue History”) frames the history region, and the proximity of each history card to its corresponding arrow color reinforces the relationship. Spacing and alignment look clean and publication-ready."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall the layout follows a clear grid: the main top dialogue box and the two lower history boxes are neatly stacked, with consistent margins and readable spacing. Minor alignment issues show up in the lower row—box baselines and spacing between the left/right history boxes and the central ellipsis aren’t perfectly symmetrical, and connector lines don’t land with identical offsets—so it’s not perfectly “snapped” to a strict grid, but it remains clean and fully readable."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 5,
+              "reason": "Clear visual hierarchy within a 3-second glance: the main/current session block is largest and centered at the top, with bold/colored emphasis on key terms. Supporting history blocks are smaller and grouped below, with distinct blue/orange headers and arrows that guide attention from the main panel to relevant past items. Text is legible, spacing is clean, and the overall layout looks publication-ready."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 5,
+              "reason": "Margins are ample and consistent: each callout box has clear padding, there’s generous whitespace between the top ‘Current Dialogue’ panel and the lower ‘Relevant History’ panels, and the connecting arrows have room without crowding text. Nothing feels cramped or overlapping, so the layout reads cleanly at a glance."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 5,
+              "reason": "Components with similar roles are consistently encoded with the same shapes and colors: dialogue/session boxes share the same rounded-rectangle style, user/agent markers are reused consistently, and the two “Relevant History” sources are distinctly but consistently color-coded (blue vs orange) with matching arrows. Overall it reads like a polished, publishable figure with clear role-based visual consistency."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 3,
+              "reason": "The target figure uses some concrete icons/symbols to stand in for abstract entities (user/agent avatars, chat bubbles) and relies on compact labels/abbreviations (e.g., time anchors like “Today,” “Yesterday,” “A Week Ago,” and ellipses for omitted history) to convey the abstract notion of memory retrieval from dialogue history. However, the core abstractions—relevance selection, temporal linking, and reasoning over symptoms/allergy—are still communicated primarily via text and simple arrows rather than richer symbolic metaphors. Compared with the evidence, it employs fewer icon-driven metaphors than Ref 2/3 (which use many pictograms and symbolic pipelines), and is closer to Ref 4/5 in using light iconography mainly for roles and message structure."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a very common academic-diagram template used in the references: rounded rectangular panels, labeled sections (e.g., “Current Dialogue Session,” “Relevant History”), simple user/agent icons, and colored arrows indicating information flow from past context to current response. This closely resembles Ref 2 (memory vs. no-memory conversational recall) and Ref 5 (retrieval of relevant history into current dialogue), and also shares the same general “pipeline/flowchart” visual grammar present across Refs 1 and 4. While the specific layout (two history boxes feeding one current box) is clear and slightly customized, it does not exhibit a notably unique visual style beyond standard figure conventions (limited palette, basic icons, standard typography)."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure uses a fairly standard, uniform schematic layout: a top “Current Dialogue Session” box linked by colored arrows to two “Relevant History” boxes below, with ellipses indicating more history. This matches common visual patterns in the evidence (e.g., Ref 4’s conversation-history vs memory comparison and Ref 5’s contextual linking), relying on rounded rectangles, simple callouts, and arrows. It does not introduce a paper-specific, distinctive layout strategy (e.g., multi-module pipeline, layered memory architecture, or differentiated panel structure) beyond basic grouping and temporal labels. While the color-coded links (blue/orange) and time framing (today/yesterday/week ago) provide some tailoring, the overall composition remains conventional rather than a deliberate break from uniform design principles."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.838,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.6541
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p6__score1.00.png",
+            "similarity": 0.6498
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6933
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6779
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6145
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6779
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6933
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6848
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.6541
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.6471
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6933
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6779
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.5502
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6933
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6043
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.6541
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.5349
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.6541
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.6471
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6933
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6145
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.6541
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.6471
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6933
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p3__score0.95.png",
+            "similarity": 0.645
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6848
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6933
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6779
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6049
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions/AKE_Assessing_Knowledge_Editing_in_Language_Models_via_Multi-Hop_Questions__p0__score0.70.png",
+            "similarity": 0.6243
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6848
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6933
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p3__score0.95.png",
+            "similarity": 0.645
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6848
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.6721
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6933
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.5217
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.6164
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6779
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6848
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6129
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.59
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6179
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.6541
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.497
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6122
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6167
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6848
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.6721
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p3__score0.95.png",
+            "similarity": 0.645
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6933
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6049
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.6721
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6933
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6779
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6179
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6848
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p1__score0.98.png",
+            "similarity": 0.6131
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6933
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.6346
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.6721
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6933
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6848
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6043
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6382
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6933
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6779
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6145
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.6541
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.6848
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6779
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.6346
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.6721
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6933
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p7__score0.90.png",
+            "similarity": 0.7366
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6779
+          }
+        }
+      }
+    }
+  ]
+}

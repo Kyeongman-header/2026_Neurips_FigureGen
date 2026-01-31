@@ -1,0 +1,1649 @@
+{
+  "paper_name": "Retrieval-Augmented_Black-Box_Language_Models",
+  "mode": "full",
+  "evaluated_at": "2026-01-30T06:42:39.441066",
+  "note": "Re-scored Q2(Fidelity) and Q4(Design) with lenient strategy.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Retrieval-Augmented_Black-Box_Language_Models__p4__score1.00.png",
+      "caption": "Figure 3: REPLUG LSR training process (§4). The retriever is trained using the output of a frozen language model as supervision signals.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Input context x', 'Ground-truth continuation y', 'Corpus/datastore D (documents)', 'Dense retriever (retrieval model with trainable parameters)', 'Document embeddings (for corpus documents)', 'Efficient search index over document embeddings', \"Top-k retrieval: retrieve k documents D' ⊂ D using similarity s(d, x)\", 'Similarity scoring module s(d, x)', 'Retrieval likelihood computation PR(d | x) via softmax over retrieved docs with temperature γ', 'Language model (LM) used as a scorer (parameters fixed / black-box)', 'LM scoring step: compute PLM(y | d, x) for each retrieved document', 'LM likelihood computation Q(d | x, y) via softmax over retrieved docs with temperature β', 'Loss module: KL divergence KL(QLM(d | x, y) || PR(d | x))', 'Training/update step: update only retriever parameters by minimizing KL loss', 'Asynchronous datastore refresh: recompute document embeddings and rebuild search index every T steps', 'Overall 4-step training flow: (1) retrieve + compute PR, (2) LM-score + compute Q, (3) KL loss + retriever update, (4) async index/embedding update and repeat']\nContext: We additionally adopt an ensemble method to incorporate more documents and a training scheme to further adapt the retriever to large LMs.\n\n4 REPLUG LSR: Training the Dense Retriever\nInstead of relying only on existing neural dense retrieval models (Karpukhin et al., 2020; Izacard et al., 2022a; Su et al., 2023), we further propose REPLUG LSR (REPLUG with LM-Supervised Retrieval), which adapts the retriever in REPLUG by using the LM itself to provide supervision about which documents should be retrieved. Inspired by Sachan et al. (2023), our approach can be seen as adjusting the probabilities of the re- trieved documents to match the probabilities of the output sequence perplexities of the language model. In other words, we would like the retriever to find documents that result in lower perplexity scores. As shown in Figure 3, our training algorithm con- sists of the four steps: (1) retrieving documents and computing the retrieval likelihood (§4.1), (2) scor- ing the retrieved documents by the language model (§4.2), (3) updating the retrieval model parameters by minimizing the KL divergence between the re- trieval likelihood and the LM’s score distribution (§4.3), and (4) asynchronous update of the datas- tore index (§4.4).\n\n4.1 Computing Retrieval Likelihood\nWe retrieve k documents D′ ⊂D with the highest similarity scores from a corpus D given an input context x, as described in §3.1. We then compute the retrieval likelihood of each retrieved document d: PR(d | x) = es(d,x)/γ / \\sum_{d∈D′} es(d,x)/γ where γ is a hyperparameter that controls the temer- ature of the softmax. Ideally, the retrieval likeli- hood is computed by marginalizing over all the documents in the corpus D, which is intractable in practice. Therefore, we approximate the retrieval likelihood by only marginalizing over the retrieved documents D′.\n\n4.2 Computing LM likelihood\nWe use the LM as a scoring function to mea- sure how much each document could improve the LM perplexity. Specifically, we first compute PLM(y | d, x), the LM probability of the ground truth output y given the input context x and a docu- ment d. The higher the probability, the better the document di is at improving the LM’s perplexity. We then compute the LM likelihood of each docu- ment d as follows: Q(d | x, y) = ePLM(y|d,x)/β / \\sum_{d∈D′} ePLM(y|d,x)/β where β is another hyperparameter.\n\n4.3 Loss Function\nGiven the input context x and the corresponding ground truth continuation y, we compute the re- trieval likelihood and the language model likeli- hood. The dense retriever is trained by minimizing the KL divergence between these two distributions: L = (1/|B|) \\sum_{x∈B} KL(Q_{LM}(d | x, y) ∥ PR(d | x)), where B is a set of input contexts. When minimiz- ing the loss, we can only update the retrieval model parameters. The LM parameters are fixed due to our black-box assumption.\n\n4.4 Asynchronous Update of the Datastore Index\nBecause the parameters in the retriever are updated during the training process, the previously com- puted document embeddings are no longer up to date. Therefore, following Guu et al. (2020), we recompute the document embeddings and rebuild the efficient search index using the new embed- dings every T training steps. Then we use the new document embeddings and index for retrieval, and repeat the training procedure.",
+        "fidelity_based": "Lenient Consistency Report: [[{'element': 'Retriever', 'status': 'Supported', 'evidence': 'The paper’s REPLUG/REPLUG LSR framework explicitly includes a retriever module that retrieves documents given an input context x (§3.1, §4; Figures 2–3).'}, {'element': 'Test Context x', 'status': 'Supported', 'evidence': 'The paper defines an input context x used both for retrieval and as LM input (§3, §3.1, §4.1). Depicting it as a “Test Context” is a reasonable label specialization.'}, {'element': 'Test Context x -> Retriever', 'status': 'Supported', 'evidence': \"REPLUG retrieves documents using the input context x as the query (§3.1: 'Given an input context x, the retriever…').\"}, {'element': 'Retriever -> 1. Computing Retriever Likelihood P_R(d_i|x)', 'status': 'Supported', 'evidence': 'In REPLUG LSR, after retrieving top-k documents, the method computes a retrieval likelihood distribution P_R(d|x) from similarity scores (§4.1; Figure 3 step (1)).'}, {'element': 'Retriever -> d_i', 'status': 'Supported', 'evidence': 'The retriever returns retrieved documents d (often top-k from corpus D) (§3.1, §4.1). Showing an arrow from retriever to a document variable d_i is consistent with the described retrieval output.'}, {'element': '1. Computing Retriever Likelihood P_R(d_i|x)', 'status': 'Supported', 'evidence': '§4.1 explicitly defines computing retrieval likelihood: P_R(d|x) = softmax(s(d,x)/γ) over retrieved documents.'}, {'element': '1. Computing Retriever Likelihood P_R(d_i|x) -> 3. KL Divergence (P||Q)', 'status': 'Supported', 'evidence': 'The loss minimizes a KL divergence between the LM-derived document distribution and the retriever distribution (§4.3). Thus the retriever likelihood feeds into the KL computation.'}, {'element': 'd_i', 'status': 'Supported', 'evidence': 'The paper denotes the corpus as D = {d1…dm} and discusses retrieved documents d ∈ D (e.g., §3.1, §4.1). A generic index d_i is a plausible notation variant.'}, {'element': 'd1', 'status': 'Supported', 'evidence': 'The corpus is explicitly defined as D = {d1...dm} (§3.1).'}, {'element': 'd2', 'status': 'Supported', 'evidence': 'The corpus is explicitly defined as D = {d1...dm} (§3.1).'}, {'element': 'd3', 'status': 'Supported', 'evidence': 'The corpus is explicitly defined as D = {d1...dm} (§3.1).'}, {'element': 'd4', 'status': 'Supported', 'evidence': 'The corpus is explicitly defined as D = {d1...dm} (§3.1). Showing a few example documents (d1–d4) is consistent with depicting the datastore.'}, {'element': 'Jobs was raised by adopted...', 'status': 'Supported', 'evidence': 'These appear to be illustrative example documents in the retrieved set (Figure 3-style depiction). The paper uses documents from corpora like Wikipedia or the Pile; example snippets are a common visual aid and do not contradict the method.'}, {'element': 'Steve Jobs passed away...', 'status': 'Supported', 'evidence': 'As above, this is a plausible example of a retrieved document snippet used to illustrate how different documents are scored by the LM (§4.2, Figure 3).'}, {'element': 'Jobs cofounded Apple...', 'status': 'Supported', 'evidence': 'As above, this is a plausible example snippet for a retrieved document. The method is document-agnostic and such snippets serve as visual enrichment rather than a new scientific claim.'}, {'element': 'Jobs was raised by adopted... -> 2. Computing LM likelihood Q(d_i|x) ∝ P_LM(apple | d_i, x)/β', 'status': 'Supported', 'evidence': \"The paper’s step (2) scores each retrieved document using the LM probability of the ground-truth continuation given (d, x), and forms Q(d|x,y) via a softmax with temperature β (§4.2; Figure 3). Using 'apple' as an example target token is a plausible simplification/illustration.\"}, {'element': 'Steve Jobs passed away... -> 2. Computing LM likelihood Q(d_i|x) ∝ P_LM(apple | d_i, x)/β', 'status': 'Supported', 'evidence': \"Same rationale: each retrieved document is evaluated by the LM to form a likelihood/distribution over documents (§4.2). The exact token shown ('apple') can reasonably stand in for the continuation y or part of it.\"}, {'element': 'Jobs cofounded Apple... -> 2. Computing LM likelihood Q(d_i|x) ∝ P_LM(apple | d_i, x)/β', 'status': 'Supported', 'evidence': 'Same rationale: document-specific LM scoring is central to REPLUG LSR (§4.2). The figure’s token-level example is consistent with the concept of using LM probabilities as supervision.'}, {'element': '2. Computing LM likelihood Q(d_i|x) ∝ P_LM(apple | d_i, x)/β', 'status': 'Supported', 'evidence': '§4.2 defines Q(d | x, y) = softmax(P_LM(y | d, x)/β) over retrieved documents. While the paper uses y (ground-truth continuation), a figure using a representative token probability is a plausible illustrative shorthand.'}, {'element': '2. Computing LM likelihood Q(d_i|x) ∝ P_LM(apple | d_i, x)/β -> 3. KL Divergence (P||Q)', 'status': 'Supported', 'evidence': 'The KL divergence loss uses the LM-derived distribution Q and the retriever distribution P_R (§4.3), so Q feeds into the KL computation.'}, {'element': '3. KL Divergence (P||Q)', 'status': 'Supported', 'evidence': 'The training objective explicitly minimizes KL(Q || P_R) (§4.3). Depicting a KL divergence block is faithful to the described loss.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 3,
+              "reason": "The target figure captures the core high-level training idea: (1) compute retriever likelihood over retrieved docs (shown as PR), (2) compute an LM-based likelihood/score distribution (shown as Q ∝ PLM/β), and (3) train via a KL divergence between the two distributions, with a retriever module on the left. However, it omits several major components and details explicitly described in the paper: the top-k retrieval step and similarity scoring s(d,x) (and γ-temperature softmax) are not shown clearly; the ground-truth continuation y is not depicted (Q is labeled as function of x only, while the paper defines Q(d|x,y) based on PLM(y|d,x)); the fixed/black-box LM and the per-document LM scoring step PLM(y|d,x) are not explicitly illustrated; the corpus/datastore D, document embeddings, and efficient search index are not represented; and the asynchronous refresh of embeddings/index every T steps plus the full 4-step loop (retrieve→LM-score→KL update→async refresh) is not included. Thus, it covers the main loss-level concept but misses many major pipeline elements from the paper."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "Largely yes. The figure communicates a clear high-level 3-step operating principle: (1) a retriever takes a test context x and retrieves/weights documents (shown as d1–d4) to form a retriever likelihood PR; (2) an LM (implicitly fixed, indicated by icons) scores the same retrieved docs to produce an LM-based likelihood Q (proportional to PLM(y|d,x) with temperature noted); (3) a KL divergence is computed between the two distributions, implying retriever training to match LM preferences. This aligns well with the evidence text (PR softmax over similarities, Q softmax over LM scores, KL loss), and the flow is visually similar in spirit to the reference training-diagram figures.\n\nHowever, it is not perfectly standalone: the ground-truth continuation y is not explicitly depicted (it appears indirectly as “apple” in PLM(apple|di,x)), the softmax/temperature normalization is only hinted (∝ and “/β”) and may be unclear to non-experts, the parameter-update target (update only retriever, LM fixed/black-box) is not explicitly stated, and the asynchronous datastore refresh/reindexing step (recompute embeddings/index every T steps) is absent. Thus the general principle is understandable, but some key training specifics require prior context or the paper."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 3,
+              "reason": "The target figure captures the core REPLUG LSR training loop: (1) top-k retrieval and retriever likelihood PR(d|x) from similarity scores, (2) LM scoring to form an LM-based distribution Q (via PLM(y|d,x) and temperature), and (3) KL divergence used to update the retriever while keeping the LM fixed (implied by the frozen/snowflake icon). However, it is not complete relative to the full section: it does not explicitly show the corpus/datastore D, document embeddings and similarity module s(d,x), the softmax temperature parameters (γ for PR and β for Q) in a clear way, the explicit use of ground-truth continuation y (it uses an example token instead), the constraint that only retriever parameters are updated, nor the crucial step (4) asynchronous datastore refresh/re-embedding and index rebuild every T steps. Thus it summarizes the main middle steps but omits important end-to-end components described in the paper."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "No hallucinated components or formulas are introduced: the retriever, retrieved documents d_i, computation of retriever likelihood P_R(d_i|x), LM-derived document likelihood/distribution Q(d_i|x) via LM probabilities with a temperature term, and the KL-divergence training objective are all described in the paper’s REPLUG/REPLUG-LSR framework (§3–§4, esp. §4.1–§4.3). The use of an example token ('apple') and illustrative document snippets are consistent visual aids and do not add unsupported methodological claims."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "All depicted relations among the main components match the paper’s REPLUG/REPLUG-LSR pipeline: context x queries the retriever; the retriever outputs top-k documents and a retrieval distribution P_R(d|x); each retrieved document is scored by the LM to form Q(d|x,y) (illustratively shown via a token probability); and both P_R and Q feed into the KL-divergence loss. No critical relationship is contradicted; the example snippets/icons are merely illustrative."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "All major components and method labels in the target figure align with the paper’s terminology and structure: a Retriever using input context x, computing retriever likelihood P_R(d_i|x), computing an LM-derived document distribution Q(d_i|x) (a reasonable shorthand for Q(d|x,y) based on LM likelihood), and a KL-divergence objective tying the two distributions. Any minor simplifications (e.g., showing a single token like “apple” or example document snippets) are illustrative and not contradictory."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is largely schematized around the core REPLUG LSR training signal: (1) retriever produces a retrieval distribution P_R(d|x) over top-k documents, (2) the LM (shown as fixed/frozen) scores each retrieved document to form an LM-induced distribution Q(d|x,y) (here depicted via P_LM(apple|d_i,x) and a temperature), and (3) a KL divergence aligns P_R to Q, implying only retriever updates. This matches the paper’s main contribution (LM-supervised retrieval via KL matching) rather than low-level implementation details. However, it omits or only weakly encodes some central elements of the method description—explicit top-k retrieval/index/datastore D, similarity scoring s(d,x) and softmax temperature γ for P_R, the use of ground-truth continuation y in LM scoring, and the asynchronous datastore/index refresh every T steps (the 4-step loop). Those omissions keep it from being a complete ‘main contribution’ schematic, but it still focuses on the key training idea rather than trivialities."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "Yes. The target figure closely matches the paper’s described REPLUG LSR training loop and serves as an effective supplementary aid. It explicitly depicts (1) top-k retrieval from a datastore given context x and computation of retriever probabilities PR(d|x) (shown as a bar chart over d1–d4), (2) LM scoring of each retrieved document to form an LM-based distribution Q (visualized as another bar chart; consistent with computing PLM(y|d,x) then softmax with temperature), and (3) the KL-divergence objective between the two distributions used to update only the retriever. The flow arrows make the 3-step core training procedure easy to follow and align with the evidence text’s ‘retrieve → LM-score → KL loss’ narrative; it also implies the black-box LM role (snowflake icon). Although the figure does not clearly show the asynchronous datastore/index refresh every T steps (an evidence element), it still functions very well for contextual understanding of the main mechanism described in §4.1–§4.3."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 3,
+              "reason": "The target figure mostly focuses on the core REPLUG LSR pipeline (retriever → PR(d|x), LM scoring → Q(d|x,y), KL divergence/update), matching the paper’s described 4-step training flow. However, it includes several decorative/extra elements that are not necessary to convey the core ideas: emoji-style icons (fire, snowflake, question marks), stylized shading/large rounded panels, and illustrative document snippets about Jobs that do not add algorithmic information beyond “documents.” It also omits/does not depict the asynchronous datastore refresh step, but this is more an incompleteness issue than redundancy. Overall, some non-essential decoration is present, though it does not overwhelm the main message."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.714,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The diagram’s direction is immediately clear: input/context on the left feeds into the retriever, then proceeds through labeled steps (1 → 2 → 3) toward the right with arrows guiding the eye. The top and bottom bands are organized and aligned, and the step numbering reinforces a left-to-right flow. Overall it reads like a polished, publication-quality figure."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "Overall the connector layout is readable and mostly well-routed, but there are a couple of noticeable crossings/overlaps: the dashed diagonal arrows from the LM-likelihood box to documents intersect with each other and with vertical dashed connectors, creating a small cluttered region. The long arrows to the KL Divergence block are fine, but the mid-section has enough line crossings to slightly hurt the clean look, though it remains fully legible."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Functionally related elements are grouped and placed close together: the retriever inputs and retrieved documents sit adjacent to the retriever block, the two likelihood-computation panels (steps 1 and 2) are stacked in a tight workflow region, and KL divergence (step 3) is positioned to the right as the natural downstream outcome with clear connecting arrows. The layout reads left-to-right with minimal cross-figure jumping, and spacing/padding supports quick association within 3 seconds."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall layout follows a clear grid: left retriever block, middle two stacked panels, and right KL divergence box. Most elements are neatly aligned and spacing is consistent, keeping it fully readable. Minor alignment inconsistencies show up in the central document boxes and the dashed connector arrows/labels (some don’t line up perfectly with box centers), so it’s just shy of fully polished."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 5,
+              "reason": "Clear visual hierarchy: the large colored Retriever block and the two numbered computation panels (1 and 2) immediately stand out, with the KL Divergence output (3) separated on the right. Size, color contrast, and positioning guide the eye left-to-right, and the main components are easy to distinguish at a glance. Text appears legible and the layout looks publication-ready."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 5,
+              "reason": "Elements have clear breathing room: the retriever block, document snippets, and the two likelihood panels are separated with consistent padding, and arrows/annotations don’t crowd text. Margins around the figure and between sections (1/2/3) keep it readable at a glance, with no visible overlap or cramped labels."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 5,
+              "reason": "Strong consistency in both shape and color: the retriever is always shown as the same red rounded block, document/passage chunks use uniform rounded rectangles with similar styling, and the two likelihood-computation stages are consistently grouped in distinct tinted bands with matching chart styles. Flow arrows and connectors are uniform, and emphasis colors (e.g., red for KL divergence) are used consistently for the same role. Overall it reads like a polished, published figure."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The target figure heavily replaces abstract operations with concrete visual metaphors and symbols. Core components are iconified (e.g., a flame on the retriever block, question-mark cubes for uncertainty, dashed arrows for information flow), and key abstractions are abbreviated mathematically (P_R(d_i|x), Q(d_i|x), KL divergence). This aligns with the evidence figures’ common practice of using simplified blocks, icons, and abbreviated notation to represent complex processes (e.g., retriever/LLM blocks, warning icons, schematic pipelines). Compared to the strongest metaphor-heavy references (e.g., authority-bias warning icon and stylized user/LLM/retrieval elements), the target is similarly concrete, though it still relies substantially on formal probability notation and labeled steps rather than fully symbolic depiction throughout, preventing a maximal score."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure follows a very common ML paper template: a left-to-right pipeline with numbered steps, boxed modules, arrows, and small distribution bar charts. Its visual language (pastel rounded rectangles, dashed arrows, and KL-divergence callout) closely matches standard schematic styles seen in the references—especially Ref 2 and Ref 4 (retrieval/processing flow diagrams with boxed components and arrows) and Ref 5 (probability/distribution conceptual illustration). While the icon accents (flame, snowflake, question marks) add minor flair, they do not create a distinctive, novel visual identity; the overall style remains conventional rather than uniquely differentiating."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 3,
+              "reason": "The target figure shows some paper-specific adaptation by combining a 3-step pipeline (retriever likelihood, LM likelihood, then KL divergence) with contextual elements (test context box, retrieved document snippets, and likelihood bar charts) in a coherent left-to-right flow. This goes beyond a generic block diagram by integrating intermediate outputs (d1–d4 bars) and illustrating how retrieved items feed both computations.\n\nHowever, the layout still largely follows common, uniform design conventions seen in the references: modular rounded rectangles, numbered stages, arrows connecting boxes, and inset bar charts—very similar in spirit to Evidence 2/3/4 (pipeline schematics with labeled stages). It does not strongly break away with a novel, highly tailored visual metaphor or an unconventional arrangement; rather, it is a standard process diagram with mild customization.\n\nOverall, it is moderately adaptable (some tailoring to the method), but not a clear departure from typical schematic templates."
+            }
+          ]
+        }
+      },
+      "weighted_total": 4.009,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6859
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.7054
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6937
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.7079
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories/When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories__p0__score0.80.png",
+            "similarity": 0.698
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7018
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.7079
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p0__score1.00.png",
+            "similarity": 0.602
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6737
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6937
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6197
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p1__score1.00.png",
+            "similarity": 0.672
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6937
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6556
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6655
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6614
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7035
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6937
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7018
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.6819
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6937
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7018
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.663
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.7079
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.6984
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.7079
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories/When_Not_to_Trust_Language_Models_Investigating_Effectiveness_of_Parametric_and_Non-Parametric_Memories__p0__score0.70.png",
+            "similarity": 0.698
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7035
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.7112
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5296
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6495
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7018
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6835
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6859
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.6902
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7035
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p3__score0.95.png",
+            "similarity": 0.7101
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.6628
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7035
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p5__score1.00.png",
+            "similarity": 0.7023
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6937
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7035
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7418
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.7148
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6937
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.7079
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/A_Theory_of_Response_Sampling_in_LLMs_Part_Descriptive_and_Part_Prescriptive/A_Theory_of_Response_Sampling_in_LLMs_Part_Descriptive_and_Part_Prescriptive__p1__score1.00.png",
+            "similarity": 0.6965
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6937
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.6984
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7258
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7454
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/A_Theory_of_Response_Sampling_in_LLMs_Part_Descriptive_and_Part_Prescriptive/A_Theory_of_Response_Sampling_in_LLMs_Part_Descriptive_and_Part_Prescriptive__p1__score1.00.png",
+            "similarity": 0.6965
+          }
+        }
+      }
+    },
+    {
+      "figure_file": "Retrieval-Augmented_Black-Box_Language_Models__p2__score1.00.png",
+      "caption": "Figure 2: REPLUG at inference (§3). Given an input context, REPLUG first retrieves a small set of relevant documents from an external corpus using a retriever (§3.1 Document Retrieval). Then it prepends each document separately to the input context and ensembles output probabilities from different passes (§3.2 Input Reformulation).",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Input context x', 'External corpus D = {d1...dm}', 'Retriever module (dense dual-encoder retriever)', 'Document encoder producing document embeddings E(d) (precomputed)', 'Query encoder producing query embedding E(x) (same encoder as document encoder)', 'Similarity scoring function s(d,x) = cos(E(d), E(x))', \"Top-k selection to form D' (retrieved documents)\", 'FAISS index over document embeddings for efficient retrieval', 'k parallel branches: concatenate each retrieved document with input (d ◦ x) / prepend d to x', 'Black-box Language Model (LM) applied separately to each (d ◦ x)', 'Per-branch predicted next-token probability p(y | d ◦ x)', \"Ensembling/aggregation module computing weighted average p(y | x, D')\", \"Ensemble weights λ(d,x) derived from similarity scores via softmax over D' (exp(s)/sum exp(s))\", \"Final output: ensembled next-token probability p(y | x, D') (or predicted token y)\"]\nContext: We introduce REPLUG (Retrieve and Plug), a new retrieval-augmented LM paradigm where the LM is treated as black box and the retrieval component is added as a potentially tuneable module. As shown in Figure 2, given an input context, REPLUG first retrieves a small set of relevant documents from an external corpus using a retriever (§3.1). Then we pass the concatenation of each retrieved document with the input context through the LM in parallel, and ensemble the predicted probabilities (§3.2).\n\n3.1 Document Retrieval Given an input context x, the retriever aims to retrieve a small set of documents from a corpus D = {d1...dm} that are relevant to x. Following prior work (Qu et al., 2021; Izacard and Grave, 2021; Ni et al., 2022), we use a dense retriever based on the dual encoder architecture, where an encoder is used to encode both the input context x and the document d. Specifically, the encoder maps each document d ∈D to an embedding E(d) by taking the mean pooling of the last hidden rep- resentation over the tokens in d. At query time, the same encoder is applied to the input context x to obtain a query embedding E(x). The similarity between the query embedding and the document embedding is computed by their cosine similarity: s(d, x) = cos(E(d), E(x)) (1) The top-k documents that have the highest simi- larity scores when compared with the input x are retrieved in this step. For efficient retrieval, we pre- compute the embedding of each document d ∈D and construct FAISS index (Johnson et al., 2019) over these embeddings.\n\n3.2 Input Reformulation The retrieved top-k documents provide rich infor- mation about the original input context x and can potentially help the LM to make a better prediction. One simple way to incorporate the retrieved docu- ments as part of the input to the LM is to prepend x with all k documents. However, this simple scheme is fundamentally restricted by the number of docu- ments (i.e., k) we can include, given the language model’s context window size. To address this lim- itation, we adopt an ensemble strategy described as follows. Assume D′ ⊂D consists of k most relevant documents to x, according to the scoring function in Eq. (1). We prepend each document d ∈D′ to x, pass this concatenation to the LM separately, and then ensemble output probabilities from all k passes. Formally, given the input context x and its top-k relevant documents D′, the output probability of the next token y is computed as a weighted average ensemble: p(y | x, D′) = X d∈D′ p(y | d ◦x) · λ(d, x), where ◦denotes the concatenation of two se- quences and the weight λ(d, x) is based on the similarity score between the document d and the input context x: λ(d, x) = es(d,x) P d∈D′ es(d,x)",
+        "fidelity_based": "Lenient Consistency Report: [[{'element': 'Test Context x', 'status': 'Supported', 'evidence': 'The paper repeatedly defines an input context x used as the retriever query (e.g., “Given an input context x… retrieve… documents”).'}, {'element': 'Retriever', 'status': 'Supported', 'evidence': 'REPLUG explicitly includes a retriever module used to retrieve documents relevant to x (§3.1 Document Retrieval).'}, {'element': 'Document Retrieval', 'status': 'Supported', 'evidence': '§3.1 is titled “Document Retrieval” and describes retrieving top-k documents from an external corpus using a retriever.'}, {'element': 'Retrieved document d_i', 'status': 'Supported', 'evidence': 'The text uses a corpus D={d1...dm} and discusses retrieving top-k documents d∈D′. Depicting an individual retrieved document as d_i is a standard, plausible notation consistent with the description.'}, {'element': 'Input Reformulation', 'status': 'Supported', 'evidence': '§3.2 is titled “Input Reformulation” and describes prepending each retrieved document to x and ensembling outputs.'}, {'element': 'Black-box LM', 'status': 'Supported', 'evidence': 'A central claim is treating the LM as a black box (“black-box assumption makes REPLUG applicable to large LMs served via APIs”; Fig. 1/2 description).'}, {'element': 'Apple', 'status': 'Supported', 'evidence': 'Using “Apple” as an example predicted token/answer is consistent with the paper’s description of next-token prediction and examples are common visual enrichments; it does not contradict the method.'}, {'element': 'Ensemble', 'status': 'Supported', 'evidence': '§3.2 describes an ensemble strategy: run k passes with d◦x and compute a weighted average of output probabilities.'}, {'element': 'd_ℓ', 'status': 'Supported', 'evidence': 'The paper denotes documents as d (and subsets D′). Using d_ℓ to index a particular retrieved document is a plausible notational variant (loose mapping).'}, {'element': 'Jobs is the CEO of _', 'status': 'Supported', 'evidence': 'This appears to be an illustrative fill-in-the-blank prompt showing how retrieved evidence may influence completion; it aligns with the paper’s generic ‘continuation y given x and d’ framing and is not contradicted.'}, {'element': 'Jobs was raised by adopted...', 'status': 'Supported', 'evidence': 'As an example retrieved sentence, it is consistent with the concept of retrieved documents being prepended to the prompt. The paper does not restrict content of retrieved snippets.'}, {'element': 'Steve Jobs passed away...', 'status': 'Supported', 'evidence': 'Same as above: plausible example content for a retrieved document used to condition a black-box LM; no contradiction with the method.'}, {'element': 'Jobs cofounded Apple...', 'status': 'Supported', 'evidence': 'Plausible retrieved evidence snippet used to aid prediction; matches the retrieval-augmentation motivation.'}, {'element': 'apple', 'status': 'Supported', 'evidence': 'Lowercase ‘apple’ as a candidate completion/token is consistent with next-token probability outputs p(y|d◦x) and illustrative examples.'}, {'element': 'pear', 'status': 'Supported', 'evidence': 'A competing candidate token/answer is consistent with the notion of multiple output probabilities being compared/ensembled.'}, {'element': 'not', 'status': 'Supported', 'evidence': 'Another competing token candidate is plausible in language modeling outputs; the paper’s formulation is over arbitrary tokens y.'}, {'element': 'Test Context x -> Retriever', 'status': 'Supported', 'evidence': '§3.1: the retriever takes input context x as the query to retrieve documents.'}, {'element': 'Retriever -> Retrieved document d_i', 'status': 'Supported', 'evidence': '§3.1: the retriever returns top-k documents D′ from the corpus; representing that as producing retrieved d_i is consistent.'}, {'element': 'Document Retrieval -> Retriever', 'status': 'Supported', 'evidence': 'Conceptually, “Document Retrieval” is the step implemented by the retriever module; depicting the process feeding/defining the retriever is a reasonable structural visualization (visual aid) and not contradicted.'}, {'element': 'Retrieved document d_i -> Black-box LM', 'status': 'Supported', 'evidence': '§3.2: each retrieved document is prepended to x (d◦x) and passed through the black-box LM.'}, {'element': 'Input Reformulation -> Black-box LM', 'status': 'Supported', 'evidence': '§3.2 explicitly states reformulated inputs (d◦x) are fed into the LM in parallel.'}, {'element': 'Black-box LM -> Apple', 'status': 'Supported', 'evidence': 'The LM outputs predictions over next tokens/answers; showing an output like “Apple” is a plausible illustrative outcome of the LM.'}, {'element': 'd_ℓ -> Ensemble', 'status': 'Supported', 'evidence': 'The ensemble aggregates outputs from multiple documents d∈D′; showing an individual d_ℓ contributing to the ensemble matches §3.2.'}, {'element': 'Jobs was raised by adopted... -> Jobs is the CEO of _', 'status': 'Supported', 'evidence': 'This is an example of a retrieved snippet being prepended to/conditioning the prompt. The paper’s mechanism is exactly that retrieved text influences the LM’s continuation.'}, {'element': 'Jobs is the CEO of _ -> apple', 'status': 'Supported', 'evidence': 'The prompt leads to candidate completions; mapping from prompt to candidate token probabilities is consistent with p(y|d◦x).'}, {'element': 'Jobs is the CEO of _ -> pear', 'status': 'Supported', 'evidence': 'Same rationale: multiple candidate tokens can be scored by the LM for a given context.'}, {'element': 'Jobs is the CEO of _ -> not', 'status': 'Supported', 'evidence': 'Same rationale: ‘not’ could be among possible next tokens; the model defines a distribution over tokens.'}, {'element': 'Steve Jobs passed away... -> Jobs is the CEO of _', 'status': 'Supported', 'evidence': 'Illustrates how different retrieved documents may affect completion; consistent with the retrieval-augmented conditioning described in §3.2.'}, {'element': 'Jobs cofounded Apple... -> Jobs is the CEO of _', 'status': 'Supported', 'evidence': 'Another plausible retrieved snippet conditioning the prompt; consistent with REPLUG’s prepend-and-predict approach.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 3,
+              "reason": "The target figure captures the high-level REPLUG pipeline: an input context x, a retriever returning multiple retrieved documents d_i, per-document concatenation/prepending with x, parallel black-box LM calls producing per-branch token probability distributions, and an ensemble/aggregation producing a final prediction. However, several major paper-specified components/formulas are omitted or only implied: it does not show the external corpus D={d1…dm}, the dense dual-encoder retriever architecture with shared query/document encoder and embeddings E(d), E(x), the cosine similarity scoring s(d,x)=cos(E(d),E(x)), explicit top-k selection D′, the FAISS index over precomputed document embeddings, nor the ensemble weights λ(d,x) computed via softmax of similarity scores (and the explicit equation for p(y|x,D′)=Σ p(y|d∘x)·λ). Thus, it covers the conceptual flow but misses many of the key retriever/weighting details emphasized in the paper."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "Largely yes. The figure conveys the core REPLUG pipeline end-to-end: an input context x is sent to a retriever, relevant documents d_i are fetched, each retrieved document is concatenated/prepended to x (parallel branches), a black-box LM produces per-branch next-token distributions, and these are combined via an ensemble to yield the final prediction. This matches the evidence description (retrieve top-k, reformulate input per document, per-branch p(y|d◦x), aggregate). However, some key mechanics needed for full standalone understanding are only implicit: (i) it does not specify that retrieval is dense dual-encoder with cosine similarity, nor that query/document share the same encoder; (ii) it does not indicate top-k selection explicitly (just a stack of documents); (iii) the ensemble weighting (softmax over similarity scores λ(d,x)) is not shown—aggregation is depicted qualitatively with bars but without explaining how weights are computed; (iv) no mention of FAISS/precomputed embeddings. Thus, a viewer can grasp the general operating principle, but not the specific retrieval/scoring/weighting details."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 3,
+              "reason": "The target figure captures the core REPLUG pipeline described in §3 at a high level: retriever → retrieve top documents → prepend each document to input → run a black-box LM in parallel → ensemble outputs. However, it is not fully complete relative to the paper’s end-to-end description and key implementation details. It omits (i) the explicit external corpus D={d1…dm}, (ii) the dense dual-encoder setup with shared query/document encoder and precomputed document embeddings E(d), (iii) the cosine similarity scoring s(d,x)=cos(E(d),E(x)), (iv) top-k selection D′ notation, (v) FAISS indexing for efficient retrieval, and (vi) the softmax-derived ensemble weights λ(d,x) based on similarity scores. The figure shows ensembling qualitatively but not the weighting mechanism or similarity-driven retrieval computations, so it is only partially complete from beginning-to-end of the described method."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "No hallucinated components or formulas are introduced beyond what the paper describes. The key modules—input context x, a retriever performing document retrieval over a corpus, retrieved documents d_i/d_ℓ, input reformulation by prepending d to x (d◦x), a black-box LM, and ensembling of output probabilities across k retrieved documents—are all supported by the paper’s stated REPLUG pipeline (§3.1–§3.2). The specific prompt/snippet content (e.g., Jobs/Apple) and token candidates (apple/pear/not) function as illustrative examples of conditioning and next-token scoring and do not contradict the method; they are acceptable visual aids rather than fabricated method components."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "The figure’s component relationships match the paper’s described REPLUG pipeline: the input context x is used as a query to a retriever (Document Retrieval), the retriever returns top-k documents d_i, each document is prepended to x (Input Reformulation) and fed to a black-box LM, and outputs are combined via an ensemble (weighted aggregation of probabilities). The illustrative prompt/snippet content (e.g., Jobs/Apple) does not alter or contradict the structural relations. No evidence indicates any contradicted or critically incorrect linkage among the major modules."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "All major components/methodology labels in the target figure (e.g., retriever, document retrieval, retrieved documents d_i/d_ℓ, input reformulation, black-box LM, ensemble) are consistent with the paper’s described REPLUG pipeline. The remaining text (e.g., example prompt/completions like “Jobs is the CEO of _”, “Apple/pear/not”) functions as illustrative content and does not mislabel any component or method."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is largely schematized around the paper’s main contribution: (i) retrieve relevant documents for an input context, (ii) reformulate input by prepending each retrieved document to x in parallel branches, (iii) run a black-box LM per branch, and (iv) ensemble the resulting next-token distributions. This matches the core REPLUG pipeline described in the evidence (retrieval + per-doc LM calls + aggregation) and avoids low-level implementation detail (e.g., dual-encoder architecture specifics, mean pooling, cosine similarity formula, FAISS index, and softmax weighting computation are not shown explicitly). However, it still includes some illustrative/trivial content (e.g., specific Jobs/Apple snippets and bar charts) while omitting the key weighting mechanism λ(d,x) based on similarity, which is part of the main method rather than a trivial detail. Overall, it emphasizes the main idea, but the absence of similarity/weighting depiction prevents a top score."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 4,
+              "reason": "The target figure largely functions well as supplementary material for §3.1–§3.2 REPLUG: it depicts (i) an input context x, (ii) retrieval of relevant documents from an external corpus via a retriever, (iii) forming k parallel inputs by prepending each retrieved document d_i to x (d ◦ x), (iv) running a black-box LM separately per branch to obtain per-branch next-token probabilities, and (v) ensembling these branch outputs into a final distribution/prediction. This aligns closely with the evidence description of input reformulation and ensemble aggregation.\n\nHowever, it omits or under-specifies several key details present in the text that would help a reader connect the figure to the formalism: the dense dual-encoder architecture (shared query/document encoder), explicit cosine similarity scoring s(d,x), the softmax-based weights λ(d,x)=exp(s)/∑exp(s), the top-k selection D′, and the FAISS index / precomputed document embeddings. The figure communicates the high-level pipeline clearly, but not the specific retriever/scoring/weighting mechanisms, so it is strong as an intuitive overview but only moderately complete as a technical supplement."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely focused on the core REPLUG pipeline evidenced in the text: a retriever selects documents, each retrieved document is concatenated/prepended to the input x, a black-box LM is run in parallel per (d ◦ x), and outputs are ensembled. Compared to the references, it is relatively clean and diagrammatically aligned with the method, without extra side narratives (e.g., privacy/unlearning or authority-bias storytelling). However, it still includes some mildly redundant/decorative elements that are not strictly necessary for conveying the algorithmic idea: illustrative example text about “Jobs/Apple,” multiple repeated bars for token probabilities, and the large highlighted 'Ensemble' panel with repeated icons could be simplified to a single generic branch depiction plus an aggregation node. Overall it avoids major unrelated information but could be more minimal."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.571,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The figure’s reading order is immediately clear: left-to-right pipeline (Retriever → retrieved documents → black-box LM → output) with a right-side panel expanding the ensemble behavior. Arrows consistently indicate direction, sections are well separated, and the flow remains readable within a quick glance."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "Connection lines mostly avoid crossings and the main flow is clear (Retriever → docs → reformulation/LM → ensemble outputs). There are a few spots where arrows converge and visually overlap near the reformulation/black-box LM area and at the right-side grouped bar outputs, creating minor clutter, but nothing that harms readability."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Functionally related modules are placed adjacently and flow logically left-to-right: Retriever → retrieved documents → reformulation/black-box LM → ensemble outputs. The retrieved document stack is visually grouped, the reformulation arrow clearly connects to the next stage, and the ensemble panel keeps per-document variants and their corresponding predictions close together. Overall layout looks publication-ready with clear grouping and proximity."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "Overall layout follows clear horizontal flow (Retriever → documents → LM/ensemble) and major blocks are aligned consistently, so it reads cleanly at a glance. Minor alignment inconsistencies remain: some boxes (document cards and black-box LM blocks) don’t perfectly line up on a common grid, and spacing between stacked items varies slightly. Still fully readable and close to publication quality."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 5,
+              "reason": "The main pipeline components (Retriever → retrieved docs → LM → ensemble outputs) are immediately prominent through size, placement, and strong color blocks. The left-to-right flow is clear, with supporting details (document snippets, reformulation, per-document predictions) visually subordinate but still readable. Contrast, spacing, and boxed groupings create a clean hierarchy that looks publication-ready."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "Overall margins are sufficient and the figure reads cleanly at a glance, with clear separation between the retriever block, documents, LM, and the ensemble panel. However, a few elements feel tight: the stacked retrieved-document cards sit close to the central black-box LM icon and adjacent labels, and the right-side bar-chart/legend area is a bit cramped within the yellow panel. Slightly increasing padding inside the ensemble panel and spacing between the middle icons/cards would make it feel more polished."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 5,
+              "reason": "Components with similar roles are consistently encoded: the retriever is a single maroon block, retrieved documents are repeated light-blue rounded rectangles, and the black-box LM is consistently shown as a black cube with a question mark. The right-side ensemble repeats the same document→query-text→model→bar-chart pattern with matching shapes/colors, making roles easy to recognize at a glance. Overall the figure looks publication-ready and consistent."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 4,
+              "reason": "The target figure replaces several abstract NLP/IR/LM concepts with concrete visual metaphors and abbreviations: a large red ‘Retriever’ block (system role), stacked documents for retrieved evidence, a black-box cube with a question mark for the LM/unknown transformation, arrows for process flow, and compact labels (d_i, d_t, x) standing in for formal variables. This aligns strongly with the references (notably Ref 4–5), which similarly use icons (user/LLM), database/document stacks, and symbolic blocks to depict retrieval-augmented generation and bias. However, the target still carries substantial abstract explanation via textual phrases inside boxes and probability-bar charts, so the mapping is not purely iconographic; it’s a mixed symbolic+text schematic rather than a heavily metaphor-driven diagram. Hence a high (but not maximal) metaphor score."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a common ML/LLM pipeline diagram template: a left-to-right flow with labeled modules (Retriever → documents → black-box LM), stacked document cards, boxed callouts, and an output/ensemble area with bar-chart-like saliency visualizations. This layout, iconography (stacked papers, arrows, rounded rectangles), and color-block styling closely resemble the provided references, which also depict retrieval-augmented prompting, reformulation, and evaluation/attribution pipelines using similar visual conventions. While the target combines these elements into a specific composition (notably the ensemble panel with multiple retrieved-document variants), the overall aesthetic and structure do not present a distinctive or novel visual style beyond standard academic schematic norms."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure follows a fairly standard left-to-right pipeline layout (Retriever → retrieved docs → black-box LM → aggregated/ensemble outputs) with conventional boxed modules and arrows. While it includes a modest adaptation—splitting into a retrieval/reformulation stage and a right-hand ensemble panel with per-document outputs and bar charts—this remains within common, uniform design conventions seen in the references (modular blocks, flow arrows, grouped panels). It does not substantially break from template-like schematic design (e.g., more distinctive composition, novel structuring, or paper-specific visual metaphor) beyond routine grouping and highlighting."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.914,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6763
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7159
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7068
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Conditional_MASK_Discrete_Diffusion_Language_Model/Conditional_MASK_Discrete_Diffusion_Language_Model__p3__score1.00.png",
+            "similarity": 0.7145
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6763
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.7227
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.728
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.5907
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.6943
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6454
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.5713
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7068
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.6621
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7068
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p4__score1.00.png",
+            "similarity": 0.6698
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7235
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6763
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7235
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.728
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.714
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7159
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p3__score1.00.png",
+            "similarity": 0.7095
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6454
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7159
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.6518
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.6992
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.7227
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6987
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Machine_Unlearning_of_Pre-trained_Large_Language_Models/Machine_Unlearning_of_Pre-trained_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6639
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7235
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.719
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5507
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6571
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.7227
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.6887
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6755
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.7181
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs/Exploring_Precision_and_Recall_to_assess_the_quality_and_diversity_of_LLMs__p4__score1.00.png",
+            "similarity": 0.7345
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7235
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.6887
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.7235
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p3__score1.00.png",
+            "similarity": 0.717
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6763
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding/Mitigating_Hallucinations_in_Large_Vision-Language_Models_with_Instruction_Contrastive_Decoding__p3__score1.00.png",
+            "similarity": 0.728
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7068
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.7284
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.7068
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.7227
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.784
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7868
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.7371
+          }
+        }
+      }
+    },
+    {
+      "figure_file": "Retrieval-Augmented_Black-Box_Language_Models__p0__score1.00.png",
+      "caption": "Figure 1: Different from previous retrieval-augmented approaches (Borgeaud et al., 2022) that enhance a language model with retrieval by updating the LM’s parameters, REPLUG treats the LM as a black box and augments it with a frozen or tunable retriever. This black-box assumption makes REPLUG applicable to large LMs, which are often served via APIs.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Input context x (query)', 'External document corpus D (documents d1...dm)', 'Retriever module (dense dual-encoder: encoder for x and encoder for d)', 'Precomputed document embeddings + FAISS index for efficient top-k retrieval', 'Similarity scoring s(d,x)=cos(E(d),E(x))', 'Top-k document selection (D′)', 'Document(s) prepended/concatenated to input context (d ◦ x)', 'Frozen black-box language model (LM)', 'Parallel LM passes for each retrieved document (k separate forward passes)', 'Ensemble/weighted averaging of output probabilities p(y|d◦x) across k documents', 'Ensemble weights λ(d,x) derived from similarity scores (softmax over s(d,x))', 'Final next-token prediction/output probability p(y|x,D′)']\nContext: We introduce REPLUG, a retrieval-augmented language modeling framework that treats the language model (LM) as a black box and aug- ments it with a tuneable retrieval model. Un- like prior retrieval-augmented LMs that train language models with special cross attention mechanisms to encode the retrieved text, RE- PLUG simply prepends retrieved documents to the input for the frozen black-box LM. This simple design can be easily applied to any existing language models. ... Given an in- put context, REPLUG first retrieves relevant doc- uments from an external corpus using an off-the- shelf retrieval model. The retrieved documents are prepended to the input context and fed into the black-box LM to make the final prediction. Be- cause the LM context length limits the number of documents that can be prepended, we also adopt an ensemble scheme that encodes the retrieved doc- uments in parallel with the same black-box LM, allowing us to easily trade compute for accuracy.\n\nWe introduce REPLUG (Retrieve and Plug), a new retrieval-augmented LM paradigm where the LM is treated as black box and the retrieval component is added as a potentially tuneable module. As shown in Figure 2, given an input context, REPLUG first retrieves a small set of relevant doc- uments from an external corpus using a retriever (§3.1). Then we pass the concatenation of each retrieved document with the input context through the LM in parallel, and ensemble the predicted probabilities (§3.2).\n\n3.1 Document Retrieval Given an input context x, the retriever aims to retrieve a small set of documents from a corpus D = {d1...dm} that are relevant to x. ... we use a dense retriever based on the dual encoder architecture, where an encoder is used to encode both the input context x and the document d. ... The similarity between the query embedding and the document embedding is computed by their cosine similarity: s(d, x) = cos(E(d), E(x)) (1) ... The top-k documents that have the highest simi- larity scores when compared with the input x are retrieved in this step. For efficient retrieval, we pre- compute the embedding of each document d ∈D and construct FAISS index (Johnson et al., 2019) over these embeddings.\n\n3.2 Input Reformulation ... we adopt an ensemble strategy described as follows. Assume D′ ⊂D consists of k most relevant documents to x, according to the scoring function in Eq. (1). We prepend each document d ∈D′ to x, pass this concatenation to the LM separately, and then ensemble output probabilities from all k passes. Formally, given the input context x and its top-k relevant documents D′, the output probability of the next token y is computed as a weighted average ensemble: p(y | x, D′) = X d∈D′ p(y | d ◦x) · λ(d, x), where ◦denotes the concatenation of two se- quences and the weight λ(d, x) is based on the similarity score between the document d and the input context x: λ(d, x) = es(d,x) P d∈D′ es(d,x)",
+        "fidelity_based": "Lenient Consistency Report: [[{'element': 'Previous', 'status': 'Supported', 'evidence': 'The paper repeatedly contrasts REPLUG with “previous retrieval-augmented approaches” (e.g., RETRO/Atlas/kNN-LM) that rely on white-box access or updating LM parameters (see discussion around Figure 1 and Related Work). A figure label like “Previous” is a plausible shorthand for that comparison.'}, {'element': 'RE-PLUG', 'status': 'Supported', 'evidence': 'REPLUG is the proposed method throughout the paper (title, abstract, Sections 3–4) and is explicitly referenced as a figure concept (Figures 1–3).'}, {'element': 'Test Context', 'status': 'Supported', 'evidence': 'The method description uses an “input context x” as the query for retrieval and as LM input (Figure 2 caption; Section 3). “Test Context” is a reasonable loose label for that input at inference.'}, {'element': 'Jobs is the CEO of __', 'status': 'Supported', 'evidence': 'The paper describes generic next-token prediction from an input context and uses illustrative contexts in figures; using a toy cloze prompt like “X is the CEO of __” is a standard, scientifically plausible example of LM completion.'}, {'element': 'Retriever', 'status': 'Supported', 'evidence': 'REPLUG explicitly includes a retriever that retrieves relevant documents given the input context (Section 3.1; Figures 2–3).'}, {'element': \"Jobs cofounded Apple in his parents' garage\", 'status': 'Supported', 'evidence': 'REPLUG prepends retrieved documents to the input context (Section 3; Figure 2). A retrieved snippet containing background facts about Jobs/Apple is a plausible stand-in for a retrieved document used to help completion.'}, {'element': 'White-box LM', 'status': 'Supported', 'evidence': 'The paper explicitly distinguishes white-box settings (where LM internals/parameters are accessible and updated) from black-box settings (Section 1–2; Figure 1 caption). A “White-box LM” label is consistent with that framing.'}, {'element': '#param. <10B', 'status': 'Supported', 'evidence': 'The paper discusses that many prior approaches focus on settings feasible for smaller/open models, and it provides examples of smaller models (e.g., GPT-3 Curie 6.7B; Atlas 11B as a baseline; various sub-10B models in experiments). Using “<10B” as an approximate white-box regime marker is plausible even if not a strict boundary stated verbatim.'}, {'element': 'Black-box LM', 'status': 'Supported', 'evidence': 'A central premise is treating the LM as a black box (title; abstract; Sections 1–3; Figures 1–3).'}, {'element': '#param. >100B', 'status': 'Supported', 'evidence': 'The paper emphasizes applicability to very large LMs and gives GPT-3 175B / Codex 175B as key examples; it also states benefits for “large LMs (>100B)” (Introduction).'}, {'element': 'Frozen', 'status': 'Supported', 'evidence': 'REPLUG keeps the black-box LM frozen and, in LSR training, treats the LM as a fixed scoring function (Figure 1 caption; Section 4.3 explicitly: LM parameters are fixed).'}, {'element': 'Trainable', 'status': 'Supported', 'evidence': 'REPLUG allows a tunable retrieval model; REPLUG LSR explicitly trains/adapts the retriever (Section 4; Figure 3). Thus a “Trainable” label for the retriever/module is conceptually supported.'}, {'element': 'Frozen/Trainable', 'status': 'Supported', 'evidence': 'The core contrast is frozen LM + (frozen or tunable) retriever (Figure 1 caption: “augments it with a frozen or tunable retriever”). A combined “Frozen/Trainable” legend is consistent with this design.'}, {'element': 'Test Context -> Jobs is the CEO of __', 'status': 'Supported', 'evidence': 'At inference, the input context is the prompt/query that contains the incomplete statement to be completed (Section 3; Figure 2). Representing the prompt content as derived from “Test Context” is a plausible diagrammatic step.'}, {'element': 'Jobs is the CEO of __ -> Retriever', 'status': 'Supported', 'evidence': 'REPLUG uses the input context/prompt as the retrieval query (Section 3.1: given input context x, retrieve relevant documents). Thus the prompt feeding into the retriever is supported.'}, {'element': \"Retriever -> Jobs cofounded Apple in his parents' garage\", 'status': 'Supported', 'evidence': 'The retriever outputs retrieved documents/snippets (Section 3.1; Figure 2). A factual snippet about Jobs/Apple is a plausible example of such retrieved text.'}, {'element': \"Jobs cofounded Apple in his parents' garage -> White-box LM\", 'status': 'Supported', 'evidence': 'In retrieval-augmented LMs generally (including prior white-box approaches), retrieved text is incorporated into the LM input/representations to support prediction (Related Work; Figure 1’s contrast of retrieval augmentation). Depicting retrieved content flowing into a white-box LM is conceptually consistent.'}, {'element': \"Jobs cofounded Apple in his parents' garage -> Black-box LM\", 'status': 'Supported', 'evidence': 'This is exactly REPLUG’s mechanism: prepend retrieved documents to the input and feed into a frozen black-box LM (abstract; Section 3.2; Figure 2).'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 2,
+              "reason": "The target figure captures only the high-level pipeline: test context → retriever → retrieved document snippet → (white-box/trainable or black-box/frozen) LM, highlighting the REPLUG idea of using a frozen black-box LM and a frozen/trainable retriever. However, it omits most major components/formulas described in the paper and listed in the evidence: the external corpus D, dense dual-encoder query/doc encoders, cosine similarity scoring s(d,x)=cos(E(d),E(x)), FAISS indexing with precomputed document embeddings, explicit top-k selection, prepending/concatenation notation (d ◦ x), parallel k LM forward passes, the weighted ensemble of probabilities p(y|d◦x) across retrieved docs, and the softmax weights λ(d,x) and final p(y|x,D′). Compared with the reference figures that show retrieval/indexing and multi-document prompting/aggregation, the target is a simplified schematic and does not provide coverage of the retrieval scoring/indexing or the ensemble mechanism central to REPLUG."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 3,
+              "reason": "The figure conveys the high-level idea that RE-PLUG combines a retriever with a (frozen) black-box LM, contrasting it with a previous setup where the LM is trainable. From the arrows and the “Frozen/Trainable” labels, a reader can infer: input context → retrieve document → feed into LM. However, it is only partially standalone: it does not show key operating details supported by the evidence, including top-k retrieval from an external corpus, similarity scoring (cosine), FAISS/precomputed embeddings, document concatenation (d ◦ x), parallel LM passes over k retrieved docs, or the weighted ensemble over output probabilities with λ(d,x)=softmax(s(d,x)). Compared to the visual references (which depict retrieval/concatenation and/or multi-path/ensemble behavior more explicitly), the target is more of a conceptual component-freezing comparison than an operational diagram. Thus, one can grasp the general principle, but not the core REPLUG mechanism beyond ‘retrieve then condition the LM’."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 2,
+              "reason": "The target figure captures only the high-level contrast between a prior approach and REPLUG: a retriever feeding retrieved text into a black-box LM, with the key claim that the LM is frozen (black-box) while the retriever can be frozen/trainable. However, compared to the paper’s described pipeline, it omits several core end-to-end components: (i) the external corpus D and explicit top-k retrieval, (ii) dense dual-encoder details and cosine similarity scoring, (iii) precomputed document embeddings and FAISS indexing for efficient retrieval, (iv) the parallel k separate LM forward passes per retrieved document, and (v) the weighted ensemble/softmax over similarity scores to combine p(y|d◦x) into p(y|x,D′). Thus, it is not a complete summary from beginning to end of the method and misses major mechanisms central to REPLUG’s formulation."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 5,
+              "reason": "No hallucinated components or formulas are introduced. All depicted elements (previous white-box retrieval-augmented approaches vs. RE-PLUG’s black-box frozen LM with a frozen/tunable retriever, test-context-as-query retrieval, and prepending retrieved snippets) are consistent with the paper’s described setup. Parameter-count labels and the Jobs/Apple text are illustrative but align with the paper’s framing and do not contradict it."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "The diagram’s relations match the paper’s core contrast: prior retrieval-augmented methods route retrieved documents into a white-box (modifiable) LM, while RE-PLUG routes retrieved documents into a frozen black-box LM and optionally trains only the retriever. The depicted flows (test context → retriever → retrieved text → LM) and the frozen/trainable distinctions are consistent with the method description and framing; no evidence indicates any contradicted or critically incorrect relationship."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "All major component/method labels in the target figure are consistent with the paper’s framing: it contrasts “Previous” retrieval-augmented methods (white-box LM setting) against RE-PLUG’s black-box LM setting; includes the key modules (Test Context/input prompt, Retriever, retrieved snippet, LM); and correctly marks the black-box LM as frozen while allowing the retriever to be frozen/trainable (LSR). The parameter-size annotations (<10B for typical white-box/open models vs >100B for large black-box LMs like GPT-3 175B) are directionally aligned with the discussion and function as reasonable regime markers rather than exact thresholds. No labels are contradicted by the provided evidence."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is schematized around the paper’s main contribution—REPLUG as a retrieval-augmented framework that keeps the LM frozen/black-box while making the retriever tunable/plug-in—rather than low-level implementation detail. It clearly contrasts a “Previous” setup (frozen retriever + trainable white-box LM) with “RE-PLUG” (retriever potentially trainable + frozen black-box LM), matching the textual emphasis on treating the LM as a black box and adding a tuneable retrieval module. However, relative to the provided evidence list, it omits several core pipeline specifics that are central to REPLUG’s mechanism: top-k retrieval via dense dual-encoder + cosine similarity, FAISS indexing, document concatenation for each retrieved doc, parallel LM passes, and the similarity-based weighted ensembling of output probabilities. Those omissions mean it summarizes the high-level contribution well, but not the full method schematic."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 4,
+              "reason": "The target figure is a good supplementary aid for understanding the paper’s core contrast: prior retrieval-augmented setups versus REPLUG’s “black-box LM + retriever” paradigm. It visually conveys (i) the retrieval step feeding into the LM via prepended retrieved text, (ii) the notion that the LM is frozen/black-box in REPLUG (vs a trainable/white-box LM in “Previous”), and (iii) that the retriever can be frozen/trainable. This matches the evidence text describing a frozen black-box LM with an added (tuneable) retrieval module and prepending of retrieved documents.\n\nHowever, as supplementary material for the full method description, it is incomplete: it does not show the top-k retrieval, FAISS/precomputed embeddings, cosine similarity scoring, parallel LM forward passes per retrieved document, nor the weighted ensemble/softmax weighting λ(d,x). Because these are key to §3.1–§3.2 in the evidence, the figure supports the high-level concept but not the detailed mechanism, so it functions well for orientation but not for fully understanding the pipeline."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely focused on the core REPLUG idea: a retriever feeding retrieved text into a (black-box) LM, and contrasting a ‘previous’ setup with REPLUG (frozen/trainable retriever; frozen black-box LM). It avoids background decoration and does not introduce unrelated subplots (e.g., attention heatmaps, privacy pipelines) seen in some reference figures. Minor redundancy/unnecessary detail remains: (i) the ‘Jobs co-founded Apple…’ snippet is a specific illustrative fact rather than a generic retrieved document d, (ii) the question-mark icon and the ‘#param’ annotations are not essential to explaining the retrieval-prepend-ensemble mechanism described in the evidence, and (iii) the top half ‘Previous’ panel repeats the same pipeline structure mainly to emphasize contrast. Overall, low-to-moderate redundancy with small decorative/extra cues."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "Flow direction is immediately clear in a 3-second glance: the top section (“Previous”) reads left-to-right from Test Context → Retriever → evidence box → Trainable LM, and the bottom (“RE-PLUG”) mirrors the same left-to-right pipeline. The horizontal divider reinforces top-to-bottom section ordering, arrows are clean and consistently oriented, and there’s no ambiguous backtracking."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 5,
+              "reason": "Connection lines are largely well-routed and easy to follow, with clear directional flow and minimal overlap. Where multiple arrows exist, they are separated by spacing/boxing and do not create confusing tangles; overall it looks clean and publication-ready."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 5,
+              "reason": "Functionally related modules are grouped and placed close together: each pipeline keeps its components (e.g., Retriever/LM, frozen/trainable, inputs/outputs) in contiguous blocks with short connecting arrows. Related comparisons are aligned in parallel rows, making proximity cues clear at a 3-second glance. Spacing and bounding boxes consistently separate unrelated sections while keeping within-section elements tightly clustered and readable."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 5,
+              "reason": "Overall layout is clean and grid-aligned: the main pipeline flows left-to-right in two horizontal rows with consistent spacing, the dashed separators are straight, and the key modules (Retriever, context box, LM blocks) are neatly aligned. Connectors are tidy and don’t create visual clutter. Minor variation in box sizes/label baselines exists, but it still reads as a polished, publication-quality figure."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 5,
+              "reason": "Clear visual hierarchy: section headers (“Previous”, “RE-PLUG”) are prominent and separated by a strong horizontal divider; key modules (Retriever, LM blocks) are large, boxed, and centrally placed; color coding (Frozen blue vs Trainable red/pink) immediately distinguishes the most important components; arrows guide the eye left-to-right with minimal clutter. Text is readable at a glance and the main pipeline stands out within 3 seconds."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 5,
+              "reason": "Margins between blocks are ample and consistent: the two horizontal panels are clearly separated by whitespace and a divider line, and within each panel the main elements (context box, retriever, LM blocks, arrows) don’t crowd each other. Labels remain readable with no overlaps or cramped spacing, giving the figure a clean, published-paper look."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 5,
+              "reason": "Components with the same roles are represented consistently: “Frozen” modules use the same blue styling, “Trainable” modules use the same red/pink styling, and the Retriever is depicted with the same icon/shape in both the Previous and RE-PLUG panels. The language model blocks also keep a consistent box style with clear labels (white-box vs black-box) and matching color cues for frozen/trainable status. Overall the figure reads cleanly and professionally with coherent visual mapping."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 3,
+              "reason": "The target figure uses a moderate level of metaphorization: abstract ML concepts are rendered with concrete icons and symbols (e.g., database-like retriever icon, a black-box with a question mark for the LM, and arrows/boxed modules). However, much of the meaning is still carried by text labels and technical abbreviations (“Frozen/Trainable,” “White-box/Black-box LM,” “#param”), rather than being replaced by standalone symbolic metaphors. Compared with the evidence, it is less icon-heavy and metaphor-driven than Ref 4/5 (which use more pictograms and diagrammatic metaphors), but more metaphorical than largely text/logic-oriented Ref 1."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a common “model pipeline” schematic template: left-to-right flow, boxed modules, arrows, and color-coded headers (“Frozen/Trainable”) with simple icons. This visual language closely matches the provided references (especially Ref 4 and Ref 5) that depict retrieval + LLM components with similar block-and-arrow structure, minimal illustration, and standard academic diagram styling. While the specific labeling (e.g., RE-PLUG, Frozen/Trainable split, black-box LM emphasis) provides content-level distinction, the stylistic treatment is not notably unique relative to typical ML paper figures and the evidence set."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure largely adheres to a standard, uniform pipeline schematic (modules arranged left-to-right with labeled blocks such as “Frozen/Trainable,” arrows, and simple iconography). While it introduces a slight variation via the two-row “Previous” vs “RE-PLUG” comparison and the frozen/trainable split, the overall structure remains conventional and similar to the reference evidence figures that also use modular block diagrams and flow arrows. It does not noticeably break away into a layout uniquely tailored to the paper’s specific narrative beyond a basic before/after comparison, so its adaptability appears limited."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.733,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6616
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6616
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions/Bridging_the_Visual_Gap_Fine-Tuning_Multimodal_Models_with_Knowledge-Adapted_Captions__p1__score1.00.png",
+            "similarity": 0.6777
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6616
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.6665
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p0__score1.00.png",
+            "similarity": 0.5894
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6842
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6182
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.5445
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6842
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6182
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.6178
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p4__score1.00.png",
+            "similarity": 0.6317
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding/R-VLM_Region-Aware_Vision_Language_Model_for_Precise_GUI_Grounding__p4__score1.00.png",
+            "similarity": 0.6695
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6219
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.6862
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6842
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning/OVM_utcome-supervised_alue_odels_for_Planning_in_Mathematical_Reasoning__p2__score1.00.png",
+            "similarity": 0.6579
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6182
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.6768
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.6191
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models/Performance_Gap_in_Entity_Knowledge_Extraction_Across_Modalities_in_Vision_Language_Models__p2__score1.00.png",
+            "similarity": 0.6862
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.632
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Machine_Unlearning_of_Pre-trained_Large_Language_Models/Machine_Unlearning_of_Pre-trained_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6625
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6552
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6842
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.4722
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p3__score0.95.png",
+            "similarity": 0.6319
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6385
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6616
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p3__score1.00.png",
+            "similarity": 0.6842
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models/Knowledge_Unlearning_for_Mitigating_Privacy_Risks_in_Language_Models__p1__score1.00.png",
+            "similarity": 0.7
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Machine_Unlearning_of_Pre-trained_Large_Language_Models/Machine_Unlearning_of_Pre-trained_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6625
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.6251
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p2__score1.00.png",
+            "similarity": 0.6665
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin/MARVEL_Unlocking_the_Multi-Modal_Capability_of_Dense_Retrieval_via_Visual_Module_Plugin__p3__score1.00.png",
+            "similarity": 0.6715
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6219
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models/Self-Knowledge_Guided_Retrieval_Augmentation_for_Large_Language_Models__p2__score1.00.png",
+            "similarity": 0.6768
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6616
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation/AdaRewriter_Unleashing_the_Power_of_Prompting-based_Conversational_Query_Reformulation_via_Test-Time_Adaptation__p2__score1.00.png",
+            "similarity": 0.6967
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6649
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6616
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals/Competition_of_Mechanisms_Tracing_How_Language_Models_Handle_Facts_and_Counterfactuals__p0__score1.00.png",
+            "similarity": 0.688
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages/Cross-Lingual_Retrieval_Augmented_Prompt_for_Low-Resource_Languages__p0__score1.00.png",
+            "similarity": 0.7185
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation/LLMs_Trust_Humans_More_That_s_a_Problem_Unveiling_and_Mitigating_the_Authority_Bias_in_Retrieval-Augmented_Generation__p1__score1.00.png",
+            "similarity": 0.7184
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6649
+          }
+        }
+      }
+    }
+  ]
+}

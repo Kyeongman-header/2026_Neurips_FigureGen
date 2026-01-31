@@ -1,0 +1,102 @@
+{
+  "paper_name": "Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection",
+  "evaluated_at": "2026-01-12T04:00:38.480001",
+  "figure_summary": "## 1. Core Contributions\n- Proposes **R3V**, an **iterative self-training** framework for **vision-language reasoning** that bootstraps its own **CoT rationales** instead of relying on expensive human/GPT rationale annotation.\n- Introduces **reflection-on-rationales** learning from mistakes via two additional training objectives: **self-refine** (repair a flawed solution) and **self-select** (choose the best among multiple candidate solutions).\n- Shows that iterating “bootstrap → reflect → fine-tune” can turn weak multimodal CoT behavior into stronger reasoning, and that the same self-select capability can be used for **test-time compute** (selecting among samples).\n\n## 2. Method Components & Relations relevant to figures\n- **Bootstrapped CoT sampling (per iteration t)**\n  - Input: VQA-style data \\((I, x, \\hat{a})\\).\n  - Model generates multiple solutions \\(y=(r,a)\\) (rationale + answer), forming an augmented set \\(D_r=\\{(I,x,r,a)\\}\\).\n  - Partition into:\n    - **Positive** \\(D_r^+\\): answers match ground truth \\((a=\\hat{a})\\).\n    - **Negative** \\(D_r^-\\): answers mismatch \\((a\\neq \\hat{a})\\).\n- **Objective I: SFT on positives (STaR-like backbone)**\n  - Fine-tune on \\(D_r^+\\) with NLL: \\(L_{\\text{SFT}}=-\\sum \\log M(y\\mid x,I)\\), where \\(y=(r,a)\\).\n- **Objective II: Self-Refine (reflection conditioned on mistakes)**\n  - Build pairs \\((y^+, y^-)\\) for the same \\((I,x)\\): dataset \\(D_{\\text{REF}}=\\{(I,x,y^+,y^-)\\}\\).\n  - Train the model to **produce the corrected (positive) solution given the negative one**:\n    - \\(L_{\\text{REF}}=-\\sum \\log M(y^+ \\mid y^-, x, I)\\).\n- **Objective III: Self-Select (compare candidates, pick correct)**\n  - Construct candidate set \\(C_i=(y_i^1,\\dots,y_i^N)\\) for each \\((I,x)\\), along with ground truth \\(\\hat{a}\\): \\(D_{\\text{SEL}}=\\{(I,x,\\hat{a},C)\\}\\).\n  - Train the model to **analyze multiple sampled solutions and select the correct answer/solution** (used both in training and at inference as test-time computation).\n- **Interleaving/loop**\n  - Iteratively repeat: **sample solutions → label by correctness → train with multi-task losses (SFT + REF + SEL) → improved model → resample**.\n  - Figures depict this as a **closed feedback loop** where better models generate better bootstraps, which further improves training signals.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **motivate the problem**: illustrate that **zero-shot CoT prompting is weak** for open-source MLLMs in multimodal reasoning, and that naive CoT does not yield large gains.\n- To **visualize the R3V pipeline** as an iterative system: how **bootstrapped positive/negative CoT solutions** are produced, how they are turned into **reflection training signals**, and how the three objectives interact.\n- To **concretize “learning from mistakes”**: demonstrate that negatives are not discarded but transformed into supervision via **refinement** and **candidate comparison/selection**.\n- To clarify the **dual role of self-select**: a training mechanism and an inference-time **test-time compute** strategy (sampling multiple solutions then selecting the best).\n\n## 4. What Figures are NOT intended to show\n- Not intended to provide a complete architectural specification of the underlying MLLM (vision encoder, fusion layers, etc.) or implementation details beyond the training/data-flow concept.\n- Not intended to prove theoretical guarantees about convergence or optimality of the iterative self-training process.\n- Not intended to isolate all confounders (e.g., effects of sampling temperature, number of candidates \\(N\\), dataset-specific quirks) or replace ablation studies; they illustrate the **conceptual mechanism**, not exhaustive causal attribution.\n- Not intended to claim that any single component alone (e.g., SFT only) fully explains the gains; the figures emphasize the **interleaved multi-objective** nature of R3V rather than a one-factor explanation.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+      "caption": "Figure 2: Overview of our multimodal self-training framework of R3V . It boosts vision-language reasoning by iteratively reflecting on bootstrapped CoT rationales and enables self-reflection through test-time computing.",
+      "scores": {
+        "Informativeness": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure largely sticks to elements described in the summary: VQA-style input (I,x,â), bootstrapped CoT samples y=(r,a), partition into positive/negative by answer correctness, iterative multi-task training with three objectives (SFT/self-refine/self-select), and test-time compute via sampling multiple solutions then selecting. Some auxiliary visual elements are not explicitly mentioned (e.g., dataset example box, fire/snowflake icons implying training vs frozen, explicit prompt boxes), but they are conventional and do not change the core method claims."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 4.0,
+              "reason": "Relationships align with the summary: the MLLM generates multiple CoT solutions, which are labeled as positive/negative; these feed into a multi-task training stage comprising (1) SFT on positives, (2) self-refine conditioned on a negative to produce a positive, and (3) self-select over candidates; and the pipeline is depicted as iterative/closed-loop. Test-time compute is also correctly shown as sampling multiple solutions and applying self-select to choose the best. Minor ambiguity: the diagram’s arrowing does not explicitly show resampling after fine-tuning per iteration t, but the loop/iteration intent is still conveyed."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Major components are named consistently with the summary: 'Bootstrapped CoT Samples' with positive/negative, 'Reflection on Rationale' with 'Self-Refine' (Objective II) and 'Self-Select' (Objective III), and 'SFT on y+' (Objective I). 'Test-Time Compute' and 'Self-Select Prompt' correctly match the described dual role of self-select."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Design Quality": {
+          "score": 4.429,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The pipeline reads clearly left-to-right: VQA input and CoT prompt feed an MLLM, producing bootstrapped CoT samples (positive/negative), then flowing into the multi-task reflection objectives (SFT, self-refine, self-select), and additionally a rightmost panel depicts test-time compute as a sequential sampling→selection process. This matches the iterative “bootstrap → reflect → fine-tune” concept in the summary."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 4.0,
+              "reason": "Most connectors are routed cleanly without intersections. The only mild complexity is where arrows converge into the multi-task training/feedback (around the central-to-lower region), but they remain largely non-crossing and readable, so crossings do not impede understanding of the three objectives or the feedback loop."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related elements are grouped: bootstrapped positive/negative solutions are colocated in the central panel; the three learning objectives are grouped together under “Reflection on Rationale”; and the test-time compute workflow is isolated on the right. This placement reinforces the roles described in the summary (bootstrapping, reflection objectives, and inference-time self-select)."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major blocks are aligned into a neat row of panels (datasets/bootstraps/test-time) with the objectives aligned as three horizontally arranged boxes. Some internal elements (small prompts/icons and a few arrows) are not perfectly grid-aligned, but overall alignment supports rapid parsing of the method structure."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Main components stand out through panel boxing and labeling (e.g., “Bootstrapped CoT Samples,” “Reflection on Rationale,” “Test-Time Compute”), and the three objectives are explicitly numbered. However, the iterative loop/feedback emphasis is somewhat understated visually (thin arrows/less dominant loop cue), so the central ‘closed feedback loop’ idea is present but not the strongest visual focal point."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is generally sufficient whitespace between panels and between the objective boxes, preventing clutter. A few regions (notably within the test-time compute panel where multiple solution boxes and prompts stack) are denser, but still legible and not overlapping."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Consistent visual encoding is used: positive vs. negative bootstraps are consistently color-coded (green/red) and reused in the objectives; the three objectives use a consistent boxed style with numbered headings; and repeated module roles (e.g., solution candidates) share similar shapes. This supports the summary’s emphasis on transforming positive/negative samples into SFT/REF/SEL training signals and reusing self-select at inference."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 4.0,
+              "reason": "The figure replaces abstract training objectives with concrete visual cues: green/red boxed ‘solutions’ for positive/negative bootstrapped CoT samples, checkmark/cross correctness icons, and numbered objective blocks (SFT, Self-Refine, Self-Select). This iconography concretely conveys the summary’s concepts of partitioning samples, transforming negatives into supervision, and candidate selection, rather than relying only on equations/text."
+            },
+            {
+              "question": "novelty",
+              "score": 3.0,
+              "reason": "While the pipeline matches the summary and is clearly presented, the overall visual style (boxed modules, arrows, color-coded positives/negatives, side-by-side training vs test-time panels) is largely a common ML schematic template. The ‘reflection on rationale’ and ‘test-time compute via self-select’ are conceptually distinctive, but the graphic execution is not highly unique beyond standard conventions."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s iterative self-training claim: it explicitly separates (i) data/source VQA prompt → MLLM, (ii) bootstrapped CoT samples with positive/negative split, (iii) a dedicated ‘Reflection on Rationale’ multi-task objective area (SFT, Self-Refine, Self-Select), and (iv) a distinct test-time compute panel showing sampling multiple solutions then self-selecting. This structure directly matches the summary’s interleaved loop and the dual role of self-select, rather than using a single uniform end-to-end block diagram."
+            }
+          ]
+        },
+        "weighted_total": 2.486
+      }
+    }
+  ]
+}

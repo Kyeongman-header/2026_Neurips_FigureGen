@@ -1,0 +1,261 @@
+{
+  "paper_name": "CoPL_Collaborative_Preference_Learning_for_Personalizing_LLMs",
+  "evaluated_at": "2026-01-12T00:56:02.790352",
+  "figure_summary": "## 1. Core Contributions\n- Proposes **CoPL**, a **graph-based collaborative preference learning** approach that builds a **user–response bipartite graph** from pairwise preference annotations and learns user embeddings via multi-hop message passing to improve preference estimation under **sparse supervision**.\n- Integrates the learned user embeddings into a **personalized LLM reward model** using a **Mixture of LoRA Experts (MoLE)**, where a **user-aware gating** mechanism routes different users to different expert adaptations to balance shared vs. user-specific preferences efficiently.\n- Introduces an **optimization-free adaptation strategy for unseen users**, which estimates a new user embedding by retrieving/aggregating embeddings of similar existing users in the learned graph space (enabling personalization without fine-tuning for the new user).\n- Empirically demonstrates (via embedding visualizations and performance comparisons) that CoPL better aligns users with similar preferences than latent-variable baselines, especially in sparse annotation settings.\n\n## 2. Method Components & Relations relevant to figures\n- **Data / supervision (pairwise preferences, BTL framing)**\n  - For each user \\(u\\), observed comparisons \\((a \\succ b)\\in D_u\\); target reward scoring function \\(f(u,r)\\) should satisfy \\(f(u,a) > f(u,b)\\).\n  - BTL likelihood: \\(p(a \\succ b\\mid u)=\\frac{e^{f(u,a)}}{e^{f(u,a)}+e^{f(u,b)}}\\).\n\n- **Graph construction (drives the representation-learning figures)**\n  - Construct a **bipartite graph** with **user nodes** and **response nodes**.\n  - **Two edge types**: positive/negative edges indicating whether the user preferred a response (as depicted in the overview).\n\n- **GCF / message passing (what produces the embeddings shown in embedding plots)**\n  - Initialize user/response embeddings \\((e_u^{(0)}, e_r^{(0)})\\).\n  - Layer-wise updates aggregate **separate messages from positive and negative neighborhoods**:\n    - Messages use distinct parameter matrices for pos/neg edges, plus a self-term (Eq. 2–3).\n  - After \\(L\\) propagation steps, define user–response affinity score:\n    - \\(s_{u,r} = (e_u^{(L)})^\\top (e_r^{(L)})\\) (Eq. 4).\n  - Train embeddings/weights with a **pairwise logistic loss** over observed preferences:\n    - \\(L_{\\text{GCF}} = \\sum_{u}\\sum_{(a\\succ b)\\in D_u} -\\log\\sigma(s_{u,a}-s_{u,b}) + \\lambda\\|\\theta\\|_2^2\\) (Eq. 5).\n\n- **Personalized reward model with MoLE gating (shown in the system overview figure)**\n  - LLM reward function \\(f_\\phi(e_u, r)\\) outputs a scalar preference score (Eq. 6).\n  - User embedding is **not** fed as tokens; it is used for **gating** to select/weight **LoRA experts** (MoLE) inside the LLM forward pass (as illustrated by “Gate” selecting \\(\\Delta W_k\\) modules).\n\n- **Unseen-user adaptation (what the adaptation figure is meant to communicate)**\n  - For an unseen user \\(u^\\*\\) with a few annotations, CoPL uses the existing learned embedding space/graph to identify **similar users** and **aggregate their embeddings** to form an embedding for \\(u^\\*\\), without gradient-based optimization (Figure 3 caption: similar users in blue, dissimilar in red).\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To visually communicate **why graph-based collaborative filtering helps** under sparse, non-overlapping annotations: preference signals can propagate across multi-hop user–response relations, yielding more semantically coherent user embeddings than per-user latent-variable approaches.\n- To depict the **end-to-end architecture and information flow**: (i) pairwise preferences → (ii) bipartite graph + message passing → (iii) learned user embeddings → (iv) MoLE-gated LLM reward model producing personalized scores.\n- To illustrate how the method **extends personalization to unseen users** at test time via **retrieval/aggregation in embedding space** rather than per-user fine-tuning.\n- To support empirical claims about **embedding structure** (e.g., clustering by preference groups) as evidence that the learned representations capture shared/controversial preferences more effectively than baselines.\n\n## 4. What Figures are NOT intended to show\n- Not a proof that CoPL’s embeddings are uniquely “correct” or causally interpretable—plots (e.g., t-SNE) are **qualitative** and primarily for showing relative clustering behavior.\n- Not a full specification of all training details for MoLE/LLM optimization; the figures illustrate **conceptual routing and components**, not exhaustive hyperparameters or implementation specifics.\n- Not evidence of general LLM capability improvements beyond preference modeling; figures are focused on **preference representation, routing, and adaptation**, not broad language understanding.\n- Not a complete evaluation of every baseline or dataset configuration; visuals are used to highlight the **mechanism and intended effect** (propagation, clustering, adaptation), not to replace quantitative benchmarking.",
+  "figure_evaluations": [
+    {
+      "figure_file": "CoPL_Collaborative_Preference_Learning_for_Personalizing_LLMs__p4__score0.95.png",
+      "caption": "Figure 3: Illustration of unseen user adaptation. Blue nodes are users who have similar preferences to u∗, and red nodes are users who have dissimilar preferences.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_Content_Coverage",
+              "score": 2.0,
+              "reason": "The figure focuses narrowly on the unseen-user adaptation mechanism (u* connected to existing users via preference evidence and aggregating their embeddings). It aligns with the summary’s claim that unseen users are handled by retrieving/aggregating embeddings of similar users without optimization. However, it omits most major components/formulas from the overall method in the summary (bipartite user–response graph construction with pos/neg edges, multi-hop message passing equations, affinity score, pairwise logistic loss, and MoLE-gated reward model), so it does not cover the paper’s major components beyond the adaptation piece."
+            },
+            {
+              "question": "1.2_Standalone_Intelligibility",
+              "score": 4.0,
+              "reason": "From the visual alone, the operating principle of unseen-user adaptation is fairly clear: u* has a few pairwise annotations (shown as (a>b), (e>f)), an 'alignment logit' is computed against existing users, a softmax produces weights, and u*’s embedding is a weighted combination of existing user embeddings (e_u* = 0.5 e_u1 + 0.4 e_u2 + 0.1 e_u3). This communicates optimization-free adaptation and the role of similar vs. dissimilar users (blue vs. red) as described in the caption/summary, even if the exact definition of the logit (Eq. 11) is not fully derivable without the paper."
+            },
+            {
+              "question": "1.3_Completeness",
+              "score": 1.0,
+              "reason": "The figure does not summarize the paper end-to-end; it covers only the test-time unseen-user adaptation idea. It excludes the core upstream learning pipeline (graph-based collaborative preference learning with message passing and training loss) and the downstream personalized LLM reward model with MoLE gating, both of which are central contributions in the summary."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 2.0,
+              "reason": "The summary/caption describes unseen-user adaptation as retrieving/aggregating embeddings of similar existing users (blue) vs dissimilar (red), which the figure shows. However, the figure additionally introduces an 'Alignment logit γ_{u,u*} (Eq. 11)' with a specific numeric/log-based computation and a Softmax-derived weighted sum (e_{u*}=0.5e_{u1}+0.4e_{u2}+0.1e_{u3}). These equation references and the particular logit/Softmax formulation are not mentioned in the provided summary (which only states retrieval/aggregation in embedding space without specifying logits, Softmax, or Eq. 11), so they are unsupported additions."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 4.0,
+              "reason": "Core relationships match the summary: an unseen user u* is linked to similar users (blue) and dissimilar users (red), and u*'s embedding is formed by aggregating existing users' embeddings. The figure’s weighting mechanism (Softmax over an alignment score) is plausible for 'retrieve/aggregate similar users,' but since the summary does not specify how similarity is computed or how aggregation weights are derived, the exact relation (alignment-logit → Softmax → weighted embedding) cannot be fully verified from the summary."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 4.0,
+              "reason": "The major labels align with the caption/summary intent: 'u* annotation' indicates the few preferences for the unseen user, and the color coding for similar (blue) vs dissimilar (red) users matches the caption. The only labeling concern is the explicit 'Eq.11' and 'Alignment logit γ_{u,u*}' terminology, which is not referenced in the provided summary, making that specific label unsupported (though it does not contradict the high-level adaptation description)."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The schematic focuses on the core idea from the summary/caption: adapting an unseen user u* by leveraging similar (blue) vs dissimilar (red) existing users in the learned graph space. The left panel cleanly shows u* and other users connected to response nodes, and the right panel shows a simple pipeline (alignment logit → softmax → weighted embedding). It does include extra formula details (e.g., specific log terms, Eq. 11 reference) that are not necessary to convey the main concept and slightly reduce at-a-glance clarity."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "Given the caption, the color-coding (blue similar, red dissimilar) and the resulting aggregation into e_{u*} make the intended unseen-user adaptation mechanism understandable as supplementary material. However, the right-side text is somewhat dense and small, and the figure introduces an 'alignment logit' computation and equation reference not described in the provided summary, which may make it harder to interpret without reading the paper’s surrounding text."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure is largely free of decorative clutter; nodes/edges and the softmax aggregation directly support the adaptation narrative. Minor redundancy/extra detail appears in the explicit numeric logs and equation callout, which add visual complexity without being essential to the conceptual message of similarity-weighted embedding aggregation."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.143,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The figure has a clear left-to-right flow: the bipartite user–response graph with the unseen user u* is on the left, and the adaptation computation (similarity/alignment logits, softmax, and aggregated embedding e_{u*}) is presented on the right, matching the intended unseen-user adaptation narrative in the summary."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 3.0,
+              "reason": "Several blue edges in the left graph cross each other (connections between multiple users and multiple responses). While crossings are not catastrophic due to the small number of edges and strong color contrast, they modestly reduce readability of which user connects to which response in the adaptation illustration."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Functionally related elements are placed near each other: all user nodes are grouped on the left column, response nodes are grouped centrally, and u* is near the response column. The computation block for forming e_{u*} is immediately adjacent on the right, supporting the adaptation pipeline, though the mapping between specific left-side users and the right-side weights is only implicit."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Nodes are largely aligned in vertical columns (users on the left, responses in the middle, u* on the right) with consistent spacing, giving a grid-like structure. Minor deviations (e.g., u* slightly offset and some response nodes not perfectly centered relative to users) prevent a perfect score."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "Main components stand out: u* is visually separated and labeled; blue (similar) vs red (dissimilar) users are emphasized by color; the aggregation result e_{u*} is bold/central in the right block. However, u* is not markedly larger than other nodes, and the key step 'Softmax' is somewhat understated relative to its importance."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is sufficient whitespace between the left graph panel and the right computation panel, and elements within each panel are generally not cramped. The right text block is moderately dense (equations/terms close together), but still legible."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Similar roles are encoded consistently: user nodes share the same circular shape with color indicating similarity (blue vs red) as described in the caption; response nodes share a consistent shape/color; edges use a consistent blue style for the illustrated connections, aligning with the summary’s intent for showing similar vs dissimilar users in adaptation."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.333,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 2.0,
+              "reason": "The figure uses simple node-link icons (users as circles, responses as lettered circles, colored edges) and color-coding (blue similar, red dissimilar) to concretize the abstract idea of “retrieving/aggregating similar users” for unseen-user adaptation. However, it largely remains a conventional graph schematic with equations; abstract concepts are not replaced by richer or more distinctive symbols beyond standard nodes/edges and color."
+            },
+            {
+              "question": "novelty",
+              "score": 2.0,
+              "reason": "Visually, it follows a common template: a bipartite-graph snippet on the left and a small derivation/aggregation formula on the right (alignment logit → softmax weights → weighted embedding). This aligns with the summary’s description of optimization-free adaptation via similar-user aggregation, but the styling and composition are standard for ML papers and not notably distinctive."
+            },
+            {
+              "question": "adaptability",
+              "score": 3.0,
+              "reason": "The layout is purpose-fit for the paper’s adaptation mechanism: it explicitly ties an unseen user u* with a few annotations to (i) identifying similar vs. dissimilar users (blue vs. red) and (ii) computing softmax weights to form e_{u*} as an embedding aggregate—matching the summary’s intended communication for unseen-user adaptation. While still fairly conventional, the two-panel integration of graph intuition and the aggregation computation is tailored to this specific method step rather than a generic architecture block diagram."
+            }
+          ]
+        },
+        "weighted_total": 3.229
+      }
+    },
+    {
+      "figure_file": "CoPL_Collaborative_Preference_Learning_for_Personalizing_LLMs__p3__score1.00.png",
+      "caption": "Figure 2: An overview of CoPL. To learn user representations, the GCF model is trained on a user-response bipartite graph. To build a personalized reward model, CoPL uses the learned representations to select a user-specific expert from MoLE, enabling effective modeling of diverse preferences.",
+      "scores": {
+        "Informativeness": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure covers the main pipeline stated in the summary: (i) pairwise user annotations, (ii) user–response bipartite graph with positive/negative edges, (iii) multi-hop message passing to learn embeddings, and (iv) using learned user embeddings to gate/select MoLE (LoRA experts) inside a personalized reward model. It also includes a pairwise training objective consistent with the summary (log-sigmoid over score differences). However, several summary-mentioned formal details are omitted or only implicit, such as the separate parameterization for positive vs. negative message aggregation (Eq. 2–3), the explicit dot-product affinity definition s_{u,r}=(e_u^L)^T(e_r^L) (Eq. 4), and the BTL likelihood framing (even though the loss is related)."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 5.0,
+              "reason": "As a standalone overview, the operating principle is clear: user pairwise preferences create a bipartite graph with signed edges; a GCF/message-passing module learns user embeddings; those embeddings condition a personalized reward model via a gating mechanism that mixes/selects LoRA experts (MoLE), producing a user-specific preference score f_theta(u,r). The visual flow left-to-right and labeled blocks make the end-to-end logic understandable without reading the paper."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 3.0,
+              "reason": "The figure is an architecture overview and does not summarize the full paper end-to-end as described in the summary. Notably missing is the optimization-free adaptation strategy for unseen users (retrieval/aggregation of similar users’ embeddings) and the empirical/visual evidence components (embedding visualization comparisons, sparse-supervision performance claims). Thus it is complete for the core system overview but incomplete relative to the broader set of contributions."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "hallucination",
+              "score": 4.0,
+              "reason": "The figure aligns with the summary’s described pipeline: pairwise user annotations, construction of a user–response bipartite graph with positive/negative edges, GCF-style message passing, and a MoLE-gated personalized reward model. The only potentially extra/underspecified elements are minor presentation details (e.g., showing a specific layer index 'ℓth layer' and a concrete gating mixture example like 'ΔW5 + 0.6×ΔW2'), but these do not introduce new core components beyond the summarized MoLE gating concept."
+            },
+            {
+              "question": "relation_correctness",
+              "score": 5.0,
+              "reason": "Relationships are consistent with the summary: (i) pairwise preferences feed into a bipartite graph; (ii) message passing learns user/response embeddings; (iii) a pairwise logistic objective is shown in the embedding-learning block (matching the summarized loss form using score differences); and (iv) the learned user embedding is used for gating/routing among LoRA experts inside the reward model (not as input tokens), matching the described MoLE user-aware gating and resulting personalized scalar score f_φ(u,r)."
+            },
+            {
+              "question": "label_accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled consistently with the summary and caption: 'Users’ Annotations', 'User Representation Learning' (GCF on a bipartite graph with pos/neg edges), and 'Personalized Reward Model' using a 'Gate' over LoRA expert deltas (ΔW_k) conditioned on user embedding e_u. The loss label 'L_GCF' and reward function notation f_φ(u,r) match the summarized methodology."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The figure is schematized around the main pipeline described in the summary: (i) users’ pairwise annotations, (ii) user–response bipartite graph with positive/negative edges and message passing to learn embeddings (GCF), and (iii) a personalized reward model where a user embedding drives a MoLE-style gate selecting/weighting LoRA experts. This matches the stated core contributions. Minor readability cost comes from small, dense math/text (e.g., the loss expression and tiny token snippet) that is not essential to grasp the high-level contribution."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "As a companion to the caption/text, the three-panel left-to-right flow directly supports understanding of how CoPL connects supervision (pairwise preferences) to representation learning (graph + message passing) and then to personalization (user-aware gating over LoRA experts in the reward model). The depicted components and relations align with the summary’s method structure (bipartite graph; pos/neg edges; multi-hop message passing; embedding used for gating, not as tokens)."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure mostly avoids decorative content and keeps focus on core ideas (annotations → graph/GCF → MoLE-gated reward model). Some elements are slightly redundant or overly detailed for an overview (e.g., the tiny example dialogue snippet and dense equation rendering), but they do not distract heavily or introduce unrelated information beyond the described method."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.286,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 5.0,
+              "reason": "The figure presents a clear left-to-right pipeline consistent with the summary: pairwise user annotations (left) → user–response bipartite graph + message passing/GCF training (middle) → MoLE-gated personalized reward model producing fθ(u,r) (right). Arrows and panel grouping reinforce this direction."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 3.0,
+              "reason": "Within the bipartite graph panel, many edges between user nodes and response nodes cross, which is visually busy (even if conceptually expected for bipartite connectivity). The higher-level connections between panels (arrows between stages and into the reward model/gate) are mostly non-crossing and readable."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 5.0,
+              "reason": "Functionally related components are colocated: the user–response graph, message passing illustration, and the GCF loss/notation are grouped in the central ‘User Representation Learning’ section, while the gating and LoRA-expert mixture are grouped with the LLM scoring module on the right, matching the described architecture."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Major blocks are neatly aligned as three horizontally arranged panels with consistent baselines and spacing. Inside panels, some micro-elements (nodes/edges and small glyphs in message passing) are not strictly grid-aligned, but this does not significantly harm readability."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 4.0,
+              "reason": "The three main stages are visually emphasized by panel boundaries and bold section titles, making the core components (annotations, representation learning, reward model) stand out. However, within the central panel, dense edge drawings compete with the message-passing schematic for attention, slightly weakening internal hierarchy."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "There is sufficient whitespace between the three main panels and around the right-side MoLE/gate box. The central panel is somewhat crowded (graph edges + message passing + equation), but elements remain separable and labels are not heavily overlapping."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 5.0,
+              "reason": "Visual encoding is consistent: user nodes vs response nodes use consistent shapes, and positive/negative edges are consistently color-coded (blue/red) as described in the summary. The modular depiction (boxes for stages and for the MoLE/gate component) is stylistically coherent across the pipeline."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_Metaphor",
+              "score": 3.0,
+              "reason": "The figure replaces several abstract components with simple, concrete visual cues: user nodes as person icons, responses as lettered circles, and preference signals as colored edges (blue/red) for positive/negative relations, aligning with the summary’s bipartite graph with two edge types. However, core computations (multi-hop message passing, BTL/logistic loss, MoLE gating) are still conveyed mostly through standard mathematical notation and block-diagram elements rather than richer metaphorical symbols."
+            },
+            {
+              "question": "5.2_Novelty",
+              "score": 2.0,
+              "reason": "The visual style largely follows common ML-paper templates: left-to-right pipeline, bipartite graph sketch, message-passing schematic, and an MoE/MoLE-like gating block. While the combination of GCF-style graph learning feeding a user-aware MoLE gate is specific to the method described in the summary, the drawing conventions (icons, boxes, arrows, small histogram gate) are not particularly distinctive or stylistically unique beyond standard practice."
+            },
+            {
+              "question": "5.3_Adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s end-to-end story in the summary: (i) pairwise user annotations → (ii) user–response bipartite graph with pos/neg edges → (iii) message passing for representation learning → (iv) user-embedding-conditioned MoLE gating inside the reward model. This method-specific sequencing and the explicit depiction of pos/neg neighborhoods and expert selection provide a more customized structure than a generic ‘data→model→output’ diagram, even if the overall pipeline format remains conventional."
+            }
+          ]
+        },
+        "weighted_total": 4.057
+      }
+    }
+  ]
+}

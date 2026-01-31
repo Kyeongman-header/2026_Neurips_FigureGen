@@ -1,0 +1,479 @@
+{
+  "paper_name": "Generating_Diverse_Hypotheses_for_Inductive_Reasoning",
+  "evaluated_at": "2026-01-12T01:45:49.995987",
+  "figure_summary": "## 1. Core Contributions\n- Shows that naïvely increasing sampling temperature in IID hypothesis generation improves diversity/accuracy only up to a point, then saturates due to degeneration/quality loss.\n- Proposes **Mixture of Concepts (MoC)**: a two-stage prompting framework (concept proposal → concept-conditioned hypothesis generation) to obtain **semantically diverse** hypotheses without sacrificing output quality.\n- Empirically demonstrates MoC’s efficiency gains over IID sampling on multiple inductive reasoning benchmarks (including cases where IID needs hundreds of samples but still fails).\n\n## 2. Method Components & Relations relevant to figures\n- **Baseline (IID hypothesis sampling) pipeline**\n  - Input: training examples \\(D_{train}=\\{(x_i,y_i)\\}\\) + test inputs \\(\\{x'_j\\}\\).\n  - LLM generates natural-language rule + **Python function** \\(\\hat f_k\\), repeated \\(K\\) times IID → hypothesis pool \\(\\{\\hat f_1,\\ldots,\\hat f_K\\}\\).\n  - **Selection/check:** choose any hypothesis that perfectly matches all train pairs; success if it also matches all test outputs.\n  - **Semantic redundancy measurement:** two hypotheses considered identical if their Python functions produce the same outputs for the same inputs (program-equivalence-by-behavior), used to count “unique” hypotheses.\n\n- **Temperature/top-p analysis setup**\n  - Independent variables: **temperature** (0→2) and **number of samples \\(K\\)**.\n  - Observables plotted: (i) **degenerate response rate** (unparseable Python), (ii) **# unique hypotheses**, (iii) **test accuracy**.\n  - For high temperatures (1.67, 2.0), **top-p (0.95)** is introduced to suppress degeneration, which also interacts with/diverts diversity gains.\n\n- **MoC pipeline (two-stage)**\n  - **Stage 1: Concept proposal.** LLM generates a list of \\(K\\) **concepts** (intended to be non-redundant due to autoregressive list generation).\n  - **Stage 2: Hypothesis generation.** Each concept is fed back as a **hint/conditioning signal** to generate a hypothesis (Python program) for the same task.\n  - Key relation: MoC replaces “IID over full hypothesis space” with “mixture over concept-conditioned subspaces,” enabling parallel generation of semantically distinct hypotheses at similar quality.\n\n## 3. Intended Purpose of Figures (general, not per-figure)\n- To **visually justify the need for MoC** by illustrating failure modes of IID sampling: redundant hypotheses and degeneration when pushing temperature for diversity.\n- To **quantify the temperature–diversity–accuracy tradeoff** and show the empirical **saturation/plateau**: diversity and accuracy do not keep improving with higher temperature because of degeneration and/or constraints introduced to prevent it (e.g., top-p).\n- To **depict MoC’s mechanism and dataflow** (concept list → separate hypothesis generations) so the reader can see how diversity is induced structurally rather than via higher-entropy sampling.\n- To provide **concrete examples** of tasks/datasets and “hard cases” where MoC’s concept structure enables success with far fewer samples than IID.\n\n## 4. What Figures are NOT intended to show\n- Not a proof of theoretical optimality or guarantees that concept lists are always non-redundant or complete.\n- Not a comprehensive ablation of all decoding controls (beyond the shown temperature/top-p interplay) or an exhaustive study of alternative diversity methods.\n- Not an evaluation of “semantic diversity” via human judgments; diversity is operationalized mainly through **program behavioral uniqueness** and observable sampling outcomes.\n- Not a general claim about all LLM tasks; figures are scoped to **inductive reasoning via hypothesis sampling + program extraction/validation** on the studied benchmarks.",
+  "figure_evaluations": [
+    {
+      "figure_file": "Generating_Diverse_Hypotheses_for_Inductive_Reasoning__p1__score1.00.png",
+      "caption": "Figure 1: A motivation for MoC approach. IID sampling frequently generates redundant hypotheses (top). Increasing the temperature leads to frequent occurrences of text degeneration (middle). MoC allows for the generation of diverse hypotheses without a decline in hypothesis quality (bottom).",
+      "scores": {
+        "Informativeness": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "1.1",
+              "score": 3.0,
+              "reason": "The figure covers the key motivational components described in the summary: (i) IID sampling producing redundant hypotheses, (ii) higher temperature increasing degeneration/quality loss, and (iii) MoC’s two-stage idea of proposing concepts then generating concept-conditioned hypotheses to obtain diversity without quality decline. However, it omits several major elements that are central to the paper’s empirical and methodological setup in the summary, such as explicit train/test pair inputs (D_train and test inputs), the program-based selection/check step (perfectly matching train pairs), the operational definition of uniqueness via behavioral program equivalence, and the temperature/top-p (0.95) intervention and measured observables (degenerate rate, #unique hypotheses, test accuracy)."
+            },
+            {
+              "question": "1.2",
+              "score": 4.0,
+              "reason": "Largely understandable standalone: the three-row structure clearly contrasts IID sampling, IID with high temperature (showing a degenerate output), and MoC with a concept list leading to multiple distinct hypotheses. The arrows and labels convey the operating principle (concepts → separate conditioned generations). What is not fully recoverable from the figure alone is the concrete validation protocol (how hypotheses are checked against training examples and what constitutes success), and the precise notion of “redundant/unique” (behavioral equivalence of Python functions), which reduces full standalone clarity."
+            },
+            {
+              "question": "1.3",
+              "score": 2.0,
+              "reason": "As a motivation figure, it does not attempt to summarize the paper from beginning to end. It excludes the main quantitative claims emphasized in the summary (temperature–diversity–accuracy tradeoff, saturation/plateau, efficiency gains where IID needs hundreds of samples, benchmark results), and does not depict the detailed experimental variables (K, temperature range, top-p) or evaluation outputs. It therefore provides only an early-stage conceptual/motivational slice rather than a complete paper-level summary."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 4.0,
+              "reason": "The figure largely sticks to elements described in the summary: IID sampling producing redundant hypotheses, higher temperature causing degeneration, and MoC using a concept-proposal stage followed by concept-conditioned hypothesis generation. Minor additions not explicitly stated in the summary include the specific example concepts/hypotheses (e.g., “transpose/rotation/flip” and corresponding rules) and the drawn “output distribution” curves; these are illustrative and do not change the core method claims."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 4.0,
+              "reason": "Relationships match the summary at a high level: IID samples directly from the hypothesis space (leading to redundancy), increasing temperature increases degeneration, and MoC first samples concepts then generates hypotheses conditioned on each concept (a mixture over concept-conditioned subspaces). However, the figure’s depiction of degeneration as a direct consequence of “high temperature” omits the summary’s nuance that top-p (0.95) is introduced at very high temperatures (1.67, 2.0) to suppress degeneration and affects diversity; this omission slightly weakens fidelity but does not contradict the stated motivation."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled consistently with the summary and caption: “IID sampling,” “IID sampling w/ high temperature,” and “MoC (Ours)” with explicit “Concepts” and “Hypotheses” stages. The labels align with the described two-stage prompting framework (concept proposal → concept-conditioned hypothesis generation) and the IID baseline."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The schematic emphasizes the main motivation consistent with the summary/caption: IID sampling yields redundant hypotheses, higher temperature increases degeneration, and MoC produces diverse hypotheses via a concept→hypothesis two-stage structure. The three stacked panels (IID, IID+high temp, MoC) make the core contrast easy to follow. Minor issue: the use of icons (robot, flames, ABC) and small example text adds some non-essential detail and slightly competes with the central message, but does not obscure it."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "As a companion to the caption/text, the figure cleanly matches the described narrative: redundancy under IID, degeneration under high temperature, and MoC’s concept-conditioned branching. The dataflow (input task → sampling distribution → sampled hypotheses; and for MoC, concepts feeding separate distributions and hypotheses) visually supports the paper’s mechanism explanation without requiring additional assumptions beyond the summary."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "Most elements serve the core ideas (redundancy, degeneration, and MoC’s structured diversity). Some decorative cues (robot icon, flames for high temperature, ABC letters) are not strictly necessary and slightly increase visual clutter, but they are conventional and do not introduce new method structure or distract materially from the contribution."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.286,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 5.0,
+              "reason": "Each row presents a clear left-to-right flow: problem/context on the left, then an LLM/IID or MoC sampling module, then an output distribution, then sampled concepts/hypotheses on the right. The three scenarios are stacked top-to-bottom (IID, high-temperature IID, MoC), matching the caption’s top/middle/bottom narrative."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 5.0,
+              "reason": "Arrows and dashed sampling paths do not cross in a confusing way. Even in MoC, the fan-out from concept proposal to three concept-conditioned distributions is drawn cleanly with separated paths, maintaining visual traceability."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 4.0,
+              "reason": "Functionally linked items are grouped: in IID rows, the distribution sits between the LLM icon and the sampled hypotheses; in MoC, concepts, their corresponding distributions, and resulting hypotheses are placed in adjacent columns. A slight penalty because the connection between the initial task prompt (top band) and the three pipelines is implied rather than physically integrated, but it does not harm understanding of the method contrast."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 4.0,
+              "reason": "Rows are neatly aligned with consistent column structure (LLM icon → distribution → samples). The MoC row introduces multiple parallel tracks which are mostly aligned, though the fan-out arrows and multi-line elements create minor deviations from a strict grid compared to the simpler IID rows."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "The three main conditions (IID sampling, IID with high temperature, MoC) are clearly separated by dashed horizontal dividers and labeled, making the comparison salient. The MoC section’s multiple colored streams also visually emphasizes the key contribution (structured diversity). Main components stand out primarily by layout/position rather than size/weight, hence not a perfect 5."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "There is adequate whitespace between rows and between columns so elements are legible, and the dashed separators prevent crowding. The rightmost sampled-text area in each row is relatively dense, especially in the high-temperature IID row where degeneration text sits near valid samples, but still readable."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 4.0,
+              "reason": "Similar roles are depicted consistently: each pipeline uses the same LLM icon, similar distribution glyphs, and arrows with the same visual language. In MoC, color is used consistently to link concept → distribution → hypothesis within each track, but this introduces a different encoding style than the monochrome IID rows (intentional for contrast, but slightly reduces uniformity)."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "metaphor",
+              "score": 3.0,
+              "reason": "The figure replaces some abstractions with concrete visual symbols: an LLM/agent face icon to denote the model, bell-curve-like distributions to signify sampling/output distributions, and flame icons to concretize “high temperature.” The MoC idea is also made tangible via colored “concept” tokens (e.g., ‘transpose,’ ‘rotation,’ ‘flip’) feeding into separate distributions and then hypotheses. However, much of the content remains literal text labels (concept/hypothesis strings) rather than richer symbolic metaphor, so the abstraction-to-icon mapping is only moderate."
+            },
+            {
+              "question": "novelty",
+              "score": 3.0,
+              "reason": "The visual style is a clean, schematic pipeline with repeated rows (IID, high-temp IID, MoC) and minimal iconography—fairly common in ML paper figures. The inclusion of degeneration glyphs (garbled characters) and the explicit concept-to-conditioned-sampling depiction adds some distinctive flavor aligned with the summary’s motivation (redundancy vs degeneration vs MoC), but overall it still resembles a standard explanatory template rather than a uniquely stylized graphic."
+            },
+            {
+              "question": "adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific argument: three stacked panels directly matching the caption and summary (redundant IID hypotheses, degeneration under higher temperature, and MoC’s concept-conditioned branches enabling diversity without quality loss). The branching in the MoC row (multiple concepts leading to separate hypothesis generations) is a purpose-built dataflow depiction rather than a generic single-path pipeline, making it more adapted to the method’s structure than uniform design principles."
+            }
+          ]
+        },
+        "weighted_total": 3.857
+      }
+    },
+    {
+      "figure_file": "Generating_Diverse_Hypotheses_for_Inductive_Reasoning__p7__score0.70.png",
+      "caption": "Table 6: Two challenging examples from MiniARC and MBPP+, where the IID baseline fails to generate a valid hypothesis from over 500 hypothesis samples. MoC solves these problems correctly with only 64 hypotheses. The concepts in boldface formulate the correct hypothesis.",
+      "scores": {
+        "Informativeness": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "1.1",
+              "score": 2.0,
+              "reason": "The figure aligns with the caption/summary’s narrow claim by showing two hard cases (MiniARC-like grid transformation; MBPP+-like number property task) where MoC concepts (with a bolded correct concept) support a correct natural-language hypothesis. However, it omits most major components emphasized in the summary: no Python function hypotheses, no IID sampling pipeline depiction, no train/test selection/check mechanism, no behavioral-equivalence definition for “unique hypotheses,” and no temperature/top-p or degeneration/diversity/accuracy measurements. Thus it covers only the illustrative-example portion of the paper’s contributions, not the core method structure or evaluation setup."
+            },
+            {
+              "question": "1.2",
+              "score": 3.0,
+              "reason": "A reader can infer the basic two-stage idea at a high level (generate ‘Concepts’ → use a concept to produce a hypothesis) from the columns and bolded concept, and can see concrete training examples paired with a resulting hypothesis. But it is not sufficient to understand the overall system operation described in the summary: it does not show how hypotheses are validated (perfect train match), how test success is determined, or how MoC differs from IID sampling beyond the presence of a concept list. The absence of the program-generation/verification loop limits standalone intelligibility of the full framework."
+            },
+            {
+              "question": "1.3",
+              "score": 1.0,
+              "reason": "This table is not a beginning-to-end summary of the paper; it provides only two qualitative case studies supporting the ‘hard cases’ claim (MoC succeeds with 64 while IID fails with >500). It excludes the paper’s main quantitative story in the summary (temperature–diversity–accuracy tradeoff, degeneration and top-p mitigation, saturation/plateau effects, and efficiency comparisons across benchmarks) and does not include the baseline/MoC pipelines as complete workflows."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1_Hallucination",
+              "score": 4.0,
+              "reason": "The figure shows two hard-case examples with columns for Train Examples, Concepts (with some bolded), and a Natural Language Hypothesis—matching the summary’s MoC framing (concept proposal → concept-conditioned hypothesis) and the caption’s claim that bold concepts correspond to the correct hypothesis. It does not introduce new method components or formulas beyond those. Minor mismatch: the summary emphasizes hypotheses as Python functions and uniqueness by program behavior, but this table presents natural-language hypotheses and no explicit Python; this is not a contradictory hallucination, but it is an omission/shift in representation."
+            },
+            {
+              "question": "2.2_Relation_Correctness",
+              "score": 4.0,
+              "reason": "The relationships shown are consistent with MoC’s intended mechanism: concepts act as conditioning signals that lead to a specific hypothesis description for each task, and the bolded concept aligns with the correct solution per the caption. However, the figure does not explicitly show the two-stage dataflow (concept list generation then separate hypothesis generations) nor the comparison to IID failing with >500 samples vs MoC succeeding with 64; that key comparative relation is only stated in the caption, not visually evidenced within the table."
+            },
+            {
+              "question": "2.3_Label_Accuracy",
+              "score": 5.0,
+              "reason": "Major labels in the table (“Train Examples,” “Concepts,” “Natural Language Hypothesis”) match the terminology and roles described in the summary (concept proposal; hypothesis generation). The caption’s references to MiniARC and MBPP+ and the IID vs MoC comparison are consistent with the summary’s benchmarks/hard-cases framing and method names (IID baseline, MoC)."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 4.0,
+              "reason": "The table is schematized around the paper’s main contribution for this figure type: it contrasts MoC’s concept proposals with the resulting hypothesis for two hard cases where IID sampling fails. The three-column structure (Train Examples → Concepts → Natural Language Hypothesis) foregrounds the concept-conditioning mechanism and highlights the correct concept in bold, aligning with the caption’s claim. Minor readability loss comes from dense paragraph-style hypotheses that are not as scannable as they could be (e.g., bulleting key rule steps)."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As supplementary material, it functions well with the caption: it provides concrete examples from MiniARC and MBPP+ illustrating how MoC’s concepts lead to a correct hypothesis with fewer samples. The visual pairing of input/output grids and the explicit concept list makes the intended story understandable without needing the full method diagram. However, the figure does not itself show the claimed quantitative comparison (\"IID fails with 500+\" vs \"MoC succeeds with 64\"), so the reader must rely on the caption/text for that part, slightly weakening standalone clarity."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 5.0,
+              "reason": "The figure avoids decorative elements and stays focused on core ideas: example tasks, generated concepts, and the resulting hypothesis text, with boldface marking the correct concept as stated in the caption. There is no extraneous visual styling beyond table rules, and all displayed content supports the point about concept-guided hypothesis generation rather than unrelated metrics or side analyses."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.571,
+          "sub_metrics": [
+            {
+              "question": "4.1_Direction",
+              "score": 5.0,
+              "reason": "The table is organized left-to-right into clearly labeled columns: \"Train Examples\" → \"Concepts\" → \"Natural Language Hypothesis\", matching the MoC notion (examples lead to concepts, which lead to a hypothesis). Reading order is unambiguous."
+            },
+            {
+              "question": "4.2_Crossing",
+              "score": 5.0,
+              "reason": "There are no connecting arrows/lines between elements (it is a table layout), so there is no risk of line crossings."
+            },
+            {
+              "question": "4.3_Proximity",
+              "score": 4.0,
+              "reason": "Within each row, the train examples, proposed concepts (including the bolded correct concept), and the resulting natural-language hypothesis are placed adjacent in the same row, making the concept→hypothesis linkage easy to follow. A minor limitation is that the caption emphasizes IID vs MoC outcomes, but the table itself does not physically juxtapose baseline outputs next to MoC outputs."
+            },
+            {
+              "question": "4.4_Alignment",
+              "score": 5.0,
+              "reason": "The figure uses a strict grid: column headers align with their contents; rows are horizontally separated with rules; elements appear neatly aligned within each cell."
+            },
+            {
+              "question": "4.5_Hierarchy",
+              "score": 4.0,
+              "reason": "The main structure is emphasized via strong column headers and table rules. The boldface concept highlights what the caption claims (the correct concept). However, the figure does not visually emphasize the headline result (IID fails at 500+ vs MoC succeeds with 64) within the table body; that key comparison lives mainly in the caption rather than as a prominent visual element."
+            },
+            {
+              "question": "4.6_Margin",
+              "score": 4.0,
+              "reason": "Cell padding and whitespace appear generally sufficient: the ARC grids, concept list, and hypothesis text are separated without crowding. The natural-language hypothesis paragraphs are dense and could benefit from slightly more internal spacing or line-height for readability, but they remain legible."
+            },
+            {
+              "question": "4.7_Consistency",
+              "score": 5.0,
+              "reason": "Both examples follow the same representation scheme (train examples on the left, a concept list in the middle with the correct concept in bold, and a hypothesis explanation on the right). Typography and emphasis (bold for correct concept) are applied consistently across rows."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 2.0,
+              "reason": "The table uses concrete mini-grid visuals for MiniARC train examples, which is an appropriate concrete representation of the task input/output. However, the main abstract contribution highlighted in the summary/caption—MoC’s concept-conditioning and the idea of ‘concepts in boldface’—is conveyed mostly through plain text lists (concept words) and natural-language hypotheses rather than icons/symbolic metaphors. There are no notable abbreviations or symbolic encodings beyond standard table typography."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Visually, the figure is a conventional academic table: columns for examples, concepts, and natural-language hypothesis, with boldface indicating the correct concept. This matches the captioned intent (showing hard cases and the correct concept) but does not introduce a distinctive or uncommon visual style compared to typical NLP/LLM prompt-output tables."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to the paper’s specific mechanism: it juxtaposes (i) training examples (including MiniARC grids), (ii) the concept list produced in MoC, and (iii) the resulting hypothesis description, directly supporting the claim that certain concepts (bolded) enable correct solutions with fewer samples. Combining two different benchmark modalities (grid transformation and numeric property checking) in the same structured table is a paper-specific choice that serves the narrative of ‘challenging examples’ and concept-guided reasoning, rather than a one-size-fits-all plot/template."
+            }
+          ]
+        },
+        "weighted_total": 3.581
+      }
+    },
+    {
+      "figure_file": "Generating_Diverse_Hypotheses_for_Inductive_Reasoning__p4__score0.95.png",
+      "caption": "Figure 6: Example problems in each of four datasets we study. We graphically display the MiniARC examples to help the reader understand.",
+      "scores": {
+        "Informativeness": {
+          "score": 1.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 1.0,
+              "reason": "The figure only shows example problems across datasets (columns labeled roughly: Functions, MiniARC, MBPP+, Playgol-str). It does not include the major method components emphasized in the summary (IID hypothesis sampling pipeline, MoC two-stage prompting, temperature/top-p tradeoff variables, degeneration rate, unique-hypothesis counting via behavioral equivalence, or accuracy/plateau plots). As an examples-only figure, it omits essentially all core technical elements described in the summary."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 2.0,
+              "reason": "From the visual alone, a reader can infer that the paper studies multiple datasets and the tasks look like program/rule induction (e.g., input-output mappings for Functions, grid transformations for MiniARC, code-related boolean outputs for MBPP+, and string transformations for Playgol-str). However, the figure does not communicate the operating principle of the proposed system (MoC stages, hypothesis sampling/selection, or decoding controls), so it cannot explain the approach without the paper."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 1.0,
+              "reason": "This figure is not a paper-level summary: it covers only dataset examples and none of the beginning-to-end narrative in the summary (problem with IID sampling, temperature saturation/degeneration, MoC mechanism, and empirical efficiency/accuracy comparisons). Therefore it is far from complete relative to the paper’s contributions."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "2.1",
+              "score": 5.0,
+              "reason": "The figure presents example problems across four datasets (Functions, MiniARC, MBPP+, Playgol-str), consistent with the caption. It does not introduce method components (e.g., MoC pipeline details, temperature/top-p controls, degeneration metrics) or formulas beyond what is described as dataset examples, so there are no hallucinated core-method elements."
+            },
+            {
+              "question": "2.2",
+              "score": 5.0,
+              "reason": "The only relationships shown are within-example input→output/task-instance depictions (e.g., MiniARC grid transformation pairs, string transformation examples). This matches the stated intent of showing example problems per dataset and does not misrepresent any methodological relationships (IID sampling vs MoC, selection/check, uniqueness-by-behavior), which are not the subject of this figure."
+            },
+            {
+              "question": "2.3",
+              "score": 5.0,
+              "reason": "Dataset labels shown (Functions, MiniARC, MBPP+, Playgol-str) align with the caption’s claim of four studied datasets and are correctly used as headers for example problems. No major method names (MoC, IID, temperature/top-p) are mislabeled or incorrectly applied because they do not appear in the figure."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 3.0,
+              "reason": "The figure is schematized as a compact grid of example problems across datasets (Functions, MiniARC, MBPP+, Playgol-str), which matches the caption’s intent. However, it does not foreground the paper’s main methodological contribution (IID temperature tradeoff or MoC pipeline) described in the summary; it serves more as dataset illustration than contribution summary."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 4.0,
+              "reason": "As supplementary material, it functions well: it provides concrete, quickly scannable examples from the four datasets studied, including graphical MiniARC input/output pairs, which the caption explicitly motivates. The layout with dataset headers makes it easy to align each snippet with the referenced benchmark while reading."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "The figure avoids decorative elements: it uses minimal text and simple separators, and each panel appears to be an example instance. The only mild redundancy is that some panels (e.g., Functions and string tasks) contain small, hard-to-read text blocks that may not add much beyond conveying that the tasks are programmatic/IO-based, but they are still relevant to understanding dataset types."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1_direction",
+              "score": 4.0,
+              "reason": "The figure is organized as four side-by-side dataset panels (Functions, MiniARC, MBPP+, Playgol-str), which naturally reads left-to-right. Within the MiniARC panel, the input-to-output mapping is explicitly indicated with right-pointing arrows, reinforcing a clear directional flow."
+            },
+            {
+              "question": "4.2_crossing",
+              "score": 5.0,
+              "reason": "There are no multi-node connectors; the only connection elements are short arrows inside the MiniARC examples, and they do not cross any other lines. The panel separators also do not introduce crossings."
+            },
+            {
+              "question": "4.3_proximity",
+              "score": 4.0,
+              "reason": "Each dataset’s example content is grouped tightly under its own header, keeping functionally related items close. In MiniARC, each input grid is placed directly next to its corresponding output grid, minimizing visual search."
+            },
+            {
+              "question": "4.4_alignment",
+              "score": 4.0,
+              "reason": "Panel headers and content appear aligned in columns separated by vertical dotted lines. MiniARC examples are laid out in a neat two-row structure with consistent left/right placement for input/output. Minor variability in text block widths across panels slightly weakens strict grid alignment."
+            },
+            {
+              "question": "4.5_hierarchy",
+              "score": 3.0,
+              "reason": "Dataset names at the top provide some hierarchy, but the figure otherwise treats all panels with similar visual weight. There is limited emphasis to guide which dataset/example is most important; hierarchy is mainly conveyed by headings rather than size/weight differences."
+            },
+            {
+              "question": "4.6_margin",
+              "score": 4.0,
+              "reason": "The vertical separators create clear spacing between dataset panels, and within MiniARC the grids/arrows have adequate whitespace. Some text blocks (e.g., MBPP+) look compact, but still readable without obvious crowding."
+            },
+            {
+              "question": "4.7_consistency",
+              "score": 4.0,
+              "reason": "The panel structure is consistent (header + example content) across all four datasets. However, representation differs by necessity (colored grids for MiniARC vs. plain text for others), so shape/color consistency is partial rather than uniform across panels."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure uses concrete, dataset-specific exemplars (notably the MiniARC grid images) to make otherwise abstract inductive reasoning tasks tangible. However, beyond showing examples, it does not introduce additional symbolic/iconographic metaphors or abbreviations to represent the paper’s abstract method ideas (e.g., MoC vs IID), which aligns with the caption’s narrow goal of displaying example problems."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Visually, the figure follows a conventional multi-column dataset-example panel: dataset names as headers and representative inputs/outputs rendered as text or small graphics. This is a common template for benchmark illustration and does not exhibit a distinctive or unusual visual style beyond the standard inclusion of MiniARC thumbnails mentioned in the caption."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 3.0,
+              "reason": "The layout adapts to heterogeneous modalities across the four datasets (function-style I/O pairs, MiniARC grids, code/text snippets) by allocating separate labeled columns and choosing graphical rendering specifically for MiniARC 'to help the reader understand,' as stated in the caption. Still, the overall structure remains a uniform grid of examples rather than a more customized narrative layout."
+            }
+          ]
+        },
+        "weighted_total": 3.333
+      }
+    },
+    {
+      "figure_file": "Generating_Diverse_Hypotheses_for_Inductive_Reasoning__p3__score1.00.png",
+      "caption": "Figure 5: An overview of our Mixture of Concepts approach. We generate K distinct concepts (left) and feed them into the LLM separately for hypothesis generation (right).",
+      "scores": {
+        "Informativeness": {
+          "score": 3.333,
+          "sub_metrics": [
+            {
+              "question": "1.1_content_coverage",
+              "score": 4.0,
+              "reason": "The figure captures the major MoC components described in the summary: Stage 1 concept proposal producing K concepts, and Stage 2 concept-conditioned hypothesis generation producing natural-language hypotheses plus Python code, with validation against training examples and execution on a test input to obtain a test output. However, it omits several method-related details mentioned in the summary that are central elsewhere in the paper’s empirical story (e.g., the IID baseline pipeline, uniqueness-by-program-behavior criterion, temperature/top-p controls, and the broader benchmarking/efficiency comparisons). Those omissions limit coverage beyond the MoC overview."
+            },
+            {
+              "question": "1.2_standalone_intelligibility",
+              "score": 4.0,
+              "reason": "Visually, the two-stage operating principle is clear without the paper: training examples are provided; a proposer outputs a list of distinct concepts; each concept is paired with the same training examples and sent to a generator to produce a hypothesis and Python function; candidate programs are checked on train examples (pass/fail shown) and a passing one is then executed on a test input to produce a test output. What is less self-evident is the precise meaning/guarantee of “distinct concepts,” how K is chosen, and what the selection criterion is in general (the figure shows a pass/fail example but not the overall selection protocol across K)."
+            },
+            {
+              "question": "1.3_completeness",
+              "score": 2.0,
+              "reason": "The figure is an overview of MoC only, not a beginning-to-end summary of the paper’s content. It does not include the motivation and failure modes of IID sampling (redundancy/degeneration), the temperature–diversity–accuracy tradeoff plots, the top-p intervention at high temperature, or the empirical efficiency gains across benchmarks and hard-case comparisons. Therefore it is not complete relative to the full narrative summarized."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1_hallucination",
+              "score": 4.0,
+              "reason": "The figure depicts the two-stage MoC pipeline (concept proposal → concept-conditioned hypothesis generation) using training examples, a proposer/generator LLM, and outputs that include a natural-language hypothesis plus Python code validated on training examples—all of which are described in the summary. It also includes illustrative UI elements (e.g., green check/red cross, submit/execute arrows, example concepts) that are not explicitly mentioned but are conventional and do not change the core method. No new core modules or alternative objectives beyond MoC are introduced."
+            },
+            {
+              "question": "2.2_relation_correctness",
+              "score": 5.0,
+              "reason": "Relationships match the summary: Stage 1 produces a list of K concepts; Stage 2 feeds each concept back alongside the same training examples to generate separate hypotheses/programs. The figure also shows selection/validation against training examples (accept/reject), consistent with the described check for matching all training pairs before evaluating on test inputs."
+            },
+            {
+              "question": "2.3_label_accuracy",
+              "score": 5.0,
+              "reason": "Major components are labeled in line with the summary and caption: 'Concept Proposal' and 'Hypothesis Generation' correspond to the two MoC stages; 'Concept 1..4 + Train examples → Generator' aligns with concept-conditioned prompting; 'Hypothesis' and 'Code' reflect the natural-language rule + Python function outputs described."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "3.1_summarization",
+              "score": 5.0,
+              "reason": "The schematic cleanly foregrounds the paper’s main contribution described in the summary: MoC as a two-stage pipeline (concept proposal → concept-conditioned hypothesis generation). It omits most experimental/decoding details (e.g., temperature/top-p curves) and focuses on the core dataflow: training examples into a proposer yielding K concepts, then each concept + training examples into separate generators producing hypotheses/programs with validation."
+            },
+            {
+              "question": "3.2_contextual_match",
+              "score": 5.0,
+              "reason": "The figure aligns tightly with the caption and summary: left panel explicitly shows generating K distinct concepts; right panel shows feeding each concept back to generate a hypothesis (with code) and validating on train examples, matching the described MoC mechanism. Visual grouping (two numbered stages, repeated concept-conditioned branches) makes it easy to map the diagram to the textual explanation as supplementary clarification."
+            },
+            {
+              "question": "3.3_redundancy",
+              "score": 4.0,
+              "reason": "Most elements directly support the core idea (two-stage prompting, parallel concept-conditioned generations, train-set validation). There is some extra micro-detail (example hypothesis text, a specific code snippet, check/cross icons, and a small test input/output execution box) that goes slightly beyond the caption’s minimal claim, but these are conventional illustrative aids and do not distract materially or introduce an alternative method structure."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 0.0,
+          "sub_metrics": []
+        },
+        "Creativity": {
+          "score": 3.0,
+          "sub_metrics": [
+            {
+              "question": "5.1_metaphor",
+              "score": 3.0,
+              "reason": "The figure uses some concrete visual shorthand to stand in for abstract steps: numbered concept pills, a “Proposer” and “Generator” box, plus checkmark/cross icons for validation success/failure. These symbols help concretize the two-stage MoC pipeline described in the summary (concept list → concept-conditioned hypothesis generation with train-check). However, most elements remain standard text-and-box abstractions rather than richer metaphorical/iconic representations."
+            },
+            {
+              "question": "5.2_novelty",
+              "score": 2.0,
+              "reason": "Visually it follows a common ML paper template: a left-to-right, two-panel pipeline with rounded rectangles, arrows, and repeated module blocks. The concept list and parallel generators are clear but stylistically conventional; nothing indicates a distinctive illustration style beyond typical block-diagram conventions consistent with the summary’s method description."
+            },
+            {
+              "question": "5.3_adaptability",
+              "score": 4.0,
+              "reason": "The layout is tailored to MoC’s core structural claim in the summary: Stage 1 produces a list of K concepts, and Stage 2 fans out into K separate hypothesis generations conditioned on each concept. The explicit parallel lanes (Concept 1–4) and per-lane validation outcomes (✗/✓) are well-adapted to showing how diversity is induced by conditioning rather than IID sampling, i.e., a paper-specific dataflow rather than a generic single-path pipeline."
+            }
+          ]
+        },
+        "weighted_total": 3.133
+      }
+    }
+  ]
+}

@@ -1,0 +1,1648 @@
+{
+  "paper_name": "Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering",
+  "mode": "full",
+  "evaluated_at": "2026-01-29T07:53:15.836111",
+  "figure_evaluations": [
+    {
+      "figure_file": "Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+      "caption": "Figure 1: Overview of task setup on Natural Language Visual Reasoning (top) and WIKITABLEQUESTIONS (bottom) dataset. The datasets include only utterance x, world w and denotation y (ground truth program z is not given). Spurious programs like z′, whose meaning is wrong but execution result is correct, are major challenges of the task.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Input example: utterance x, world w, denotation y', 'Program search process (e.g., beam search) generating candidate programs {zi}', 'Execution of candidate programs on world w', 'Denotation-based consistency filter: keep only programs whose execution on w yields correct denotation y (forming program pool {zi}k)', 'Execution-based program representation: execute each remaining program zi on multiple selected worlds {wj}n to form representation vector ri (execution results per world)', 'World selection/collection step to obtain {wj}n from training set', 'Majority-vote filtering over representations {ri}: identify outlier/spurious programs deviating from others', 'Hard vote module (centroid using winning denotations)', 'Soft vote module (vote weighted by denotation proportions)', 'Output: filtered program set (spurious programs removed) to use for weakly supervised semantic parser training']\nContext: Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing, pages 6884–6894 December 6-10, 2023 ©2023 Association for Computational Linguistics Weakly Supervised Semantic Parsing with Execution-based Spurious Program Filtering Kang-il Lee1 Segwang Kim2∗ Kyomin Jung1,3† 1Dept. of ECE, Seoul National University 2Samsung Electronics Mobile eXperience 3IPAI, Seoul National University {4bkang, ksk5693, kjung}@snu.ac.kr Abstract The problem of spurious programs is a long- standing challenge when training a semantic parser from weak supervision. To eliminate such programs that have wrong semantics but correct denotation, existing methods focus on exploiting similarities between examples based on domain-specific knowledge. In this pa- per, we propose a domain-agnostic filtering mechanism based on program execution results. Specifically, for each program obtained through the search process, we first construct a repre- sentation that captures the program’s seman- tics as execution results under various inputs. Then, we run a majority vote on these represen- tations to identify and filter out programs with significantly different semantics from the other programs. In particular, our method is orthog- onal to the program search process so that it can easily augment any of the existing weakly supervised semantic parsing frameworks. \n\nWithout supervision for correct programs, train- ing a weakly supervised semantic parser typically entails a program search process. In this process, given the natural language utterance, a search al- gorithm such as beam search generates a pool of likely programs. Among these programs, there may be some programs that have incorrect seman- tics but derive the correct denotation by chance, as z′ in Figure 1. These programs are called spuri- ous programs and introduce undesirable noise on the training signal.\n\n3 Execution-based Filtering To eliminate spurious programs, we devise a novel execution-based filtering mechanism. Intuitively, among consistent programs, the spurious ones are likely to semantically deviate. However, measur- ing or defining semantic distance is challenging. Thus, we instead loosely capture the semantics of programs by executing them against reasonably se- lected worlds. Then, we filter out the programs whose execution results deviate most from others by performing a majority vote. Formal Setups Consider an example with utter- ance x, world w, and denotation y.2 The programs found in the search step are executed against w, and only those with correct denotations remain in the program pool {zi}k i=1.3 Still, many of these k programs may be spurious; they do not reflect the meaning of given utterance x but coincidentally derive correct denotation y.\n\n3.1 Program Representation In order to capture the semantics of programs, we devise a representation scheme based on their exe- cution results against a set of worlds. Mathemati- cally speaking, we represent a semantic of program zi as an n-dimensional sparse vector ri whose j-th entry is the execution result of zi against world wj. Regarding the worlds {wj}n j=1, we collect them from the training set using two different selection strategies for NLVR and WTQ, on which we elab- orate in section 4 and appendix B.\n\n3.2 Filtering Programs with Majority Vote The program representations {ri}k i=1 can be under- stood as points on a space and are partitioned by {wj}n j=1. As shown in Figure 2, ri can be classi- fied based on which region it resides. We hypoth- esize that the programs far from the “centroid” of {ri}k i=1 are more likely to be spurious. Here, we employ two vote techniques: (1) a “hard” vote that constructs explicit centroid representation utilizing only the winning denotations and (2) a “soft” vote that considers the proportion of each denotation.",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': \"{'type': 'label', 'text': 'x : There is a blue square'}\", 'status': 'Supported', 'evidence': 'The excerpt explicitly includes this as part of Figure 1: “x : There is a blue square”.'}, {'element': \"{'type': 'label', 'text': 'w : [[{color: blue, shape: square}, {color: black, shape: circle}, ...], ...]'}\", 'status': 'Supported', 'evidence': 'The excerpt explicitly includes this as part of Figure 1: “w : [[{color: blue, shape: square}, {color: black, shape: circle}…], …]”.'}, {'element': \"{'type': 'relationship', 'from': 'z', 'to': 'objExists(square(blue(all_objects)))', 'text': 'z : objExists(square(blue(all_objects)))'}\", 'status': 'Supported', 'evidence': 'The excerpt explicitly includes this as part of Figure 1: “z : objExists(square(blue(all_objects)))”.'}, {'element': \"{'type': 'label', 'text': 'z’ : objExists(black(circle(all_objects)))'}\", 'status': 'Supported', 'evidence': 'The excerpt explicitly includes this as part of Figure 1: “z’: objExists(black(circle(all_objects)))”.'}, {'element': \"{'type': 'label', 'text': 'y : True'}\", 'status': 'Supported', 'evidence': 'The excerpt explicitly includes this as part of Figure 1: “y : True”.'}, {'element': \"{'type': 'label', 'text': 'x : How many nations won more than ten silver medals?'}\", 'status': 'Supported', 'evidence': 'The excerpt explicitly includes this as part of Figure 1: “x : How many nations won more than ten silver medals?”.'}, {'element': \"{'type': 'label', 'text': 'w : [[{Rank: 1}, {Nation: Soviet Union}, {Gold: 50}...], ...]'}\", 'status': 'Supported', 'evidence': 'The excerpt explicitly includes this as part of Figure 1: “w : [[{Rank: 1}, {Nation: Soviet Union}, {Gold: 50}…], …]”.'}, {'element': \"{'type': 'relationship', 'from': 'z', 'to': 'count(filterNumberGreater(allRows, column:Silver, 10))', 'text': 'z : count(filterNumberGreater(allRows, column:Silver, 10))'}\", 'status': 'Supported', 'evidence': 'The excerpt explicitly includes this as part of Figure 1: “z : count(filterNumberGreater(allRows, column:Silver, 10))”.'}, {'element': \"{'type': 'relationship', 'from': 'z', 'to': 'select(filterIn(allRows, column:Nation, Japan), column:Rank)', 'text': 'z : select(filterIn(allRows, column:Nation, Japan), column:Rank)'}\", 'status': 'Supported', 'evidence': \"The excerpt explicitly includes the spurious program for the WTQ example in Figure 1: “z’: select(filterIn(allRows, column:Nation, Japan), column:Rank)”. (Note: the element labels it as from 'z' but the paper shows it as z’.)\"}, {'element': \"{'type': 'label', 'text': 'y : 5'}\", 'status': 'Supported', 'evidence': 'The excerpt explicitly includes this as part of Figure 1: “y : 5”.'}], [{'element': \"{'type': 'label', 'text': 'x : There is a blue square'}\", 'status': 'Not Mentioned', 'evidence': 'The chunk discusses training/inference methods using execution results and related work; it does not mention any figure content about a blue square.'}, {'element': \"{'type': 'label', 'text': 'w : [[{color: blue, shape: square}, {color: black, shape: circle}, ...], ...]'}\", 'status': 'Not Mentioned', 'evidence': 'No description of a world/state representation with colored shapes appears in the provided text.'}, {'element': \"{'type': 'relationship', 'from': 'z', 'to': 'objExists(square(blue(all_objects)))', 'text': 'z : objExists(square(blue(all_objects)))'}\", 'status': 'Not Mentioned', 'evidence': 'The text references execution results, clustering programs, and property signatures, but does not mention this specific logical form or predicate.'}, {'element': \"{'type': 'label', 'text': 'z’ : objExists(black(circle(all_objects)))'}\", 'status': 'Not Mentioned', 'evidence': 'No mention of predicates about black circles or object existence; only general discussion of program execution guidance.'}, {'element': \"{'type': 'label', 'text': 'y : True'}\", 'status': 'Not Mentioned', 'evidence': \"The chunk does not contain any statement tying an output label 'y' to True.\"}, {'element': \"{'type': 'label', 'text': 'x : How many nations won more than ten silver medals?'}\", 'status': 'Not Mentioned', 'evidence': 'The text does not discuss this question or any Olympics/medals table; it discusses methods for leveraging execution results.'}, {'element': \"{'type': 'label', 'text': 'w : [[{Rank: 1}, {Nation: Soviet Union}, {Gold: 50}...], ...]'}\", 'status': 'Not Mentioned', 'evidence': 'No table with Rank/Nation/Gold (e.g., Soviet Union) is described in the provided chunk.'}, {'element': \"{'type': 'relationship', 'from': 'z', 'to': 'count(filterNumberGreater(allRows, column:Silver, 10))', 'text': 'z : count(filterNumberGreater(allRows, column:Silver, 10))'}\", 'status': 'Not Mentioned', 'evidence': 'While the chunk mentions using execution results to guide models, it does not mention this counting/filtering program or a Silver column.'}, {'element': \"{'type': 'relationship', 'from': 'z', 'to': 'select(filterIn(allRows, column:Nation, Japan), column:Rank)', 'text': 'z : select(filterIn(allRows, column:Nation, Japan), column:Rank)'}\", 'status': 'Not Mentioned', 'evidence': 'No mention of selecting ranks for Japan or any such table operation appears in the chunk.'}, {'element': \"{'type': 'label', 'text': 'y : 5'}\", 'status': 'Not Mentioned', 'evidence': \"The chunk provides no numeric answer/output tied to 'y' or to the medals question.\"}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 2,
+              "reason": "The target figure partially reflects the paper’s setup (it shows an utterance x, a world w, a candidate program z and a spurious variant z′, and the denotation y). However, it omits most of the major components of the proposed method: there is no depiction of the program search/beam process generating a set {z_i}, no explicit denotation-consistency filtering step forming a pool {z_i}^k, no execution-based representation across multiple selected worlds {w_j}^n producing vectors r_i, no world selection/collection step, and no majority-vote filtering (hard/soft vote, centroid/winning denotations, vote weights) leading to a filtered program set. Overall it mainly illustrates input/world/denotation and an example of spuriousness, but not the execution-based filtering pipeline."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 3,
+              "reason": "The figure conveys the core intuition of the paper—denotation-only consistency admits spurious programs—by showing (i) an utterance x, (ii) a world w, (iii) one consistent program z and a spurious-but-consistent program z′, both yielding the same denotation y. This aligns with the evidence’s setup (x,w,y and spurious programs). However, it does not illustrate the paper’s central mechanism for filtering: generating a candidate set {z_i} via search, applying a denotation-based filter to form a pool, constructing execution-based representations by executing programs on multiple selected worlds {w_j}, and then performing hard/soft majority-vote filtering to remove outliers. Without those steps, a reader can grasp the problem and motivation, but not the system’s operating principle (execution-based representation + voting) from this figure alone."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 3,
+              "reason": "The target figure includes several key components described in the evidence: an input example (x, w, y), candidate programs from a search ({zi}), execution/denotation-consistency idea (showing true denotation with a spurious alternative), and an overall depiction consistent with execution-based filtering motivation. However, it does not cover the full end-to-end method described from beginning to end of the paper: it omits the explicit execution-based representation step across multiple selected worlds {wj} to form vectors ri, the world selection/collection procedure, the majority-vote filtering over {ri} (including outlier detection), and the hard vs. soft vote modules, as well as the final output of a filtered program set used for training. Thus it is partially complete but missing major mid/late pipeline elements."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 4,
+              "reason": "The target figure’s main components (two example inputs x, corresponding structured worlds/tables w, correct program z, spurious program z’, and outputs y) are all supported by the provided evidence list, which explicitly quotes these elements as appearing in Figure 1. Visually, the target also matches the reference style/content (shape-world example and WTQ-style table/program example). However, there is a minor inconsistency risk: in the evidence, the medals spurious program is noted as mislabeled (element recorded as from 'z' though the paper shows it as z’), and the target uses z’ correctly; this is not a hallucinated component but a labeling/detail discrepancy relative to the evidence extraction. Overall, the figure largely avoids introducing unsupported formulas/components, with only minor labeling/faithfulness concerns."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "The target figure’s key relations are accurately represented and match the provided evidence: (i) in the SHAPES example, x (“There is a blue square”) is paired with a world/state w containing objects with attributes, and the correct program z is an existence check (objExists(square(blue(all_objects)))) yielding y=True; a contrasting spurious program z’ (objExists(black(circle(all_objects)))) is also shown, consistent with the evidence list. (ii) in the WTQ/table example, x (“How many nations won more than ten silver medals?”) is paired with a table-structured w, and z correctly expresses counting rows with Silver > 10 (count(filterNumberGreater(allRows, column:Silver, 10))) yielding y=5; a spurious alternative z’ selects Japan’s rank (select(filterIn(...Japan), column:Rank)), again matching the evidence. The visual layout (natural-language query → structured input w → program z/z’ → output y) is consistent with the reference figures’ depiction of semantic parsing/program execution pipelines and the evidence explicitly enumerating these relations."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 4,
+              "reason": "The target figure’s major component labels (x, w, z, z’, y) are consistent with the evidence: it includes both examples with the same variable naming and corresponding natural-language input (x), structured world/table (w), program/logical form (z and spurious z’), and output (y). The only notable labeling issue is a minor inconsistency around the spurious program: the evidence notes the paper shows it as z’ (while an element label in the report mistakenly marks it as from ‘z’), and the target figure presents it as z’, which is appropriate but highlights an underlying ambiguity in the report. Aside from that, component/methodology naming appears accurate and not misleading."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is largely schematized around the paper’s core pipeline: it shows the weakly supervised setup (x, w, y), candidate programs including a consistent-but-spurious example, and uses concrete executions/denotations to illustrate the central challenge. It avoids low-level algorithmic details (e.g., explicit beam search mechanics, representation vectors over multiple selected worlds, and the hard/soft voting modules) and instead conveys the main idea at a high level. However, it includes relatively specific domain instances (NLVR shapes and a WTQ-style table question) and concrete program snippets, which adds some incidental detail; still, these serve as illustrative examples rather than distracting implementation minutiae."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 4,
+              "reason": "The target figure is largely effective as supplementary material for the described method. It visually instantiates the key pipeline elements from the evidence: an input example (x,w,y), candidate programs (z, z′), execution to check denotation consistency (y=True), and the core idea that multiple consistent programs can include spurious ones (e.g., blue-square existence vs black-circle existence) that coincidentally match the denotation. It also includes a second tabular example with alternative programs, reinforcing the weak supervision/denotation-consistency issue.\n\nCompared to the reference figures, it aligns most closely with Ref 5 (semantic parsing/program spuriousness illustrated with tables and alternative programs), whereas Refs 1–4 are about other LLM reasoning/vision/KG topic shift and are less relevant. \n\nHowever, it does not clearly depict the paper’s distinctive contribution in Section 3.2: execution-based representations across multiple selected worlds {wj} and the majority-vote filtering (hard/soft vote, centroid/outlier removal). Since it stops at showing spurious consistent programs rather than the voting/filtering mechanism, it supports the motivation well but is weaker as a direct aid for understanding the execution-based filtering modules."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 4,
+              "reason": "The target figure is largely focused on the core ideas in the evidence: it shows the weak-supervision setup (x, w, y), illustrates denotation-consistent but spurious programs (z vs z′) via execution returning y=True, and provides another example consistent with semantic-parsing/program filtering context. There are no obvious decorative motifs, heavy backgrounds, or stylistic embellishments. Some redundancy/unnecessary detail exists (e.g., including full table contents and two separate example blocks may be more than needed to convey the key point), but these elements still relate to illustrating program execution/denotation and are not purely decorative."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 3.429,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 4,
+              "reason": "The target figure’s main informational sequence reads predominantly from top to bottom: a header/title at the top, then the diagram panel beneath it, followed by the table and accompanying text blocks underneath. While there are local left-to-right elements inside the upper panel and in the table rows, the overall layout and reading order is vertically stacked rather than a primarily left-to-right pipeline (as seen in several reference figures with explicit arrows)."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "The target figure shows no explicit connector lines between elements; the only implied relationships are vertical stacking and separation bands. Compared with the reference figures (which contain multiple arrows/connection lines where crossings can occur), the target effectively avoids crossings by not using connecting lines at all. There is no visible line intersection, though the layout is dense and could benefit from clearer grouping cues if connectors were to be added."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "The target figure groups functionally related elements in close physical proximity. In the visual-query panel, the image strip, the extracted object description (x/w), intermediate logical checks (objExists), and the final boolean output (y) are stacked together as a single contiguous block, supporting short eye-movements between input → representation → decision. Likewise, in the table-query panel, the question (x), the table record representation (w), the aggregate/count step (z), the selection step (z′), and the numeric answer (y) are vertically co-located. This matches the evidence references where pipelines are presented as adjacent, sequential modules (e.g., source/target tables with corresponding programs near them). A minor gap is that the two subpanels (visual and table examples) are separated and could be interpreted as parallel modules rather than one pipeline, slightly reducing immediate proximity across the whole figure, but within each subpanel proximity is strong."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "The Target Figure’s main elements (top object strip, middle formula block, bottom table) are laid out in a clear stacked structure with consistent left/right margins and mostly straight horizontal boundaries, suggesting an underlying grid. The table is neatly aligned with uniform cell structure, and the sections are separated cleanly. Compared to the references, it is not quite as rigorously grid-aligned as the most polished examples (e.g., Ref 5’s tight column alignment and Ref 2/4’s panel grids): minor inconsistencies in spacing between the top strip and text block, and slight variation in left-edge alignment across text lines reduce perfect vertical alignment. Overall, alignment is strong but not immaculate."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 3,
+              "reason": "The target figure has a clear top-to-bottom grouping (shape panel at top, then symbolic/text lines, then the table/question at bottom), which helps basic hierarchy. However, the most important elements do not consistently stand out: (1) the key question at the bottom is not emphasized relative to the surrounding formal definitions (x/w/z/y lines), (2) font size/weight appears largely uniform across explanatory text, and (3) the top visual scene and bottom table compete for attention without a strong typographic cue (e.g., bold title, larger question header, or stronger section separators). Compared with the reference figures, which use stronger panel boundaries, headings, and color/weight to make primary components immediately salient, the target’s hierarchy is moderate but not robust."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 2,
+              "reason": "The target figure shows generally adequate whitespace at the outer border, but margin/spacing between internal elements is inconsistent and often tight. The top panel’s shapes sit close to each other and to the vertical gray separators (e.g., blue shapes near the left boundary and separators; small blue square near the right boundary), making the composition feel cramped. In the middle text/formula block and the bottom table, vertical separation is minimal: the formula lines and the table are stacked with limited padding, and the table appears close to surrounding content. Compared to the reference figures (which use clearer padding and separation between modules/panels), the target lacks consistent inter-element margins, reducing readability and visual balance."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 3,
+              "reason": "Partially consistent. In the Target Figure, different roles are encoded with distinct shapes and colors (e.g., blue shapes vs black shapes vs a yellow triangle), which suggests an attempt at role differentiation. However, components that appear to share a role are not always represented with the same shape: multiple blue elements include both squares and circles, implying the same color is being reused for different shapes/roles or that role is not uniquely mapped to a single shape-color pair. Compared to the reference figures, which tend to use stable, repeated visual encodings for recurring component types (e.g., consistent panel/box styling and iconography), the Target’s mixed use of blue across different shapes reduces shape+color consistency for similar roles."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 2,
+              "reason": "The Target Figure uses mostly literal, domain-specific representations (simple geometric shapes in a strip, formal logic/pseudocode notation, and a numeric results table). Abstract concepts (e.g., existence checks, filtering, counting) are expressed primarily through text formulas and conventional mathematical/programming symbols rather than being replaced by concrete icons or metaphorical imagery. Compared to the references, it shows far less icon-based metaphorization than Ref 3/4 (which heavily use emojis/agents/checkmarks/crosses to stand in for abstract roles/outcomes) and is closer to Ref 2 (tabular + query expressions) where abstraction is conveyed symbolically/notation-wise rather than via metaphoric icons. The only mild concretization is the use of geometric shapes as visual tokens for object attributes, but this functions as direct depiction, not metaphor."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a common, recognizable template seen in the references: a framed canvas with simple geometric shapes on top, and a structured “NL-to-DSL” style annotation block plus a tabular dataset below (similar to Ref 1’s table+program text layout and the general research-figure/diagram conventions in Refs 3–5). While the inclusion of the colored-shapes panel combined with program-like statements is a specific combination, the visual styling (standard table, plain monospace-like text, minimal iconography, generic gray/blue palette, boxed layout) does not introduce a notably unique or distinctive aesthetic beyond typical academic/technical figure templates."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure shows modest adaptation to content (a top visual strip of shapes, followed by a logic-style text block, then a data table). However, the overall layout remains a fairly standard vertical stacking of components with minimal bespoke structure (no strong narrative flow, callouts, grouping boxes, or sectional hierarchy tuned to the paper’s specific argument). Compared to the references that employ more customized multi-panel storytelling (e.g., stepwise pipelines, annotated regions, arrows, explicit stage labels, and differentiated zones), the target breaks from uniform design only slightly and reads more like a generic composite than a layout optimized for a particular paper."
+            }
+          ]
+        }
+      },
+      "weighted_total": 3.286,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p3__score1.00.png",
+            "similarity": 0.6484
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6963
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7016
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6658
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+            "similarity": 0.6962
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6658
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7016
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6366
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6963
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.6557
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7016
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.6703
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.5909
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7016
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6174
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+            "similarity": 0.6962
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.5502
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+            "similarity": 0.6962
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.6451
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7016
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.6833
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+            "similarity": 0.6962
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.6451
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7016
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6366
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+            "similarity": 0.6962
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7016
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6658
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6906
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+            "similarity": 0.6962
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration/ZoomEye_Enhancing_Multimodal_LLMs_with_Human-Like_Zooming_Capabilities_through_Tree-Based_Image_Exploration__p7__score0.95.png",
+            "similarity": 0.6319
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.6746
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.6174
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+            "similarity": 0.6962
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.6873
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7016
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5844
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.6703
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6658
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6963
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.6152
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.6557
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+            "similarity": 0.6962
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.6746
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5844
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.6366
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p1__score0.98.png",
+            "similarity": 0.6409
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+            "similarity": 0.6962
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.6703
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6366
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7016
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6906
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.6557
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.6366
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7016
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.6233
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.6833
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.6557
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7016
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.5161
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.6703
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.6833
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7016
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+            "similarity": 0.6962
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7016
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.6906
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6963
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.7016
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.6746
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p2__score1.00.png",
+            "similarity": 0.6347
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6963
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p7__score0.93.png",
+            "similarity": 0.6962
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models/Active_Prompting_with_Chain-of-Thought_for_Large_Language_Models__p1__score1.00.png",
+            "similarity": 0.6313
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+            "similarity": 0.7838
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.6746
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.6963
+          }
+        }
+      }
+    },
+    {
+      "figure_file": "Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p2__score0.70.png",
+      "caption": "Figure 2: Illustration of our program representation scheme and filtering based on majority vote. Retrieved worlds (wj’s) partition the programs into several groups by their execution results and are represented as lines in the figure.4 By running majority vote based on the execution results, programs in the gray regions may be filtered.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Input: candidate programs obtained through the search process', 'Module: world selection/collection from training examples (worlds {wj})', 'Module: program execution on selected worlds (compute execution results/denotations)', 'Module: program semantic representation construction (n-dimensional sparse vector ri; entry r_i^j = execution result of program zi on world wj)', 'Flow: produce representations {ri} for all candidate programs', 'Module: majority vote over representations to build centroid representation r*', 'Branch/module: Hard Vote centroid computation (per-entry majority vote over execution results)', 'Branch/module: Soft Vote scoring using denotation proportions (count programs sharing execution results) and score normalization', 'Module: compute deviation/dissimilarity score si between each ri and centroid r*', 'Module: thresholding with τ (filter rule: keep/discard based on score or normalized score)', 'Output: filtered set of programs (spurious programs removed / programs with significantly different semantics filtered out)']\nContext: Specifically, for each program obtained through the search process, we first construct a repre-\nsentation that captures the program’s seman-\ntics as execution results under various inputs.\nThen, we run a majority vote on these represen-\ntations to identify and filter out programs with significantly different semantics from the other programs. ... To effectively quantify the degree of deviation, we propose a novel representation scheme of programs based on the execution results. Here, the entries of a representation vector are the program’s execution results on worlds retrieved from other training ex-\namples. To exclude spurious programs, we run a majority vote on these representations to construct a “centroid representation” and filter out the pro-\ngrams whose representation is dissimilar to it.\n\nIn order to capture the semantics of programs, we devise a representation scheme based on their exe-\ncution results against a set of worlds. Mathemati-\ncaly speaking, we represent a semantic of program zi as an n-dimensional sparse vector ri whose j-th entry is the execution result of zi against world wj. Regarding the worlds {wj}n j=1, we collect them from the training set using two different selection strategies for NLVR and WTQ...\n\nThe program representations {ri}k i=1 can be under-\nstood as points on a space and are partitioned by {wj}n j=1. As shown in Figure 2, ri can be classi-\nfied based on which region it resides. We hypoth-\nesize that the programs far from the “centroid” of {ri}k i=1 are more likely to be spurious.\n\nHard Vote In order to get centroid program rep-\nresentation r∗ with hard vote, we run majority vote along each entry of {ri}k i=1: rj ∗= argmax e∈E \\sum_i 1(rj_i = e). ... Given the representation ri, we use r∗ to define the score si ... Finally, we filter out the programs with a score lower than the heuristically chosen threshold τ.\n\nSoft Vote ... we can incorporate the denotation proportion into the score si by counting the number of programs with the same execution result as zi ... We normalize the scores {si}k i=1 such that the high-\nest score becomes 1 and filter out the programs whose normalized score is lower than some thresh-\nold τ.",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': 'label: gold programs', 'status': 'Supported', 'evidence': 'Figure 2 is described as separating programs into groups, explicitly labeling one group as “gold programs” (“Figure 2: Illustration of our program representation scheme…”, and later: “Note that r* is not necessarily the same as the representation of the real gold program.”).'}, {'element': 'label: spurious programs', 'status': 'Supported', 'evidence': 'The paper repeatedly defines and discusses “spurious programs” and Figure 2 explicitly labels a group as “spurious programs” (“These programs are called spurious programs…”, “Figure 2: Illustration…”, and “To eliminate spurious programs…”).'}, {'element': 'label: w1', 'status': 'Supported', 'evidence': 'Figure 2 includes retrieved worlds denoted as w1, w2, w3, and the text explains “Retrieved worlds (wj’s) partition the programs…” and earlier defines the representation entry as execution result on world wj.'}, {'element': 'label: w2', 'status': 'Supported', 'evidence': 'Same support as w1: Figure 2 shows w1, w2, w3 and the caption/text define these as retrieved worlds wj used for program execution results.'}, {'element': 'label: w3', 'status': 'Supported', 'evidence': 'Same support as w1: Figure 2 shows w1, w2, w3 and the caption/text define these as retrieved worlds wj used for program execution results.'}, {'element': 'relationship: gold programs -> green square', 'status': 'Not Mentioned', 'evidence': 'The provided text discusses Figure 2 with labels “gold programs” and “spurious programs” and worlds w1–w3, but it does not mention a “green square” or any mapping from “gold programs” to a green square.'}, {'element': 'relationship: spurious programs -> red circles', 'status': 'Not Mentioned', 'evidence': 'The text does not mention “red circles” nor describe any relationship between “spurious programs” and red circles; only the conceptual grouping of programs is described.'}], [{'element': \"{'type': 'label', 'text': 'gold programs'}\", 'status': 'Not Mentioned', 'evidence': 'The chunk discusses using execution results to guide training/inference and mentions filtering spurious programs, but does not mention “gold programs”.'}, {'element': \"{'type': 'label', 'text': 'spurious programs'}\", 'status': 'Supported', 'evidence': '“…rather than filtering spurious programs.”'}, {'element': \"{'type': 'label', 'text': 'w1'}\", 'status': 'Not Mentioned', 'evidence': 'No reference to w1/w2/w3 appears in the provided text.'}, {'element': \"{'type': 'label', 'text': 'w2'}\", 'status': 'Not Mentioned', 'evidence': 'No reference to w1/w2/w3 appears in the provided text.'}, {'element': \"{'type': 'label', 'text': 'w3'}\", 'status': 'Not Mentioned', 'evidence': 'No reference to w1/w2/w3 appears in the provided text.'}, {'element': \"{'type': 'relationship', 'from': 'gold programs', 'to': 'green square'}\", 'status': 'Not Mentioned', 'evidence': 'The text does not mention green squares or any visual mapping of gold programs to shapes/colors.'}, {'element': \"{'type': 'relationship', 'from': 'spurious programs', 'to': 'red circles'}\", 'status': 'Not Mentioned', 'evidence': 'The text mentions spurious programs but does not mention red circles or any visual mapping of spurious programs to shapes/colors.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 2,
+              "reason": "The target figure captures only the high-level intuition that candidate program representations (points) are partitioned by regions induced by selected worlds (w1,w2,w3) and that some points are spurious (red) versus good (green). However, it omits most major components described in the paper: (i) the pipeline from candidate programs → world selection/collection from training examples → program execution to obtain denotations; (ii) the explicit n-dimensional sparse vector representation ri with entries r_i^j = exec(zi, wj); (iii) producing {ri} for all candidates; (iv) centroid representation r* construction via per-entry majority vote (hard vote formula) and the alternative soft-vote/denotation proportion mechanism with normalization; (v) deviation/dissimilarity score si computation and the threshold τ filtering rule; and (vi) the output filtered program set. No formulas (e.g., r*_j = argmax_e Σ_i 1(r_i^j=e)) or scoring/thresholding elements are shown. Thus it covers the conceptual geometry but not most major modules/formulas."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 2,
+              "reason": "The target figure conveys only a very high-level intuition—programs as points in a space with a separation between “gold” (green squares) and “spurious” (red circles), and some partitioning regions labeled w1–w3. However, it does not make the operating principle understandable on its own: it lacks the key pipeline elements evidenced in the paper (world selection/collection from training examples, executing each candidate program on selected worlds, constructing sparse vectors ri with entries as denotations, majority-vote centroid r*, computing deviation scores si, and thresholding with τ to filter programs). Even the “centroid” notion is not explicitly depicted, and the meaning of the shaded regions/lines (worlds? partitions induced by denotations?) is ambiguous without text. Compared to the reference figures, which include explicit inputs/outputs and method steps, this target is much less self-explanatory and mainly illustrative rather than standalone-instructive."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 2,
+              "reason": "The target figure captures only a small slice of the described method: it depicts candidate programs as points, distinguishes “gold” vs “spurious,” and suggests a partitioning of the representation space by multiple worlds (w1–w3), aligning loosely with the paper’s intuition that programs far from a centroid are spurious. However, it omits most key components needed for completeness across the paper’s described pipeline: it does not show world selection/collection from training examples, program execution to obtain denotations, construction of n-dimensional sparse vectors r_i with entries r_i^j, producing {r_i} for all candidates, majority vote to compute centroid r*, the hard-vote vs soft-vote branches (including denotation proportion counting and score normalization), deviation/dissimilarity scoring s_i, thresholding with τ, or the final output of a filtered program set. Compared with the evidence’s end-to-end description and the reference figures that depict more structured process flows, the target is an intuitive geometric illustration rather than a complete summary from beginning to end."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 2.667,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 3,
+              "reason": "Most core components in the target figure are supported by the paper description: it labels groups as “gold programs” and “spurious programs,” and uses retrieved worlds w1–w3 to partition programs, all of which are mentioned in the provided evidence. However, the figure adds ungrounded visual encodings—specifically mapping gold programs to green squares and spurious programs to red circles—which the evidence explicitly marks as “Not Mentioned.” These stylistic/legend mappings are extra components not supported by the text, though they do not introduce new technical formulas or concepts beyond the described partitioning."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 2,
+              "reason": "The target figure’s core relational structure—programs partitioned/grouped by retrieved worlds (w1–w3) and distinguishing gold vs. spurious programs—is broadly consistent with the paper’s described setup and the evidence supports the presence of labels “gold programs,” “spurious programs,” and worlds w1–w3. However, the figure encodes additional relationships via visual mappings (gold programs as green squares; spurious programs as red circles) that the evidence explicitly flags as “Not Mentioned.” Because these visual relationships are not grounded in the text (and may imply a specific encoding the paper does not claim), the relation correctness is only weak-to-moderate rather than clearly accurate."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 3,
+              "reason": "The target figure’s core conceptual labels (“gold programs”, “spurious programs”, and retrieved worlds w1–w3) are supported by the evidence, which describes Figure 2 as partitioning programs using retrieved worlds wj and explicitly distinguishes gold vs. spurious programs. However, the specific visual encodings in the target (gold programs as green squares; spurious programs as red circles) are not mentioned in the provided text evidence. As a result, the label names are largely accurate at the conceptual level, but the figure’s labeling/legend partially introduces unsupported shape/color mappings, reducing confidence in full label accuracy."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 3.667,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 4,
+              "reason": "The target figure is a highly schematized geometric sketch that abstracts candidate programs as points in a representation space partitioned by selected worlds (w1–w3), with two classes (gold vs. spurious) visually separated by distance from a putative centroid/cluster. This aligns with the evidence’s core idea: represent programs via execution results across worlds and filter spurious ones based on deviation from a centroid representation. It avoids implementation specifics (hard/soft vote equations, score normalization, threshold τ), which supports focusing on the main contribution rather than trivial details. However, because it omits the actual centroid representation construction (majority vote), explicit dissimilarity scoring, and the thresholding/filtering step, it summarizes mainly the intuition (“farther from centroid ⇒ spurious”) rather than the full proposed pipeline; hence not a perfect score."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 2,
+              "reason": "The target figure only loosely supports the described method. It shows candidate programs as points with “gold” vs “spurious” and some partitioning regions labeled w1, w2, w3, which can vaguely suggest clustering/partitioning. However, the evidence describes a specific pipeline: selecting worlds from training examples, executing each candidate program on those worlds to form an n-dimensional sparse denotation vector ri, computing a centroid representation r* via per-entry majority vote (hard/soft vote), scoring deviation si, and thresholding with τ to filter programs. None of these key mechanics (vectors/entries, execution results/denotations, majority vote per dimension, soft-vote weighting, similarity/dissimilarity scoring, or threshold filtering) are visually conveyed. The “worlds” appear as geometric regions/axes rather than explicit evaluation inputs forming representation dimensions, which can mislead readers. As supplementary material, it may help only at a high-level intuition (outliers/spurious far from a center), but it does not effectively match or clarify the algorithmic details in the text."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 5,
+              "reason": "The target figure is highly minimal and directly supports the core idea described in the evidence: candidate programs represented as points in a space partitioned by selected worlds {wj}, with spurious programs far from a centroid. It includes only essential elements (legend for gold vs spurious programs, world-induced partitions/regions labeled w1–w3, and points) and omits any decorative styling, annotations, or extraneous text. Compared to the reference figures—which contain richer UI-like elements, multi-panel plots, or heatmaps unrelated to this method—the target stays focused and avoids unnecessary information."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 2.571,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 1,
+              "reason": "The target figure is a static scatter/geometry plot (points and triangular regions) with no arrows, sequencing cues, or layout structure indicating progression. Unlike the references, which show explicit directional flow via left-to-right/top-to-bottom arrangement and arrows (pipelines, tree transfer, contextualization arrows, or timeline bars), the target lacks any clear reading order or process flow."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "The target figure has multiple long diagonal connection lines that intersect near the center (an obvious crossing between two main lines), so it does not fully avoid crossings. However, the overall number of lines is small and there are only a few crossings (not pervasive clutter), making it better than heavily crossed layouts but worse than the cleaner reference-style diagrams where paths/links are routed to avoid intersections."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 2,
+              "reason": "The target figure is a 2D scatter/embedding with two categories (green squares labeled “gold programs” and red circles labeled “spurious programs”) plus three shaded triangular regions and crossing lines (w1, w2, w3). It does not depict software modules, their relationships, or any explicit grouping/adjacency of functionally related components. Unlike the visual references that support proximity judgments via clear spatial clustering or structured layouts, this plot provides no mapping from functional relatedness to physical placement. At best, one could infer a loose separation between categories, but that is not the stated proximity criterion (closely related modules near each other). Hence proximity is weak/unsupported."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 1,
+              "reason": "The target figure uses free-form spatial placement (scattered points, intersecting diagonal lines, and angled/shaded triangular regions) without any apparent underlying horizontal/vertical grid. Nodes (red circles, green square) are not aligned in rows/columns, and key elements are oriented diagonally rather than grid-aligned, unlike the reference figures that show clear column/row alignment."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 2,
+              "reason": "The target figure communicates two classes (green square = gold programs; red circles = spurious programs) plus three wedge-like regions and intersecting lines, but the visual hierarchy is weak. Key elements do not clearly dominate via size, thickness, or placement: (i) the legend is small and does not strongly anchor attention; (ii) the separating lines and gray wedges are thin/light and similar in visual weight to the scatter points, so no single ‘main’ structure stands out; (iii) all points are roughly equal size, making the intended emphasis (e.g., gold vs spurious, or decision regions w1–w3) ambiguous; and (iv) labels (w1, w2, w3) are small and not visually tied strongly to their corresponding regions. Compared with the reference evidence figures, which use stronger typographic/structural emphasis (panels, bold dividers, highlighted colors, clear focal components), the target lacks deliberate size/thickness/position cues to guide the viewer’s attention."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "The target figure provides generally sufficient margin between major elements: the legend (green square/red circle with labels) is separated from the plotting area, and the markers (red dots, green square) are not crowded against the plot boundaries. The three gray triangular regions and crossing lines have clear whitespace around them, and there is no overlap that harms legibility. However, margins are not uniform: the legend sits relatively close to the top-left of the plotting region, and some points appear closer to the plot edges than ideal, leaving slightly tight negative space in a few areas. Overall spacing is adequate but could be improved with more consistent padding and slightly increased inset from the borders."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 4,
+              "reason": "The target figure is largely consistent in encoding similar roles: all “gold programs” are shown as green squares and all “spurious programs” as red circles, with no apparent exceptions. Axes/planes are uniformly styled with thin black lines and the gray triangular regions share the same fill style, suggesting a single role (regions) encoded consistently. Minor inconsistency/ambiguity comes from elements that may have distinct roles but are not clearly differentiated (e.g., the three gray triangles could represent different constraints/regions but are visually identical aside from position/labeling; w1/w2/w3 are text-only without a distinct, repeated glyph). Overall, the key role-to-shape/color mapping is consistent."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 2,
+              "reason": "The target figure uses a few concrete visual symbols (green squares for “gold programs,” red circles for “spurious programs,” and shaded triangular regions) to stand in for abstract categories and regions in a conceptual space. However, it largely remains an abstract geometric/scatter depiction without richer metaphorical iconography, pictograms, or abbreviation-based symbols beyond basic marker shapes and color coding. Compared with the references, it is less metaphorical than figures that explicitly substitute conceptual elements with illustrative icons or annotated conceptual metaphors (e.g., the LLM contextualization schematic), and more akin to standard analytical plots."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure uses a fairly standard scientific/ML visualization style: a 2D scatter plot with simple geometric markers (green squares vs. red circles) and a few gray polygonal regions/triangular wedges with thin connecting lines labeled w1–w3. This matches common templates seen in the evidence set (especially the generic schematic/diagrammatic ML figures with basic shapes and minimal styling), and does not introduce a distinctive aesthetic (e.g., novel typography, color language beyond basic categorical encoding, unconventional layout, or unique illustrative treatment). While the particular arrangement of wedges and points is specific, the overall visual language is conventional rather than uniquely styled."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure uses a very generic scatter-plot layout (points with two symbol types and three separating lines/planes labeled w1–w3). It does not show paper-specific adaptation beyond basic labeling and color/shape encoding. Compared to the references—which employ bespoke, structured layouts (multi-panel process flows, token-to-structure mappings, distribution plots, segmented support bars, and aligned annotation conventions)—the target lacks tailored composition, explanatory grouping, or narrative arrangement that would indicate a deliberate break from uniform design principles. The design is serviceable but largely template-like and minimally specialized."
+            }
+          ]
+        }
+      },
+      "weighted_total": 2.581,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.6075
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+            "similarity": 0.6159
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p3__score0.95.png",
+            "similarity": 0.5608
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6041
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.6075
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6041
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Error-driven_Data-efficient_Large_Multimodal_Model_Tuning/Error-driven_Data-efficient_Large_Multimodal_Model_Tuning__p3__score0.95.png",
+            "similarity": 0.5606
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p5__score1.00.png",
+            "similarity": 0.5857
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.6075
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p0__score0.95.png",
+            "similarity": 0.5855
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p5__score1.00.png",
+            "similarity": 0.5857
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6041
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.4915
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.5423
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.5438
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.5452
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.5452
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.5438
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.6075
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+            "similarity": 0.6159
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners/Making_Long-Context_Language_Models_Better_Multi-Hop_Reasoners__p3__score1.00.png",
+            "similarity": 0.5221
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.5452
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.5452
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p5__score1.00.png",
+            "similarity": 0.5857
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.5681
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.5939
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+            "similarity": 0.6159
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6041
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.5973
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mission_Impossible_Language_Models/Mission_Impossible_Language_Models__p0__score0.95.png",
+            "similarity": 0.5955
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mission_Impossible_Language_Models/Mission_Impossible_Language_Models__p7__score0.95.png",
+            "similarity": 0.6026
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+            "similarity": 0.6159
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.5438
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.5939
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+            "similarity": 0.6159
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mission_Impossible_Language_Models/Mission_Impossible_Language_Models__p7__score0.95.png",
+            "similarity": 0.6026
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning/Make_Every_Penny_Count_Difficulty-Adaptive_Self-Consistency_for_Cost-Efficient_Reasoning__p2__score1.00.png",
+            "similarity": 0.5133
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mission_Impossible_Language_Models/Mission_Impossible_Language_Models__p7__score0.95.png",
+            "similarity": 0.6026
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6041
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+            "similarity": 0.6159
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p0__score0.95.png",
+            "similarity": 0.5855
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mission_Impossible_Language_Models/Mission_Impossible_Language_Models__p7__score0.95.png",
+            "similarity": 0.6026
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.5291
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+            "similarity": 0.6159
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.4009
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.5452
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p1__score0.98.png",
+            "similarity": 0.5197
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+            "similarity": 0.6159
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p0__score0.95.png",
+            "similarity": 0.5855
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective/Less_is_More_Mitigating_Multimodal_Hallucination_from_an_EOS_Decision_Perspective__p4__score0.70.png",
+            "similarity": 0.5522
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+            "similarity": 0.6159
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.5939
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.5342
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.6075
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+            "similarity": 0.6159
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.5209
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.5326
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions/RAG-Instruct_Boosting_LLMs_with_Diverse_Retrieval-Augmented_Instructions__p3__score0.95.png",
+            "similarity": 0.5608
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+            "similarity": 0.6159
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Memory_OS_of_AI_Agent/Memory_OS_of_AI_Agent__p2__score1.00.png",
+            "similarity": 0.5028
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.5209
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis/Establishing_Trustworthy_LLM_Evaluation_via_Shortcut_Neuron_Analysis__p0__score0.95.png",
+            "similarity": 0.5855
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+            "similarity": 0.6159
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers/LINC_A_Neurosymbolic_Approach_for_Logical_Reasoning_by_Combining_Language_Models_with_First-Order_Logic_Provers__p3__score0.98.png",
+            "similarity": 0.5681
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.6075
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+            "similarity": 0.6159
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6041
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.6075
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p5__score1.00.png",
+            "similarity": 0.5857
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.5973
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6041
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mission_Impossible_Language_Models/Mission_Impossible_Language_Models__p7__score0.95.png",
+            "similarity": 0.6026
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p3__score1.00.png",
+            "similarity": 0.5973
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.6185
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation/Know_When_To_Stop_A_Study_of_Semantic_Drift_in_Text_Generation__p1__score0.70.png",
+            "similarity": 0.6159
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p0__score0.95.png",
+            "similarity": 0.6041
+          }
+        }
+      }
+    },
+    {
+      "figure_file": "Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p3__score0.70.png",
+      "caption": "Figure 3: Illustration of column and entity replacement. Here, z1 and z2 are programs conditioned on the source table, and z′1 and z′2 are their counterparts modified to be executed on the target table. Within the programs, column and entity names of the same type are displayed in the same color.",
+      "evidence": {
+        "text_based": "Target elements from paper: ['Program pool Z (programs z_i) conditioned on a source table', 'Target table w', 'Extract/identify all column and entity names in Z and w', 'Identify types for each name (e.g., string, number)', 'Type-matched random sampling: for each name N in Z sample name N′ of same type from w', 'Consistent replacement mapping across multiple programs (same original name -> same target-table name)', 'Modified programs Z′ (e.g., z1,z2 -> z′1,z′2) executable on target table', 'Execute modified programs on target table (world) to obtain execution results', 'Execution error handling (some programs return errors during execution)', 'Error-rate check per table (if >10% programs error, trigger resampling/replacement)', 'Resampling/replacement loop with max 10 iterations per table', 'Discard table/world if no satisfactory replacement after 10 iterations', 'Repeat process across multiple worlds until number of worlds used hits n (n=40) to construct program representation', 'Program representation defined as execution results across multiple worlds', 'Execution-based filtering mechanism (to eliminate spurious programs)', 'Majority vote over execution results across selected worlds to filter programs whose results deviate most']\nContext: 4.2 Collecting Execution Results for WTQ\nAs each program in WTQ is conditioned on a spe-\ncific table (denoted as source table henceforth) and therefore cannot be used on others, we propose a method for modifying programs so that they can be executed on a target table we want. In partic-\nular, we replace entity and column names in the programs with those in the target table to make the programs executable while maintaining the seman-\ntic relationship between the programs. Consider an example with a program pool Z = {zi}k i=1 and a target table w. Our goal is to replace all the column and entity names in Z with those in w while maintaining the semantic relationships between the programs in Z. Thus, we replace the names consistently, i.e., the constants of identical name in multiple programs should be replaced with\na single name in the target table. Specifically, we first find all the column and entity names in Z and w and identify their types, e.g., string, number, etc. Then, for each name N in Z, we randomly sample a name N′ with the same type in w and replace all the occurrences of N with N′. We illustrate the column and entity replacement in Figure 3, where programs z1 and z2 are modified to z′ 1 and z′ 2. Note that all the occurrences of column:Wins are replaced with column:Silver consistently.\n\nDuring the execution of modified programs on a target table, some return execution errors for vari-\nous reasons. For example, the function argmax in the domain language used by Wang et al. (2019) re-\nturns an error when the input is a list of length one. When there are too many errors (when more than 10% of programs return error in our experiments)\nfor particular table, we perform the sampling and replacement process again. The resampling proce-\ndure may be repeated up to 10 times per table, and we discard the table if no satisfactory replacement is found after 10 iterations. The program represen-\ntation is constructed by repeating this process until the number of worlds used hits n (n = 40 in WTQ).\n\n4 Collecting Execution Results\nIn the previous section, the program representa-\ntion is defined by the program’s execution results on multiple worlds. Now we describe methods to select the worlds and obtain programs’ execution results on those worlds.\n\n3 Execution-based Filtering\nTo eliminate spurious programs, we devise a novel execution-based filtering mechanism. Intuitively, among consistent programs, the spurious ones are likely to semantically deviate. However, measur-\ning or defining semantic distance is challenging.\nThus, we instead loosely capture the semantics of programs by executing them against reasonably se-\nlected worlds. Then, we filter out the programs whose execution results deviate most from others by performing a majority vote.",
+        "fidelity_based": "Full Figure-to-Text Consistency Report: [[{'element': 'Source table (title)', 'status': 'Supported', 'evidence': 'Section 4.2 explicitly introduces a “source table”: “As each program in WTQ is conditioned on a specific table (denoted as source table henceforth)…” and Figure 3 labels “Source table” and “Target table”.'}, {'element': 'Target table (title)', 'status': 'Supported', 'evidence': 'Section 4.2 and Figure 3 refer to and label a “target table”: “executed on a target table we want… modified to be executed on the target table.”'}, {'element': 'Team (column, table=Source table)', 'status': 'Supported', 'evidence': 'Figure 3 shows program z1: “select(argmax(allRows, column:Wins), column:Team)” which references column:Team in the (depicted) source-table program.'}, {'element': 'Wins (column, table=Source table)', 'status': 'Supported', 'evidence': 'Figure 3 shows source-table programs z1 and z2 using “column:Wins” (e.g., “argmax(allRows, column:Wins)” and “filterNumberGreater(..., column:Wins, 100)”).'}, {'element': 'Losses (column, table=Source table)', 'status': 'Not Mentioned', 'evidence': 'The paper text shown (including Figure 3) does not mention a “Losses” column.'}, {'element': 'Win % (column, table=Source table)', 'status': 'Not Mentioned', 'evidence': 'The provided text does not mention a “Win %” column.'}, {'element': 'GB (column, table=Source table)', 'status': 'Not Mentioned', 'evidence': 'The provided text does not mention a “GB” column.'}, {'element': 'Rank (column, table=Target table)', 'status': 'Supported', 'evidence': 'In Figure 1 (WTQ example), the table includes “{Rank: 1}”, and spurious program z’ uses “column:Rank”. Figure 3’s target-table side also corresponds to WTQ tables where Rank is a column type used for replacement.'}, {'element': 'Nation (column, table=Target table)', 'status': 'Supported', 'evidence': 'Figure 1 WTQ example shows “{Nation: Soviet Union}” and spurious program z’ uses “column:Nation”. Figure 3’s modified program z1’ also references column:Nation.'}, {'element': 'Gold (column, table=Target table)', 'status': 'Supported', 'evidence': 'Figure 1 WTQ table snippet includes “{Gold: 50}…”, indicating Gold is a table column in WTQ tables (consistent with the target-table context).'}, {'element': 'Silver (column, table=Target table)', 'status': 'Supported', 'evidence': 'Figure 1 WTQ example question and program explicitly use “column:Silver”; Figure 3 shows replacement of “column:Wins” with “column:Silver” for the target table.'}, {'element': 'Bronze (column, table=Target table)', 'status': 'Not Mentioned', 'evidence': 'The provided text does not mention a “Bronze” column.'}, {'element': 'Total (column, table=Target table)', 'status': 'Not Mentioned', 'evidence': 'The provided text does not mention a “Total” column.'}, {'element': 'z1 (expression): select(argmax(allRows, column:Wins), column:Team)', 'status': 'Supported', 'evidence': 'Figure 3 explicitly lists “z1 : select(argmax(allRows, column:Wins), column:Team)”.'}, {'element': 'z2 (expression): count(filterNumberGreater(allRows, column:Wins, 100))', 'status': 'Supported', 'evidence': 'Figure 3 explicitly lists “z2 : count(filterNumberGreater(allRows, column:Wins, 100))”.'}, {'element': \"z1' (expression): select(argmax(allRows, column:Silver), column:Nation)\", 'status': 'Supported', 'evidence': 'Figure 3 explicitly lists “z1’ : select(argmax(allRows, column:Silver), column:Nation)”.'}, {'element': \"z2' (expression): count(filterNumberGreater(allRows, column:Silver, 2))\", 'status': 'Supported', 'evidence': 'Figure 3 explicitly lists “z2’ : count(filterNumberGreater(allRows, column:Silver, 2))”.'}, {'element': 'edge: z1 uses_column Wins', 'status': 'Supported', 'evidence': 'From z1 in Figure 3: “argmax(allRows, column:Wins)” directly uses column:Wins.'}, {'element': 'edge: z1 uses_column Team', 'status': 'Supported', 'evidence': 'From z1 in Figure 3: “..., column:Team” directly uses column:Team.'}, {'element': 'edge: z2 uses_column Wins', 'status': 'Supported', 'evidence': 'From z2 in Figure 3: “filterNumberGreater(allRows, column:Wins, 100)” directly uses column:Wins.'}, {'element': \"edge: z1' uses_column Silver\", 'status': 'Supported', 'evidence': 'From z1’ in Figure 3: “argmax(allRows, column:Silver)” directly uses column:Silver.'}, {'element': \"edge: z1' uses_column Nation\", 'status': 'Supported', 'evidence': 'From z1’ in Figure 3: “..., column:Nation” directly uses column:Nation.'}, {'element': \"edge: z2' uses_column Silver\", 'status': 'Supported', 'evidence': 'From z2’ in Figure 3: “filterNumberGreater(allRows, column:Silver, 2)” directly uses column:Silver.'}], [{'element': 'Source table (title)', 'status': 'Not Mentioned', 'evidence': 'The chunk discusses semantic parsing/program execution guidance; it does not describe any figure or table titles.'}, {'element': 'Target table (title)', 'status': 'Not Mentioned', 'evidence': \"No mention of any figure containing a 'Target table' title.\"}, {'element': 'Team (column in Source table)', 'status': 'Not Mentioned', 'evidence': 'No table schema or column names are given in the text.'}, {'element': 'Wins (column in Source table)', 'status': 'Not Mentioned', 'evidence': \"The chunk does not mention 'Wins' or any sports-related columns.\"}, {'element': 'Losses (column in Source table)', 'status': 'Not Mentioned', 'evidence': \"No mention of 'Losses' or any related table content.\"}, {'element': 'Win % (column in Source table)', 'status': 'Not Mentioned', 'evidence': \"No mention of 'Win %' or any percentage column.\"}, {'element': 'GB (column in Source table)', 'status': 'Not Mentioned', 'evidence': \"No mention of 'GB' or any column names.\"}, {'element': 'Rank (column in Target table)', 'status': 'Not Mentioned', 'evidence': \"No mention of a 'Rank' column or an Olympics/medals table.\"}, {'element': 'Nation (column in Target table)', 'status': 'Not Mentioned', 'evidence': \"No mention of 'Nation' as a column.\"}, {'element': 'Gold (column in Target table)', 'status': 'Not Mentioned', 'evidence': \"No mention of 'Gold' or medal counts.\"}, {'element': 'Silver (column in Target table)', 'status': 'Not Mentioned', 'evidence': \"No mention of 'Silver' or medal counts.\"}, {'element': 'Bronze (column in Target table)', 'status': 'Not Mentioned', 'evidence': \"No mention of 'Bronze' or medal counts.\"}, {'element': 'Total (column in Target table)', 'status': 'Not Mentioned', 'evidence': \"No mention of a 'Total' column.\"}, {'element': 'z1 expression: select(argmax(allRows, column:Wins), column:Team)', 'status': 'Not Mentioned', 'evidence': 'While the text generally mentions using execution results and programs, it does not specify this program, argmax, or these columns.'}, {'element': 'z2 expression: count(filterNumberGreater(allRows, column:Wins, 100))', 'status': 'Not Mentioned', 'evidence': 'No mention of counting rows with Wins > 100 or any analogous program fragment.'}, {'element': \"z1' expression: select(argmax(allRows, column:Silver), column:Nation)\", 'status': 'Not Mentioned', 'evidence': 'No mention of selecting a nation with maximum silver medals.'}, {'element': \"z2' expression: count(filterNumberGreater(allRows, column:Silver, 2))\", 'status': 'Not Mentioned', 'evidence': 'No mention of counting rows with Silver > 2.'}, {'element': 'Edge: z1 uses_column Wins', 'status': 'Not Mentioned', 'evidence': 'The paper chunk does not describe dependency edges between expressions and columns.'}, {'element': 'Edge: z1 uses_column Team', 'status': 'Not Mentioned', 'evidence': 'No mention of this relationship.'}, {'element': 'Edge: z2 uses_column Wins', 'status': 'Not Mentioned', 'evidence': 'No mention of this relationship.'}, {'element': \"Edge: z1' uses_column Silver\", 'status': 'Not Mentioned', 'evidence': 'No mention of this relationship.'}, {'element': \"Edge: z1' uses_column Nation\", 'status': 'Not Mentioned', 'evidence': 'No mention of this relationship.'}, {'element': \"Edge: z2' uses_column Silver\", 'status': 'Not Mentioned', 'evidence': 'No mention of this relationship.'}]]"
+      },
+      "scores": {
+        "Informativeness": {
+          "score": 4.333,
+          "sub_metrics": [
+            {
+              "question": "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?",
+              "score": 5,
+              "reason": "The target figure captures the core pipeline described in the evidence: a source table vs. target table setting; a program pool with programs z1, z2 originally conditioned on the source table; explicit identification of column/entity constants (e.g., column:Wins, column:Team / column:Nation, column:Silver); consistent type-matched replacement to form modified programs z′1, z′2 that are executable on the target table; and an illustrative example of consistent replacement (Wins→Silver) across multiple programs, matching the paper’s Figure 3 description. While it does not visualize the downstream error-rate thresholding (>10%), resampling up to 10 iterations, discarding tables, repeating across n=40 worlds, or majority-vote filtering, these are procedural details not depicted in the paper’s illustrative replacement figure either. For the figure’s intended scope (column/entity replacement enabling execution on a target table), coverage is complete."
+            },
+            {
+              "question": "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?",
+              "score": 4,
+              "reason": "The figure is largely standalone-intelligible: it visually depicts a source table and a target table, shows two example programs (z1, z2) tied to the source table, and then shows their modified counterparts (z′1, z′2) after consistent name replacement (e.g., column:Wins→column:Silver; column:Team→column:Nation). This directly matches the evidence description of replacing column/entity names to make programs executable on a new table while preserving consistency across multiple programs. A viewer can infer the general principle—adapt programs to a different table via type/slot-like substitution—without reading the paper.\n\nWhat is not fully conveyed standalone (and would require caption/text) are key procedural details emphasized in the evidence: extracting/typing names, random type-matched sampling, execution on the target table, error handling and the >10% error threshold, the resampling loop up to 10 iterations, discarding tables, repeating across n=40 worlds, and the later majority-vote execution-based filtering. Those are not depicted, so the full system pipeline is not recoverable from the figure alone, but the core modification mechanism is."
+            },
+            {
+              "question": "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?",
+              "score": 4,
+              "reason": "The target figure captures the core pipeline described in the evidence for §4.2: a program pool Z conditioned on a source table, a target table w, consistent replacement of column/entity names (shown via mapping column:Wins→column:Silver and column:Team→column:Nation), creation of modified programs z′ that are executable on the target table, and example programs before/after replacement. However, it does not include several end-to-end components mentioned later in the excerpt: executing modified programs to obtain execution results, explicit execution-error handling, the >10% error-rate threshold, the resampling loop up to 10 iterations and discarding tables, repeating across multiple worlds until n=40, nor the execution-based filtering/majority vote mechanism. Thus it is mostly complete for the replacement step but incomplete for the full process from beginning to end of the described method."
+            }
+          ]
+        },
+        "Fidelity": {
+          "score": 4.667,
+          "sub_metrics": [
+            {
+              "question": "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?",
+              "score": 4,
+              "reason": "The target figure largely aligns with the paper-supported elements: it includes the labeled “Source table”/“Target table” and the exact program strings z1, z2, z1′, z2′ with the same column references (Wins/Team and Silver/Nation) that are explicitly shown in the evidence (Figure 3, and WTQ example for Rank/Nation/Gold/Silver). However, it also adds several table columns that the provided paper excerpts do not mention: Source-table columns “Losses”, “Win %”, and “GB”, and target-table columns “Bronze” and “Total”. These extra schema components are not supported by the evidence text provided, so the figure is not fully free of potential hallucinated components, though they are plausible as typical table columns."
+            },
+            {
+              "question": "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper **accurately** represented?",
+              "score": 5,
+              "reason": "The target figure accurately represents the key relations described in the evidence: (i) a source table and a target table, (ii) source programs z1 and z2 that reference source columns (Wins, Team) via argmax/select and filterNumberGreater/count, and (iii) the corresponding modified target-table programs z1′ and z2′ where column replacements map Wins→Silver and Team→Nation, with the numeric threshold also changed (100→2). These relationships (program-to-column dependency edges and the intended transfer from source to target schema) match Figure 3 as cited in the evidence and align with the WTQ-style target table shown in the visual references (medal table with Nation/Silver, etc.). Minor extra columns in the rendered tables (e.g., Losses/Win%/GB, Bronze/Total) do not alter the correctness of the depicted relationships; they are not claimed by the paper text but also do not contradict the program–column relations shown."
+            },
+            {
+              "question": "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper **accurately** labeled?",
+              "score": 5,
+              "reason": "Major labels in the target figure are consistent with the paper evidence and the referenced visuals. The figure correctly labels the two tables as “Source table” and “Target table,” matching Section 4.2’s terminology and Figure 3’s depiction. Column labels used by the shown programs are accurate: the source-side programs z1 and z2 reference column:Wins and column:Team, which appear as columns in the Source table; the target-side programs z1′ and z2′ reference column:Silver and column:Nation, which appear as columns in the Target table. The program labels (z1, z2, z1′, z2′) and their expressions match the evidence text exactly. No mislabeled major component/methodology is apparent; other columns (e.g., Losses/Win%/GB, Bronze/Total) are present in the rendered tables but are not claimed in the provided textual evidence, which does not constitute a labeling inaccuracy."
+            }
+          ]
+        },
+        "Overall Readability": {
+          "score": 5.0,
+          "sub_metrics": [
+            {
+              "question": "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?",
+              "score": 5,
+              "reason": "The target figure is a schematic that directly visualizes the paper’s main procedure for making programs executable on new tables: it shows a source table vs. target table, original programs (z1, z2) conditioned on the source schema, and their modified counterparts (z′1, z′2) after consistent, type-matched name replacement (e.g., column:Wins→column:Silver, column:Team→column:Nation). This aligns tightly with the evidence text (extract names/types, sample same-type names from target table, consistent mapping across programs, execute on target table). It omits low-level or incidental details (e.g., the 10% error threshold, 10 iterations, n=40, majority vote filtering), which is appropriate for a main-contribution schematic and keeps the figure focused rather than cluttered."
+            },
+            {
+              "question": "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?",
+              "score": 5,
+              "reason": "The target figure directly visualizes the exact procedure described in the provided text: starting from a source table with programs conditioned on it (z1, z2), then performing consistent column/entity replacement to make them executable on a target table, yielding modified programs (z′1, z′2). It concretely instantiates the paper’s key steps (name replacement, type-consistent mapping implied by swapping Wins->Silver and Team->Nation, consistent mapping across programs, and executability on the new table). This is highly aligned with the evidence excerpt and matches the intent of the visual references that illustrate program/world substitution and execution-based representations. As supplementary material, it is clear and immediately helpful for understanding the narrative in Section 4.2."
+            },
+            {
+              "question": "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?",
+              "score": 5,
+              "reason": "The target figure is highly non-redundant and focused on the core method described in the evidence: it juxtaposes a source table and a target table, then shows original programs (z1, z2) and their modified counterparts (z′1, z′2) after consistent column/entity replacement. All elements directly support the explained procedure (name/type-based replacement and executability on the target table) and there are no decorative graphics, background imagery, or unrelated annotations. Compared to the visual references, it is similarly utilitarian (closest to Ref 3’s style) and avoids extra complexity seen in multi-panel/heatmap-style figures (Refs 1–2) or additional pipeline components not needed for this specific concept (Refs 4–5)."
+            }
+          ]
+        },
+        "Design Quality": {
+          "score": 4.0,
+          "sub_metrics": [
+            {
+              "question": "4.1. Direction: Does the diagram flow from left to right or top to bottom?",
+              "score": 5,
+              "reason": "The Target Figure’s information flow is clearly left-to-right: a ‘Source table’ is placed on the left and a ‘Target table’ on the right, implying transformation/mapping across the horizontal direction. The accompanying equations beneath do not indicate a top-to-bottom pipeline; they function as annotations supporting the left-to-right table mapping. This matches the left-to-right directional layout seen in the Evidence/Reference examples where inputs on the left lead to outputs on the right."
+            },
+            {
+              "question": "4.2. Crossing: Do the connection lines avoid crossing each other?",
+              "score": 4,
+              "reason": "In the target figure, the two main red connection lines from z1 (argmax Wins -> Team) and z1' (argmax Silver -> Nation) are routed separately: one runs along the upper portion of the target table and the other along the lower portion. They do not visibly intersect, and their endpoints are distinct. There is some close proximity/overlap with surrounding text and the table content, but no clear line-to-line crossing is present, so the design largely avoids crossings."
+            },
+            {
+              "question": "4.3. Proximity: Are functionally closely related modules physically placed near each other?",
+              "score": 4,
+              "reason": "The Target Figure places functionally related elements close together. The two tables (source and target) are horizontally aligned with clear headings and similar structure, making them easy to compare. Beneath them, the corresponding derived queries/results are grouped and vertically stacked, with consistent color-coding (e.g., blue for columns/operations, red for referenced columns) that ties each query to its relevant table fields. While the mapping between each specific query and the exact table it refers to is mostly clear through content and highlighting, there are no explicit proximity cues like braces/arrows connecting each query block to a specific table, so the relationship is slightly less immediate than it could be."
+            },
+            {
+              "question": "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?",
+              "score": 4,
+              "reason": "The target figure largely follows a clear grid: the two tables are rectangular with consistent column structure, and the textual math lines (z1, z2, etc.) are left-aligned in a neat vertical stack. However, alignment is not perfectly uniform: the source/target table blocks are not perfectly aligned to a shared baseline and there are slight inconsistencies in horizontal positioning/centering between the two table headings/blocks and the annotation text beneath. Compared with the strongest reference (Ref 5), which has very rigid, uniform alignment across all blocks, the target is slightly less precise but still clearly well-aligned overall."
+            },
+            {
+              "question": "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?",
+              "score": 3,
+              "reason": "The target figure has a clear top-down structure (title → tables → query lines), but the hierarchy is only moderately strong. The most important components (source vs. target table) are separated spatially and labeled, yet they are similar in visual weight: both tables use comparable sizing, grid thickness, and typography, so the ‘Target table’ does not stand out strongly beyond its position. The colored highlights (orange header row, green/red rank shading, and blue column names in the formal queries) provide some emphasis, but multiple competing highlights dilute a single focal point. Compared with the references, especially Ref 3 where the key table and question/logic blocks are clearly distinguished by size/placement, the target’s main elements are recognizable but not strongly prioritized through size/thickness differences."
+            },
+            {
+              "question": "4.6. Margin: Is there sufficient margin between elements?",
+              "score": 4,
+              "reason": "The target figure provides generally sufficient margin: the left (Source table) and right (Target table) blocks are clearly separated with white space, and the header labels sit above each table with adequate breathing room. The bottom annotation area (z1, z2, etc.) is also separated from the tables with a visible gap, reducing crowding. Compared with the references that use strong padding and boxed groupings (e.g., Ref 1/4/5), the target is slightly tighter: the two tables are relatively close, and the bottom formulas are dense and could benefit from a bit more vertical spacing or line height. Overall, margins are adequate but not maximally comfortable."
+            },
+            {
+              "question": "4.7. Consistency: Are components with similar roles represented with the same shape and color?",
+              "score": 4,
+              "reason": "Mostly consistent. In the Target, semantically similar components (tables, query lines, and variable labels) use stable visual encodings: both tables share the same grid/white background style with green header rows, and the query statements use a consistent monospace-like black text with blue highlighting for schema elements (e.g., column names) across z1/z2 and their primed counterparts. Roles are also separated consistently by layout (source/target tables side-by-side) and typographic emphasis. Minor inconsistency is that the primed variables (z1′, z2′) are not visually differentiated from unprimed ones beyond the apostrophe, and there is no distinct color/shape cue for “source vs target” beyond the table titles, which could make cross-referencing slightly less explicit."
+            }
+          ]
+        },
+        "Creativity": {
+          "score": 2.0,
+          "sub_metrics": [
+            {
+              "question": "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?",
+              "score": 2,
+              "reason": "The target figure is primarily a literal, text-and-table based depiction (source/target tables plus symbolic query-like expressions such as select/argmax/count). Abstract operations are expressed mostly through conventional abbreviations and code syntax rather than being replaced by concrete icons or pictorial metaphors. Compared with the references, it shows less metaphorical/iconic substitution than Ref 1/4/5 (which use illustrative panels, arrows, and schematic metaphors for reasoning/aggregation/extraction), and is closer to Ref 2’s programmatic/logic notation style. Thus, metaphorical replacement is limited and mostly confined to shorthand (e.g., SQL-like functions) rather than concrete symbols."
+            },
+            {
+              "question": "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?",
+              "score": 2,
+              "reason": "The target figure largely follows a common, template-like design seen in the references: a clean two-table layout (source/target) with gridlines, simple typography, and pseudo-code style query annotations (z1, z2) with colored keywords (e.g., column:Wins, column:Nation). This closely resembles the visual-program/symbolic-query illustration style in Ref 1 (tables + colored function arguments) and aligns with the general dataset/QA diagram conventions across the evidence set. There are no distinctive graphical motifs, unconventional layout decisions, or novel visual encoding choices beyond standard highlighting, so the style is only weakly differentiated from common templates."
+            },
+            {
+              "question": "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?",
+              "score": 2,
+              "reason": "The target figure largely follows a uniform, templated layout: two simple tables (“Source table” and “Target table”) placed side-by-side with a single query block below. The typography, spacing, borders, and overall structure appear generic and consistent with a standardized example format rather than being tailored to a specific paper’s narrative or experimental needs. Compared to the evidence/reference figures, which show more paper-specific layout decisions (e.g., multi-panel explanatory compositions, colored section headers, grouped callouts, or workflow/diagram structures adapted to the story being told), the target does not meaningfully break away from uniform design principles. At most, the side-by-side source/target pairing indicates minimal adaptation for the task, but the design remains largely uncustomized and schematic."
+            }
+          ]
+        }
+      },
+      "weighted_total": 4.0,
+      "used_anchor_paths": {
+        "q1.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Lost_in_the_Middle_How_Language_Models_Use_Long_Contexts/Lost_in_the_Middle_How_Language_Models_Use_Long_Contexts__p3__score0.60.png",
+            "similarity": 0.5711
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.5994
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.5826
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.561
+          }
+        },
+        "q1.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias__p4__score1.00.png",
+            "similarity": 0.5849
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.5786
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.5994
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Progressive_Multimodal_Reasoning_via_Active_Retrieval/Progressive_Multimodal_Reasoning_via_Active_Retrieval__p2__score0.95.png",
+            "similarity": 0.5665
+          }
+        },
+        "q1.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.5994
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias__p4__score1.00.png",
+            "similarity": 0.5849
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.5826
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.5774
+          }
+        },
+        "q2.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models/Visual_Evidence_Prompting_Mitigates_Hallucinations_in_Large_Vision-Language_Models__p0__score0.90.png",
+            "similarity": 0.5178
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.5935
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.5424
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.5786
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          }
+        },
+        "q2.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment/PopAlign_Diversifying_Contrasting_Patterns_for_a_More_Comprehensive_Alignment__p0__score0.90.png",
+            "similarity": 0.5173
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.5935
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p3__score1.00.png",
+            "similarity": 0.5447
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.5994
+          }
+        },
+        "q2.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.5935
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework/MP2D_AnAutomated_Topic_Shift_Dialogue_Generation_Framework__p0__score0.90.png",
+            "similarity": 0.5705
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.5786
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.5826
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          }
+        },
+        "q3.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.5935
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias__p4__score1.00.png",
+            "similarity": 0.5849
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.5994
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.5783
+          }
+        },
+        "q3.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.5631
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.5935
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Lost_in_the_Middle_How_Language_Models_Use_Long_Contexts/Lost_in_the_Middle_How_Language_Models_Use_Long_Contexts__p3__score0.60.png",
+            "similarity": 0.5711
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.5786
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          }
+        },
+        "q3.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning/Mitigating_Visual_Forgetting_via_Take-along_Visual_Conditioning_for_Multi-modal_Long_CoT_Reasoning__p2__score0.90.png",
+            "similarity": 0.5424
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.5935
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias__p4__score1.00.png",
+            "similarity": 0.5849
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.5994
+          }
+        },
+        "q4.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5281
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.5774
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.5783
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.5994
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          }
+        },
+        "q4.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning/Do_Large_Language_Models_Latently_Perform_Multi-Hop_Reasoning__p0__score0.90.png",
+            "similarity": 0.5446
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.5783
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.561
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Lost_in_the_Middle_How_Language_Models_Use_Long_Contexts/Lost_in_the_Middle_How_Language_Models_Use_Long_Contexts__p3__score0.60.png",
+            "similarity": 0.5711
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          }
+        },
+        "q4.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Model_Editing_by_Standard_Fine-Tuning/Model_Editing_by_Standard_Fine-Tuning__p6__score0.90.png",
+            "similarity": 0.5281
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p1__score1.00.png",
+            "similarity": 0.5786
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions/ImageInWords_Unlocking_Hyper-Detailed_Image_Descriptions__p1__score0.98.png",
+            "similarity": 0.5253
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.5935
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          }
+        },
+        "q4.4": {
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.5774
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection/Vision-Language_Models_Can_Self-Improve_Reasoning_via_Reflection__p3__score1.00.png",
+            "similarity": 0.561
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.5935
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          }
+        },
+        "q4.5": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration/Learning_from_Diverse_Reasoning_Paths_with_Routing_and_Collaboration__p0__score0.95.png",
+            "similarity": 0.5631
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.5783
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.5994
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Generating_Diverse_Hypotheses_for_Inductive_Reasoning/Generating_Diverse_Hypotheses_for_Inductive_Reasoning__p4__score0.95.png",
+            "similarity": 0.578
+          }
+        },
+        "q4.6": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting/Boosting_Language_Models_Reasoning_with_Chain-of-Knowledge_Prompting__p2__score1.00.png",
+            "similarity": 0.5406
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.5935
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p1__score0.98.png",
+            "similarity": 0.5783
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias__p4__score1.00.png",
+            "similarity": 0.5849
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          }
+        },
+        "q4.7": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents/MemInsight_Autonomous_Memory_Augmentation_for_LLM_Agents__p7__score1.00.png",
+            "similarity": 0.4701
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.5774
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.5935
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.5826
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          }
+        },
+        "q5.1": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.5935
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.5826
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias__p4__score1.00.png",
+            "similarity": 0.5849
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.5994
+          }
+        },
+        "q5.2": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p1__score1.00.png",
+            "similarity": 0.5826
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models/Carpe_Diem_On_the_Evaluation_of_World_Knowledge_in_Lifelong_Language_Models__p2__score1.00.png",
+            "similarity": 0.5774
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias__p4__score1.00.png",
+            "similarity": 0.5849
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.5994
+          }
+        },
+        "q5.3": {
+          "1": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Improve_Vision_Language_Model_Chain-of-thought_Reasoning/Improve_Vision_Language_Model_Chain-of-thought_Reasoning__p2__score0.70.png",
+            "similarity": 0.5935
+          },
+          "2": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy/IHEval_Evaluating_Language_Models_on_Following_the_Instruction_Hierarchy__p4__score0.80.png",
+            "similarity": 0.5691
+          },
+          "3": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering/Weakly_Supervised_Semantic_Parsing_with_Execution-based_Spurious_Program_Filtering__p0__score0.80.png",
+            "similarity": 0.7838
+          },
+          "4": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias/Humans_or_LLMs_as_the_Judge_A_Study_on_Judgement_Bias__p4__score1.00.png",
+            "similarity": 0.5849
+          },
+          "5": {
+            "path": "/home/zzangmane/2025_null_FigureGen/figs_human_eval_papers/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models/Locating_and_Extracting_Relational_Concepts_in_Large_Language_Models__p6__score0.97.png",
+            "similarity": 0.5994
+          }
+        }
+      }
+    }
+  ]
+}

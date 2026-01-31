@@ -1,0 +1,426 @@
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Pass@N performance under GRPO and fixes</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#1a1a1a;
+    --muted:#5b6770;
+    --grid:#e6e8eb;
+    --axis:#2b2f33;
+
+    --blue:#2f6db3;          /* GRPO-Default */
+    --orange:#d07a28;        /* Unlikeliness reward */
+    --green:#2a8a62;         /* + PPO epochs */
+    --purple:#6d4aa6;        /* Both fixes */
+
+    --panelStroke:#cfd6dd;
+    --panelFill:#fbfcfd;
+  }
+
+  html, body { margin:0; padding:0; background:var(--bg); }
+  #figure-root{
+    width:1800px;
+    height:1200px;
+    margin:0 auto;
+    box-sizing:border-box;
+    font-family: Arial, Helvetica, sans-serif;
+    position:relative;
+    background:var(--bg);
+  }
+  .caption{
+    position:absolute;
+    left:0;
+    bottom:0;
+    width:1800px;
+    height:120px;
+    box-sizing:border-box;
+    padding:14px 24px 14px 24px;
+    border-top:1px solid #d9dee3;
+    color:var(--ink);
+    font-size:18px;
+    line-height:1.25;
+    background:#fff;
+  }
+
+  svg { position:absolute; left:0; top:0; }
+
+  /* SVG text coloring must use fill (not color) */
+  .title { font-size:30px; font-weight:700; fill:var(--ink); }
+  .subtitle { font-size:18px; fill:var(--muted); }
+  .panel-title { font-size:22px; font-weight:700; fill:var(--ink); }
+  .panel-note { font-size:16px; fill:var(--muted); }
+  .axis-label { font-size:18px; fill:var(--ink); }
+  .tick { font-size:14px; fill:var(--muted); }
+  .legend-text { font-size:16px; fill:var(--ink); }
+  .callout-title { font-size:18px; font-weight:700; fill:var(--ink); }
+  .callout-text { font-size:16px; fill:var(--muted); }
+  .small { font-size:14px; fill:var(--muted); }
+
+  .panel {
+    fill:var(--panelFill);
+    stroke:var(--panelStroke);
+    stroke-width:2;
+  }
+  .grid { stroke:var(--grid); stroke-width:1; }
+  .axis { stroke:var(--axis); stroke-width:2; }
+  .tickline { stroke:#9aa6b2; stroke-width:1.5; }
+  .divider { stroke:#d9dee3; stroke-width:2; }
+  .arrow { stroke:var(--axis); stroke-width:2; fill:none; marker-end:url(#arrowHead); }
+  .curve { fill:none; stroke-width:4; }
+  .curve.dashed { stroke-dasharray:10 8; }
+  .dot { stroke:#ffffff; stroke-width:2; }
+  .legend-box { fill:#ffffff; stroke:#d3d9df; stroke-width:1.5; }
+  .callout {
+    fill:#ffffff;
+    stroke:#d3d9df;
+    stroke-width:1.5;
+  }
+</style>
+</head>
+<body>
+<div id="figure-root">
+  <svg width="1800" height="1080" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pass@N performance in Lean theorem proving under GRPO and proposed fixes">
+    <defs>
+      <marker id="arrowHead" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="10" markerHeight="10" orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2b2f33"></path>
+      </marker>
+
+      <marker id="arrowHeadMuted" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="10" markerHeight="10" orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b7785"></path>
+      </marker>
+
+      <marker id="arrowHeadBlue" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="10" markerHeight="10" orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2f6db3"></path>
+      </marker>
+      <marker id="arrowHeadOrange" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="10" markerHeight="10" orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#d07a28"></path>
+      </marker>
+      <marker id="arrowHeadGreen" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="10" markerHeight="10" orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2a8a62"></path>
+      </marker>
+      <marker id="arrowHeadPurple" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="10" markerHeight="10" orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6d4aa6"></path>
+      </marker>
+    </defs>
+
+    <!-- Global header -->
+    <text x="60" y="70" class="title">Multi-sample evaluation (pass@N) reveals rank bias and how proposed fixes help</text>
+    <text x="60" y="105" class="subtitle">Lean theorem proving with verifier reward: standard GRPO sharpens the distribution (better pass@1–16) but underperforms at large N unless rare correct solutions are reinforced.</text>
+
+    <!-- Left panel: Pass@N curves -->
+    <rect x="60" y="140" width="1100" height="860" rx="10" class="panel"/>
+    <text x="90" y="185" class="panel-title">Pass@N on held-out theorems (illustrative trend)</text>
+    <text x="90" y="215" class="panel-note">Small-N gains can coexist with large-N stagnation when training reinforces only already likely proofs.</text>
+
+    <!-- Plot area coords -->
+    <!-- Plot frame: left=140, top=260, width=980, height=650 -->
+    <rect x="140" y="260" width="980" height="650" fill="#ffffff" stroke="#d9dee3" stroke-width="1.5"/>
+
+    <!-- Gridlines (y) -->
+    <g>
+      <!-- y ticks at 0.0..1.0 -->
+      <line x1="140" y1="910" x2="1120" y2="910" class="grid"/>
+      <line x1="140" y1="780" x2="1120" y2="780" class="grid"/>
+      <line x1="140" y1="650" x2="1120" y2="650" class="grid"/>
+      <line x1="140" y1="520" x2="1120" y2="520" class="grid"/>
+      <line x1="140" y1="390" x2="1120" y2="390" class="grid"/>
+      <line x1="140" y1="260" x2="1120" y2="260" class="grid"/>
+    </g>
+
+    <!-- X vertical gridlines at N: 1,2,4,8,16,32,64,128,256,512 -->
+    <g>
+      <line x1="140" y1="260" x2="140" y2="910" class="grid"/>
+      <line x1="248.9" y1="260" x2="248.9" y2="910" class="grid"/>
+      <line x1="357.8" y1="260" x2="357.8" y2="910" class="grid"/>
+      <line x1="466.7" y1="260" x2="466.7" y2="910" class="grid"/>
+      <line x1="575.6" y1="260" x2="575.6" y2="910" class="grid"/>
+      <line x1="684.4" y1="260" x2="684.4" y2="910" class="grid"/>
+      <line x1="793.3" y1="260" x2="793.3" y2="910" class="grid"/>
+      <line x1="902.2" y1="260" x2="902.2" y2="910" class="grid"/>
+      <line x1="1011.1" y1="260" x2="1011.1" y2="910" class="grid"/>
+      <line x1="1120" y1="260" x2="1120" y2="910" class="grid"/>
+    </g>
+
+    <!-- Axes -->
+    <line x1="140" y1="910" x2="1120" y2="910" class="axis"/>
+    <line x1="140" y1="260" x2="140" y2="910" class="axis"/>
+
+    <!-- Y ticks + labels -->
+    <g>
+      <line x1="140" y1="910" x2="130" y2="910" class="tickline"/>
+      <text x="110" y="915" text-anchor="end" class="tick">0.0</text>
+
+      <line x1="140" y1="780" x2="130" y2="780" class="tickline"/>
+      <text x="110" y="785" text-anchor="end" class="tick">0.2</text>
+
+      <line x1="140" y1="650" x2="130" y2="650" class="tickline"/>
+      <text x="110" y="655" text-anchor="end" class="tick">0.4</text>
+
+      <line x1="140" y1="520" x2="130" y2="520" class="tickline"/>
+      <text x="110" y="525" text-anchor="end" class="tick">0.6</text>
+
+      <line x1="140" y1="390" x2="130" y2="390" class="tickline"/>
+      <text x="110" y="395" text-anchor="end" class="tick">0.8</text>
+
+      <line x1="140" y1="260" x2="130" y2="260" class="tickline"/>
+      <text x="110" y="265" text-anchor="end" class="tick">1.0</text>
+    </g>
+
+    <!-- X ticks + labels -->
+    <g>
+      <line x1="140" y1="910" x2="140" y2="920" class="tickline"/>
+      <text x="140" y="945" text-anchor="middle" class="tick">1</text>
+
+      <line x1="248.9" y1="910" x2="248.9" y2="920" class="tickline"/>
+      <text x="248.9" y="945" text-anchor="middle" class="tick">2</text>
+
+      <line x1="357.8" y1="910" x2="357.8" y2="920" class="tickline"/>
+      <text x="357.8" y="945" text-anchor="middle" class="tick">4</text>
+
+      <line x1="466.7" y1="910" x2="466.7" y2="920" class="tickline"/>
+      <text x="466.7" y="945" text-anchor="middle" class="tick">8</text>
+
+      <line x1="575.6" y1="910" x2="575.6" y2="920" class="tickline"/>
+      <text x="575.6" y="945" text-anchor="middle" class="tick">16</text>
+
+      <line x1="684.4" y1="910" x2="684.4" y2="920" class="tickline"/>
+      <text x="684.4" y="945" text-anchor="middle" class="tick">32</text>
+
+      <line x1="793.3" y1="910" x2="793.3" y2="920" class="tickline"/>
+      <text x="793.3" y="945" text-anchor="middle" class="tick">64</text>
+
+      <line x1="902.2" y1="910" x2="902.2" y2="920" class="tickline"/>
+      <text x="902.2" y="945" text-anchor="middle" class="tick">128</text>
+
+      <line x1="1011.1" y1="910" x2="1011.1" y2="920" class="tickline"/>
+      <text x="1011.1" y="945" text-anchor="middle" class="tick">256</text>
+
+      <line x1="1120" y1="910" x2="1120" y2="920" class="tickline"/>
+      <text x="1120" y="945" text-anchor="middle" class="tick">512</text>
+    </g>
+
+    <!-- Axis labels -->
+    <text x="630" y="995" text-anchor="middle" class="axis-label">Number of sampled proofs (N, log2 scale)</text>
+    <text x="40" y="585" text-anchor="middle" class="axis-label" transform="rotate(-90 40 585)">pass@N (probability ≥1 proof verified)</text>
+
+    <!-- Curves (hand-crafted to match described trend) -->
+    <!-- Mapping: y = 910 - 650*value; x as above -->
+    <!-- Baseline SFT (gray dashed) -->
+    <path class="curve dashed" stroke="#7a8694"
+      d="M 140 754.0
+         L 248.9 702.0
+         L 357.8 650.0
+         L 466.7 598.0
+         L 575.6 546.0
+         L 684.4 494.0
+         L 793.3 455.0
+         L 902.2 416.0
+         L 1011.1 390.0
+         L 1120 364.0"/>
+    <!-- GRPO-Default (blue): improves pass@1-16, plateaus at large N -->
+    <path class="curve" stroke="var(--blue)"
+      d="M 140 715.0
+         L 248.9 663.0
+         L 357.8 611.0
+         L 466.7 559.0
+         L 575.6 507.0
+         L 684.4 468.0
+         L 793.3 442.0
+         L 902.2 429.0
+         L 1011.1 422.5
+         L 1120 416.0"/>
+    <!-- + Unlikeliness reward (orange): slightly lower at small N, higher at large N -->
+    <path class="curve" stroke="var(--orange)"
+      d="M 140 728.0
+         L 248.9 676.0
+         L 357.8 624.0
+         L 466.7 572.0
+         L 575.6 520.0
+         L 684.4 468.0
+         L 793.3 416.0
+         L 902.2 377.0
+         L 1011.1 351.0
+         L 1120 338.0"/>
+    <!-- + PPO epochs (green): mitigates rank bias via extra steps -->
+    <path class="curve" stroke="var(--green)"
+      d="M 140 721.5
+         L 248.9 669.5
+         L 357.8 617.5
+         L 466.7 565.5
+         L 575.6 513.5
+         L 684.4 461.5
+         L 793.3 422.5
+         L 902.2 383.5
+         L 1011.1 357.5
+         L 1120 344.5"/>
+    <!-- Both fixes (purple): highest large-N -->
+    <path class="curve" stroke="var(--purple)"
+      d="M 140 724.75
+         L 248.9 672.75
+         L 357.8 620.75
+         L 466.7 568.75
+         L 575.6 516.75
+         L 684.4 464.75
+         L 793.3 412.75
+         L 902.2 364.0
+         L 1011.1 331.5
+         L 1120 312.0"/>
+
+    <!-- Markers at N=1,16,512 for each -->
+    <g>
+      <!-- SFT -->
+      <circle cx="140" cy="754.0" r="6" class="dot" fill="#7a8694"/>
+      <circle cx="575.6" cy="546.0" r="6" class="dot" fill="#7a8694"/>
+      <circle cx="1120" cy="364.0" r="6" class="dot" fill="#7a8694"/>
+      <!-- GRPO default -->
+      <circle cx="140" cy="715.0" r="6" class="dot" fill="var(--blue)"/>
+      <circle cx="575.6" cy="507.0" r="6" class="dot" fill="var(--blue)"/>
+      <circle cx="1120" cy="416.0" r="6" class="dot" fill="var(--blue)"/>
+      <!-- Unlikeliness -->
+      <circle cx="140" cy="728.0" r="6" class="dot" fill="var(--orange)"/>
+      <circle cx="575.6" cy="520.0" r="6" class="dot" fill="var(--orange)"/>
+      <circle cx="1120" cy="338.0" r="6" class="dot" fill="var(--orange)"/>
+      <!-- PPO epochs -->
+      <circle cx="140" cy="721.5" r="6" class="dot" fill="var(--green)"/>
+      <circle cx="575.6" cy="513.5" r="6" class="dot" fill="var(--green)"/>
+      <circle cx="1120" cy="344.5" r="6" class="dot" fill="var(--green)"/>
+      <!-- both -->
+      <circle cx="140" cy="724.75" r="6" class="dot" fill="var(--purple)"/>
+      <circle cx="575.6" cy="516.75" r="6" class="dot" fill="var(--purple)"/>
+      <circle cx="1120" cy="312.0" r="6" class="dot" fill="var(--purple)"/>
+    </g>
+
+    <!-- Legend -->
+    <g>
+      <rect x="800" y="290" width="300" height="170" rx="10" class="legend-box"/>
+      <g transform="translate(820,320)">
+        <path d="M 0 0 L 60 0" class="curve dashed" stroke="#7a8694" stroke-width="4"/>
+        <circle cx="60" cy="0" r="5" class="dot" fill="#7a8694"/>
+        <text x="80" y="6" class="legend-text">SFT baseline</text>
+
+        <path d="M 0 35 L 60 35" class="curve" stroke="var(--blue)" stroke-width="4"/>
+        <circle cx="60" cy="35" r="5" class="dot" fill="var(--blue)"/>
+        <text x="80" y="41" class="legend-text">GRPO (standard)</text>
+
+        <path d="M 0 70 L 60 70" class="curve" stroke="var(--orange)" stroke-width="4"/>
+        <circle cx="60" cy="70" r="5" class="dot" fill="var(--orange)"/>
+        <text x="80" y="76" class="legend-text">+ unlikeliness reward</text>
+
+        <path d="M 0 105 L 60 105" class="curve" stroke="var(--green)" stroke-width="4"/>
+        <circle cx="60" cy="105" r="5" class="dot" fill="var(--green)"/>
+        <text x="80" y="111" class="legend-text">+ additional PPO epochs</text>
+
+        <path d="M 0 140 L 60 140" class="curve" stroke="var(--purple)" stroke-width="4"/>
+        <circle cx="60" cy="140" r="5" class="dot" fill="var(--purple)"/>
+        <text x="80" y="146" class="legend-text">both fixes (highest large-N)</text>
+      </g>
+    </g>
+
+    <!-- Annotation: small-N improvement region -->
+    <g>
+      <rect x="180" y="300" width="360" height="88" rx="10" class="callout"/>
+      <text x="200" y="332" class="callout-title">Small N (≈1–16)</text>
+      <text x="200" y="358" class="callout-text">Standard GRPO increases likelihood of already</text>
+      <text x="200" y="380" class="callout-text">common correct proofs → higher pass@1–16.</text>
+      <path d="M 525 388 C 540 405, 555 435, 575.6 507" class="arrow"/>
+    </g>
+
+    <!-- Annotation: large-N stagnation for GRPO -->
+    <g>
+      <rect x="820" y="740" width="330" height="108" rx="10" class="callout"/>
+      <text x="840" y="772" class="callout-title">Large N (≈128–512)</text>
+      <text x="840" y="798" class="callout-text">Rank bias neglects rare-but-correct proofs,</text>
+      <text x="840" y="820" class="callout-text">so gains diminish despite more sampling.</text>
+      <path d="M 842 836 C 860 820, 900 780, 1011.1 422.5" class="arrow"/>
+    </g>
+
+    <!-- Right column: Mechanism + fixes -->
+    <rect x="1200" y="140" width="540" height="860" rx="10" class="panel"/>
+    <text x="1230" y="185" class="panel-title">Mechanism and fixes</text>
+    <text x="1230" y="215" class="panel-note">Goal: uplift low-probability correct proofs to improve pass@N at large N.</text>
+
+    <!-- Mechanism diagram box -->
+    <rect x="1230" y="250" width="480" height="270" rx="12" fill="#ffffff" stroke="#d9dee3" stroke-width="1.5"/>
+    <text x="1255" y="285" class="callout-title">Standard GRPO: rank bias</text>
+
+    <!-- Small stacked list depicting ranks -->
+    <g>
+      <rect x="1255" y="310" width="200" height="170" rx="10" fill="#fbfbfd" stroke="#e1e6eb" stroke-width="1.5"/>
+      <text x="1275" y="340" class="small">Samples (sorted by π(y|x))</text>
+
+      <rect x="1270" y="355" width="170" height="26" rx="6" fill="#e8f0fb" stroke="#c7d9f2" stroke-width="1"/>
+      <text x="1280" y="373" class="small" fill="#1a1a1a">Rank 0: likely proof</text>
+
+      <rect x="1270" y="388" width="170" height="26" rx="6" fill="#e8f0fb" stroke="#c7d9f2" stroke-width="1"/>
+      <text x="1280" y="406" class="small">Rank 1: likely proof</text>
+
+      <rect x="1270" y="421" width="170" height="26" rx="6" fill="#fff3e6" stroke="#f2d4b5" stroke-width="1"/>
+      <text x="1280" y="439" class="small">Rank 15: rare correct</text>
+
+      <rect x="1270" y="454" width="170" height="26" rx="6" fill="#fff3e6" stroke="#f2d4b5" stroke-width="1"/>
+      <text x="1280" y="472" class="small">Rank 31: rare correct</text>
+    </g>
+
+    <!-- Arrows showing reinforcement skew -->
+    <g>
+      <text x="1490" y="340" class="callout-text">Update signal concentrates on high-likelihood</text>
+      <text x="1490" y="362" class="callout-text">correct samples → distribution sharpening.</text>
+
+      <path d="M 1465 368 L 1685 368" stroke="#6b7785" stroke-width="2.2" fill="none" marker-end="url(#arrowHeadMuted)"/>
+      <rect x="1490" y="390" width="205" height="40" rx="10" fill="#eef2f6" stroke="#d3d9df" stroke-width="1.2"/>
+      <text x="1502" y="416" class="small">High-rank proofs reinforced</text>
+
+      <path d="M 1465 448 L 1650 448" stroke="#6b7785" stroke-width="2.2" fill="none" marker-end="url(#arrowHeadMuted)"/>
+      <rect x="1490" y="470" width="205" height="40" rx="10" fill="#f7f7f8" stroke="#d3d9df" stroke-width="1.2"/>
+      <text x="1502" y="496" class="small">Low-rank correct proofs ignored</text>
+    </g>
+
+    <!-- Fixes box -->
+    <rect x="1230" y="540" width="480" height="430" rx="12" fill="#ffffff" stroke="#d9dee3" stroke-width="1.5"/>
+    <text x="1255" y="575" class="callout-title">Proposed fixes</text>
+
+    <!-- Fix 1: Unlikeliness reward -->
+    <g>
+      <rect x="1255" y="600" width="450" height="150" rx="12" fill="#fffaf3" stroke="#f0d6b6" stroke-width="1.6"/>
+      <circle cx="1282" cy="634" r="10" fill="var(--orange)"/>
+      <text x="1305" y="639" class="callout-title">Unlikeliness reward</text>
+      <text x="1275" y="670" class="callout-text">Up-weights correct outputs that are less likely</text>
+      <text x="1275" y="692" class="callout-text">within the sample group → counters rank bias.</text>
+      <path d="M 1275 710 L 1680 710" stroke="var(--orange)" stroke-width="2.4" fill="none" marker-end="url(#arrowHeadOrange)"/>
+      <text x="1275" y="738" class="small">Effect: higher diversity and improved large-N pass@N</text>
+    </g>
+
+    <!-- Fix 2: Additional PPO epochs -->
+    <g>
+      <rect x="1255" y="770" width="450" height="150" rx="12" fill="#f4fbf7" stroke="#cbe7d9" stroke-width="1.6"/>
+      <circle cx="1282" cy="804" r="10" fill="var(--green)"/>
+      <text x="1305" y="809" class="callout-title">Additional PPO epochs</text>
+      <text x="1275" y="840" class="callout-text">After high-likelihood samples saturate (clip),</text>
+      <text x="1275" y="862" class="callout-text">extra steps shift updates toward low-likelihood ones.</text>
+      <path d="M 1275 880 L 1680 880" stroke="var(--green)" stroke-width="2.4" fill="none" marker-end="url(#arrowHeadGreen)"/>
+      <text x="1275" y="908" class="small">Effect: mitigates sharpening; improves large-N pass@N</text>
+    </g>
+
+    <!-- Linking bracket emphasizing combined outcome -->
+    <g>
+      <path d="M 1236 940 L 1710 940" stroke="#cfd6dd" stroke-width="2" fill="none"/>
+      <rect x="1275" y="950" width="390" height="40" rx="12" fill="#f6f2ff" stroke="#d8cdef" stroke-width="1.6"/>
+      <circle cx="1300" cy="970" r="8" fill="var(--purple)"/>
+      <text x="1320" y="976" class="callout-title">Net effect: higher held-out pass@N at large N</text>
+    </g>
+
+    <!-- Vertical divider (subtle, helps 2-column layout feel) -->
+    <line x1="1180" y1="140" x2="1180" y2="1000" class="divider"/>
+
+    <!-- Footnote-style note inside main plot area -->
+    <text x="140" y="1035" class="small">Note: Curves are schematic to match the caption’s qualitative behavior (small-N gains vs large-N improvements with fixes).</text>
+  </svg>
+
+  <div class="caption">
+    Pass@N performance in Lean theorem proving under GRPO and proposed fixes. Standard GRPO improves pass@1–16 but fails to improve large-N; unlikeliness reward and additional PPO epochs mitigate rank bias, increase diversity, and yield higher pass@N on held-out theorems.
+  </div>
+</div>
+</body>
+</html>
