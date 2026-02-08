@@ -3,181 +3,391 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Figure-Level Human Evaluation (Detailed Schema)</title>
+    <title>FigureGen Eval v3.0 (Refined Rubric)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="data.js"></script>
+    <script src="new_data.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
         .hidden { display: none; }
-        .image-container img { max-height: 550px; border: 1px solid #e5e7eb; }
-        input[type="radio"] { accent-color: #4f46e5; }
-        .paper-card:hover { border-color: #6366f1; transform: translateY(-2px); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .rubric-option { transition: all 0.2s ease-in-out; }
+        .rubric-option:hover { background-color: #f1f5f9; border-color: #cbd5e1; }
+        input[type="radio"]:checked + div { background-color: #eff6ff; border-color: #6366f1; }
+        input[type="radio"]:checked + div .score-badge { background-color: #4f46e5; color: white; border-color: #4f46e5; }
+        input[type="radio"]:checked + div .anchor-text { color: #1e293b; font-weight: 600; }
+        
+        /* Type Toggle Animation */
+        .type-toggle-bg { transition: transform 0.3s ease; }
     </style>
 </head>
-<body class="text-gray-800 font-sans">
+<body class="text-slate-800">
 
-    <div id="app" class="max-w-4xl mx-auto min-h-screen bg-white shadow-xl flex flex-col">
+    <div id="app" class="max-w-[1600px] mx-auto min-h-screen bg-white shadow-2xl flex flex-col border-x border-slate-200">
         
-        <header class="bg-indigo-800 text-white p-5 sticky top-0 z-30 shadow-lg">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight">Figure Evaluation System</h1>
-                    <div class="flex items-center gap-3 mt-2">
-                        <div class="w-48 bg-indigo-950 rounded-full h-2.5 overflow-hidden border border-indigo-600">
-                            <div id="progress-bar" class="bg-yellow-400 h-full transition-all duration-500" style="width: 0%"></div>
-                        </div>
-                        <span id="progress-text" class="text-[10px] text-indigo-200 font-mono">0/0 Figures (0%)</span>
-                    </div>
+        <header class="bg-slate-900 text-white p-4 sticky top-0 z-40 shadow-lg flex justify-between items-center">
+            <h1 class="text-lg font-bold tracking-tight flex items-center gap-2">
+                <span class="text-indigo-400">❖</span> FigureGen Eval <span class="text-xs bg-slate-700 px-2 py-0.5 rounded text-slate-300 font-mono">v3.0</span>
+            </h1>
+            <div class="flex items-center gap-4 w-1/3">
+                <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-600">
+                    <div id="progress-bar" class="bg-indigo-500 h-full transition-all duration-500" style="width: 0%"></div>
                 </div>
-                <button onclick="downloadResultsCSV()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold text-xs transition shadow-sm flex items-center gap-2">
-                    📥 Excel Download
+                <span id="progress-text" class="text-[10px] text-slate-300 font-mono whitespace-nowrap">Loading...</span>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="resetData()" class="text-xs text-slate-500 hover:text-red-400 underline mr-2">Reset</button>
+                <button onclick="downloadResultsCSV()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-xs font-bold transition border border-indigo-500 flex items-center gap-2">
+                    <span>📥 Download CSV</span>
                 </button>
             </div>
         </header>
 
-        <div id="view-index" class="p-6 flex-1 bg-gray-50">
-            <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <h2 class="text-lg font-bold text-gray-700">Evaluation Target List</h2>
-                <input type="text" id="search-input" oninput="renderIndex()" placeholder="Search by title..." class="px-4 py-2 border rounded-lg text-sm w-64 focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm">
+        <div id="view-index" class="p-8 flex-1 bg-slate-50">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Select Paper</h2>
+                    <p class="text-sm text-slate-500 mt-1">Evaluation targets loaded from <code class="bg-slate-200 px-1 rounded text-xs">new_data.js</code></p>
+                </div>
+                <div class="relative">
+                    <input type="text" id="search-input" oninput="renderIndex()" placeholder="Search paper title..." class="pl-10 pr-4 py-2 border rounded-lg text-sm w-72 shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <span class="absolute left-3 top-2.5 text-slate-400">🔍</span>
+                </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="paper-grid"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" id="paper-grid"></div>
         </div>
 
-        <div id="view-eval" class="hidden p-6 flex-1">
-            <div class="flex justify-between items-center mb-6 sticky top-[76px] bg-white/90 backdrop-blur-sm z-20 py-3 border-b">
-                <button onclick="goHome()" class="text-gray-500 hover:text-indigo-700 font-bold text-sm flex items-center">
-                    ← Back to List
+        <div id="view-eval" class="hidden flex flex-col h-[calc(100vh-64px)]">
+            
+            <div class="bg-white border-b border-slate-200 px-6 py-3 flex justify-between items-center shadow-sm z-30 shrink-0">
+                <button onclick="goHome()" class="text-slate-500 hover:text-indigo-600 font-bold text-sm flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    Back
                 </button>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-1 rounded" id="folder-display">FOLDER</span>
-                    <span class="text-sm font-black text-indigo-600" id="figure-counter">FIG 1/1</span>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="prevStep()" class="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-xs font-bold text-gray-600">Prev</button>
-                    <button onclick="nextStep()" class="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-xs font-bold text-gray-600">Skip</button>
-                </div>
-            </div>
-
-            <div class="bg-slate-50 p-5 rounded-xl mb-6 border border-slate-200 flex justify-between items-center shadow-sm">
-                <div class="max-w-2xl">
-                    <h3 class="font-bold text-slate-900 text-lg leading-tight mb-1" id="paper-title">Paper Title</h3>
-                    <p class="text-xs text-slate-500 italic">Open the PDF to compare the figure with the original context.</p>
-                </div>
-                <a id="local-pdf-link" href="#" target="_blank" class="flex-shrink-0 bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition shadow-md text-sm flex items-center gap-2">
-                    <span>📄 Open PDF</span>
-                </a>
-            </div>
-
-            <div class="mb-10">
-                <div class="bg-white p-2 rounded-xl border shadow-sm flex justify-center items-center min-h-[300px] mb-4 relative group">
-                    <div class="absolute inset-0 bg-gray-900/5 opacity-0 group-hover:opacity-100 transition pointer-events-none rounded-xl"></div>
-                    <img id="main-figure" src="" class="max-w-full max-h-[550px] object-contain z-10">
-                </div>
-                <div class="bg-amber-50 p-5 rounded-xl border-l-4 border-amber-400 shadow-sm">
-                    <p class="text-[10px] font-black text-amber-700 uppercase mb-2 tracking-widest">FIGURE CAPTION</p>
-                    <p class="text-sm text-amber-900 leading-relaxed font-serif italic" id="figure-caption"></p>
-                </div>
-            </div>
-
-            <div class="bg-white p-8 rounded-2xl border shadow-lg relative">
-                <div class="absolute -top-5 left-6 bg-indigo-600 text-white text-sm font-bold px-4 py-2 rounded-full shadow-md flex items-center gap-2">
-                    📊 Evaluation Form
-                </div>
                 
-                <form id="eval-form" class="space-y-10 mt-6">
-                    <div id="criteria-container" class="space-y-10"></div>
-
-                    <div class="pt-10 border-t border-gray-100 mt-10">
-                        <button type="button" onclick="saveAndNext()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-black text-lg shadow-xl hover:bg-indigo-700 transition transform active:scale-[0.98] flex justify-center items-center gap-2">
-                            SAVE & NEXT FIGURE →
+                <div class="flex flex-col items-center">
+                    <div class="flex bg-slate-100 p-1 rounded-lg relative shadow-inner">
+                        <div id="toggle-bg" class="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded shadow-sm transition-all duration-300 left-1"></div>
+                        <button onclick="switchFigureType('intro')" id="btn-intro" class="relative z-10 px-4 py-1 text-[10px] font-bold rounded transition-colors text-slate-500 uppercase tracking-wide">
+                            Intro / Overview
+                        </button>
+                        <button onclick="switchFigureType('method')" id="btn-method" class="relative z-10 px-4 py-1 text-[10px] font-bold rounded transition-colors text-slate-900 uppercase tracking-wide">
+                            Method / Arch
                         </button>
                     </div>
-                </form>
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="prevStep()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded text-xs font-bold text-slate-600 transition">Prev</button>
+                    <button onclick="nextStep()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded text-xs font-bold text-slate-600 transition">Skip</button>
+                </div>
+            </div>
+
+            <div class="flex flex-1 overflow-hidden">
+                
+                <div class="w-[45%] overflow-y-auto bg-slate-100 p-6 border-r border-slate-200 custom-scrollbar relative flex flex-col">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-4 shrink-0">
+                        <h3 class="font-bold text-slate-800 text-base leading-tight mb-2" id="paper-title">Paper Title</h3>
+                        <a id="local-pdf-link" href="#" target="_blank" class="text-xs text-blue-600 hover:underline flex items-center gap-1 font-medium bg-blue-50 w-fit px-2 py-1 rounded border border-blue-100 hover:bg-blue-100 transition">
+                            <span>📄 Open PDF Context</span>
+                        </a>
+                    </div>
+                    
+                    <div class="flex-1 flex flex-col min-h-0">
+                        <div class="bg-white rounded-t-xl border border-slate-200 border-b-0 shadow-sm p-2 flex justify-center items-center bg-checkered overflow-hidden relative group grow">
+                            <img id="main-figure" src="" class="max-w-full max-h-full object-contain transition-transform duration-300 group-hover:scale-[1.02]">
+                        </div>
+                        <div class="bg-amber-50 p-4 rounded-b-xl border border-amber-200 border-t-0 text-sm text-amber-900 font-serif italic shadow-sm shrink-0">
+                            <span class="text-[10px] font-bold text-amber-600 uppercase not-italic block mb-1">Figure Caption</span>
+                            <span id="figure-caption">Caption...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-[55%] overflow-y-auto bg-white relative custom-scrollbar">
+                    <div class="p-8 pb-32">
+                        <form id="eval-form" class="space-y-10">
+                            </form>
+                    </div>
+                    
+                    <div class="fixed bottom-0 right-0 w-[55%] bg-white/90 backdrop-blur border-t border-slate-200 p-4 flex justify-between items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pr-[calc(2rem+8px)]"> <div class="text-xs text-slate-400 font-mono ml-4">
+                            <span id="save-status">Unsaved changes</span>
+                        </div>
+                        <button onclick="saveAndNext()" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-indigo-700 hover:-translate-y-0.5 transition-all flex items-center gap-2">
+                            <span>Save & Next Figure</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        let currentPaperIdx = 0;
-        let currentFigIdx = 0;
-
-        // Version split: v7 kept intact, v8 used for expanded sub-question scoring
-        const STORAGE_KEY_V8 = 'figureEvalResults_v8';
-        let evalResults = JSON.parse(localStorage.getItem(STORAGE_KEY_V8)) || {};
-
-        // Expanded Evaluation Schema: sub-question-level IDs (qX_Y)
-        const EVAL_SCHEMA = {
-            "Informativeness": {
-                "id": "q1",
-                "questions": [
-                    { id: "q1_1", text: "1.1. Content Coverage: Does it include most major components or formulas mentioned in the paper without omission?" },
-                    { id: "q1_2", text: "1.2. Standalone Intelligibility: Can one understand the general operating principle of the system just by looking at this figure without reading the paper?" },
-                    { id: "q1_3", text: "1.3. Completeness: Is the content from the beginning to the end of the paper summarized and included?" }
-                ]
-            },
-            "Fidelity": {
-                "id": "q2",
-                "questions": [
-                    { id: "q2_1", text: "2.1. Hallucination: Does it avoid including components or formulas not mentioned in the paper?" },
-                    { id: "q2_2", text: "2.2. Relation Correctness: Are the relationships between major components or formulas mentioned in the paper accurately represented?" },
-                    { id: "q2_3", text: "2.3. Label Accuracy: Are the names of major components or methodologies mentioned in the paper accurately labeled?" }
-                ]
-            },
-            "Overall Readability": {
-                "id": "q3",
-                "questions": [
-                    { id: "q3_1", text: "3.1. Summarization: Is it schematized focusing on the 'Main Contribution' rather than trivial details?" },
-                    { id: "q3_2", text: "3.2. Contextual Match: Does this figure function well as a supplementary material to help understanding when reading the caption or text?" },
-                    { id: "q3_3", text: "3.3. Redundancy: Does it avoid decorative elements or unnecessary information unrelated to the core ideas?" }
-                ]
-            },
-            "Design Quality": {
-                "id": "q4",
-                "questions": [
-                    { id: "q4_1", text: "4.1. Direction: Does the diagram flow from left to right or top to bottom?" },
-                    { id: "q4_2", text: "4.2. Crossing: Do the connection lines avoid crossing each other?" },
-                    { id: "q4_3", text: "4.3. Proximity: Are functionally closely related modules physically placed near each other?" },
-                    { id: "q4_4", text: "4.4. Alignment: Are nodes aligned neatly horizontally and vertically according to an invisible grid?" },
-                    { id: "q4_5", text: "4.5. Hierarchy: Do the important main components stand out in size, thickness, or position?" },
-                    { id: "q4_6", text: "4.6. Margin: Is there sufficient margin between elements?" },
-                    { id: "q4_7", text: "4.7. Consistency: Are components with similar roles represented with the same shape and color?" }
-                ]
-            },
-            "Creativity": {
-                "id": "q5",
-                "questions": [
-                    { id: "q5_1", text: "5.1. Metaphor: To what extent are abstract concepts replaced with concrete icons, symbols, or abbreviations?" },
-                    { id: "q5_2", text: "5.2. Novelty: Does the generated image have a unique style that differentiates it from common templates?" },
-                    { id: "q5_3", text: "5.3. Adaptability: Does it apply a layout more suitable for the specific paper, breaking away from uniform design principles?" }
-                ]
-            }
+        // --- DEFINITIONS (UPDATED RUBRIC) ---
+        
+        // 1. Informativeness
+        const INFORMATIVENESS_METHOD = {
+            name: "Informativeness",
+            questions: [
+                {
+                    code: "M-Info-1",
+                    title: "Coverage & Standalone Intelligibility",
+                    question: "Are all major modules/stages present, and can one understand the system/approach depicted in this figure from the figure alone?",
+                    anchors: {
+                        5: "All key modules are present with their roles labeled. A reader could verbally explain the approach/system depicted to a third party using only this figure.",
+                        4: "All key modules are present. The overall flow is clear, but the role of 1-2 modules or sub-mechanisms requires guessing.",
+                        3: "Most major modules are present but one important module is omitted or excessively collapsed. One can tell what kind of method this is, but the specific workings require the paper text.",
+                        2: "Multiple major modules are missing or an entire stage is absent. The domain (e.g., NLP, CV) is guessable but the method itself is not understandable.",
+                        1: "Only a small fraction of the method is represented. Even after reading the paper, mapping the figure to the method is difficult."
+                    }
+                },
+                {
+                    code: "M-Info-2",
+                    title: "Interface Clarity",
+                    question: "Is it clear what information passes between modules (inputs, outputs, conditioning signals)?",
+                    anchors: {
+                        5: "All major interfaces explicitly indicate what type of information is transferred (e.g., feature vectors, probability distributions, text).",
+                        4: "Most interfaces are explicit, but 1-2 connections are ambiguous about what is passed.",
+                        3: "The direction of flow is visible, but what specifically is transferred is unclear for most connections.",
+                        2: "Connections exist between modules, but there is almost no indication of what information they carry.",
+                        1: "Relationships between modules are not represented at all."
+                    }
+                }
+            ]
         };
 
-        const CRITERIA = Object.entries(EVAL_SCHEMA).map(([key, value], index) => ({
-            id: value.id,
-            label: `${index + 1}. ${key}`,
-            sub: value.questions
-        }));
-
-        function isFigureCompleteV8(paper, img) {
-            const key = `${paper.folder_name}/${img.filename}`;
-            const res = evalResults[key];
-            if (!res) return false;
-
-            for (const group of CRITERIA) {
-                for (const sq of group.sub) {
-                    const v = res[sq.id];
-                    if (!v || !["1","2","3","4","5"].includes(String(v))) return false;
+        const INFORMATIVENESS_INTRO = {
+            name: "Informativeness",
+            questions: [
+                {
+                    code: "I-Info-1",
+                    title: "Story Completeness",
+                    question: "Does the figure convey the narrative arc: problem -> gap/limitation -> idea -> contribution?",
+                    anchors: {
+                        5: "All four narrative elements are visually distinct and clearly communicated.",
+                        4: "Three elements are clear, but one (typically the gap or limitation) is only implied.",
+                        3: "The core idea is visible, but the motivation (why) or the novelty (what's new) is weak.",
+                        2: "Only one aspect is highlighted; the rest of the narrative is absent.",
+                        1: "No narrative structure -- disconnected elements are listed without a coherent story."
+                    }
+                },
+                {
+                    code: "I-Info-2",
+                    title: "Takeaway Salience",
+                    question: "Is the key contribution immediately visually salient?",
+                    anchors: {
+                        5: "Within 3 seconds, a reader can identify what this paper does.",
+                        4: "Within about 10 seconds of scanning, the main takeaway becomes clear.",
+                        3: "The takeaway is identifiable only after carefully examining the entire figure.",
+                        2: "The caption must be read to understand the takeaway.",
+                        1: "Even with the caption, the takeaway is unclear."
+                    }
                 }
-            }
-            return true;
-        }
+            ]
+        };
 
+        // 2. Fidelity
+        const FIDELITY_METHOD = {
+            name: "Fidelity",
+            questions: [
+                {
+                    code: "M-Fid-1",
+                    title: "Hallucination Avoidance",
+                    question: "Does the figure avoid including modules, formulas, or data flows not described in the paper?",
+                    anchors: {
+                        5: "Every element in the figure can be traced back to the paper text.",
+                        4: "Nearly all elements are grounded, but one element is not explicitly mentioned in the paper (within reasonable inference).",
+                        3: "1-2 elements have no basis in the paper, but they do not distort the overall message.",
+                        2: "Several ungrounded modules or connections are present, requiring the reader to mentally separate the actual method from the figure.",
+                        1: "The figure depicts a substantially different system -- someone who read the paper would question whether this is the same method."
+                    }
+                },
+                {
+                    code: "M-Fid-2",
+                    title: "Relation Correctness",
+                    question: "Are the relationships between modules (order, dependencies, conditional flows) consistent with the paper?",
+                    anchors: {
+                        5: "All major relationships are accurate -- sequence, direction, and conditional branches match the paper.",
+                        4: "Major relationships are correct, but one secondary connection has an inaccurate direction or ambiguous condition.",
+                        3: "The overall flow direction is correct, but one important relationship is wrong or missing (e.g., a bidirectional link shown as unidirectional).",
+                        2: "Multiple relationships are inaccurate, such that trusting the figure would lead to a misunderstanding of the core operating principle.",
+                        1: "The relational structure is broadly inconsistent with the paper -- it appears to describe a different method."
+                    }
+                }
+            ]
+        };
+
+        const FIDELITY_INTRO = {
+            name: "Fidelity",
+            questions: [
+                {
+                    code: "I-Fid-1",
+                    title: "Ontological Clarity of Added Elements",
+                    question: "For any element not directly from the paper (metaphors, illustrations, contextual framing): is it visually unambiguous whether it is a metaphor/illustration or a technical claim?",
+                    anchors: {
+                        5: "Every added element is instantly recognizable as either grounded in the paper or as metaphor/illustration. There is zero risk of a reader misinterpreting a visual device as a technical claim.",
+                        4: "Nearly all added elements are clearly categorized, but one element requires a moment of inspection to determine whether it is metaphor or claim.",
+                        3: "Added visual elements are generally harmless, but 1-2 could be mistaken for technical facts by a reader unfamiliar with the paper.",
+                        2: "The boundary between metaphor and technical claim is blurred -- a reader could incorrectly conclude 'this paper actually does X' based on a visual device.",
+                        1: "Added elements are indistinguishable from factual content -- a reader without the paper would form a fundamentally wrong impression of the research."
+                    }
+                },
+                {
+                    code: "I-Fid-2",
+                    title: "Framing Correctness",
+                    question: "Is the problem setup, the characterization of prior limitations, and the positioning of the proposed method consistent with the paper's framing?",
+                    anchors: {
+                        5: "The 'why this research is needed' and 'what it solves' conveyed by the figure match the paper's own framing precisely.",
+                        4: "Generally consistent, but the severity of the problem or the limitation of prior work is slightly exaggerated or oversimplified.",
+                        3: "The broad direction is correct, but there is a subtle focus mismatch between the figure's emphasis and the paper's actual concern.",
+                        2: "The framing diverges notably -- e.g., the paper addresses an efficiency problem but the figure highlights an accuracy problem, or the comparison baseline is misrepresented.",
+                        1: "The figure's framing contradicts the paper -- the motivation presented in the figure conflicts with the paper's stated motivation."
+                    }
+                }
+            ]
+        };
+
+        // 3. Common (Readability, Design, Creativity)
+        const READABILITY_COMMON = {
+            name: "Readability",
+            questions: [
+                {
+                    code: "Read-1", title: "Abstraction Level",
+                    question: "Is the selection of informational elements (modules, formulas, labels, sub-steps) well-calibrated -- enough to convey the mechanism, without including unnecessary technical details?",
+                    anchors: {
+                        5: "Every included informational element contributes to understanding, and no omitted element would have been needed. The figure shows exactly the right set of modules and labels.",
+                        4: "Nearly optimal, but 1-2 informational elements are unnecessarily included (e.g., an internal sub-step that could be collapsed) or one useful module/label is missing.",
+                        3: "Generally acceptable, but some regions contain overly granular technical detail while other regions lack needed labels or modules.",
+                        2: "Information selection is unbalanced -- unimportant sub-steps are shown in full detail while key modules are overly compressed or unlabeled.",
+                        1: "The figure either includes every minor detail to the point of being a wall of text/boxes, or is oversimplified that it communicates almost nothing."
+                    }
+                },
+                {
+                    code: "Read-2", title: "Signal-to-Noise Ratio",
+                    question: "Are non-informational visual elements (backgrounds, gradients, decorative icons, shadows, borders, color fills without semantic meaning) controlled so they do not compete with the core content?",
+                    anchors: {
+                        5: "No purely decorative elements are present -- every visual mark (color, border, fill, icon) serves an informational purpose. Removing any would cause information loss.",
+                        4: "1-2 decorative elements exist (e.g., a gradient background, a drop shadow) but they are visually subdued and do not compete for attention.",
+                        3: "Decorative elements are noticeable (e.g., heavy borders, colored fills with no semantic role, stock clip art) but the core content is still identifiable.",
+                        2: "Decorative elements are as visually prominent as the informational content, splitting the reader's attention between substance and style.",
+                        1: "Decoration dominates -- the figure feels more like a poster or infographic than a technical figure, and the core message is buried."
+                    }
+                },
+                {
+                    code: "Read-3", title: "Contextual Fit",
+                    question: "Does the figure function effectively as a complement to the caption and paper text?",
+                    anchors: {
+                        5: "Figure and text are synergistic -- the figure shows what text cannot (spatial relationships, flow structure), and the text explains what the figure cannot (motivation, details). A reader would revisit this figure while reading.",
+                        4: "Good synergy overall, but some labels or legends are missing, requiring excess reliance on the text to decode the figure.",
+                        3: "The figure mostly restates the text in visual form -- not harmful, but limited added value beyond what reading alone provides.",
+                        2: "The correspondence between figure and text is unclear -- it is hard to tell which part of the text the figure illustrates.",
+                        1: "The figure is disconnected from the text, causing confusion rather than aiding comprehension."
+                    }
+                }
+            ]
+        };
+
+        const DESIGN_COMMON = {
+            name: "Design Quality",
+            questions: [
+                {
+                    code: "Des-1", title: "Perceptual Flow",
+                    question: "Is the reading order natural and immediately apparent?",
+                    anchors: {
+                        5: "The eye is naturally guided from input to processing to output. Connection lines do not cross, and the entire flow can be followed in a single scan without backtracking.",
+                        4: "The main flow is clear, but 1-2 secondary connections run in a reverse direction or cross, causing a brief pause.",
+                        3: "An overall direction (left-to-right or top-to-bottom) exists, but at branching points one must deliberate for more than 3 seconds about which path to read first.",
+                        2: "No clear entry point or direction -- the reader must try multiple starting points via trial and error to reconstruct the flow.",
+                        1: "Flow is effectively absent -- elements are scattered such that no reading order feels coherent."
+                    }
+                },
+                {
+                    code: "Des-2", title: "Grouping & Spatial Organization",
+                    question: "Are related elements visually grouped, making the overall structure parseable at a glance?",
+                    anchors: {
+                        5: "Functionally related elements are clearly grouped by proximity, containers, or background color, with sufficient whitespace between groups. The figure can be scanned structurally like a table of contents.",
+                        4: "Grouping is mostly effective, but one group's boundary is unclear or one element's group membership is ambiguous.",
+                        3: "Partial grouping exists, but it is not immediately obvious how many distinct chunks the figure has.",
+                        2: "Little grouping -- all elements appear at the same hierarchical level, requiring conscious effort to parse structure.",
+                        1: "Elements appear randomly placed -- proximity does not reflect semantic relationships."
+                    }
+                },
+                {
+                    code: "Des-3", title: "Visual Encoding Consistency",
+                    question: "Are color, line style, and size used consistently and semantically across the figure, establishing a clear visual hierarchy?",
+                    anchors: {
+                        5: "Same-role elements share the same color and line treatment; different-role elements are visually distinct. Without a legend, one can intuit what each color or line style represents. Key elements are the most visually prominent.",
+                        4: "Encoding is mostly consistent, but in 1-2 places the same role uses a different color or weight, or a secondary element is more visually prominent than a key one.",
+                        3: "Colors and line styles are used, but their semantic meaning is unclear -- one must guess why one box is blue and another is orange. Hierarchy is only partially effective.",
+                        2: "Encoding is inconsistent -- the same color is used for different meanings, or hierarchically minor elements are given the same visual weight as major ones. Visual hierarchy does not match content importance.",
+                        1: "Colors and line styles carry no discernible semantic pattern -- encoding contributes no information and acts as noise."
+                    }
+                }
+            ]
+        };
+
+        const CREATIVITY_COMMON = {
+            name: "Creativity",
+            questions: [
+                {
+                    code: "Cre-1", title: "Visual Grounding",
+                    question: "Are abstract concepts (memory, reasoning, uncertainty, alignment, learning, etc.) represented by concrete icons, symbols, or metaphors whose choice is semantically apt?",
+                    anchors: {
+                        5: "Abstract concepts are grounded with icons, symbols, or metaphors that reflect the paper-specific nature of the concept -- not just a generic icon. The choice is immediately convincing without needing a label to explain the mapping.",
+                        4: "Most abstract concepts have appropriate visual grounding, but 1-2 resort to generic icons (e.g., a gear for 'processing', a brain for 'reasoning') whose connection to the paper-specific meaning is weak.",
+                        3: "Only some abstract concepts are visually grounded, or icons are used but the semantic connection is not immediate -- labels are required to understand why a particular icon was chosen.",
+                        2: "Abstract concepts are almost entirely represented by text labels inside plain shapes. Any icons present are generic stock level with no paper-specific reasoning.",
+                        1: "No visual grounding -- all concepts are text boxes and arrows only."
+                    }
+                },
+                {
+                    code: "Cre-2", title: "Purposeful Originality",
+                    question: "Does the figure show originality beyond generic templates, and does that originality substantively aid understanding of this specific paper?",
+                    anchors: {
+                        5: "The figure uses a visual language or layout not typically seen in this field's papers, yet the choices directly serve understanding of this paper's unique mechanism. It feels like 'this visualization was made for this method.'",
+                        4: "Original visual elements are present and aid understanding, but the overall layout structure does not depart significantly from field conventions.",
+                        3: "Template-based, but appropriately adapted to the paper's specific structure (loops, multi-stage processes, agent interactions, etc.).",
+                        2: "A generic template is used almost as-is -- swapping labels and the title would make it fit another paper.",
+                        1: "Minimal visual effort -- a bare arrangement of default shapes and arrows, or creative attempts actively harm readability."
+                    }
+                }
+            ]
+        };
+
+        // Aggregated Schemas
+        const SCHEMAS = {
+            'method': [INFORMATIVENESS_METHOD, FIDELITY_METHOD, READABILITY_COMMON, DESIGN_COMMON, CREATIVITY_COMMON],
+            'intro': [INFORMATIVENESS_INTRO, FIDELITY_INTRO, READABILITY_COMMON, DESIGN_COMMON, CREATIVITY_COMMON]
+        };
+
+        // --- APP STATE ---
+        const STORAGE_KEY = 'figureEval_v3_results';
+        let evalResults = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        
+        let currentPaperIdx = 0;
+        let currentFigIdx = 0;
+        let currentType = 'method'; // Default, updates based on data
+
+        // --- INITIALIZATION ---
         window.onload = () => {
-            if (window.PAPER_DATA) renderIndex();
+            if (!window.PAPER_DATA) {
+                alert("Error: window.PAPER_DATA is not defined. Please ensure 'new_data.js' is in the same directory.");
+                return;
+            }
+            
+            // Filter out 'na' items globally for the interface if you want to skip them entirely
+            // Or handle them in rendering. Let's filter them out of the visible lists.
+            // Actually, keep data intact, just skip in navigation.
+            
+            renderIndex();
             updateProgress();
         };
 
+        // --- CORE FUNCTIONS ---
         function renderIndex() {
             const grid = document.getElementById('paper-grid');
             const search = document.getElementById('search-input').value.toLowerCase();
@@ -185,187 +395,334 @@
 
             window.PAPER_DATA.forEach((paper, idx) => {
                 if (paper.title.toLowerCase().includes(search) || paper.folder_name.toLowerCase().includes(search)) {
-                    const doneCount = paper.images.filter(img => isFigureCompleteV8(paper, img)).length;
-                    const isPaperDone = doneCount === paper.images.length && paper.images.length > 0;
+                    // Count valid (non-na) figures
+                    const validFigs = paper.images.filter(img => img.type !== 'na');
+                    const doneFigs = validFigs.filter(img => isComplete(paper.folder_name, img.filename, img.type));
+                    
+                    const isFullyDone = validFigs.length > 0 && doneFigs.length === validFigs.length;
 
                     const card = document.createElement('div');
-                    card.className = `paper-card p-5 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between min-h-[140px] shadow-sm ${
-                        isPaperDone ? 'bg-green-50 border-green-500' : 'bg-white border-gray-100'
+                    card.className = `bg-white rounded-xl border p-5 flex flex-col justify-between h-48 transition-all hover:shadow-md cursor-pointer group ${
+                        isFullyDone ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-200 hover:border-indigo-300'
                     }`;
-
+                    
                     card.innerHTML = `
                         <div>
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded-md font-bold tracking-wider">ID: ${idx + 1}</span>
-                                <span class="text-xs font-bold ${isPaperDone ? 'text-green-600' : 'text-indigo-500'} bg-white px-2 py-1 rounded-full shadow-sm border">${doneCount} / ${paper.images.length} Done</span>
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="text-xs font-mono text-slate-400">#${idx + 1}</span>
+                                <div class="flex gap-1">
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                                        isFullyDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                                    }">${doneFigs.length} / ${validFigs.length}</span>
+                                </div>
                             </div>
-                            <h3 class="font-bold text-sm leading-snug text-gray-800 line-clamp-2 mb-2">${paper.title}</h3>
+                            <h3 class="font-bold text-slate-800 text-sm leading-snug line-clamp-3 group-hover:text-indigo-700 transition-colors">
+                                ${paper.title}
+                            </h3>
                         </div>
-                        <div class="text-[10px] text-gray-400 truncate font-mono">${paper.folder_name}</div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                            <span class="font-mono truncate max-w-[150px] opacity-70">${paper.folder_name}</span>
+                            <span class="font-bold group-hover:translate-x-1 transition-transform">Start →</span>
+                        </div>
                     `;
-                    card.onclick = () => { currentPaperIdx = idx; currentFigIdx = 0; loadFigure(); };
+                    card.onclick = () => {
+                        currentPaperIdx = idx;
+                        // Find first incomplete or first valid
+                        const firstValid = paper.images.findIndex(img => img.type !== 'na');
+                        currentFigIdx = firstValid !== -1 ? firstValid : 0;
+                        loadFigure();
+                    };
                     grid.appendChild(card);
                 }
             });
         }
 
-        function renderCriteria() {
-            const container = document.getElementById('criteria-container');
-
-            container.innerHTML = CRITERIA.map(group => `
-                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
-                    <label class="font-black text-slate-800 text-xl tracking-tight block mb-4">${group.label}</label>
-
-                    <div class="space-y-4">
-                        ${group.sub.map((sq) => `
-                            <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-                                <p class="text-[13px] text-slate-700 leading-relaxed mb-3">
-                                    <span class="font-bold text-indigo-600">${sq.id.replace('_', '.')}</span>
-                                    <span class="ml-1">${sq.text.replace(/^\d+\.\d+\.\s*/, '')}</span>
-                                </p>
-
-                                <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-inner border border-slate-100">
-                                    <span class="text-[10px] font-bold text-red-500 uppercase tracking-wider">Poor (1)</span>
-                                    <div class="flex gap-4 md:gap-8">
-                                        ${[1,2,3,4,5].map(v => `
-                                            <label class="flex flex-col items-center gap-2 cursor-pointer group relative">
-                                                <input type="radio" name="${sq.id}" value="${v}" required class="w-6 h-6 text-indigo-600">
-                                                <span class="text-xs font-bold text-slate-400 absolute -bottom-5">${v}</span>
-                                            </label>
-                                        `).join('')}
-                                    </div>
-                                    <span class="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Excellent (5)</span>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
+        function isComplete(paperName, filename, type) {
+            if (type === 'na') return true; // NA is always "done"
+            const key = `${paperName}/${filename}`;
+            const data = evalResults[key];
+            if (!data) return false;
+            
+            // Check if all questions for this type are answered
+            const schema = SCHEMAS[type] || SCHEMAS['method'];
+            for (const cat of schema) {
+                for (const q of cat.questions) {
+                    if (!data[q.code]) return false;
+                }
+            }
+            return true;
         }
 
         function loadFigure() {
             const paper = window.PAPER_DATA[currentPaperIdx];
             const fig = paper.images[currentFigIdx];
-            if (!fig) { goHome(); return; }
 
+            // Auto-skip NA
+            if (fig.type === 'na') {
+                // If we are navigating forward, go next. If backward, go prev.
+                // Simple heuristic: just show a "Skipped" screen or auto-redirect.
+                // Let's simple alert for now or try to find next.
+                // Ideally navigation logic handles this.
+            }
+
+            // Update UI
             document.getElementById('paper-title').innerText = paper.title;
-            document.getElementById('folder-display').innerText = paper.folder_name;
-            document.getElementById('figure-counter').innerText = `FIG ${currentFigIdx + 1}/${paper.images.length}`;
             document.getElementById('main-figure').src = fig.path;
             document.getElementById('figure-caption').innerText = fig.caption;
-            document.getElementById('local-pdf-link').href = `figs_human_eval_papers/${paper.folder_name}/${paper.folder_name}.pdf`;
+            // Assumes PDF is named folder_name.pdf in the folder
+            document.getElementById('local-pdf-link').href = `figs_human_eval_papers/${paper.folder_name}/${paper.folder_name}.pdf`; 
 
-            renderCriteria();
+            // Set Type
+            currentType = fig.type || 'method'; // Default to method if undefined, but new_data.js should have it
+            if (currentType === 'na') currentType = 'method'; // Fallback for viewing, though we shouldn't grade it
 
+            updateTypeToggleUI();
+            renderForm();
+
+            // Pre-fill
             const key = `${paper.folder_name}/${fig.filename}`;
-            const prev = evalResults[key];
-
-            const form = document.getElementById('eval-form');
-            form.reset();
-
-            if (prev) {
-                CRITERIA.forEach(group => {
-                    group.sub.forEach(sq => {
-                        if (form[sq.id] && prev[sq.id]) form[sq.id].value = prev[sq.id];
-                    });
-                });
+            const saved = evalResults[key];
+            if (saved) {
+                for (const [k, v] of Object.entries(saved)) {
+                    const input = document.querySelector(`input[name="${k}"][value="${v}"]`);
+                    if (input) input.checked = true;
+                }
+                document.getElementById('save-status').innerText = "Loaded saved data";
+                document.getElementById('save-status').classList.add('text-emerald-500');
+            } else {
+                document.getElementById('save-status').innerText = "Unsaved changes";
+                document.getElementById('save-status').classList.remove('text-emerald-500');
             }
 
             document.getElementById('view-index').classList.add('hidden');
             document.getElementById('view-eval').classList.remove('hidden');
-            window.scrollTo(0, 0);
+            
+            // Scroll top
+            document.querySelector('#view-eval .custom-scrollbar').scrollTop = 0;
+        }
+
+        function updateTypeToggleUI() {
+            const bg = document.getElementById('toggle-bg');
+            const btnIntro = document.getElementById('btn-intro');
+            const btnMethod = document.getElementById('btn-method');
+
+            if (currentType === 'intro') {
+                bg.style.transform = 'translateX(0)';
+                btnIntro.className = "relative z-10 px-4 py-1 text-[10px] font-bold rounded transition-colors text-slate-900 uppercase tracking-wide";
+                btnMethod.className = "relative z-10 px-4 py-1 text-[10px] font-bold rounded transition-colors text-slate-400 uppercase tracking-wide";
+            } else {
+                bg.style.transform = 'translateX(100%) translateX(8px)'; 
+                btnIntro.className = "relative z-10 px-4 py-1 text-[10px] font-bold rounded transition-colors text-slate-400 uppercase tracking-wide";
+                btnMethod.className = "relative z-10 px-4 py-1 text-[10px] font-bold rounded transition-colors text-slate-900 uppercase tracking-wide";
+            }
+        }
+
+        function switchFigureType(newType) {
+            if (confirm("Switching types will reset the form for this figure. Continue?")) {
+                currentType = newType;
+                // Update the fig object in memory temporarily (optional, to persist type change for this session)
+                window.PAPER_DATA[currentPaperIdx].images[currentFigIdx].type = newType;
+                updateTypeToggleUI();
+                renderForm();
+            }
+        }
+
+        function renderForm() {
+            const container = document.getElementById('eval-form');
+            const schema = SCHEMAS[currentType];
+            
+            if (!schema) {
+                container.innerHTML = "<div class='text-center text-red-500 mt-10'>Error: Unknown figure type.</div>";
+                return;
+            }
+
+            let html = '';
+            schema.forEach((cat, idx) => {
+                html += `
+                    <div class="space-y-6">
+                        <div class="sticky top-0 bg-white/95 backdrop-blur z-10 py-3 border-b border-slate-100 flex items-center gap-3">
+                            <span class="flex items-center justify-center w-6 h-6 rounded bg-slate-800 text-white text-xs font-bold">${idx + 1}</span>
+                            <h4 class="font-bold text-slate-800 text-lg">${cat.name}</h4>
+                        </div>
+                        <div class="space-y-8 pl-2">
+                `;
+                
+                cat.questions.forEach(q => {
+                    html += `
+                        <div class="group">
+                            <div class="mb-4">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-[10px] font-mono font-bold text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">${q.code}</span>
+                                    <h5 class="font-bold text-slate-700 text-sm">${q.title}</h5>
+                                </div>
+                                <p class="text-sm text-slate-600 leading-relaxed border-l-2 border-slate-200 pl-3 group-hover:border-indigo-400 transition-colors">${q.question}</p>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                ${[5, 4, 3, 2, 1].map(score => `
+                                    <label class="rubric-option block relative cursor-pointer">
+                                        <input type="radio" name="${q.code}" value="${score}" class="peer absolute opacity-0 w-full h-full cursor-pointer z-10" onchange="markDirty()">
+                                        <div class="flex gap-4 p-3 rounded-lg border border-slate-200 bg-slate-50 peer-checked:bg-indigo-50 peer-checked:border-indigo-500 peer-focus:ring-2 peer-focus:ring-indigo-200 items-start">
+                                            <div class="score-badge flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md border border-slate-300 bg-white text-slate-400 font-black text-sm transition-colors group-hover:border-indigo-300 group-hover:text-indigo-500 mt-0.5">
+                                                ${score}
+                                            </div>
+                                            <div class="anchor-text text-xs text-slate-500 leading-relaxed pt-1">
+                                                ${q.anchors[score]}
+                                            </div>
+                                        </div>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div></div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function markDirty() {
+            const status = document.getElementById('save-status');
+            status.innerText = "Unsaved changes...";
+            status.classList.remove('text-emerald-500');
+            status.classList.add('text-amber-500', 'animate-pulse');
         }
 
         function saveAndNext() {
             const paper = window.PAPER_DATA[currentPaperIdx];
             const fig = paper.images[currentFigIdx];
-
-            const formEl = document.getElementById('eval-form');
-            const formData = new FormData(formEl);
-
-            const data = {};
-            let complete = true;
-
-            CRITERIA.forEach(group => {
-                group.sub.forEach(sq => {
-                    const val = formData.get(sq.id);
-                    if (!val) complete = false;
-                    data[sq.id] = val || "";
+            const form = document.getElementById('eval-form');
+            const formData = new FormData(form);
+            const data = { type: currentType }; // Save type as well
+            
+            // Validate
+            let missing = [];
+            SCHEMAS[currentType].forEach(cat => {
+                cat.questions.forEach(q => {
+                    const val = formData.get(q.code);
+                    if (!val) missing.push(q.code);
+                    data[q.code] = val;
                 });
             });
 
-            if (!complete) { alert("Please score all checklist items (all sub-questions)."); return; }
+            if (missing.length > 0) {
+                if(!confirm(`You missed ${missing.length} questions. Save anyway?`)) return;
+            }
 
-            evalResults[`${paper.folder_name}/${fig.filename}`] = data;
-            localStorage.setItem(STORAGE_KEY_V8, JSON.stringify(evalResults));
+            const key = `${paper.folder_name}/${fig.filename}`;
+            evalResults[key] = data;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(evalResults));
+            
             updateProgress();
+            
+            // Visual feedback
+            const status = document.getElementById('save-status');
+            status.innerText = "Saved!";
+            status.classList.remove('text-amber-500', 'animate-pulse');
+            status.classList.add('text-emerald-500');
 
-            if (currentFigIdx < paper.images.length - 1) {
-                currentFigIdx++; loadFigure();
+            // Move Next
+            nextStep();
+        }
+
+        function prevStep() {
+            const paper = window.PAPER_DATA[currentPaperIdx];
+            // Logic to find previous VALID image
+            let prevIdx = currentFigIdx - 1;
+            while (prevIdx >= 0 && paper.images[prevIdx].type === 'na') {
+                prevIdx--;
+            }
+
+            if (prevIdx >= 0) {
+                currentFigIdx = prevIdx;
+                loadFigure();
             } else {
-                alert("Paper complete!"); goHome();
+                alert("First valid figure of this paper.");
+            }
+        }
+
+        function nextStep() {
+            const paper = window.PAPER_DATA[currentPaperIdx];
+            // Logic to find next VALID image
+            let nextIdx = currentFigIdx + 1;
+            while (nextIdx < paper.images.length && paper.images[nextIdx].type === 'na') {
+                nextIdx++;
+            }
+
+            if (nextIdx < paper.images.length) {
+                currentFigIdx = nextIdx;
+                loadFigure();
+            } else {
+                if(confirm("Finished this paper. Return to list?")) goHome();
             }
         }
 
         function goHome() {
-            renderIndex();
-            updateProgress();
             document.getElementById('view-index').classList.remove('hidden');
             document.getElementById('view-eval').classList.add('hidden');
-        }
-
-        function prevStep() {
-            if (currentFigIdx > 0) { currentFigIdx--; loadFigure(); }
-        }
-
-        function nextStep() {
-            if (currentFigIdx < window.PAPER_DATA[currentPaperIdx].images.length - 1) { currentFigIdx++; loadFigure(); }
+            renderIndex();
         }
 
         function updateProgress() {
-            const totalFigs = window.PAPER_DATA.reduce((sum, p) => sum + p.images.length, 0);
-
-            let doneFigs = 0;
+            // Recalculate global progress
+            let total = 0;
+            let done = 0;
+            
             window.PAPER_DATA.forEach(p => {
                 p.images.forEach(img => {
-                    if (isFigureCompleteV8(p, img)) doneFigs++;
+                    if (img.type !== 'na') {
+                        total++;
+                        if (evalResults[`${p.folder_name}/${img.filename}`]) done++;
+                    }
                 });
             });
 
-            const pct = totalFigs > 0 ? Math.round((doneFigs / totalFigs) * 100) : 0;
+            const pct = total === 0 ? 0 : Math.round((done / total) * 100);
             document.getElementById('progress-bar').style.width = `${pct}%`;
-            document.getElementById('progress-text').innerText = `${doneFigs} / ${totalFigs} Figures (${pct}%)`;
+            document.getElementById('progress-text').innerText = `${done} / ${total} (${pct}%)`;
+        }
+
+        function resetData() {
+            if(confirm("DELETE ALL DATA? This cannot be undone.")) {
+                localStorage.removeItem(STORAGE_KEY);
+                evalResults = {};
+                location.reload();
+            }
         }
 
         function downloadResultsCSV() {
-            // Always export expanded columns (sub-question-level) for v8
-            const flatCols = [];
-            CRITERIA.forEach(group => group.sub.forEach(sq => flatCols.push(sq.id)));
+            // Collect all possible codes
+            const allCodes = new Set();
+            Object.values(SCHEMAS).forEach(schema => {
+                schema.forEach(cat => cat.questions.forEach(q => allCodes.add(q.code)));
+            });
+            const sortedCodes = Array.from(allCodes).sort();
 
-            // Human-friendly column labels: q1_1 -> q1.1
-            const headerCols = flatCols.map(id => id.replace('_', '.'));
-
-            let csv = "\uFEFF" + ["PaperTitle", "Folder", "Figure", ...headerCols].join(",") + "\n";
+            let csv = "Paper,Folder,Figure,Type," + sortedCodes.join(",") + "\n";
 
             window.PAPER_DATA.forEach(p => {
                 p.images.forEach(img => {
+                    if (img.type === 'na') return;
                     const key = `${p.folder_name}/${img.filename}`;
                     const res = evalResults[key] || {};
-
+                    
                     const row = [
-                        `"${(p.title || "").replaceAll('"', '""')}"`,
-                        `"${(p.folder_name || "").replaceAll('"', '""')}"`,
-                        `"${(img.filename || "").replaceAll('"', '""')}"`,
-                        ...flatCols.map(cid => (res[cid] ?? ""))
+                        `"${p.title.replace(/"/g, '""')}"`,
+                        p.folder_name,
+                        img.filename,
+                        res.type || img.type || 'method',
+                        ...sortedCodes.map(c => res[c] || "")
                     ];
-
                     csv += row.join(",") + "\n";
                 });
             });
 
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-            link.download = "figure_eval_results_v8_expanded.csv";
+            link.href = URL.createObjectURL(blob);
+            link.download = "figure_eval_results_v3.csv";
             link.click();
         }
     </script>
